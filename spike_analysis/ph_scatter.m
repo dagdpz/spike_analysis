@@ -1,339 +1,456 @@
-function pie_data=ph_scatter(modified_keys)
-% get_pie('drive','X','monkey_folder','Curius_ephys_analysis','dataset','memory')
-
-% default_list = {                                                                              ...
-%     'folder_to_save',                   'W:\Projects\Pulv_eye_hand\ephys\'                  , ...
-%     'subfolder_prefix',                'cell_counts'                                         , ...
-%     'monkey',                           'Curius'                                            , ...
-%     'datasets',                         {'Msac'}                                            , ...
-%     'case',                             'opt'                                               , ...
-%     'target',                           'dPulv_l'                                           , ...
-%     'instructed_choice',                'in'                                                , ...
-%     'only_both_hands',                  0                                                   , ...
-%     'Selection',                        {}                                                  , ...
-%     'table_full_path',                  'W:\Projects\Pulv_eye_hand\ephys\ephys_analysis_v7_June2016\monkeys_Combined_del.mat'                                        , ...
-%     'epochs',                           {''}                                                , ...
-%     'space_criterion',                  'none'                                              , ...
-%     'epoch_criterion',                  'none'                                              , ...
-%     'hands_criterion',                  'none'                                              , ...
-%     'SXH_criterion',                    'none'                                              , ...
-%     'summary'                           'per_epoch'                                         , ...
-%     'factors'                           'space'                                             , ...
-%     'percent',                          0                                                   , ...
-%     'create_pdf',                       0                                                   , ...
-%     'all_colors',                       {[255 0 178; 171 0 252; 0 0 255; 125 130 255; 255 153 20; 222 220 0; 0 255 0; 145 143 56; 255 0 0; 255 255 255]/255}, ...
-%     'contra',                           'left'                                              , ...
-%     'plot_as_pie',                      0                                                   , ...
-%     };
-
-
-keys.monkey             = 'Curius';
-keys.case               = 'opt';
-keys.target             = 'dPulv_l';
-keys.instructed_choice  = 'in';
-keys.contra_color       = 'pink';
-keys.all_colors         = {[255 0 178; 171 0 252; 0 0 255; 125 130 255; 255 153 20; 222 220 0; 0 255 0; 145 143 56; 255 0 0; 255 255 255]/255}; %% overwritten anyway, never input
-
-keys.cc.tasktypes           = {'Msac'};
-keys.cc.percent            = 0;
-keys.cc.plot_as_pie        = 0;
-keys.cc.epochs             = {''};
-keys.cc.space_criterion    = 'none';
-keys.cc.epoch_criterion    = 'none';
-keys.cc.hands_criterion    = 'none';
-keys.cc.SXH_criterion      = 'none';
-keys.cc.plot_type          = 'per_epoch';
-keys.cc.factors            = 'space';
-keys.cc.only_both_hands    = 0;
-keys.cc.Selection          = {};
+function out=ph_scatter(modified_keys)
+out=struct;
+fontsize=6;
 
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
-[tuning_per_unit_table]=ph_load_extended_tuning_table(keys);
-[tuning_per_unit_table, keys.selection_title]=ph_reduce_tuning_table(tuning_per_unit_table,keys);
-tuning_per_unit_table(cellfun(@(x) ~isempty(x) && isnumeric(x) && isnan(x),tuning_per_unit_table))={0};
-%tuning_per_unit_table(cellfun(@(x) isempty(x) & ~islogical(x),tuning_per_unit_table))={''};
-
-%% sort of obsolete
-%keys.xlsx_table=tuning_per_unit_table;
+[tuning]=ph_load_extended_tuning_table(keys);
+[tuning, keys.selection_title]=ph_reduce_tuning_table(tuning,keys);
+if size(tuning,1)==1
+    return;
+end
 
 %% ANOVA cirterions readout
 criterions={'space_or_interaction','epoch_or_interaction','hands_or_interaction','SXH_or_interaction'};
 for c=1:numel(criterions)
-    parameter_criterion_columns=~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),criterions{c}));
+    parameter_criterion_columns=~cellfun(@isempty,strfind(tuning(1,:),criterions{c}));
     for t=1:numel(keys.tt.tasktypes)
-        task_criterion_columns(t,:)=~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),keys.tt.tasktypes{t}));
+        task_criterion_columns(t,:)=~cellfun(@isempty,strfind(tuning(1,:),keys.tt.tasktypes{t}));
     end
     criterion_columns=parameter_criterion_columns & any(task_criterion_columns,1);
-    keys.(criterions{c})=any(cell2mat(tuning_per_unit_table(2:end,criterion_columns)),2);
+    keys.(criterions{c})=any(cell2mat(tuning(2:end,criterion_columns)),2);
 end
 
-%% temporary, scatter stuff is to be found here:
+% %% path
+% keys.path_to_save =[keys.folder_to_save filesep keys.subfolder_prefix filesep];
+% if ~exist(keys.path_to_save,'dir');
+%     mkdir(keys.folder_to_save,keys.subfolder_prefix);
+% end
+% 
+% keys.path_to_save=[keys.drive filesep keys.basepath_to_save filesep keys.project_version filesep 'scatter' filesep];
+% if ~exist(keys.path_to_save,'dir')
+%     mkdir([keys.drive filesep keys.basepath_to_save filesep keys.project_version ], 'scatter');
+% end
 
 
-keys.path_to_save =[keys.folder_to_save filesep keys.subfolder_prefix filesep];
-if ~exist(keys.path_to_save,'dir');
-    mkdir(keys.folder_to_save,keys.subfolder_prefix);
-end
 
-col_unit_ID=find_column_index(tuning_per_unit_table,'unit_ID');
-monkeys=cellfun(@(x) x(1:3),tuning_per_unit_table(2:end,col_unit_ID),'uniformoutput',false);
 
+%% row indexes
+x_label=keys.SC.X;
+y_label=keys.SC.Y;
+
+c_x    =find_column_index(tuning,keys.SC.X);
+c_y    =find_column_index(tuning,keys.SC.Y);
+cs_x   =find_column_index(tuning,keys.SC.X_sig);
+cs_y   =find_column_index(tuning,keys.SC.Y_sig);
+c_VM   =find_column_index(tuning,keys.SC.VMI);
+c_h    =find_column_index(tuning,keys.SC.hist_column);
+
+rs_x   =[false; cellfun(@(x) ~strcmp(x,'-') && ~strcmp(x,'false'),tuning(2:end,cs_x))];
+rs_y   =[false; cellfun(@(x) ~strcmp(x,'-') && ~strcmp(x,'false'),tuning(2:end,cs_y))];
+
+
+    row_valid=cellfun(@(x) ~isempty(x) && ~isnan(x),tuning(2:end,c_x)) & cellfun(@(x) ~isempty(x) && ~isnan(x),tuning(2:end,c_y));
+row_valid=[false;row_valid];
+
+%% monkey per unit readout
+col_unit_ID=find_column_index(tuning,'unit_ID');
+monkeys=cellfun(@(x) x(1:3),tuning(2:end,col_unit_ID),'uniformoutput',false);
+% if keys.batching.combine_monkeys
+%     [monkeys{:}]=deal(monkeys{1});
+% else
+% row_valid=cellfun(@(x) ~isempty(x) && ~isnan(x),tuning(2:end,c_x)) & cellfun(@(x) ~isempty(x) && ~isnan(x),tuning(2:end,c_y)) & cellfun(@(x) strcmp(x,keys.monkey(1:3)),monkeys);
+%     [monkeys{:}]=deal(monkeys{1});
+% end
 unique_monkeys=unique(monkeys);
+monkeys=['___'; monkeys];
+
+
+if ~any(row_valid)
+    return;
+end
+
+rs_xy       = rs_x &  rs_y & row_valid;
+rs_xn       = rs_x & ~rs_y & row_valid;
+rs_ny       =~rs_x &  rs_y & row_valid;
+rs_nn       =~rs_x & ~rs_y & row_valid;
+
+if ismember(keys.SC.color_option,{'ENSU_as_color'})
+    
+end
+%
+
+if ismember(keys.SC.color_option,{'monkeys_by_marker'})
+    
+    cat_colors={'m','b','r',[0.5 0.5 0.5]}; %% easier to understand significant in both is the mixed color
+    row_nocat=row_valid;
+    for idx=1:3
+        switch idx
+            case 1
+        r_cat{idx}= rs_x & ~rs_y & row_valid;
+            case 2
+        r_cat{idx}= rs_x &  rs_y & row_valid;
+            case 3
+        r_cat{idx}=~rs_x & ~rs_y & row_valid;
+        end
+        row_nocat =row_nocat & ~r_cat{idx};
+    end
+    r_cat{idx+1}=row_nocat;
+end
+
+
+if ismember(keys.SC.color_option,{'FR_as_color','VMI_as_color','category_as_color'})
+    
+    cat_colors={'b','m','r',[0.5 0.5 0.5]}; %% based on VMI still
+    row_nocat=row_valid;
+    for idx=1:numel(keys.SC.categories)
+        col_cat   =find_column_index(tuning,keys.SC.categories{idx});
+        r_cat{idx}=[false; vertcat(tuning{2:end,col_cat})]&row_valid;
+        row_nocat =row_nocat & ~r_cat{idx};
+    end
+    r_cat{idx+1}=row_nocat;
+end
+
+
+%% monkey markers and columns assignment
+% monkey_colors=repmat(0,size(tuning,1),1);
+% monkey_markers=repmat('d',size(tuning,1),1);
+for m=1:numel(unique_monkeys)
+    if keys.batching.combine_monkeys
+        
+    row_monkey{m}=row_valid;
+    else
+    row_monkey{m}=ismember(monkeys,unique_monkeys{m})& row_valid;
+        
+    end
+%     row_monkey_all{m}=ismember(monkeys,unique_monkeys{m});
+% 
+% 
+%     current_monkey=keys.monkeys{cellfun(@(x) any(strfind(x,unique_monkeys{m})),keys.monkeys)};
+%     current_color=keys.(current_monkey).color;
+%     current_marker=keys.(current_monkey).marker;
+% 
+%     monkey_colors(row_monkey{m},:)=repmat(m,1);
+%     monkey_markers(row_monkey{m},:)=repmat(current_marker,sum(row_monkey{m}),1);
+%     monkey_colors_unique{m}=current_color;
+% 
+%     yvalues_per_monkey{m}=[tuning{row_monkey{m},c_y}]';
+%     xvalues_per_monkey{m}=[tuning{row_monkey{m},c_x}]';
+%     diff_per_monkey{m}=yvalues_per_monkey{m}-xvalues_per_monkey{m};
+% 
+%     % stroign significance for x y histograms
+%     monkey_colors_sig{2*m-1}=current_color/2;
+%     monkey_colors_sig{2*m}  =current_color;
+%     yvalues_per_monkey_sig{2*m-1}=[tuning{row_monkey{m} & ~rs_y,c_y}]';
+%     yvalues_per_monkey_sig{2*m}  =[tuning{row_monkey{m} &  rs_y,c_y}]';
+%     xvalues_per_monkey_sig{2*m-1}=[tuning{row_monkey{m} & ~rs_x,c_x}]';
+%     xvalues_per_monkey_sig{2*m}  =[tuning{row_monkey{m} &  rs_x,c_x}]';
+end
+%monkey_colormap=vertcat(monkey_colors_unique{:});
 
 %% figure 1
-% 
-% x_label=[keys.SX.instructed_choice '_' keys.SX.epoch '_' keys.SX.parameter '_ES_' keys.SX.dataset '_' keys.SX.case ];
-% y_label=[keys.SY.instructed_choice '_' keys.SY.epoch '_' keys.SY.parameter '_ES_' keys.SY.dataset '_' keys.SY.case ];
-% 
-% col_scatterx   =find_column_index(tuning_per_unit_table,[keys.SX.instructed_choice '_' keys.SX.epoch '_' keys.SX.parameter '_ES_' keys.SX.dataset '_' keys.SX.case ] );
-% col_scattery   =find_column_index(tuning_per_unit_table,[keys.SY.instructed_choice '_' keys.SY.epoch '_' keys.SY.parameter '_ES_' keys.SY.dataset '_' keys.SY.case ] );
-   
-
-x_label=[keys.SX.instructed_choice '_' keys.SX.epoch '_' keys.SX.parameter '_ES_' keys.SX.dataset '_' keys.SX.case ];
-y_label=[keys.SY.instructed_choice '_' keys.SY.epoch '_' keys.SY.parameter '_ES_' keys.SY.dataset '_' keys.SY.case ];
-
-col_scatterx   =find_column_index(tuning_per_unit_table,[keys.SX.instructed_choice '_' keys.SX.epoch '_' keys.SX.parameter '_ES_' keys.SX.dataset '_' keys.SX.case ] );
-col_scattery   =find_column_index(tuning_per_unit_table,[keys.SY.instructed_choice '_' keys.SY.epoch '_' keys.SY.parameter '_ES_' keys.SY.dataset '_' keys.SY.case ] );
-
-
-col_signifix   =find_column_index(tuning_per_unit_table,[keys.SX.instructed_choice '_' keys.SX.epoch '_' keys.SX.parameter '_' keys.SX.dataset '_' keys.SX.case ] );
-col_signifiy   =find_column_index(tuning_per_unit_table,[keys.SY.instructed_choice '_' keys.SY.epoch '_' keys.SY.parameter '_' keys.SY.dataset '_' keys.SY.case ] );
-
-row_signifix   =[false; cellfun(@(x) ~strcmp(x,'-'),tuning_per_unit_table(2:end,col_signifix))];
-row_signifiy   =[false; cellfun(@(x) ~strcmp(x,'-'),tuning_per_unit_table(2:end,col_signifiy))];
-
-fig_title=[keys.selection_title{:} '_' y_label '__vs__' x_label];
+fig_title=[keys.monkey ' ' keys.selection_title{:} y_label '__vs__' x_label];
 plot_1_title            = [fig_title  ' FR'];
 FR_index_handle = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_1_title);
-%nonnanidx=~isnan([tuning_per_unit_table{2:end,col_scatterx}])'& ~isnan([tuning_per_unit_table{2:end,col_scattery}])';
-nonemptyidx=~cellfun(@isempty,tuning_per_unit_table(2:end,col_scatterx)) & ~cellfun(@isempty,tuning_per_unit_table(2:end,col_scattery));
 
-x_lim(1)=min([tuning_per_unit_table{[false;nonemptyidx],col_scatterx},tuning_per_unit_table{[false;nonemptyidx],col_scattery}]);
-x_lim(2)=max([tuning_per_unit_table{[false;nonemptyidx],col_scatterx},tuning_per_unit_table{[false;nonemptyidx],col_scattery}]);
-y_lim=x_lim;
-hold on
-line(x_lim,[0 0],'color','k','linestyle','-');
-line([0 0],y_lim,'color','k','linestyle','-');
-set(gca,'ylim',y_lim,'xlim',x_lim);
-for m=1:numel(unique_monkeys)
+
+if keys.SC.logarithmic_scale%%% transform to logarithmic scale
+    temp_x_nonempty=tuning(row_valid,c_x);
+    temp_y_nonempty=tuning(row_valid,c_y);
+    tuning(row_valid,c_x)=num2cell(sign([tuning{row_valid,c_x}]).*log(abs([tuning{row_valid,c_x}])+1));
+    tuning(row_valid,c_y)=num2cell(sign([tuning{row_valid,c_y}]).*log(abs([tuning{row_valid,c_y}])+1));
+end
+
+if keys.SC.absolutes%%% transform to logarithmic scale
+    temp_x_nonempty=tuning(row_valid,c_x);
+    temp_y_nonempty=tuning(row_valid,c_y);
+    tuning(row_valid,c_x)=num2cell(abs([tuning{row_valid,c_x}]));
+    tuning(row_valid,c_y)=num2cell(abs([tuning{row_valid,c_y}]));
+end
+
+
+
+SC.markers={};
+SC.filled={};
+SC.colors={};
+SC.hist_colors={};
+SC.x_values={};
+SC.y_values={};
+switch keys.SC.color_option
+    case 'monkeys_by_color'
+        for idx=1:numel(unique_monkeys)
+            idx1=2*idx-1;
+            idx2=idx1+1;
+            idxd=3*(idx-1);
+            current_monkey=keys.monkeys{cellfun(@(x) any(strfind(x,unique_monkeys{idx})),keys.monkeys)};
+            current_color=keys.(current_monkey).color;
+            SC.markers=[SC.markers {'o', '>', '^', 'o'}];
+            SC.filled=[SC.filled {'filled', 'filled', 'filled', ''}];
+            SC.colors=[SC.colors current_color current_color current_color current_color];
+            SC.hist_colors{1}{idx1}=current_color;
+            SC.hist_colors{2}{idx1}=current_color;
+            SC.hist_colors{1}{idx2}=current_color/2;
+            SC.hist_colors{2}{idx2}=current_color/2;
+            SC.hist_colors{3}(idxd+1:idxd+3)={current_color current_color/2 [0.5 0.5 0.5]};
+            r_m=row_monkey{idx};
+%             SC.x_values{idx}=[{[tuning{rs_xy & r_m,c_x}]} {[tuning{rs_xn & r_m,c_x}]} {[tuning{rs_ny & r_m,c_x}]} {[tuning{rs_nn & r_m,c_x}]}];
+%             SC.y_values{idx}=[{[tuning{rs_xy & r_m,c_y}]} {[tuning{rs_xn & r_m,c_y}]} {[tuning{rs_ny & r_m,c_y}]} {[tuning{rs_nn & r_m,c_y}]}];
+%             SC.d_values{idx}=[{[SC.x_values{idx}{:}]} {[SC.y_values{idx}{:}]}];
+            
+            
+            SC.x_values{1,idx1}=[{[tuning{rs_xy & r_m,c_x}]} {[tuning{rs_xn & r_m,c_x}]}];
+            SC.x_values{1,idx2}=[{[tuning{rs_ny & r_m,c_x}]} {[tuning{rs_nn & r_m,c_x}]}];
+%             SC.y_values{1,idx}=[{[tuning{rs_xy & r_m,c_y}]} {[tuning{rs_ny & r_m,c_y}]}];
+%             SC.y_values{2,idx}=[{[tuning{rs_xn & r_m,c_y}]} {[tuning{rs_nn & r_m,c_y}]}];       
+            SC.y_values{idx1,1}=[{[tuning{rs_xy & r_m,c_y}]} {[tuning{rs_xn & r_m,c_y}]}];
+            SC.y_values{idx2,1}=[{[tuning{rs_ny & r_m,c_y}]} {[tuning{rs_nn & r_m,c_y}]}];       
+            
+        SC.d_values{idxd+1}= [{[tuning{rs_xy & r_m,c_x}]}  {[tuning{rs_xy & r_m,c_y}]}];
+        SC.d_values{idxd+2}= [{[tuning{(rs_xn | rs_ny) & r_m,c_x}]}  {[tuning{(rs_xn | rs_ny) & r_m,c_y}]}];
+        SC.d_values{idxd+3}= [{[tuning{rs_nn & r_m,c_x}]}  {[tuning{rs_nn & r_m,c_y}]}];
+        end
+        %
+        %     colormap(monkey_colormap)
+    case 'monkeys_by_marker'
+        r_am=false(size(row_monkey{1}));
+        for idx=1:numel(unique_monkeys)
+            idx1=2*idx-1;
+            idx2=idx1+1;
+            %idxd=3*(idx-1);
+            
+            current_monkey=keys.monkeys{cellfun(@(x) any(strfind(x,unique_monkeys{idx})),keys.monkeys)};
+            current_marker=keys.(current_monkey).marker;
+            SC.markers=[SC.markers {current_marker} {current_marker} {current_marker} {current_marker}];
+            SC.filled=[SC.filled; {'filled', 'filled', 'filled', ''}];
+            SC.colors=[SC.colors; cat_colors]; 
+%             SC.hist_colors{1}=repmat(cat_colors,1,numel(unique_monkeys));
+%             SC.hist_colors{2}=repmat(cat_colors,1,numel(unique_monkeys));
+%             SC.hist_colors{3}=repmat(cat_colors,1,numel(unique_monkeys));
+            r_m=row_monkey{idx};            
+            r_am=r_am | r_m; 
+            SC.x_values{1,1}{idx}=[tuning{rs_xy & r_m,c_x}];
+            SC.x_values{1,2}{idx}=[tuning{rs_xn & r_m,c_x}];    
+            SC.x_values{1,3}{idx}=[tuning{rs_ny & r_m,c_x}];  
+            SC.x_values{1,4}{idx}=[tuning{rs_nn & r_m,c_x}];      
+                        
+            SC.y_values{1,1}{idx}=[tuning{rs_xy & r_m,c_y}];
+            SC.y_values{2,1}{idx}=[tuning{rs_xn & r_m,c_y}];    
+            SC.y_values{3,1}{idx}=[tuning{rs_ny & r_m,c_y}];  
+            SC.y_values{4,1}{idx}=[tuning{rs_nn & r_m,c_y}];   
+            
+%             SC.y_values{idx1,1}=[{[tuning{rs_xy & r_m,c_y}]} {[tuning{rs_xn & r_m,c_y}]}];
+%             SC.y_values{idx2,1}=[{[tuning{rs_ny & r_m,c_y}]} {[tuning{rs_nn & r_m,c_y}]}];      
+% %             SC.x_values{1,idx1}=[{[tuning{rs_xy & r_m,c_x}]} {[tuning{rs_xn & r_m,c_x}]}];
+% %             SC.x_values{1,idx2}=[{[tuning{rs_ny & r_m,c_x}]} {[tuning{rs_nn & r_m,c_x}]}];    
+% %             SC.y_values{idx1,1}=[{[tuning{rs_xy & r_m,c_y}]} {[tuning{rs_xn & r_m,c_y}]}];
+% %             SC.y_values{idx2,1}=[{[tuning{rs_ny & r_m,c_y}]} {[tuning{rs_nn & r_m,c_y}]}];       
+%         
+%         SC.d_values{1}= [{[tuning{rs_xy & r_m,c_x}]}  {[tuning{rs_xy & r_m,c_y}]}];
+%         SC.d_values{2}= [{[tuning{rs_xn & r_m,c_x}]}  {[tuning{rs_xn & r_m,c_y}]}];     
+%         SC.d_values{3}= [{[tuning{rs_ny & r_m,c_x}]}  {[tuning{rs_ny & r_m,c_y}]}];
+%         SC.d_values{4}= [{[tuning{rs_nn & r_m,c_x}]}  {[tuning{rs_nn & r_m,c_y}]}];
+        end
+        SC.colors=SC.colors(:);
+        SC.filled=SC.filled(:);
+        SC.hist_colors{1}=cat_colors;
+        SC.hist_colors{2}=cat_colors;
+        SC.hist_colors{3}=cat_colors;
+%         SC.hist_colors{1}=repmat(cat_colors,1,numel(unique_monkeys));
+%         SC.hist_colors{2}=repmat(cat_colors,1,numel(unique_monkeys));
+%         SC.hist_colors{3}=repmat(cat_colors,1,numel(unique_monkeys));
+        
+%         SC.x_values{1,1}=[{[tuning{rs_xy & r_am,c_x}]} {[tuning{rs_xn & r_am,c_x}]}];
+%         SC.x_values{1,2}=[{[tuning{rs_ny & r_am,c_x}]} {[tuning{rs_nn & r_am,c_x}]}];
+%         SC.y_values{1,1}=[{[tuning{rs_xy & r_am,c_y}]} {[tuning{rs_xn & r_am,c_y}]}];
+%         SC.y_values{2,1}=[{[tuning{rs_ny & r_am,c_y}]} {[tuning{rs_nn & r_am,c_y}]}];
+%         
+        SC.d_values{1}= [{[tuning{rs_xy & r_am,c_x}]}  {[tuning{rs_xy & r_am,c_y}]}];
+        SC.d_values{2}= [{[tuning{rs_xn & r_am,c_x}]}  {[tuning{rs_xn & r_am,c_y}]}];
+        SC.d_values{3}= [{[tuning{rs_ny & r_am,c_x}]}  {[tuning{rs_ny & r_am,c_y}]}];
+        SC.d_values{4}= [{[tuning{rs_nn & r_am,c_x}]}  {[tuning{rs_nn & r_am,c_y}]}];
+        
+        
+    case 'FR_as_color'
+        colormap([(1:1:255)' zeros(255,1) (255:-1:1)']/255)
+        FR_values=[tuning{row_valid,cs_x}]; %%% only by X???
+        maxFR=max(FR_values);
+        FR_values=round(FR_values/maxFR*255);
+        for idx=1:numel(r_cat)
+            SC.markers=[SC.markers {'o', '>', '^', 'o'}];
+            SC.filled=[SC.filled {'filled', 'filled', 'filled', ''}];
+            SC.colors=[SC.colors {FR_values(rs_xy(row_valid) & r_cat{idx}(row_valid))} {FR_values(rs_xn(row_valid) & r_cat{idx}(row_valid))} {FR_values(rs_ny(row_valid) & r_cat{idx}(row_valid))} {FR_values(rs_nn(row_valid) & r_cat{idx}(row_valid))}];
+            SC.hist_colors{1}{idx}=cat_colors{idx};
+            SC.hist_colors{2}{idx}=cat_colors{idx};
+            SC.hist_colors{3}{idx}=cat_colors{idx};
+            SC.x_values{idx}=[{[tuning{rs_xy & r_cat{idx},c_x}]} {[tuning{rs_xn & r_cat{idx},c_x}]} {[tuning{rs_ny & r_cat{idx},c_x}]} {[tuning{rs_nn & r_cat{idx},c_x}]}];
+            SC.y_values{idx}=[{[tuning{rs_xy & r_cat{idx},c_y}]} {[tuning{rs_xn & r_cat{idx},c_y}]} {[tuning{rs_ny & r_cat{idx},c_y}]} {[tuning{rs_nn & r_cat{idx},c_y}]}];
+            SC.d_values{idx}=[{[SC.x_values{idx}{:}]} {[SC.y_values{idx}{:}]}];
+        end
+        
+    case 'VMI_as_color'
+        SC.markers={'o', '>', '^', 'o'};
+        SC.filled={'filled', 'filled', 'filled', ''};
+        VM_values=[tuning{row_valid,c_VM}];
+        VM_values=round((VM_values+1)/2*255);
+        
+        for idx=1:numel(r_cat)
+            SC.markers=[SC.markers {'o', '>', '^', 'o'}];
+            SC.filled=[SC.filled {'filled', 'filled', 'filled', ''}];
+            SC.colors=[SC.colors {VM_values(rs_xy(row_valid) & r_cat{idx}(row_valid))} {VM_values(rs_xn(row_valid) & r_cat{idx}(row_valid))} {VM_values(rs_ny(row_valid) & r_cat{idx}(row_valid))} {VM_values(rs_nn(row_valid) & r_cat{idx}(row_valid))}];
+            SC.hist_colors{1}{idx}=cat_colors{idx};
+            SC.hist_colors{2}{idx}=cat_colors{idx};
+            SC.hist_colors{3}{idx}=cat_colors{idx};
+            SC.x_values{idx}=[{[tuning{rs_xy & r_cat{idx},c_x}]} {[tuning{rs_xn & r_cat{idx},c_x}]} {[tuning{rs_ny & r_cat{idx},c_x}]} {[tuning{rs_nn & r_cat{idx},c_x}]}];
+            SC.y_values{idx}=[{[tuning{rs_xy & r_cat{idx},c_y}]} {[tuning{rs_xn & r_cat{idx},c_y}]} {[tuning{rs_ny & r_cat{idx},c_y}]} {[tuning{rs_nn & r_cat{idx},c_y}]}];
+            SC.d_values{idx}=[{[SC.x_values{idx}{:}]} {[SC.y_values{idx}{:}]}];
+        end
+        colormap([(1:1:255)' zeros(255,1) (255:-1:1)']/255)
+        
+    case 'category_as_color'
+        for idx=1:numel(r_cat)
+            SC.markers=[SC.markers {'o', '>', '^', 'o'}];
+            SC.filled=[SC.filled {'filled', 'filled', 'filled', ''}];
+            SC.colors=[SC.colors cat_colors(idx) cat_colors(idx) cat_colors(idx) cat_colors(idx)];
+            SC.hist_colors{1}{idx}=cat_colors{idx};
+            SC.hist_colors{2}{idx}=cat_colors{idx};
+            SC.hist_colors{3}{idx}=cat_colors{idx};
+            SC.x_values{idx}=[{[tuning{rs_xy & r_cat{idx},c_x}]} {[tuning{rs_xn & r_cat{idx},c_x}]} {[tuning{rs_ny & r_cat{idx},c_x}]} {[tuning{rs_nn & r_cat{idx},c_x}]}];
+            SC.y_values{idx}=[{[tuning{rs_xy & r_cat{idx},c_y}]} {[tuning{rs_xn & r_cat{idx},c_y}]} {[tuning{rs_ny & r_cat{idx},c_y}]} {[tuning{rs_nn & r_cat{idx},c_y}]}];
+            SC.d_values{idx}=[{[SC.x_values{idx}{:}]} {[SC.y_values{idx}{:}]}];
+        end
+        
+    case 'ENSU_as_color'
+        ensu_x=tuning(:,cs_x);ensu_x(~row_valid)={''};
+        ensu_y=tuning(:,cs_y);ensu_y(~row_valid)={''};
+        rE_x=ismember(ensu_x,'en') & row_valid;
+        rE_y=ismember(ensu_y,'en')  & row_valid;
+        rS_x=ismember(ensu_x,'su')  & row_valid;
+        rS_y=ismember(ensu_y,'su')  & row_valid;
+        
+        SC.markers={'o', 'o', '>', 'o', 'o', '>', '^', '^', 'o'};
+        SC.colors={'r', 'm', 'r', 'c', 'b', 'b', 'r', 'b', [0.5 0.5 0.5]};
+        SC.filled={'filled', 'filled', 'filled', 'filled', 'filled', 'filled', 'filled', 'filled', ''};
+        
+        SC.hist_colors{1}={'r', 'b', [0.5 0.5 0.5]};
+        SC.hist_colors{2}={'r', 'b', [0.5 0.5 0.5]};
+        SC.hist_colors{3}={'r', 'b', 'm', 'c', [0.5 0.5 0.5]};
+        
+        SC.x_values(:,1) =[{{[tuning{rs_xy & rE_x & rE_y,c_x}]}} {{[tuning{rs_xy & rE_x & rS_y,c_x}]}} {{[tuning{rs_xn & rE_x,c_x}]}}]; % x red (y red/blue/black)
+        SC.x_values(:,2) =[{{[tuning{rs_xy & rS_x & rE_y,c_x}]}} {{[tuning{rs_xy & rS_x & rS_y,c_x}]}} {{[tuning{rs_xn & rS_x,c_x}]}}]; % x blue (y red/blue/black)
+        SC.x_values(:,3) =[{{[tuning{rs_ny & rE_y,c_x}]}}        {{[tuning{rs_ny & rS_y,c_x}]}}        {{[tuning{rs_nn,c_x}]}}]; % x black (y red/blue/black)
+        SC.y_values(1,:)=[{{[tuning{rs_xy & rE_x & rE_y,c_y}]}} {{[tuning{rs_xy & rS_x & rE_y,c_y}]}} {{[tuning{rs_ny & rE_y,c_y}]}}]; % y red (x red/blue/black)
+        SC.y_values(2,:)=[{{[tuning{rs_xy & rE_x & rS_y,c_y}]}} {{[tuning{rs_xy & rS_x & rS_y,c_y}]}} {{[tuning{rs_ny & rS_y,c_y}]}}]; % x blue (x red/blue/black)
+        SC.y_values(3,:)=[{{[tuning{rs_xn & rE_x,c_y}]}}        {{[tuning{rs_xn & rS_x,c_y}]}}        {{[tuning{rs_nn,c_y}]}}]; % x black (x red/blue/black)
+        
+        r_any_EN=rs_xy & rE_x & rE_y | rs_xn & rE_x | rs_ny & rE_y;
+        r_any_SU=rs_xy & rS_x & rS_y | rs_xn & rS_x | rs_ny & rS_y;
+        SC.d_values{1}= [{[tuning{r_any_EN,c_x}]}  {[tuning{r_any_EN,c_y}]}];
+        SC.d_values{2}= [{[tuning{r_any_SU,c_x}]}  {[tuning{r_any_SU,c_y}]}];
+        SC.d_values{3}= [{[tuning{rs_xy & rE_x & rS_y,c_x}]}  {[tuning{rs_xy & rE_x & rS_y,c_y}]}];
+        SC.d_values{4}= [{[tuning{rs_xy & rS_x & rE_y,c_x}]}  {[tuning{rs_xy & rS_x & rE_y,c_y}]}];
+        SC.d_values{5}= [{[tuning{rs_nn,c_x}]}  {[tuning{rs_nn,c_y}]}];
+        
+end
+
+%FR_index_handle = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_1_title);
+
+subplot(1,2,1)
+scatter_with_histograms(SC)
+xlabel(x_label,'interpreter','none');
+ylabel(y_label,'interpreter','none');
+if strcmp(keys.SC.color_option,'VMI_as_color')
+    colorbar('yTick',[0,63,127,190,255],'yTickLabel',[-1,-0.5,0,0.5,1]); % doesnt work??
+end
+
+axes_limits=get(gca,'xlim'); %% xlim, but not ylim?
+if keys.SC.logarithmic_scale %log scale strikes back
+    realmax=exp(max(abs(axes_limits)))-1;
+    log_axes_values=0:round(realmax/5):realmax;
+    log_axes_ticks=log(log_axes_values+1);
+    log_axes_values=[-1*fliplr(log_axes_values(2:end)) log_axes_values];
+    log_axes_ticks=[-1*fliplr(log_axes_ticks(2:end)) log_axes_ticks];
+    set(gca,'xtick',log_axes_ticks,'xticklabel',log_axes_values,'ytick',log_axes_ticks,'yticklabel',log_axes_values);
+    % resetting table entries
+    tuning(row_valid,c_x)=   temp_x_nonempty;
+    tuning(row_valid,c_y)=   temp_y_nonempty;
+end
+
+
+if ~isempty(keys.SC.hist_column)
+    %% add histogram for separately defined parameter
     
-row_monkey=ismember(monkeys,unique_monkeys{m})& nonemptyidx;
-row_monkey_all=ismember(monkeys,unique_monkeys{m});
-row_signifixy       = row_signifix &  row_signifiy &[false;row_monkey];
-row_signifixn       = row_signifix & ~row_signifiy&[false;row_monkey];
-row_signifiny       =~row_signifix &  row_signifiy&[false;row_monkey];
-row_signifixn_all   = row_signifix & [false;row_monkey_all];
-row_signifiny_all   = row_signifiy & [false;row_monkey_all];
-row_signifinn       =~row_signifix & ~row_signifiy&[false;row_monkey];
-row_signifany       = (row_signifix |  row_signifiy)&[false;row_monkey];
-
-current_color=keys.monkey_colors(m,:);
-scatter([tuning_per_unit_table{row_signifixy,col_scatterx}],[tuning_per_unit_table{row_signifixy,col_scattery}],100,current_color,'o','filled');
-scatter([tuning_per_unit_table{row_signifixn,col_scatterx}],[tuning_per_unit_table{row_signifixn,col_scattery}],100,current_color,'>','filled');
-scatter([tuning_per_unit_table{row_signifiny,col_scatterx}],[tuning_per_unit_table{row_signifiny,col_scattery}],100,current_color,'^','filled');
-scatter([tuning_per_unit_table{row_signifinn,col_scatterx}],[tuning_per_unit_table{row_signifinn,col_scattery}],100,current_color,'o');
-
-yvalues=[tuning_per_unit_table{[false;row_monkey],col_scattery}]';
-xvalues=[tuning_per_unit_table{[false;row_monkey],col_scatterx}]';
-yvalues_all=[tuning_per_unit_table{[false;row_monkey_all],col_scattery}]';
-xvalues_all=[tuning_per_unit_table{[false;row_monkey_all],col_scatterx}]';
-yvalues_sig=[tuning_per_unit_table{row_signifiy&[false;row_monkey],col_scattery}]';
-xvalues_sig=[tuning_per_unit_table{row_signifix&[false;row_monkey],col_scatterx}]';
-yvalues_sig_all=[tuning_per_unit_table{row_signifixn_all,col_scattery}]';
-xvalues_sig_all=[tuning_per_unit_table{row_signifiny_all,col_scatterx}]';
-
-[~,p_yvalues]=ttest(yvalues);
-[~,p_xvalues]=ttest(xvalues);
-[~,p_yvalues_all]=ttest(yvalues_all);
-[~,p_xvalues_all]=ttest(xvalues_all);
-[~,p_yvalues_sig]=ttest(yvalues_sig);
-[~,p_xvalues_sig]=ttest(xvalues_sig);
-[~,p_yvalues_sig_all]=ttest(yvalues_sig_all);
-[~,p_xvalues_sig_all]=ttest(xvalues_sig_all);
-
-Psf=polyfit([tuning_per_unit_table{row_signifany,col_scatterx}],[tuning_per_unit_table{row_signifany,col_scattery}],1);
-sline=refline(Psf(1),Psf(2));set(sline,'Color',current_color,'LineWidth',2);
-[Rs,Ps]=corr([tuning_per_unit_table{row_signifany,col_scatterx}]',[tuning_per_unit_table{row_signifany,col_scattery}]');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-0)*diff(y_lim)/20,['SIG: R= ' num2str(Rs) ', P= ' num2str(Ps)],'color',current_color);
-
-Pnf=polyfit(xvalues,yvalues,1);
-sline=refline(Pnf(1),Pnf(2));set(sline,'Color',current_color,'linestyle',':','LineWidth',2);
-[Ra,Pa]=corr(xvalues,yvalues);
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-1)*diff(y_lim)/20,['ALL: R= ' num2str(Ra) ', P= ' num2str(Pa)],'color',current_color);
-
-
-
-meansstds           =sprintf('plotted: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues),nanstd(yvalues),p_yvalues,nanmean(xvalues),nanstd(xvalues),p_xvalues);
-meansstds_all       =sprintf('ALL: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues_all),nanstd(yvalues_all),p_yvalues_all,nanmean(xvalues_all),nanstd(xvalues_all),p_xvalues_all);
-meansstds_sig       =sprintf('sig: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues_sig),nanstd(yvalues_sig),p_yvalues_sig,nanmean(xvalues_sig),nanstd(xvalues_sig),p_xvalues_sig);
-meansstds_sig_all   =sprintf('SIG_ALL: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues_sig_all),nanstd(yvalues_sig_all),p_yvalues_sig_all,nanmean(xvalues_sig_all),nanstd(xvalues_sig_all),p_xvalues_sig_all);
-
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-4)*diff(y_lim)/20,meansstds,'color',current_color,'interpreter','none');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-5)*diff(y_lim)/20,meansstds_all,'color',current_color,'interpreter','none');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-2)*diff(y_lim)/20,meansstds_sig,'color',current_color,'interpreter','none');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-3)*diff(y_lim)/20,meansstds_sig_all,'color',current_color,'interpreter','none');
-end
-xlabel(x_label,'interpreter','none');
-ylabel(y_label,'interpreter','none');
-axis square;
-
-title_and_save(FR_index_handle,plot_1_title,plot_1_title,keys);
-
-%% figure 2
-
-x_label=[keys.SX.instructed_choice '_' keys.SX.epoch '_' keys.SX.parameter '_IX_' keys.SX.dataset '_' keys.SX.case ];
-y_label=[keys.SY.instructed_choice '_' keys.SY.epoch '_' keys.SY.parameter '_IX_' keys.SY.dataset '_' keys.SY.case ];
-
-col_scatterx   =find_column_index(tuning_per_unit_table,[keys.SX.instructed_choice '_' keys.SX.epoch '_' keys.SX.parameter '_IX_' keys.SX.dataset '_' keys.SX.case ] );
-col_scattery   =find_column_index(tuning_per_unit_table,[keys.SY.instructed_choice '_' keys.SY.epoch '_' keys.SY.parameter '_IX_' keys.SY.dataset '_' keys.SY.case ] );
-   
-% col_signifix   =find_column_index(tuning_per_unit_table,[keys.SX.instructed_choice '_' keys.SX.epoch '_' keys.SX.parameter '_' keys.SX.dataset '_' keys.SX.case ] );
-% col_signifiy   =find_column_index(tuning_per_unit_table,[keys.SY.instructed_choice '_' keys.SY.epoch '_' keys.SY.parameter '_' keys.SY.dataset '_' keys.SY.case ] );
-% 
-% row_signifix   =[false; cellfun(@(x) ~strcmp(x,'-'),tuning_per_unit_table(2:end,col_signifix))];
-% row_signifiy   =[false; cellfun(@(x) ~strcmp(x,'-'),tuning_per_unit_table(2:end,col_signifiy))];
-
-plot_1_title            = [fig_title  ' FR_index'];
-FR_index_handle = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_1_title);
-x_lim=[-1,1];
-y_lim=[-1,1];
-hold on
-line(x_lim,[0 0],'color','k','linestyle','-');
-line([0 0],y_lim,'color','k','linestyle','-');
-set(gca,'ylim',y_lim,'xlim',x_lim);
-nonemptyidx=~cellfun(@isempty,tuning_per_unit_table(2:end,col_scatterx)) & ~cellfun(@isempty,tuning_per_unit_table(2:end,col_scattery));  
-for m=1:numel(unique_monkeys)
-  
-row_monkey=ismember(monkeys,unique_monkeys{m})& nonemptyidx;
-row_monkey_all=ismember(monkeys,unique_monkeys{m});
-row_signifixy  = row_signifix &  row_signifiy &[false;row_monkey];
-row_signifixn  = row_signifix & ~row_signifiy&[false;row_monkey];
-row_signifixn_all   = row_signifix & [false;row_monkey_all];
-row_signifiny_all   = row_signifiy & [false;row_monkey_all];
-row_signifiny  =~row_signifix &  row_signifiy&[false;row_monkey];
-row_signifinn  =~row_signifix & ~row_signifiy&[false;row_monkey];
-row_signifany  = (row_signifix |  row_signifiy)&[false;row_monkey];
-
-
-yvalues=[tuning_per_unit_table{[false;row_monkey],col_scattery}]';
-xvalues=[tuning_per_unit_table{[false;row_monkey],col_scatterx}]';
-yvalues_all=[tuning_per_unit_table{[false;row_monkey_all],col_scattery}]';
-xvalues_all=[tuning_per_unit_table{[false;row_monkey_all],col_scatterx}]';
-yvalues_sig=[tuning_per_unit_table{row_signifiy&[false;row_monkey],col_scattery}]';
-xvalues_sig=[tuning_per_unit_table{row_signifix&[false;row_monkey],col_scatterx}]';
-yvalues_sig_all=[tuning_per_unit_table{row_signifixn_all,col_scattery}]';
-xvalues_sig_all=[tuning_per_unit_table{row_signifiny_all,col_scatterx}]';
-
-[~,p_yvalues]=ttest(yvalues);
-[~,p_xvalues]=ttest(xvalues);
-[~,p_yvalues_all]=ttest(yvalues_all);
-[~,p_xvalues_all]=ttest(xvalues_all);
-[~,p_yvalues_sig]=ttest(yvalues_sig);
-[~,p_xvalues_sig]=ttest(xvalues_sig);
-[~,p_yvalues_sig_all]=ttest(yvalues_sig_all);
-[~,p_xvalues_sig_all]=ttest(xvalues_sig_all);
-
-current_color=keys.monkey_colors(m,:);
-scatter([tuning_per_unit_table{row_signifixy,col_scatterx}],[tuning_per_unit_table{row_signifixy,col_scattery}],100,current_color,'o','filled');
-scatter([tuning_per_unit_table{row_signifixn,col_scatterx}],[tuning_per_unit_table{row_signifixn,col_scattery}],100,current_color,'>','filled');
-scatter([tuning_per_unit_table{row_signifiny,col_scatterx}],[tuning_per_unit_table{row_signifiny,col_scattery}],100,current_color,'^','filled');
-scatter([tuning_per_unit_table{row_signifinn,col_scatterx}],[tuning_per_unit_table{row_signifinn,col_scattery}],100,current_color,'o');
-
-Psf=polyfit([tuning_per_unit_table{row_signifany,col_scatterx}],[tuning_per_unit_table{row_signifany,col_scattery}],1);
-sline=refline(Psf(1),Psf(2));set(sline,'Color',current_color,'LineWidth',2);
-[Rs,Ps]=corr([tuning_per_unit_table{row_signifany,col_scatterx}]',[tuning_per_unit_table{row_signifany,col_scattery}]');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m)*diff(y_lim)/20,['SIG: R= ' num2str(Rs) ', P= ' num2str(Ps)],'color',current_color);
-
-Pnf=polyfit(xvalues,yvalues,1);
-sline=refline(Pnf(1),Pnf(2));set(sline,'Color',current_color,'linestyle',':','LineWidth',2);
-[Ra,Pa]=corr(xvalues,yvalues);
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-1)*diff(y_lim)/20,['ALL: R= ' num2str(Ra) ', P= ' num2str(Pa)],'color',current_color);
-
-meansstds           =sprintf('plotted: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues),nanstd(yvalues),p_yvalues,nanmean(xvalues),nanstd(xvalues),p_xvalues);
-meansstds_all       =sprintf('ALL: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues_all),nanstd(yvalues_all),p_yvalues_all,nanmean(xvalues_all),nanstd(xvalues_all),p_xvalues_all);
-meansstds_sig       =sprintf('sig: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues_sig),nanstd(yvalues_sig),p_yvalues_sig,nanmean(xvalues_sig),nanstd(xvalues_sig),p_xvalues_sig);
-meansstds_sig_all   =sprintf('SIG_ALL: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues_sig_all),nanstd(yvalues_sig_all),p_yvalues_sig_all,nanmean(xvalues_sig_all),nanstd(xvalues_sig_all),p_xvalues_sig_all);
-
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-4)*diff(y_lim)/20,meansstds,'color',current_color,'interpreter','none');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-5)*diff(y_lim)/20,meansstds_all,'color',current_color,'interpreter','none');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-2)*diff(y_lim)/20,meansstds_sig,'color',current_color,'interpreter','none');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-3)*diff(y_lim)/20,meansstds_sig_all,'color',current_color,'interpreter','none');
-end
-
-
-
-
-row_monkey=nonemptyidx;
-row_signifixn_all   = row_signifix;
-row_signifiny_all   = row_signifiy;
-row_signifany  = (row_signifix |  row_signifiy)&[false;row_monkey];
-
-
-yvalues=[tuning_per_unit_table{[false;row_monkey],col_scattery}]';
-xvalues=[tuning_per_unit_table{[false;row_monkey],col_scatterx}]';
-yvalues_all=[tuning_per_unit_table{2:end,col_scattery}]';
-xvalues_all=[tuning_per_unit_table{2:end,col_scatterx}]';
-yvalues_sig=[tuning_per_unit_table{ row_signifiy&[false;row_monkey],col_scattery}]';
-xvalues_sig=[tuning_per_unit_table{ row_signifix&[false;row_monkey],col_scatterx}]';
-yvalues_sig_all=[tuning_per_unit_table{row_signifixn_all,col_scattery}]';
-xvalues_sig_all=[tuning_per_unit_table{row_signifiny_all,col_scatterx}]';
-
-[~,p_yvalues]=ttest(yvalues);
-[~,p_xvalues]=ttest(xvalues);
-[~,p_yvalues_all]=ttest(yvalues_all);
-[~,p_xvalues_all]=ttest(xvalues_all);
-[~,p_yvalues_sig]=ttest(yvalues_sig);
-[~,p_xvalues_sig]=ttest(xvalues_sig);
-[~,p_yvalues_sig_all]=ttest(yvalues_sig_all);
-[~,p_xvalues_sig_all]=ttest(xvalues_sig_all);
-m=3;
-[Ra,Pa]=corr(xvalues,yvalues);
-[Rs,Ps]=corr([tuning_per_unit_table{row_signifany,col_scatterx}]',[tuning_per_unit_table{row_signifany,col_scattery}]');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m)*diff(y_lim)/20,['SIG: R= ' num2str(Rs) ', P= ' num2str(Ps)],'color','k');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-1)*diff(y_lim)/20,['ALL: R= ' num2str(Ra) ', P= ' num2str(Pa)],'color','k');
-
-meansstds           =sprintf('plotted: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues),nanstd(yvalues),p_yvalues,nanmean(xvalues),nanstd(xvalues),p_xvalues);
-meansstds_all       =sprintf('ALL: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues_all),nanstd(yvalues_all),p_yvalues_all,nanmean(xvalues_all),nanstd(xvalues_all),p_xvalues_all);
-meansstds_sig       =sprintf('sig: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues_sig),nanstd(yvalues_sig),p_yvalues_sig,nanmean(xvalues_sig),nanstd(xvalues_sig),p_xvalues_sig);
-meansstds_sig_all   =sprintf('SIG_ALL: mean^ %.3f ,std^ %.3f, p^: %.3f, mean> %.3f ,std> %.3f, p>: %.3f',nanmean(yvalues_sig_all),nanstd(yvalues_sig_all),p_yvalues_sig_all,nanmean(xvalues_sig_all),nanstd(xvalues_sig_all),p_xvalues_sig_all);
-
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-4)*diff(y_lim)/20,meansstds,'color','k','interpreter','none');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-5)*diff(y_lim)/20,meansstds_all,'color','k','interpreter','none');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-2)*diff(y_lim)/20,meansstds_sig,'color','k','interpreter','none');
-text(x_lim(1)+diff(x_lim)/20,y_lim(2)-(6*m-3)*diff(y_lim)/20,meansstds_sig_all,'color','k','interpreter','none');
-
-xlabel(x_label,'interpreter','none');
-ylabel(y_label,'interpreter','none');
-axis square;
-
-title_and_save(FR_index_handle,plot_1_title,plot_1_title,keys);
-
-
-
-function title_and_save(figure_handle,filename,plot_title,keys)
-mtit(figure_handle,  plot_title, 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
-stampit;
-
-if keys.create_pdfs
-    switch keys.append_pdfs
-        case 0
-            export_fig([keys.path_to_save, filename], '-pdf','-transparent') % pdf by run
-        case 1
-            export_fig([keys.path_to_save,filename '_appended batches'], '-pdf', '-append','-transparent') % pdf by run
+    subplot(1,2,2);
+    hold on;
+    switch keys.SC.color_option
+        case 'monkeys_by_color'
+        case 'FR_as_color'
+            for idx=1:numel(r_cat)
+                hist_values{idx}=[tuning{r_cat{idx},c_h}];
+                hist_colors{idx}=cat_colors{idx};
+            end
+        case 'VMI_as_color'
+            for idx=1:numel(r_cat)
+                hist_values{idx}=[tuning{r_cat{idx},c_h}];
+                hist_colors{idx}=cat_colors{idx};
+            end
+        case 'category_as_color'
+            for idx=1:numel(r_cat)
+                hist_values{idx}=[tuning{r_cat{idx},c_h}];
+                hist_colors{idx}=cat_colors{idx};
+            end
     end
-    close all
+    minmax=[min([hist_values{:}]) max([hist_values{:}])];
+    minmax=[-1*max(abs(minmax)) max(abs(minmax))];
+    bins=minmax(1):diff(minmax)/20:minmax(2);
+    hprev=zeros(size(bins));
+    for idx=1:numel(hist_values)
+        h=hist(hist_values{idx},bins)+hprev;
+        mean_val{idx}=nanmean(hist_values{idx});
+        [~,p_val{idx}]=ttest(hist_values{idx});
+        Ns{idx}=numel(hist_values{idx});
+        hb=bar(bins,h,'FaceColor',hist_colors{idx});
+        uistack(hb,'bottom');
+        hprev=h;
+    end
+    mean_val{idx+1}=nanmean([hist_values{:}]);
+    [~,p_val{idx+1}]=ttest([hist_values{:}]);
+    Ns{idx+1}=numel([hist_values{:}]);
+    hist_colors{idx+1}='k';
+    y_lim=get(gca,'ylim');
+    x_lim=get(gca,'xlim');
+    
+    row_inc=-1*diff(y_lim)/40;
+    col_inc=diff(x_lim)/10;
+    row_start=y_lim(2)+row_inc;
+    col_start=x_lim(1)+col_inc;
+    text(col_start,row_start,          'N=','color','k');
+    text(col_start,row_start+row_inc,  'M=','color','k');
+    text(col_start,row_start+2*row_inc,'p=','color','k');
+    for idx=1:numel(mean_val)
+        text(col_start+col_inc*idx,row_start,          sprintf('%d',  Ns{idx}),       'color',hist_colors{idx});
+        text(col_start+col_inc*idx,row_start+row_inc,  sprintf('%0.2f',mean_val{idx}),'color',hist_colors{idx});
+        text(col_start+col_inc*idx,row_start+2*row_inc,sprintf('%0.3f',p_val{idx}),   'color',hist_colors{idx});
+        line([mean_val{idx} mean_val{idx}],y_lim,'linestyle',':','color',hist_colors{idx})
+    end
+    
+    ylabel('N units');
+    xlabel(keys.SC.hist_column,'interpreter','none');
+    
 end
 
+ph_title_and_save(FR_index_handle,plot_1_title,plot_1_title,keys);
 
-% function xlsx_table = get_mat_table(keys)
-% xlsx_table={};
-% load(keys.table_full_path);
-% tuning_per_unit_table=LR_to_CI(tuning_per_unit_table);
-% tuning_per_unit_table=tuning_per_unit_table;
-% tuning_per_unit_table=tuning_per_unit_table;
-% tuning_per_unit_table(cellfun(@isempty,tuning_per_unit_table))={''};
-% tuning_per_unit_table(cellfun(@isempty,tuning_per_unit_table))={NaN};
+
+% function title_and_save(figure_handle,filename,plot_title,keys)
+% mtit(figure_handle,  plot_title, 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
+% stampit;
 % 
+% wanted_size=[50 30];
+% set(figure_handle, 'Paperunits','centimeters','PaperSize', wanted_size,'PaperPositionMode', 'manual','PaperPosition', [0 0 wanted_size])
+% if keys.plot.export
+%     export_fig([keys.path_to_save, filename], '-pdf','-transparent') % pdf by run
+%     close all
+% end
+
 
