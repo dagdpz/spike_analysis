@@ -311,7 +311,7 @@ for tye=1:size(type_effectors,1)
             norm_factor(u,:)=deal(max([norm_factor(u,:) 0])); % now we always normalize to maximum condition, 0 makes sure some value is there..
             %% correct normalization factors if they are too low
             if any(norm_factor(u,:)<1)
-                baseline=baseline+1-nanmean(norm_factor(u,:));
+                
                 norm_factor(u,:)=deal(1);
             end
             

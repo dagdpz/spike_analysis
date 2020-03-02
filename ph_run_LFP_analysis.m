@@ -53,7 +53,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     %
     %     for m=1:numel(keys.batching.monkeys)
     %         keys.monkey=keys.batching.monkeys{m};
-    keys.anova_table_file=[keys.drive '\Projects\' project '\ephys\' keys.project_version '\tuning_table_combined_CI.mat'];
+    keys.anova_table_file=[keys.basepath_to_save keys.project_version filesep 'tuning_table_combined_CI.mat'];
     %         if any(ismember(population_analysis_to_perform,{'ons','pop','gaz'}))
     %             population=ph_load_population([keys.drive filesep keys.basepath_to_save filesep keys.project_version],['population_' keys.monkey]);
     %             population=ph_assign_perturbation_group(keys,population);
@@ -77,7 +77,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         keys.arrangement=keys.position_and_plotting_arrangements{a};
         
         spike_field=compute_per_session(keys);
-        save([keys.drive filesep keys.basepath_to_save filesep keys.project_version filesep 'spike_field_' keys.arrangement '_' keys.spike_field.method],'spike_field','keys');
+        save([keys.basepath_to_save keys.project_version filesep 'spike_field_' keys.arrangement '_' keys.spike_field.method],'spike_field','keys');
         
     end
     %             end

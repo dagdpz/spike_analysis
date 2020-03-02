@@ -1,5 +1,5 @@
 function ph_format_tuning_table(tuning_per_unit_table,keys)
-keys.tuning_table_foldername    =[keys.drive filesep keys.basepath_to_save filesep keys.project_version];
+keys.tuning_table_foldername    =[keys.basepath_to_save keys.project_version];
 tuning_per_unit_table           =ph_add_Subregions_to_table(tuning_per_unit_table,keys.batching.Subregions);
 tuning_per_unit_table           =convert_LR_to_CI(tuning_per_unit_table);
 save([keys.tuning_table_foldername filesep 'tuning_table_combined_CI'],'tuning_per_unit_table')

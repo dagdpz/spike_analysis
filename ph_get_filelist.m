@@ -15,7 +15,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     run(keys.version_specific_settings);
     keys.project_version=version_folder;
     
-    keys.folder_to_save=[keys.drive filesep keys.basepath_to_save filesep keys.project_version];
+    keys.folder_to_save=[keys.basepath_to_save keys.project_version];
     keys.subfolder_prefix='scatter';
     
     filelist=struct;
@@ -27,9 +27,9 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         for tt=1:numel( keys.tt.tasktypes)
             for m=1:numel(keys.batching.monkeys)
                 keys.monkey=keys.batching.monkeys{m};
-                keys.anova_table_file=[keys.drive '\Projects\' project '\ephys\' keys.project_version '\tuning_table_combined_CI.mat'];
+                keys.anova_table_file=[keys.basepath_to_save keys.project_version '\tuning_table_combined_CI.mat'];
                 if nargin<3
-                    population=ph_load_population([keys.drive filesep keys.basepath_to_save filesep keys.project_version],['population_' keys.monkey]);
+                    population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
                 else
                     population=varargin{3};
                 end

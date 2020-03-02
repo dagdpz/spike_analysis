@@ -42,14 +42,14 @@ end
 keys = get_sorting_table(keys);
 
 %% folder creation
-keys.path_to_save=[keys.drive filesep keys.basepath_to_save filesep keys.project_version filesep];
+keys.path_to_save=[keys.basepath_to_save keys.project_version filesep];
 if ~exist(keys.path_to_save,'dir')
-    mkdir([keys.drive filesep keys.basepath_to_save], keys.project_version);
+    mkdir([keys.basepath_to_save], keys.project_version);
 end
-if ~exist([keys.path_to_save filesep 'single_cell_examples'],'dir')
+if ~exist([keys.path_to_save 'single_cell_examples'],'dir')
     mkdir(keys.path_to_save, 'single_cell_examples');
 end
-if ~exist([keys.path_to_save filesep 'spike_shapes'],'dir')
+if ~exist([keys.path_to_save 'spike_shapes'],'dir')
     mkdir(keys.path_to_save, 'spike_shapes');
 end
 

@@ -975,7 +975,7 @@ mtit(gcf,[keys.monkey ' ' [keys.CC.tasktypes{:}] ' ' [keys.CC.plot_type] ' ' key
 wanted_size=[50 30];
 set(gcf, 'Paperunits','centimeters','PaperSize', wanted_size,'PaperPositionMode', 'manual','PaperPosition', [0 0 wanted_size])
 
-folder_to_save=[keys.drive filesep keys.basepath_to_save filesep keys.project_version];
+folder_to_save=[keys.basepath_to_save keys.project_version];
 if ~exist([folder_to_save filesep keys.subfolder_to_save],'dir');
     mkdir(folder_to_save,keys.subfolder_to_save);
 end

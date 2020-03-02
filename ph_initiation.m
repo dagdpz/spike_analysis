@@ -52,8 +52,8 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     if exist(keys.additional_settings,'file')
         run(keys.additional_settings)
     end
-    if ~exist([keys.drive filesep keys.basepath_to_save filesep keys.project_version filesep],'dir')
-        mkdir([keys.drive filesep keys.basepath_to_save], keys.project_version);
+    if ~exist([keys.basepath_to_save keys.project_version filesep],'dir')
+        mkdir(keys.basepath_to_save, keys.project_version);
     end
     user=getUserName;
     dropboxpath=['C:\Users\' user '\Dropbox'];
@@ -64,22 +64,22 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         keys.date=keys.(monkey).date;
         keys.monkey                     =[monkey '_phys'];
         keys.sorted_neurons_foldername  =[dropboxpath '\DAG\phys\' monkey '_phys_dpz'];
-        keys.tuning_table_foldername    =[keys.drive filesep keys.basepath_to_save filesep keys.project_version];
+        keys.tuning_table_foldername    =[keys.basepath_to_save keys.project_version filesep];
         keys.tuning_table_filename      =['tuning_table_combined'];
-        keys.population_foldername      =[keys.drive filesep keys.basepath_to_save filesep keys.project_version];
+        keys.population_foldername      =[keys.basepath_to_save keys.project_version filesep];
         keys.population_filename        =['population_' monkey];
         keys.sites_filename             =['sites_' monkey];
         keys.filelist_formatted         =keys.(monkey).filelist_formatted;
-        if exist([keys.tuning_table_foldername filesep keys.tuning_table_filename '.mat'],'file')
-            load([keys.tuning_table_foldername filesep keys.tuning_table_filename '.mat']);
+        if exist([keys.tuning_table_foldername keys.tuning_table_filename '.mat'],'file')
+            load([keys.tuning_table_foldername keys.tuning_table_filename '.mat']);
             keys.tuning_per_unit_table=tuning_per_unit_table;
         else
             keys.tuning_per_unit_table= {'unit_ID'};
         end
         keys_out                        =ph_session_processing(keys); %% error here for flaff?
         tuning_per_unit_table               =keys_out.tuning_per_unit_table;
-        save([keys.drive filesep keys.basepath_to_save filesep keys.project_version filesep 'keys_' monkey],'keys_out');
-        save([keys.tuning_table_foldername filesep keys.tuning_table_filename],'tuning_per_unit_table');
+        save([keys.basepath_to_save keys.project_version filesep 'keys_' monkey],'keys_out');
+        save([keys.tuning_table_foldername keys.tuning_table_filename],'tuning_per_unit_table');
     end
     ph_format_tuning_table(tuning_per_unit_table,keys);
 end

@@ -14,9 +14,9 @@ Right_hemisphere_targets={'dPulv_r','MIP_R'};
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
-keys.path_to_save=[keys.drive filesep keys.basepath_to_save filesep keys.project_version filesep 'correlation_analysis' filesep];
+keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'correlation_analysis' filesep];
 if ~exist(keys.path_to_save,'dir')
-    mkdir([keys.drive filesep keys.basepath_to_save filesep keys.project_version ], 'correlation_analysis');
+    mkdir([keys.basepath_to_save keys.project_version ], 'correlation_analysis');
 end
 
 

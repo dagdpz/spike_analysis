@@ -24,8 +24,8 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
-        keys.anova_table_file=[keys.drive '\Projects\' project '\ephys\' keys.project_version '\tuning_table_combined_CI.mat'];
-        population=ph_load_population([keys.drive filesep keys.basepath_to_save filesep keys.project_version],['population_' keys.monkey]);
+        keys.anova_table_file=[keys.basepath_to_save keys.project_version filesep 'tuning_table_combined_CI.mat'];
+        population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
         population=ph_assign_perturbation_group(keys,population);
         population=ph_epochs(population,keys);
         
@@ -208,7 +208,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
                 set(figure_handle, 'Paperunits','centimeters','PaperSize', wanted_size,'PaperPositionMode', 'manual','PaperPosition', [0 0 wanted_size])
                 
                 
-                export_fig([keys.drive filesep keys.basepath_to_save filesep keys.project_version filesep 'scatter' filesep 'Central gaze only ' ep1 '_' ar1 '_vs_' ep2 '_' ar2 ', ' keys.FR_or_idx_central_gaze], '-pdf','-transparent') % pdf by run
+                export_fig([keys.basepath_to_save keys.project_version filesep 'scatter' filesep 'Central gaze only ' ep1 '_' ar1 '_vs_' ep2 '_' ar2 ', ' keys.FR_or_idx_central_gaze], '-pdf','-transparent') % pdf by run
                 close(gcf);
             end
         end

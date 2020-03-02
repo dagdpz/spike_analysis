@@ -1,4 +1,4 @@
-function ph_initiate_analysis(varargin)
+function ph_redo_anovas(varargin)
 keys=struct;
 project=varargin{1};
 keys=ph_general_settings(project,keys);
@@ -17,9 +17,9 @@ end
     end
     keys.version_specific_settings=[keys.db_folder project filesep keys.project_version filesep 'ph_project_version_settings.m'];
     run(keys.version_specific_settings);
-    keys.tuning_table_foldername=[keys.drive '\Projects\' project '\ephys\' keys.project_version filesep];
+    keys.tuning_table_foldername=[keys.basepath_to_save keys.project_version filesep];
     keys.tuning_table_filename='tuning_table_combined';
-    population=ph_load_population([keys.drive filesep keys.basepath_to_save filesep keys.project_version],['population_']);
+    population=ph_load_population([keys.basepath_to_save keys.project_version],['population_']);
     if ~isempty(population); population(arrayfun(@(x) isempty(x.unit_ID),population))=[]; end;
     if ~isempty(population)
         if exist([keys.tuning_table_foldername filesep keys.tuning_table_filename '.mat'],'file')
@@ -33,7 +33,7 @@ end
         population = ph_assign_perturbation_group(keys,population);       
         population = ph_epochs(population,keys);
         tuning_per_unit_table=ph_ANOVAS(population,keys); % main function
-        save([keys.tuning_table_foldername filesep keys.tuning_table_filename],'tuning_per_unit_table');
+        save([keys.tuning_table_foldername keys.tuning_table_filename],'tuning_per_unit_table');
         ph_format_tuning_table(tuning_per_unit_table,keys);
     end
 end

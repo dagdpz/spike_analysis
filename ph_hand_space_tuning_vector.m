@@ -29,13 +29,49 @@ function ph_hand_space_tuning_vector(keys)
 % keys=struct;
 % keys=ph_general_settings(project,keys);
 
+%% create colormap
+map = hsv(360);
+map = circshift(map,14);
+map2=map;
+
+%% interpolation required to reduce amount of green
+xin=[0,45,90,135,180];
+original_angles=[45, 75,135, 195,225];
+xout=0:180;
+color_values=map(original_angles,:);
+for RGB=1:size(map,2)
+    map2(original_angles(1):original_angles(end),RGB)=interp1(xin,color_values(:,RGB),xout);
+end
+map=map2;
+
+%% save colormap figure
+f_handle=figure;
+polar(0,0)
+stepsize=pi/180;
+
+for phi=1:360
+    patch_sector([0 0],0,1,(phi-1)*pi/180,phi*pi/180,stepsize,map2(phi,:))
+end
+% add vertical lines, horizontal lines and diagonals
+hold on
+sqrt_2=1/sqrt(2);
+line([0 0],[-1 1],'linestyle',':','color','w');
+line([-1 1],[0 0],'linestyle',':','color','w');
+line([-sqrt_2 sqrt_2],[-sqrt_2 sqrt_2],'linestyle',':','color','w');
+line([-sqrt_2 sqrt_2],[sqrt_2 -sqrt_2],'linestyle',':','color','w');
+axis equal
+delete(findall(gcf,'Type','text'));
+delete(findall(gcf,'Type','tick'));
+text([1 sqrt_2 0 -sqrt_2 -1 -sqrt_2 0 sqrt_2]*1.1,[0 sqrt_2 1 sqrt_2 0 -sqrt_2 -1 -sqrt_2 ]*1.1,{'CS','CHCS','CH','CHIS','IS','IHIS','IH','IHCS'},'verticalalignment','middle','horizontalalignment','center');
+ph_title_and_save(f_handle,  'colormap','colormap',keys);
+
 
 
 angles=0:pi/180:2*pi;
 x_circle=cos(angles)*0.5;
 y_circle=sin(angles)*0.5;
 phi=pi/4;
-R_mat=[sin(phi)+1i*cos(phi), -sin(phi)+1i*cos(phi), -sin(phi)-1i*cos(phi), sin(phi)-1i*cos(phi)];
+R_mat=[cos(phi)+1i*sin(phi), -cos(phi)+1i*sin(phi), -cos(phi)-1i*sin(phi), cos(phi)-1i*sin(phi)];
 %
 % keys.tt.IC_for_criterion            = 'in';
 %
@@ -84,20 +120,20 @@ for normalize_by_max_FR=0:1
         for e=1:numel(epochs)
             epoch=epochs{e};
             if ismember(1,keys.tt.perturbation)
-                A1_isch = [tuning_per_unit_table{2:end, idx.(['in_IH_CS_' epoch '_CT_FR_' tasktype])}];
-                A1_csch = [tuning_per_unit_table{2:end, idx.(['in_IH_IS_' epoch '_CT_FR_' tasktype])}];
-                A1_csih = [tuning_per_unit_table{2:end, idx.(['in_CH_IS_' epoch '_CT_FR_' tasktype])}];
-                A1_isih = [tuning_per_unit_table{2:end, idx.(['in_CH_CS_' epoch '_CT_FR_' tasktype])}];
+                A1_csih = [tuning_per_unit_table{2:end, idx.(['in_IH_CS_' epoch '_CT_FR_' tasktype])}];
+                A1_isih = [tuning_per_unit_table{2:end, idx.(['in_IH_IS_' epoch '_CT_FR_' tasktype])}];
+                A1_isch = [tuning_per_unit_table{2:end, idx.(['in_CH_IS_' epoch '_CT_FR_' tasktype])}];
+                A1_csch = [tuning_per_unit_table{2:end, idx.(['in_CH_CS_' epoch '_CT_FR_' tasktype])}];
                 
-                A2_isch = [tuning_per_unit_table{2:end, idx.(['in_IH_CS_' epoch '_PT_FR_' tasktype])}];
-                A2_csch = [tuning_per_unit_table{2:end, idx.(['in_IH_IS_' epoch '_PT_FR_' tasktype])}];
-                A2_csih = [tuning_per_unit_table{2:end, idx.(['in_CH_IS_' epoch '_PT_FR_' tasktype])}];
-                A2_isih = [tuning_per_unit_table{2:end, idx.(['in_CH_CS_' epoch '_PT_FR_' tasktype])}];
+                A2_csih = [tuning_per_unit_table{2:end, idx.(['in_IH_CS_' epoch '_PT_FR_' tasktype])}];
+                A2_isih = [tuning_per_unit_table{2:end, idx.(['in_IH_IS_' epoch '_PT_FR_' tasktype])}];
+                A2_isch = [tuning_per_unit_table{2:end, idx.(['in_CH_IS_' epoch '_PT_FR_' tasktype])}];
+                A2_csch = [tuning_per_unit_table{2:end, idx.(['in_CH_CS_' epoch '_PT_FR_' tasktype])}];
             else
-                A1_isch = [tuning_per_unit_table{2:end, idx.(['in_IH_CS_' epoch '_epoch_FR_' tasktype])}];
-                A1_csch = [tuning_per_unit_table{2:end, idx.(['in_IH_IS_' epoch '_epoch_FR_' tasktype])}];
-                A1_csih = [tuning_per_unit_table{2:end, idx.(['in_CH_IS_' epoch '_epoch_FR_' tasktype])}];
-                A1_isih = [tuning_per_unit_table{2:end, idx.(['in_CH_CS_' epoch '_epoch_FR_' tasktype])}];
+                A1_csih = [tuning_per_unit_table{2:end, idx.(['in_IH_CS_' epoch '_epoch_FR_' tasktype])}];
+                A1_isih = [tuning_per_unit_table{2:end, idx.(['in_IH_IS_' epoch '_epoch_FR_' tasktype])}];
+                A1_isch = [tuning_per_unit_table{2:end, idx.(['in_CH_IS_' epoch '_epoch_FR_' tasktype])}];
+                A1_csch = [tuning_per_unit_table{2:end, idx.(['in_CH_CS_' epoch '_epoch_FR_' tasktype])}];
                 
                 A2_isch = A1_isch;
                 A2_csch = A1_csch;
@@ -120,14 +156,16 @@ for normalize_by_max_FR=0:1
             
             
             %% rotating in right position
-            A1_mat=[A1_isch' A1_csch' A1_csih' A1_isih'];
+            A1_mat=[A1_csch' A1_isch' A1_isih' A1_csih' ];
             I1_mat=R_mat*A1_mat';
-            angles_sum=round(180/pi*angle(I1_mat))+180; angles_sum(isnan(angles_sum))=1; angles_sum(angles_sum==0)=360;
-            A2_mat=[A2_isch' A2_csch' A2_csih' A2_isih'];
+            angles_sum=round(180/pi*angle(I1_mat)); 
+            angles_sum(angles_sum<0)=angles_sum(angles_sum<0)+360; % cause angle goes from -180 to 180 degree, for indexing colors we want 0-180 be 0-180, but -180-0 be 180-360
+            angles_sum(angles_sum==0)=360; % of course there is no index 0
+            angles_sum(isnan(angles_sum))=1; % for non existing epochs...
+            A2_mat=[A2_csch' A2_isch' A2_isih' A2_csih' ];
             I2_mat=R_mat*A2_mat';
             
             %unit_IDs=tuning_per_unit_table(2:end, idx.unit_ID);
-            map = hsv(360);
             
             %% plot tuning rectangle per unit
             subplot(subplot_rows,numel(epochs),e);
@@ -151,9 +189,9 @@ for normalize_by_max_FR=0:1
             
             for k=1:length(A1_isch),
                 if ismember(1,keys.tt.perturbation)
-                    plot_diag_two_conditions([1 2 3 4],[A1_isch(k) A1_csch(k) A1_csih(k) A1_isih(k)],[1 2 3 4],[A2_isch(k) A2_csch(k) A2_csih(k) A2_isih(k)],'Marker','.','Color',map(angles_sum(k),:)); hold on
+                    plot_diag_two_conditions([1 2 3 4],[A1_csch(k) A1_isch(k) A1_isih(k) A1_csih(k) ],[1 2 3 4],[A2_csch(k) A2_isch(k)  A2_isih(k) A2_csih(k)],'Marker','.','Color',map(angles_sum(k),:)); hold on
                 else
-                    plot_diag_one_condition([1 2 3 4],[A1_isch(k) A1_csch(k) A1_csih(k) A1_isih(k)],'MarkerEdgeColor',map(angles_sum(k),:),'MarkerFaceColor','none','linestyle','none','Markersize',5,'Marker','o'); hold on
+                    plot_diag_one_condition([1 2 3 4],[A1_csch(k) A1_isch(k) A1_isih(k) A1_csih(k) ],'MarkerEdgeColor',map(angles_sum(k),:),'MarkerFaceColor','none','linestyle','none','Markersize',5,'Marker','o'); hold on
                 end
             end
             

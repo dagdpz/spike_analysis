@@ -11,11 +11,6 @@ Right_hemisphere_targets={'dPulv_r','MIP_R'};
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
-%
-% keys.path_to_save=[keys.drive filesep keys.basepath_to_save filesep keys.project_version filesep 'response timing' filesep];
-% if ~exist(keys.path_to_save,'dir')
-%     mkdir([keys.drive filesep keys.basepath_to_save filesep keys.project_version ], 'response timing');
-% end
 
 legend_labels={'NH IS IN' 'NH IS CH' 'IH IS IN' 'IH IS CH' 'CH IS IN' 'CH IS CH' 'NH CS IN' 'NH CS CH' 'IH CS IN' 'IH CS CH' 'CH CS IN' 'CH CS CH' };
 cols=keys.colors;

@@ -3,9 +3,9 @@ function ph_state_space(population,modified_keys)
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
-keys.path_to_save=[keys.drive filesep keys.basepath_to_save filesep keys.project_version filesep 'state_space_analysis' filesep];
+keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'state_space_analysis' filesep];
 if ~exist(keys.path_to_save,'dir')
-    mkdir([keys.drive filesep keys.basepath_to_save filesep keys.project_version ], 'state_space_analysis');
+    mkdir([keys.basepath_to_save keys.project_version ], 'state_space_analysis');
 end
 
 legend_labels_hf={'NH IS IN' 'NH IS CH' 'IH IS IN' 'IH IS CH' 'CH IS IN' 'CH IS CH' ...

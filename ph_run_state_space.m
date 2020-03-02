@@ -27,8 +27,8 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
-        keys.anova_table_file=[keys.drive '\Projects\' project '\ephys\' keys.project_version '\tuning_table_combined_CI.mat'];
-        population=ph_load_population([keys.drive filesep keys.basepath_to_save filesep keys.project_version],['population_' keys.monkey]);
+        keys.anova_table_file=[keys.basepath_to_save keys.project_version '\tuning_table_combined_CI.mat'];
+        population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
         population=ph_assign_perturbation_group(keys,population);
         population=ph_epochs(population,keys);
         
@@ -140,7 +140,7 @@ for P=population_analysis_to_perform
                 keys.tt.tasktypes=strcat(condition_to_plot, ['_' keys_in.arrangement(1:3)]);
             end
             
-            seed_filename=[keys.drive keys.basepath_to_save filesep keys.project_version filesep 'seed.mat'];
+            seed_filename=[keys.basepath_to_save keys.project_version filesep 'seed.mat'];
             if exist(seed_filename,'file');
                 load(seed_filename);
                 rng(seed);

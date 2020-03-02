@@ -1,4 +1,4 @@
-function ph_run_population_analysis(varargin)
+function ph_initiate_population_analysis(varargin)
 %ph_run_population_analysis('PPC_pulv_eye_hand',{'LIP_dPul_inj_working'},{'pop','ons','sct','ccs'})
 population_analysis_to_perform={'pop','beh','ons','sct','ccs','gaz','ref','gfl'}; 
 
@@ -8,7 +8,7 @@ end
 keys=struct;
 project=varargin{1};
 keys=ph_general_settings(project,keys);
-project_specific_settings=[keys.db_folder filesep project filesep 'ph_project_settings.m'];
+project_specific_settings=[keys.db_folder project filesep 'ph_project_settings.m'];
 run(project_specific_settings);
 
 if nargin>1
@@ -30,9 +30,9 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     end    
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
-        keys.anova_table_file=[keys.drive '\Projects\' project '\ephys\' keys.project_version '\tuning_table_combined_CI.mat'];
+        keys.anova_table_file=[keys.basepath_to_save keys.project_version filesep 'tuning_table_combined_CI.mat'];
         if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf'}))
-            population=ph_load_population([keys.drive filesep keys.basepath_to_save filesep keys.project_version],['population_' keys.monkey]);
+            population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
             population=ph_assign_perturbation_group(keys,population);
             population=ph_epochs(population,keys);
         else
@@ -143,7 +143,7 @@ for P=population_analysis_to_perform
                     %keys.tt.tasktypes=strcat(condition_to_plot{:}, ['_' keys.arrangement(1:3)]);
                 end
                 
-                seed_filename=[keys.drive keys.basepath_to_save filesep keys.project_version filesep 'seed.mat'];
+                seed_filename=[keys.basepath_to_save keys.project_version filesep 'seed.mat'];
                 if exist(seed_filename,'file');
                     load(seed_filename);
                     rng(seed);
@@ -204,8 +204,8 @@ end
 end
 
 function keys=ph_make_subfolder(foldername,keys)
-keys.path_to_save=[keys.drive filesep keys.basepath_to_save filesep keys.project_version filesep foldername filesep];
+keys.path_to_save=[keys.basepath_to_save keys.project_version filesep foldername filesep];
 if ~exist(keys.path_to_save,'dir')
-    mkdir([keys.drive filesep keys.basepath_to_save filesep keys.project_version ], foldername);
+    mkdir([keys.basepath_to_save keys.project_version ], foldername);
 end
 end

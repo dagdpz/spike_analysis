@@ -154,36 +154,38 @@ keys.colors.RH_CH   =[128 128 0];
 keys.colors.NH_RS_IN=[255 0 64];
 keys.colors.NH_RS_CH=[128 0 32];
 keys.colors.LH_RS_IN=[255 0 255];
-keys.colors.LH_RS_CH=[128 0 128];
-keys.colors.RH_RS_IN=[255 128 0];
-keys.colors.RH_RS_CH=[128 64 0];
+keys.colors.LH_RS_CH=[32 65 98];
+keys.colors.RH_RS_IN=[102 180 46];
+keys.colors.RH_RS_CH=[51 90 23];
 keys.colors.NH_LS_IN=[0 255 255];
 keys.colors.NH_LS_CH=[0 128 128];
-keys.colors.LH_LS_IN=[0 128 255];
-keys.colors.LH_LS_CH=[0 64 128];
-keys.colors.RH_LS_IN=[0 255 0];
-keys.colors.RH_LS_CH=[0 128 0];
+keys.colors.LH_LS_IN=[154 78 154];
+keys.colors.LH_LS_CH=[77 39 77];
+keys.colors.RH_LS_IN=[242 134 24];
+keys.colors.RH_LS_CH=[121 67 12];
 
 % population contra ipsi PSTH colors
-keys.colors.NH_CS_IN=[255 0 64];
-keys.colors.NH_CS_CH=[128 0 32];
-keys.colors.IH_CS_IN=[255 0 255];
-keys.colors.IH_CS_CH=[128 0 128];
-keys.colors.CH_CS_IN=[255 128 0];
-keys.colors.CH_CS_CH=[128 64 0];
-keys.colors.NH_IS_IN=[0 255 255];
-keys.colors.NH_IS_CH=[0 128 128];
-keys.colors.IH_IS_IN=[0 128 255];
-keys.colors.IH_IS_CH=[0 64 128];
-keys.colors.CH_IS_IN=[0 255 0];
-keys.colors.CH_IS_CH=[0 128 0];
+keys.colors.NH_CS_IN=[108 196 204];
+keys.colors.NH_CS_CH=[54 98 102];
+keys.colors.IH_CS_IN=[64 130 196];
+keys.colors.IH_CS_CH=[32 65 98];
+keys.colors.CH_CS_IN=[102 180 46];
+keys.colors.CH_CS_CH=[51 90 23];
+
+keys.colors.NH_IS_IN=[230 32 64];
+keys.colors.NH_IS_CH=[115 16 32];
+keys.colors.IH_IS_IN=[154 78 154];
+keys.colors.IH_IS_CH=[77 39 77];
+keys.colors.CH_IS_IN=[242 134 24];
+keys.colors.CH_IS_CH=[121 67 12];
+
 %% these need to be fixed somehow
 keys.colors.NH_VS_IN=[150 150 150];
 keys.colors.NH_VS_CH=[80 80 80];
-keys.colors.IH_VS_IN=[64 0 255];
-keys.colors.IH_VS_CH=[32 0 128];
-keys.colors.CH_VS_IN=[255 255 0];
-keys.colors.CH_VS_CH=[128 128 0];
+keys.colors.IH_VS_IN=[30 74 154];
+keys.colors.IH_VS_CH=[15 37 72];
+keys.colors.CH_VS_IN=[244 232 16];
+keys.colors.CH_VS_CH=[122 116 8];
 
 % population effector colors
 
