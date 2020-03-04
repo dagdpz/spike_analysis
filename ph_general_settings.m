@@ -45,7 +45,7 @@ keys.drive                  =get_dag_drive_IP;
 keys.basepath_to_save       =[keys.drive 'Projects' filesep project filesep 'ephys' filesep];
 keys.project_versions       ={''};
 spike_analysis_location     =which('ph_initiation');
-keys.db_folder              =[spike_analysis_location(1:strfind(spike_analysis_location,['spike_analysis' filesep 'ph_initiation'])-1) 'Databases' filesep 'spike_analysis' filesep];
+keys.db_folder              =[spike_analysis_location(1:strfind(spike_analysis_location,['spike_analysis' filesep 'ph_initiation'])-1) 'Settings' filesep 'spike_analysis' filesep];
 
 keys.Flaffus.sorted_neurons_filename    ='Fla_sorted_neurons';
 keys.Linus.sorted_neurons_filename      ='Lin_sorted_neurons';

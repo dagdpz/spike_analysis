@@ -139,6 +139,7 @@ for t=1:n_trials
     
     
     %% adding previous trial
+    trial(t).run_onset_time              =MA_out.states(t).run_onset_time;
     trial(t).trial_onset_time        =MA_out.states(t).trial_onset_time;
     
     if t>1 % && keys.add_previous_trial_spikes     shift_in_seconds=1;
@@ -197,6 +198,7 @@ for t=1:n_trials
         trial(t).channel(c).target               =from_excel_per_channel(c).target{1} ;
         trial(t).channel(c).dataset              =from_excel_per_channel(c).dataset{1} ;
         trial(t).channel(c).perturbation         =from_excel_per_channel(c).perturbation{1} ;
+        trial(t).channel(c).perturbation_site    =from_excel_per_channel(c).perturbation_site{1} ;
         trial(t).channel(c).site_ID              =from_excel_per_channel(c).site{1} ;        
     end
     
@@ -220,6 +222,7 @@ for t=1:n_trials
             trial(t).unit(c,u).target               =from_excel_per_unit(c,u).target{1} ;
             trial(t).unit(c,u).dataset              =from_excel_per_unit(c,u).dataset{1} ;
             trial(t).unit(c,u).perturbation         =from_excel_per_unit(c,u).perturbation{1} ;
+            trial(t).unit(c,u).perturbation_site    =from_excel_per_unit(c,u).perturbation_site{1} ;
             
             % Waveforms (cutting off ITI ??)
             wf_idx          = tr_in(t).spike_arrival_times{c,u}>0 & tr_in(t).spike_arrival_times{c,u}<MA_out.states(t).TDT_state_onsets(end-1);
@@ -253,12 +256,14 @@ idx_Target          =find_column_index(xlsx_table,'Target');
 idx_Hemisphere      =find_column_index(xlsx_table,'Hemisphere');
 idx_Set             =find_column_index(xlsx_table,'Set');
 idx_Perturbation    =find_column_index(xlsx_table,'Perturbation');
+idx_Perturbation_site    =find_column_index(xlsx_table,'Perturbation_site');
 idx_SNR             =find_column_index(xlsx_table,'SNR_rank');
 idx_Single          =find_column_index(xlsx_table,'Single_rank');
 idx_x               =find_column_index(xlsx_table,'x');
 idx_y               =find_column_index(xlsx_table,'y');
 idx_Electrode_depth =find_column_index(xlsx_table,'Aimed_electrode_depth');
 idx_Stability       =find_column_index(xlsx_table,'Stability_rank');
+
 
 r_Date  = find_row_index_working(xlsx_table(:,idx_Date),str2double(keys.date));
 r_Block = find_row_index_working(xlsx_table(:,idx_Block),keys.block);
@@ -288,6 +293,7 @@ if isempty(row)
     from_excel.target                  = {'unknown'};
     from_excel.dataset                 = {0};
     from_excel.perturbation            = {0};
+    from_excel.perturbation_site       = {'NA'};
     if unitexistsindata
         fprintf(2, 'no matching sorting for %s \n', unit_identifier);
     end
@@ -304,6 +310,7 @@ else
     from_excel.target                  =xlsx_table(row,idx_Target);
     from_excel.dataset                 =xlsx_table(row,idx_Set);
     from_excel.perturbation            =xlsx_table(row,idx_Perturbation);
+    from_excel.perturbation_site       =xlsx_table(row,idx_Perturbation_site);
     % defining target including hemisphere (in case it wasnt used for target definition in the sorting table already)
     if ~isempty(idx_Hemisphere) && isempty(strfind(from_excel.target{:},'_')) && numel(xlsx_table{row,idx_Hemisphere})>0
         from_excel.target = {[from_excel.target{:} '_' upper(xlsx_table{row,idx_Hemisphere}(1))]};

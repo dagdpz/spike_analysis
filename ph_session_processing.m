@@ -119,6 +119,10 @@ for current_date = sessions(:)'
     pop_resorted(ismember({pop_resorted.unit_ID},{'no unit'}))=[];              %% remove units that were not taken over from excel sheet (??)
     pop_resorted = ph_accept_trials_per_unit(pop_resorted);                     %% add field accepted for each trial per unit
     
+    % plot firing rate across time, mark blocks
+    
+        
+    
     % plot the cells not meeting criteria
     idx_Neuron_ID=find_column_index(keys.sorting_table,'Neuron_ID');
     idx_Site_ID=find_column_index(keys.sorting_table,'Site_ID');
@@ -126,6 +130,7 @@ for current_date = sessions(:)'
     all_site_IDs=keys.sorting_table_sites(:,idx_Site_ID);
     if keys.plot.waveforms && any(~ismember({pop_resorted.unit_ID},all_unit_IDs))
         plot_sorted_waveforms(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria');
+        plot_FR_across_time(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria FR over time');
     end
     %pop_resorted([pop_resorted.n_waveforms]<keys.cal.min_spikes_per_unit)=[];
     
@@ -143,6 +148,7 @@ for current_date = sessions(:)'
     if keys.plot.waveforms
         plot_sorted_waveforms(pop_resorted,keys,'analyzed units');
         plot_sorted_ISI(pop_resorted,keys,'analyzed units ISI')
+        plot_FR_across_time(pop_resorted,keys,'analyzed units FR over time')
     end
     
     if ~isempty(pop_resorted)
@@ -422,6 +428,36 @@ end
 
 
 %% plot functions
+
+function plot_FR_across_time(o,keys,title_part)
+fig_title=sprintf('%s, session %s, %s',keys.monkey,keys.date,title_part);
+FR_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',fig_title);
+
+n_columns_rows=ceil(numel(o)^(1/2));
+units=1:numel(o);
+for u=units
+    subplot(n_columns_rows,n_columns_rows,u);
+    hold on;
+    plot([o(u).trial.trial_onset_time]+[o(u).trial.run_onset_time]-o(u).trial(1).run_onset_time,[o(u).trial.FR_average]);
+    trial_blocks=[o(u).trial.block];
+    unique_blocks=unique(trial_blocks);
+    for b=unique_blocks
+        tr_idx=trial_blocks==b;
+        FR_std=double(nanstd([o(u).trial(tr_idx).FR_average]));
+        FR_mean=double(nanmean([o(u).trial(tr_idx).FR_average]));
+        start_block=o(u).trial(find(tr_idx,1,'first')).run_onset_time-o(u).trial(1).run_onset_time;
+        end_block=start_block+o(u).trial(find(tr_idx,1,'last')).trial_onset_time;
+        plot([start_block end_block],[FR_mean FR_mean],'k','linewidth',4)
+        plot([start_block start_block],[0 FR_mean],'k','linewidth',4)
+        plot([end_block end_block],[0 FR_mean],'k','linewidth',4)
+        text(start_block, FR_mean/2,sprintf('B%d: %0.1f + %0.1f',b,FR_mean,FR_std))
+        %plot()
+    end
+    
+    title(o(u).unit_ID,'interpreter','none');
+end
+title_and_save(FR_summary_handle,fig_title,keys)
+end
 
 function plot_sorted_waveforms(o,keys,title_part)
 fig_title=sprintf('%s, session %s, %s',keys.monkey,keys.date,title_part);

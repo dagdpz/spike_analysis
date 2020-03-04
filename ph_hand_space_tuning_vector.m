@@ -171,14 +171,14 @@ for normalize_by_max_FR=0:1
             subplot(subplot_rows,numel(epochs),e);
             title([epoch ' ' num2str(numel(A1_isch))]);
             for k=1:length(A1_isch),
-                plot_diag_rectangles([1 2 3 4],[A1_isch(k) A1_csch(k) A1_csih(k) A1_isih(k)],'Marker','.','Color',map(angles_sum(k),:)); hold on
+                plot_diag_rectangles([1 2 3 4],[A1_csch(k) A1_isch(k) A1_isih(k) A1_csih(k)],'Marker','.','Color',map(angles_sum(k),:)); hold on
             end
             line(x_circle,y_circle,'Color','k','LineStyle',':')
             
             subplot(subplot_rows,numel(epochs),numel(epochs)+e);
             title([epoch ' ' num2str(numel(A2_isch))]);
             for k=1:length(A1_isch),
-                plot_diag_rectangles([1 2 3 4],[A2_isch(k) A2_csch(k) A2_csih(k) A2_isih(k)],'Marker','.','Color',map(angles_sum(k),:)); hold on
+                plot_diag_rectangles([1 2 3 4],[A2_csch(k) A2_isch(k) A2_isih(k) A2_csih(k)],'Marker','.','Color',map(angles_sum(k),:)); hold on
             end
             
             %% plot tuning vector (or tuning vector disposition after inactivation) per unit
