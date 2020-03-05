@@ -41,7 +41,7 @@ keys.cal.perturbation_groups            ={0,[2,3,4,5,6,7,8]};       % which pert
 
 %% folders and filenames
 keys.filelist_as_blocks     =0;
-keys.drive                  =get_dag_drive_IP;
+keys.drive                  =DAG_get_server_IP;
 keys.basepath_to_save       =[keys.drive 'Projects' filesep project filesep 'ephys' filesep];
 keys.project_versions       ={''};
 spike_analysis_location     =which('ph_initiation');

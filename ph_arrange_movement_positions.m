@@ -116,7 +116,7 @@ switch keys.movement_arrangement
 end
 
 %% subplot positions
-[subplot_pos, out_analysis.columns, out_analysis.rows]= dynamic_positions({val_for_sub_assignment});
+[subplot_pos, out_analysis.columns, out_analysis.rows]= DAG_dynamic_positions({val_for_sub_assignment});
 [~,temp_sub_index]=sort(subplot_pos);
 out_analysis.subplot_titles=angles_for_title(temp_sub_index);
 for m= 1:numel(o) 
@@ -187,7 +187,7 @@ end
 
 end
 
-function [subplot_pos, n_columns, n_rows]= dynamic_positions(U_POS)
+function [subplot_pos, n_columns, n_rows]= DAG_dynamic_positions(U_POS)
 sin_U_POS=round(vertcat(U_POS{:})*100)/100;
 U_POS_adjusted=sin_U_POS;
 [heights,~,d]=unique(U_POS_adjusted(:,2));

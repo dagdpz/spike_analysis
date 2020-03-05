@@ -10,7 +10,7 @@ end
 if keys.CL.FR_subtract_baseline
     Sel_for_title =[Sel_for_title,{'base';'=';keys.GF.epoch_BL;', '}];
 end
-idx_group_parameter=find_column_index(tuning_per_unit_table,keys.CL.group_parameter);
+idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.CL.group_parameter);
 group_values=tuning_per_unit_table(:,idx_group_parameter);
 group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
 cell_in_any_group=[false; ~ismember(group_values(2:end),keys.CL.group_excluded)];
@@ -21,7 +21,7 @@ if isempty(unique_group_values)
 end
 complete_unit_list={population.unit_ID}';
 %
-idx_unitID=find_column_index(tuning_per_unit_table,'unit_ID');
+idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 
 
 for g=1:numel(unique_group_values)
@@ -158,9 +158,9 @@ for g=1:numel(unique_group_values)
         RF_per_epoch=vertcat(population.RF_per_epoch); % cue
         RF_per_epoch_cue=RF_per_epoch(units,e);
         
-        positionanovaindex=find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_position_' keys.tt.tasktypes{:}]);
-        gazeanovaindex=find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_fixation_' keys.tt.tasktypes{:}]);
-        interactionanovaindex=find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_PxF_' keys.tt.tasktypes{:}]);
+        positionanovaindex=DAG_find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_position_' keys.tt.tasktypes{:}]);
+        gazeanovaindex=DAG_find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_fixation_' keys.tt.tasktypes{:}]);
+        interactionanovaindex=DAG_find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_PxF_' keys.tt.tasktypes{:}]);
         unit_IDs_over_all_position_effect=tuning_per_unit_table(strcmp(['false'; tuning_per_unit_table(2:end,positionanovaindex)],'true'),1);
         unit_IDs_gazedependence=tuning_per_unit_table(strcmp(['false'; tuning_per_unit_table(2:end,gazeanovaindex)],'true') | strcmp(['false'; tuning_per_unit_table(2:end,interactionanovaindex)],'true'),1);
         
@@ -214,7 +214,7 @@ for g=1:numel(unique_group_values)
     
     %% figure 4 number of trials
     
-    N_trials_indx=find_column_index(tuning_per_unit_table,['in_AH_' 'trials_per_condition_' keys.tt.tasktypes{:} ]);
+    N_trials_indx=DAG_find_column_index(tuning_per_unit_table,['in_AH_' 'trials_per_condition_' keys.tt.tasktypes{:} ]);
     N_per_condition=[tuning_per_unit_table{2:end,N_trials_indx}];
     n_total=arrayfun(@(x) sum([x.trial.accepted] & [x.trial.success]),population);
     

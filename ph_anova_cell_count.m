@@ -227,7 +227,7 @@ for sub= 1:size(pie_data,1)
         end
         if keys.CC.plot_as_pie  %% bar or pie
             hstepsize=2;
-            piechart(level,sub).handle=pie_chart(x,r,current_colors,[0,0],(1-r_dec/2),x_as_labels);
+            piechart(level,sub).handle=DAG_pie_chart(x,r,current_colors,[0,0],(1-r_dec/2),x_as_labels);
             text(0,-r+r_dec/2,x_labels{level});
             r=r-r_dec;
         else
@@ -321,7 +321,7 @@ xlsx_table=keys.tuning_table;
 
 for i=1:size(keys.tuning_table,2)
     param(i) = keys.tuning_table(1,i);
-    idx.(param{i})= find_column_index(xlsx_table,param{i});
+    idx.(param{i})= DAG_find_column_index(xlsx_table,param{i});
 end
 
 multilevel_data={};

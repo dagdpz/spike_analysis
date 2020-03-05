@@ -1,4 +1,4 @@
-function [keys all_sta]=get_epoch_keys(keys,typ,eff,by_effector)
+function [keys all_sta]=ph_get_epoch_keys(keys,typ,eff,by_effector)
 global MA_STATES
         get_expected_MA_states(typ,eff,by_effector); %% does it make sense to distinguish by effector? Probably not any more!
         keys.ALL_EPOCHS=keys.EPOCHS_PER_TYPE{typ};

@@ -245,31 +245,31 @@ end
 
 function from_excel = get_sorted_neuron_out_xlsx_from_excel(xlsx_table, keys, unit, channel, unitexistsindata, per_unit)
 
-idx_Date            =find_column_index(xlsx_table,'Date');
-idx_Run             =find_column_index(xlsx_table,'Run');
-idx_Block           =find_column_index(xlsx_table,'Block');
-idx_Channel         =find_column_index(xlsx_table,'Chan');
-idx_Unit            =find_column_index(xlsx_table,'Unit');
-idx_Neuron_ID       =find_column_index(xlsx_table,'Neuron_ID');
-idx_Site_ID         =find_column_index(xlsx_table,'Site_ID');
-idx_Target          =find_column_index(xlsx_table,'Target');
-idx_Hemisphere      =find_column_index(xlsx_table,'Hemisphere');
-idx_Set             =find_column_index(xlsx_table,'Set');
-idx_Perturbation    =find_column_index(xlsx_table,'Perturbation');
-idx_Perturbation_site    =find_column_index(xlsx_table,'Perturbation_site');
-idx_SNR             =find_column_index(xlsx_table,'SNR_rank');
-idx_Single          =find_column_index(xlsx_table,'Single_rank');
-idx_x               =find_column_index(xlsx_table,'x');
-idx_y               =find_column_index(xlsx_table,'y');
-idx_Electrode_depth =find_column_index(xlsx_table,'Aimed_electrode_depth');
-idx_Stability       =find_column_index(xlsx_table,'Stability_rank');
+idx_Date            =DAG_find_column_index(xlsx_table,'Date');
+idx_Run             =DAG_find_column_index(xlsx_table,'Run');
+idx_Block           =DAG_find_column_index(xlsx_table,'Block');
+idx_Channel         =DAG_find_column_index(xlsx_table,'Chan');
+idx_Unit            =DAG_find_column_index(xlsx_table,'Unit');
+idx_Neuron_ID       =DAG_find_column_index(xlsx_table,'Neuron_ID');
+idx_Site_ID         =DAG_find_column_index(xlsx_table,'Site_ID');
+idx_Target          =DAG_find_column_index(xlsx_table,'Target');
+idx_Hemisphere      =DAG_find_column_index(xlsx_table,'Hemisphere');
+idx_Set             =DAG_find_column_index(xlsx_table,'Set');
+idx_Perturbation    =DAG_find_column_index(xlsx_table,'Perturbation');
+idx_Perturbation_site    =DAG_find_column_index(xlsx_table,'Perturbation_site');
+idx_SNR             =DAG_find_column_index(xlsx_table,'SNR_rank');
+idx_Single          =DAG_find_column_index(xlsx_table,'Single_rank');
+idx_x               =DAG_find_column_index(xlsx_table,'x');
+idx_y               =DAG_find_column_index(xlsx_table,'y');
+idx_Electrode_depth =DAG_find_column_index(xlsx_table,'Aimed_electrode_depth');
+idx_Stability       =DAG_find_column_index(xlsx_table,'Stability_rank');
 
 
-r_Date  = find_row_index_working(xlsx_table(:,idx_Date),str2double(keys.date));
-r_Block = find_row_index_working(xlsx_table(:,idx_Block),keys.block);
-r_Run   = find_row_index_working(xlsx_table(:,idx_Run),keys.run);
-r_Unit  = find_row_index_working(xlsx_table(:,idx_Unit),char(96+unit));
-r_Chan  = find_row_index_working(xlsx_table(:,idx_Channel),channel);
+r_Date  = DAG_find_row_index(xlsx_table(:,idx_Date),str2double(keys.date));
+r_Block = DAG_find_row_index(xlsx_table(:,idx_Block),keys.block);
+r_Run   = DAG_find_row_index(xlsx_table(:,idx_Run),keys.run);
+r_Unit  = DAG_find_row_index(xlsx_table(:,idx_Unit),char(96+unit));
+r_Chan  = DAG_find_row_index(xlsx_table(:,idx_Channel),channel);
 
 unit_identifier=[keys.date '_block_' num2str(keys.block) '_run_' num2str(keys.run) '_ch_' num2str(channel) '_u_' char(96+unit)];
 site_identifier=[keys.date '_block_' num2str(keys.block) '_run_' num2str(keys.run) '_ch_' num2str(channel)];

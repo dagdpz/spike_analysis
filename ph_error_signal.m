@@ -78,8 +78,8 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
                     typ=type_effectors(te,1);
                     eff=type_effectors(te,2);
                     [~, type_effector_short]=get_type_effector_name(typ,eff);
-                    idx_existing=find_column_index(tuning_per_unit_table,['existing_' 'in_AH_' type_effector_short '_' keys.arrangement(1:3)]);
-                    idx_unit_ID=find_column_index(tuning_per_unit_table,['unit_ID']);
+                    idx_existing=DAG_find_column_index(tuning_per_unit_table,['existing_' 'in_AH_' type_effector_short '_' keys.arrangement(1:3)]);
+                    idx_unit_ID=DAG_find_column_index(tuning_per_unit_table,['unit_ID']);
                     units_existing= [true; ismember(vertcat(tuning_per_unit_table{2:end,idx_existing}),true)];
                     unit_IDs_te=tuning_per_unit_table(units_existing,idx_unit_ID);
                     
@@ -144,7 +144,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
                     end
                     epochnames=keys.EPOCHS_PER_TYPE{typ}(:,1);
                     for ep=1:size(coef,2)                        
-                        sig_col=find_column_index(tuning_per_unit_table,['in_' epochnames{ep} '_spaceLR_' tasktype]);
+                        sig_col=DAG_find_column_index(tuning_per_unit_table,['in_' epochnames{ep} '_spaceLR_' tasktype]);
                         sig_units=cellfun(@(x) strcmp(x,'CS') || strcmp(x,'IS'),tuning_per_unit_table(:,sig_col));
                         sig_idx(:,ep)=ismember(unit_IDs_te,tuning_per_unit_table(sig_units,1))';
                         

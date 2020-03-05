@@ -26,12 +26,12 @@ end
 x_label=keys.SC.X;
 y_label=keys.SC.Y;
 
-c_x    =find_column_index(tuning,keys.SC.X);
-c_y    =find_column_index(tuning,keys.SC.Y);
-cs_x   =find_column_index(tuning,keys.SC.X_sig);
-cs_y   =find_column_index(tuning,keys.SC.Y_sig);
-c_VM   =find_column_index(tuning,keys.SC.VMI);
-c_h    =find_column_index(tuning,keys.SC.hist_column);
+c_x    =DAG_find_column_index(tuning,keys.SC.X);
+c_y    =DAG_find_column_index(tuning,keys.SC.Y);
+cs_x   =DAG_find_column_index(tuning,keys.SC.X_sig);
+cs_y   =DAG_find_column_index(tuning,keys.SC.Y_sig);
+c_VM   =DAG_find_column_index(tuning,keys.SC.VMI);
+c_h    =DAG_find_column_index(tuning,keys.SC.hist_column);
 
 rs_x   =[false; cellfun(@(x) ~strcmp(x,'-') && ~strcmp(x,'false'),tuning(2:end,cs_x))];
 rs_y   =[false; cellfun(@(x) ~strcmp(x,'-') && ~strcmp(x,'false'),tuning(2:end,cs_y))];
@@ -41,7 +41,7 @@ rs_y   =[false; cellfun(@(x) ~strcmp(x,'-') && ~strcmp(x,'false'),tuning(2:end,c
 row_valid=[false;row_valid];
 
 %% monkey per unit readout
-col_unit_ID=find_column_index(tuning,'unit_ID');
+col_unit_ID=DAG_find_column_index(tuning,'unit_ID');
 monkeys=cellfun(@(x) x(1:3),tuning(2:end,col_unit_ID),'uniformoutput',false);
 % if keys.batching.combine_monkeys
 %     [monkeys{:}]=deal(monkeys{1});
@@ -91,7 +91,7 @@ if ismember(keys.SC.color_option,{'FR_as_color','VMI_as_color','category_as_colo
     cat_colors={'b','m','r',[0.5 0.5 0.5]}; %% based on VMI still
     row_nocat=row_valid;
     for idx=1:numel(keys.SC.categories)
-        col_cat   =find_column_index(tuning,keys.SC.categories{idx});
+        col_cat   =DAG_find_column_index(tuning,keys.SC.categories{idx});
         r_cat{idx}=[false; vertcat(tuning{2:end,col_cat})]&row_valid;
         row_nocat =row_nocat & ~r_cat{idx};
     end
@@ -289,7 +289,7 @@ end
 %FR_index_handle = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_1_title);
 
 subplot(1,2,1)
-scatter_with_histograms(SC)
+DAG_scatter_with_histograms(SC)
 xlabel(x_label,'interpreter','none');
 ylabel(y_label,'interpreter','none');
 if strcmp(keys.SC.color_option,'VMI_as_color')

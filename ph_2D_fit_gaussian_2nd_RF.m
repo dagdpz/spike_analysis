@@ -1,4 +1,4 @@
-function out=twoDgaussian_2nd_RF_fit(x,y,bl,phi,xmax,ymax,zmax,sx,sy,minratio,xmax1,ymax1,phi1,sx1,sy1)
+function out=ph_2D_fit_gaussian_2nd_RF(x,y,bl,phi,xmax,ymax,zmax,sx,sy,minratio,xmax1,ymax1,phi1,sx1,sy1)
 
 vector_between_two_peaks=xmax+ymax*1i-xmax1-ymax1*1i;
 y_sd_1=sy1 + sx1*((minratio-sy1/sx1)*(sign(minratio-sy1/sx1)+1)/2);

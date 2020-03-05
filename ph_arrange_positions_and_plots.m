@@ -262,7 +262,7 @@ switch keys.arrangement
 end
 
 %% subplot positions
-[subplot_pos, out_analysis.columns, out_analysis.rows]= dynamic_positions({val_for_sub_assignment});
+[subplot_pos, out_analysis.columns, out_analysis.rows]= DAG_dynamic_positions({val_for_sub_assignment});
 
 %% some preallocations
 out_analysis.figure_title_part      =fig_title;

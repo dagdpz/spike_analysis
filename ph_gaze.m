@@ -15,7 +15,7 @@ end
 if keys.GA.FR_subtract_baseline
     Sel_for_title =[Sel_for_title,{'base';'=';keys.GA.epoch_BL;', '}];
 end
-idx_group_parameter=find_column_index(tuning_per_unit_table,keys.GA.group_parameter);
+idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.GA.group_parameter);
 group_values=tuning_per_unit_table(:,idx_group_parameter);
 group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
 cell_in_any_group=[false; ~ismember(group_values(2:end),keys.GA.group_excluded)];
@@ -26,7 +26,7 @@ if isempty(unique_group_values)
 end
 complete_unit_list={population.unit_ID}';
 %
-idx_unitID=find_column_index(tuning_per_unit_table,'unit_ID');
+idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 
 %% define conditions to look at
 all_trialz=[population.trial];
@@ -100,11 +100,11 @@ for xory=keys.GA.xory
         typ=type_effectors(t,1);
         eff=type_effectors(t,2);
         tya=find(u_types==typ)+a*(numel(u_types))-1;
-        idx_existing=find_column_index(tuning_per_unit_table,['existing_' type_effector_short{t} '_' keys.arrangement(1:3)]);
+        idx_existing=DAG_find_column_index(tuning_per_unit_table,['existing_' type_effector_short{t} '_' keys.arrangement(1:3)]);
         tya_existing{tya}= [true; ismember(vertcat(tuning_per_unit_table{2:end,idx_existing}),true)];
         
         
-        keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+        keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
         normalization_epoch     =find(ismember(keys.EPOCHS(:,1),keys.GA.epoch_for_normalization));
         
         for g=1:numel(unique_group_values)
@@ -212,7 +212,7 @@ for xory=keys.GA.xory
             
             plot_1_title            = [fig_title  ' FR'];
             FR_figure_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_1_title);
-            keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+            keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
             clear n_max
             for g=1:numel(unique_group_values)
                 unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)) & tya_existing{t},idx_unitID));

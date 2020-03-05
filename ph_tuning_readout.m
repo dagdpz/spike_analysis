@@ -69,9 +69,9 @@ significant_RF=vertcat(OO(:,e).significant_RF);
 
 %% careful here!! ANOVA_position_effect
 
-positionanovaindex=find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_position_Msac_mov']);
-gazeanovaindex=find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_fixation_Msac_mov']);
-interactionanovaindex=find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_PxF_Msac_mov']);
+positionanovaindex=DAG_find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_position_Msac_mov']);
+gazeanovaindex=DAG_find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_fixation_Msac_mov']);
+interactionanovaindex=DAG_find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_PxF_Msac_mov']);
 unit_IDs_over_all_position_effect=tuning_per_unit_table(strcmp(['false'; tuning_per_unit_table(2:end,positionanovaindex)],'true'),1);
 unit_IDs_gazedependence=tuning_per_unit_table(strcmp(['false'; tuning_per_unit_table(2:end,gazeanovaindex)],'true') | strcmp(['false'; tuning_per_unit_table(2:end,interactionanovaindex)],'true'),1);
 %unit_IDs_gazedependence=tuning_per_unit_table(strcmp(['false'; tuning_per_unit_table(2:end,interactionanovaindex)],'true'),1);

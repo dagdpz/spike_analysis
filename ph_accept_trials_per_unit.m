@@ -16,7 +16,7 @@ for u=1:numel(pop_resorted)
     % here is the actual criterion
     accepted=num2cell(FRs>(log(1+exp(unit_mean-confidence_interval))) & FRs<(log(1+exp(unit_mean+confidence_interval))));
     %accepted=num2cell(FRsT>(unit_mean-confidence_interval) & FRsT<(unit_mean+confidence_interval));
-    %[pop_resorted(u).trial.accepted]=deal(accepted{:});
-    [pop_resorted(u).trial.accepted]=deal(true);
+    [pop_resorted(u).trial.accepted]=deal(accepted{:});
+    %[pop_resorted(u).trial.accepted]=deal(true);
 end
 end

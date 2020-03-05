@@ -24,8 +24,8 @@ n_col=size(keys.line_colors,1);
 % if keys.FR_subtract_baseline
 %     Sel_for_title =[Sel_for_title,{'base';'=';keys.epoch_BL;', '}];
 % end
-idx_unitID=find_column_index(tuning_per_unit_table,'unit_ID');
-idx_group_parameter=find_column_index(tuning_per_unit_table,keys.ON.group_parameter);
+idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
+idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.ON.group_parameter);
 group_values=tuning_per_unit_table(:,idx_group_parameter);
 group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
 cell_in_any_group=[false; ~ismember(group_values(2:end),keys.ON.group_excluded)];
@@ -101,9 +101,9 @@ for t=1:size(type_effectors,1) %typ=unique(per_trial.types)
     tya=find(u_types==typ)+a*(numel(u_types))-1;
     
     %% here we need to work on...!!! 'in_NH_' NOT IDEAL AT ALL
-    idx_existing=find_column_index(tuning_per_unit_table,['existing_' 'in_AH_' type_effector_short{t} '_' keys.arrangement(1:3)]);
+    idx_existing=DAG_find_column_index(tuning_per_unit_table,['existing_' 'in_AH_' type_effector_short{t} '_' keys.arrangement(1:3)]);
     tya_existing{tya}= [true; ismember(vertcat(tuning_per_unit_table{2:end,idx_existing}),true)];
-    keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+    keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
     
     for g=1:numel(unique_group_values)
         unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g))&tya_existing{tya},idx_unitID));
@@ -213,7 +213,7 @@ for t=1:size(condition,1)
             
             %% re-order dependent on tuning onset
             
-            keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+            keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
             wo=find(ismember(keys.PSTH_WINDOWS(:,1),comparisons_per_effector(comp).order_onset{1})):size(keys.PSTH_WINDOWS,1);
             n_bins_disregarded_beginning    =round((comparisons_per_effector(comp).order_onset{2}-keys.PSTH_WINDOWS{wo(1),3})/keys.PSTH_binwidth);
             n_bins_disregarded_end          =round((comparisons_per_effector(comp).order_onset{3}-keys.PSTH_WINDOWS{wo(1),3})/keys.PSTH_binwidth);
@@ -275,7 +275,7 @@ for t=1:numel(sigbins)
     column=0;
     for eff=u_effectors
         column=column+1;
-        keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+        keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
         %conditions_to_loop=find(conditions_hf(:,2)==eff);
         
         n=find(u_effectors==eff);
@@ -359,7 +359,7 @@ for t=1:numel(sigbins)
     column=0;
     for eff=u_effectors
         column=column+1;
-        keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+        keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
         %conditions_to_loop=find(conditions_hf(:,2)==eff);
         
         n=find(u_effectors==eff);
@@ -430,7 +430,7 @@ for t=1:numel(sigbins)
     column=0;
     for eff=u_effectors
         column=column+1;
-        keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+        keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
         %conditions_to_loop=find(conditions_hf(:,2)==eff);
         
         n=find(u_effectors==eff);

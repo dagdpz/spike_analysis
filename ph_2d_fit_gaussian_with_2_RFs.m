@@ -1,4 +1,4 @@
-function out=twoDgaussian_with_2_RFs_fit(x,y,bl,phi1,xmax1,ymax1,zmax1,sx1,sy1,zmax2,dist,ratio,minratio)
+function out=ph_2d_fit_gaussian_with_2_RFs(x,y,bl,phi1,xmax1,ymax1,zmax1,sx1,sy1,zmax2,dist,ratio,minratio)
 
 
 % ,phi2,xmax2,ymax2,zmax2,sx2,sy2

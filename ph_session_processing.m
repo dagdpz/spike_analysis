@@ -124,8 +124,8 @@ for current_date = sessions(:)'
         
     
     % plot the cells not meeting criteria
-    idx_Neuron_ID=find_column_index(keys.sorting_table,'Neuron_ID');
-    idx_Site_ID=find_column_index(keys.sorting_table,'Site_ID');
+    idx_Neuron_ID=DAG_find_column_index(keys.sorting_table,'Neuron_ID');
+    idx_Site_ID=DAG_find_column_index(keys.sorting_table,'Site_ID');
     all_unit_IDs=keys.sorting_table_units(:,idx_Neuron_ID);
     all_site_IDs=keys.sorting_table_sites(:,idx_Site_ID);
     if keys.plot.waveforms && any(~ismember({pop_resorted.unit_ID},all_unit_IDs))
@@ -371,10 +371,10 @@ for s = 1:length(session_folders)
 end
 
 if ~isempty(keys.cal.datasets)
-    idx_dataset=find_column_index(keys.sorting_table,'Set');
-    idx_session=find_column_index(keys.sorting_table,'Date');
-    idx_run=find_column_index(keys.sorting_table,'Run');
-    idx_block=find_column_index(keys.sorting_table,'Block');
+    idx_dataset=DAG_find_column_index(keys.sorting_table,'Set');
+    idx_session=DAG_find_column_index(keys.sorting_table,'Date');
+    idx_run=DAG_find_column_index(keys.sorting_table,'Run');
+    idx_block=DAG_find_column_index(keys.sorting_table,'Block');
     rows=[false; ismember(cell2mat(keys.sorting_table(2:end,idx_dataset)),keys.cal.datasets)];
     filelist_fitting_datasets=cell2mat(keys.sorting_table(rows,[idx_session  idx_block  idx_run]));
     index_in_dataset=ismember(filelist_internal,filelist_fitting_datasets,'rows');
@@ -412,10 +412,10 @@ if ~isempty(temp_xlsx)
     keys.sorting_table_units = sorting_table;
     keys.sorting_table_sites = sorting_table;
     keys.sorting_table       = sorting_table;
-    stability_index=find_column_index(sorting_table,'Stability_rank');
-    single_index=find_column_index(sorting_table,'Single_rank');
-    SNR_index=find_column_index(sorting_table,'SNR_rank');
-    usable_index=find_column_index(sorting_table,'Usable');
+    stability_index=DAG_find_column_index(sorting_table,'Stability_rank');
+    single_index=DAG_find_column_index(sorting_table,'Single_rank');
+    SNR_index=DAG_find_column_index(sorting_table,'SNR_rank');
+    usable_index=DAG_find_column_index(sorting_table,'Usable');
     to_exclude_u=~ismember([sorting_table{2:end,stability_index}]',keys.cal.stablity) ...
         | ~ismember([sorting_table{2:end,single_index}]',keys.cal.single_rating)...
         | ~ismember([sorting_table{2:end,SNR_index}]',keys.cal.SNR_rating);

@@ -50,7 +50,7 @@ polar(0,0)
 stepsize=pi/180;
 
 for phi=1:360
-    patch_sector([0 0],0,1,(phi-1)*pi/180,phi*pi/180,stepsize,map2(phi,:))
+    DAG_patch_sector([0 0],0,1,(phi-1)*pi/180,phi*pi/180,stepsize,map2(phi,:))
 end
 % add vertical lines, horizontal lines and diagonals
 hold on

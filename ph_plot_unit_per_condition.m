@@ -24,7 +24,7 @@ for unit=1:numel(population)
             
             %% selection of epochs to plot
             effectors_effector_loop=unique(effectors);
-            [keys all_sta]=get_epoch_keys(keys,type,effectors_effector_loop,1);
+            [keys all_sta]=ph_get_epoch_keys(keys,type,effectors_effector_loop,1);
             n_states=numel(all_sta);
             
             o_index= types == type & ismember(effectors,effectors_effector_loop);% & ismember(hands,keys.reach_hand);
@@ -64,7 +64,7 @@ for unit=1:numel(population)
                     anova_labels.SxH    = ['in_SxH_' type_effector_short '_' keys.arrangement(1:3)];
                     anova_labels.SxH    = ['in_SxH_' type_effector_short '_' keys.arrangement(1:3)];
                     for FN=fieldnames(anova_labels)'
-                        idx= find_column_index(current_unit_tuning,anova_labels.(FN{:}));
+                        idx= DAG_find_column_index(current_unit_tuning,anova_labels.(FN{:}));
                         if ~isempty(idx)
                             anova_results(e).(FN{:})=current_unit_tuning{2,idx};
                         else
@@ -387,7 +387,7 @@ for unit=1:numel(population)
                             tuning_labels.LR_PT    =  ['in_RH_LS_' state_label '_PT_' type_effector_short '_' keys.arrangement(1:3)];
                             tuning_labels.RR_PT    =  ['in_RH_RS_' state_label '_PT_' type_effector_short '_' keys.arrangement(1:3)];
                             for FN=fieldnames(tuning_labels)'
-                                idx= find_column_index(current_unit_tuning,tuning_labels.(FN{:}));
+                                idx= DAG_find_column_index(current_unit_tuning,tuning_labels.(FN{:}));
                                 if ~isempty(idx)
                                     tuning.(FN{:})=current_unit_tuning{2,idx};
                                 else

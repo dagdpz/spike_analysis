@@ -45,8 +45,8 @@ keys.pref_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.
 if keys.ST.FR_subtract_baseline
     Sel_for_title =[Sel_for_title,{'base';'=';keys.ST.epoch_BL;', '}];
 end
-idx_group_parameter=find_column_index(tuning_per_unit_table,keys.ST.group_parameter);
-idx_unitID=find_column_index(tuning_per_unit_table,'unit_ID');
+idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.ST.group_parameter);
+idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 group_values=tuning_per_unit_table(:,idx_group_parameter);
 group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
 cell_in_any_group=[false; ~ismember(group_values(2:end),keys.ST.group_excluded)];
@@ -79,9 +79,9 @@ if any(strfind(Sel_for_title{3,1},'_L'))
 end
 
 %% markers for different monkeys and colors for different grid holes
-idx_grid_x=find_column_index(tuning_per_unit_table,'grid_x');
-idx_grid_y=find_column_index(tuning_per_unit_table,'grid_y');
-idx_grid_z=find_column_index(tuning_per_unit_table,'electrode_depth');
+idx_grid_x=DAG_find_column_index(tuning_per_unit_table,'grid_x');
+idx_grid_y=DAG_find_column_index(tuning_per_unit_table,'grid_y');
+idx_grid_z=DAG_find_column_index(tuning_per_unit_table,'electrode_depth');
 
 monkey_markers={};
 for m=1:numel(keys.batching.monkeys)
@@ -227,10 +227,10 @@ for t=1:size(type_effectors,1) %typ=unique(per_trial.types)
     
     conditions_eff=conditions_out(conditions_out(:,1)==eff,2:end);
     tya=find(u_types==typ)+a*(numel(u_types))-1;
-    idx_existing=find_column_index(tuning_per_unit_table,['existing_' 'in_AH_' type_effector_short{t} '_' keys.arrangement(1:3)]);
+    idx_existing=DAG_find_column_index(tuning_per_unit_table,['existing_' 'in_AH_' type_effector_short{t} '_' keys.arrangement(1:3)]);
     tya_existing{tya}= [true; ismember(vertcat(tuning_per_unit_table{2:end,idx_existing}),true)];
     
-    keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+    keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
     if ~isfield(keys.ST,'epoch_GB')
         keys.ST.epoch_GB=[keys.ANOVAS_PER_TYPE(typ).epoch{strcmp(keys.ANOVAS_PER_TYPE(typ).epoch(:,2),keys.ST.epoch_RF),1}]; %% gaussian baseline depends on the epoch for resposne field
     end
@@ -561,7 +561,7 @@ if keys.ST.combine_exp_conditions
     filename=sprintf('%s %s %s %s %s hnd %s ch %s N_%s %s',...
         [Sel_for_title{:}],keys.monkey,keys.ST.group_parameter,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)),keys.ST.normalization,keys.ST.epoch_for_normalization);
     
-    keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+    keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
     [~, type_effector_short] = get_type_effector_name(typ,eff);
     plot_title              = [fig_title type_effector_short plot_title_part];
     state_space_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
@@ -594,7 +594,7 @@ if keys.ST.combine_exp_conditions
     filename=sprintf('%s %s %s %s %s hnd %s ch %s N_%s %s',...
         [Sel_for_title{:}],keys.monkey,keys.ST.group_parameter,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)),keys.ST.normalization,keys.ST.epoch_for_normalization);
     
-    keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+    keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
     [~, type_effector_short] = get_type_effector_name(typ,eff);
     plot_title              = [fig_title type_effector_short plot_title_part];
     state_space_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
@@ -625,7 +625,7 @@ if keys.ST.combine_exp_conditions
     filename=sprintf('%s %s %s %s %s hnd %s ch %s N_%s %s',...
         [Sel_for_title{:}],keys.monkey,keys.ST.group_parameter,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)),keys.ST.normalization,keys.ST.epoch_for_normalization);
     
-    keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+    keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
     [~, type_effector_short] = get_type_effector_name(typ,eff);
     plot_title              = [fig_title type_effector_short plot_title_part];
     state_space_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
@@ -646,7 +646,7 @@ if keys.ST.combine_exp_conditions
         [Sel_for_title{:}],keys.monkey,[keys.conditions_to_plot{:}],mat2str(u_hands),mat2str(double(u_choice)),keys.arrangement,keys.ST.group_parameter, keys.ST.normalization,keys.ST.epoch_for_normalization);
     filename=sprintf('%s %s %s %s %s hnd %s ch %s N_%s %s',...
         [Sel_for_title{:}],keys.monkey,keys.ST.group_parameter,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)),keys.ST.normalization,keys.ST.epoch_for_normalization);
-    keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+    keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
     [~, type_effector_short] = get_type_effector_name(typ,eff);
     plot_title              = [fig_title type_effector_short plot_title_part];
     state_space_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
@@ -714,7 +714,7 @@ else
         filename=sprintf('%s %s %s %s %s hnd %s ch %s N_%s %s %s',...
             [Sel_for_title{:}],keys.monkey,keys.ST.group_parameter,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)),keys.ST.normalization,keys.ST.epoch_for_normalization,char(condition_name(cd)));
         
-        keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+        keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
         [~, type_effector_short] = get_type_effector_name(typ,eff);
         plot_title              = [fig_title type_effector_short plot_title_part];
         state_space_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);

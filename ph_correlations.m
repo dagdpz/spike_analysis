@@ -28,10 +28,10 @@ keys.tt.tasktypes={};
 if keys.FR_subtract_baseline
     Sel_for_title =[Sel_for_title,{'base';'=';keys.epoch_BL;', '}];
 end
-idx_unitID=find_column_index(tuning_per_unit_table,'unit_ID');
+idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 
-% idx_group_parameter=find_column_index(tuning_per_unit_table,keys.population_group_parameter);
-% idx_unitID=find_column_index(tuning_per_unit_table,'unit_ID');
+% idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.population_group_parameter);
+% idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 % group_values=tuning_per_unit_table(:,idx_group_parameter);
 % group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
 % cell_in_any_group=[false; ~ismember(group_values(2:end),keys.population_group_excluded)];
@@ -149,7 +149,7 @@ for a=1:numel(keys.position_and_plotting_arrangements)
                     tuning_title=['in_' hand_labels_CI{hnd} '_PreR_position_' type_effector_short '_' keys.arrangement(1:3)];
                     
                     row_idx=find(ismember(tuning_per_unit_table(:,idx_unitID),population(u1).unit_ID));
-                    column_idx=find_column_index(tuning_per_unit_table,tuning_title);
+                    column_idx=DAG_find_column_index(tuning_per_unit_table,tuning_title);
                     if ~isempty(row_idx) && ~isempty(column_idx)
                         pop_corr(u1,tyc).tuning{e}=tuning_per_unit_table{row_idx,column_idx};
                     else

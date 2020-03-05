@@ -153,13 +153,13 @@ for f=1:numel(versions) % running multiple versions of the same project at once 
                     [tuning_per_unit_table]=ph_load_extended_tuning_table(keys);
                     [tuning_per_unit_table, keys.selection_title]=ph_reduce_tuning_table(tuning_per_unit_table,keys);
                     tuning_per_unit_table(cellfun(@(x) isempty(x) & ~islogical(x),tuning_per_unit_table))={''};
-                    idx_ID=find_column_index(tuning_per_unit_table,'unit_ID');
+                    idx_ID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
                     for ex=1:size(example_cell_definitions,1)
                         row_idx=true(size(tuning_per_unit_table,1),1);
                         
                         for par=2:2:size(example_cell_definitions,2)
                             entry=example_cell_definitions{ex,par+1};
-                            column_index=find_column_index(tuning_per_unit_table,[example_cell_definitions{ex,par}]);
+                            column_index=DAG_find_column_index(tuning_per_unit_table,[example_cell_definitions{ex,par}]);
                             
                             
                             if ischar(entry) && any(column_index)

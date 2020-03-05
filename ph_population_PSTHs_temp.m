@@ -37,9 +37,9 @@ keys.pref_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.
 if keys.PO.FR_subtract_baseline
     Sel_for_title =[Sel_for_title,{'base';'=';keys.PO.epoch_BL;', '}];
 end
-idx_group_parameter=find_column_index(tuning_per_unit_table,keys.PO.group_parameter);
-idx_unitID=find_column_index(tuning_per_unit_table,'unit_ID');
-idx_RF_frame=find_column_index(tuning_per_unit_table,keys.PO.RF_frame_parameter);
+idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.PO.group_parameter);
+idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
+idx_RF_frame=DAG_find_column_index(tuning_per_unit_table,keys.PO.RF_frame_parameter);
 group_values=tuning_per_unit_table(:,idx_group_parameter);
 group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
 cell_in_any_group=[false; ~ismember(group_values(2:end),keys.PO.group_excluded)];
@@ -51,9 +51,9 @@ end
 complete_unit_list={population.unit_ID}';
 
 %% markers for different monkeys and colors for different grid holes
-idx_grid_x=find_column_index(tuning_per_unit_table,'grid_x');
-idx_grid_y=find_column_index(tuning_per_unit_table,'grid_y');
-idx_grid_z=find_column_index(tuning_per_unit_table,'electrode_depth');
+idx_grid_x=DAG_find_column_index(tuning_per_unit_table,'grid_x');
+idx_grid_y=DAG_find_column_index(tuning_per_unit_table,'grid_y');
+idx_grid_z=DAG_find_column_index(tuning_per_unit_table,'electrode_depth');
 
 monkey_markers={};
 for m=1:numel(keys.batching.monkeys)
@@ -192,7 +192,7 @@ for tye=1:size(type_effectors,1)
     conditions_eff=conditions_out(conditions_out(:,1)==eff,2:end);
     t=find(u_types==typ);
     e=find(u_effectors==eff);
-    keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+    keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
     
     % find epochs... here is still a problem, especially next line
     if ~isfield(keys.PO,'epoch_GB')
@@ -957,7 +957,7 @@ end
     function plot_PSTH_no_empties
         for eff=u_effectors %% one figure for ech effector, somehting probably does not work here, because (!!) suplots in each figure
             ef=find(u_effectors==eff);
-            keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+            keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
             [~, type_effector_short] = get_type_effector_name(typ,eff);
             plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
             PSTH_summary_handle(ef)     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
@@ -973,7 +973,7 @@ end
                 if any(strfind(plot_title_part,'per position'))
                     [positions, ~,pos_sub_idx]=unique(vertcat(current.position),'rows');
                     [~, ~,fix_sub_idx]=unique(vertcat(current.fixation),'rows');
-                    [subplot_pos, columns_to_loop, rows_to_loop]= dynamic_positions({positions});
+                    [subplot_pos, columns_to_loop, rows_to_loop]= DAG_dynamic_positions({positions});
                     conditions_to_loop=find([current.effector]'==eff & ~condition_empty);
                     sp_per_effector=max(subplot_pos);
                 else
@@ -1199,7 +1199,7 @@ end
 % 
 % function plot_PSTH
 % for eff=u_effectors %% one figure for ech effector
-%     keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+%     keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
 %     [~, type_effector_short] = get_type_effector_name(typ,eff);
 %     plot_title              = [fig_title type_effector_short plot_title_part];
 %     PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
@@ -1218,7 +1218,7 @@ end
 %             
 %             [positions, ~,pos_sub_idx]=unique(vertcat(current.position),'rows');
 %             [~, ~,fix_sub_idx]=unique(vertcat(current.fixation),'rows');
-%             [subplot_pos, columns_to_loop, rows_to_loop]= dynamic_positions({positions});
+%             [subplot_pos, columns_to_loop, rows_to_loop]= DAG_dynamic_positions({positions});
 %             conditions_to_loop=find([current.effector]'==eff & ~condition_empty);
 %         else
 %             

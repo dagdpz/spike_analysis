@@ -31,7 +31,7 @@ for unit=1:numel(population)
                 keys.epoch_position_multicomp           =keys.ANOVAS_PER_TYPE(type).positions;
                 
                 for effector=unique(effectors)
-                    keys=get_epoch_keys(keys,type,effector,sum(type_effectors(:,1)==type)>1);
+                    keys=ph_get_epoch_keys(keys,type,effector,sum(type_effectors(:,1)==type)>1);
                     [~, condition_fieldname_part]=get_type_effector_name(type,effector);
                     
                     tr_index= effectors==effector & types == type;% & ismember(hands,keys.cal.reach_hand);
@@ -63,7 +63,7 @@ for unit=1:numel(population)
                 effectors_to_compare=effectors_to_compare(:,effectors_to_compare(1,:)<effectors_to_compare(2,:));
                 for comp=1:size(effectors_to_compare,2)
                     comp_eff=effectors_to_compare(:,comp);
-                    keys=get_epoch_keys(keys,type,comp_eff,1);
+                    keys=ph_get_epoch_keys(keys,type,comp_eff,1);
                     [~, condition_fieldname_part1]=get_type_effector_name(type,comp_eff(1));
                     [~, condition_fieldname_part2]=get_type_effector_name(type,comp_eff(2));
                     condition_fieldname_part=[condition_fieldname_part1 '_vs_' condition_fieldname_part2];
@@ -86,7 +86,7 @@ for unit=1:numel(population)
             
         end
     end
-    rows_to_update=find(ismember(tuning_per_unit_table(:,find_column_index(tuning_per_unit_table,'unit_ID')),{population(unit).unit_ID}));
+    rows_to_update=find(ismember(tuning_per_unit_table(:,DAG_find_column_index(tuning_per_unit_table,'unit_ID')),{population(unit).unit_ID}));
     if isempty(rows_to_update)
         rows_to_update=size(tuning_per_unit_table,1)+1;
     end
@@ -108,7 +108,7 @@ for unit=1:numel(population)
             unit_table{rows_to_update,title_counter}=anova_struct_current_unit.(FN{fn}).(FNsub{fnsub});
         end
     end
-    tuning_per_unit_table=update_mastertable_cell(tuning_per_unit_table,unit_table,rows_to_update);
+    tuning_per_unit_table=DAG_update_mastertable_cell(tuning_per_unit_table,unit_table,rows_to_update);
 end
 
 end

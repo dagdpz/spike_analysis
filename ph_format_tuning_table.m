@@ -17,7 +17,7 @@ xlswrite([keys.tuning_table_foldername filesep keys.tuning_table_filename],excel
 end
 
 function tuning_per_unit_table=convert_LR_to_CI(tuning_per_unit_table)
-idx_target=find_column_index(tuning_per_unit_table,'target');
+idx_target=DAG_find_column_index(tuning_per_unit_table,'target');
 R_hem=cellfun(@(x) strcmpi(x(end-1:end),'_R'),tuning_per_unit_table(:,idx_target));
 L_hem=cellfun(@(x) strcmpi(x(end-1:end),'_L'),tuning_per_unit_table(:,idx_target));
 
@@ -71,7 +71,7 @@ for c=LH_columns
     table_title=tuning_per_unit_table{1,c};
     position_in_title_to_change=strfind(table_title,'_LH_')+1;
     table_title(position_in_title_to_change)='R';
-    counterhand_column=find_column_index(tuning_per_unit_table,table_title);
+    counterhand_column=DAG_find_column_index(tuning_per_unit_table,table_title);
     tuning_per_unit_table(L_hem,c)=Lhem_RH(:,RH_columns==counterhand_column);
     tuning_per_unit_table{1,c}(position_in_title_to_change)='C';
 end
@@ -79,7 +79,7 @@ for c=RH_columns
     table_title=tuning_per_unit_table{1,c};
     position_in_title_to_change=strfind(table_title,'_RH_')+1;
     table_title(position_in_title_to_change)='C';
-    counterhand_column=find_column_index(tuning_per_unit_table,table_title);
+    counterhand_column=DAG_find_column_index(tuning_per_unit_table,table_title);
     tuning_per_unit_table(L_hem,c)=Lhem_LH(:,LH_columns==counterhand_column);
     tuning_per_unit_table{1,c}(position_in_title_to_change)='I';
 end
@@ -93,7 +93,7 @@ for c=LS_columns
     table_title=tuning_per_unit_table{1,c};
     position_in_title_to_change=strfind(table_title,'_LS_')+1;
     table_title(position_in_title_to_change)='R';
-    counterhand_column=find_column_index(tuning_per_unit_table,table_title);
+    counterhand_column=DAG_find_column_index(tuning_per_unit_table,table_title);
     tuning_per_unit_table(L_hem,c)=Lhem_RH(:,RS_columns==counterhand_column);
     tuning_per_unit_table{1,c}(position_in_title_to_change)='C';
 end
@@ -101,19 +101,19 @@ for c=RS_columns
     table_title=tuning_per_unit_table{1,c};
     position_in_title_to_change=strfind(table_title,'_RS_')+1;
     table_title(position_in_title_to_change)='C';
-    counterhand_column=find_column_index(tuning_per_unit_table,table_title);
+    counterhand_column=DAG_find_column_index(tuning_per_unit_table,table_title);
     tuning_per_unit_table(L_hem,c)=Lhem_LH(:,LS_columns==counterhand_column);
     tuning_per_unit_table{1,c}(position_in_title_to_change)='I';
 end
 end
 
 function tuning_per_unit_table=ph_add_Subregions_to_table(tuning_per_unit_table,Subregions)
-idx_ID          =find_column_index(tuning_per_unit_table,'unit_ID');
-idx_target      =find_column_index(tuning_per_unit_table,'target');
-idx_x           =find_column_index(tuning_per_unit_table,'grid_x');
-idx_y           =find_column_index(tuning_per_unit_table,'grid_y');
-idx_z           =find_column_index(tuning_per_unit_table,'electrode_depth');
-idx_subregion   =find_column_index(tuning_per_unit_table,'Subregion');
+idx_ID          =DAG_find_column_index(tuning_per_unit_table,'unit_ID');
+idx_target      =DAG_find_column_index(tuning_per_unit_table,'target');
+idx_x           =DAG_find_column_index(tuning_per_unit_table,'grid_x');
+idx_y           =DAG_find_column_index(tuning_per_unit_table,'grid_y');
+idx_z           =DAG_find_column_index(tuning_per_unit_table,'electrode_depth');
+idx_subregion   =DAG_find_column_index(tuning_per_unit_table,'Subregion');
 if isempty(idx_subregion)
     idx_subregion   =size(tuning_per_unit_table,2)+1;
 end
@@ -143,7 +143,7 @@ general_factors={'epoch_main','spaceLR_main','hands_main','ExS','ExH','SxH','ExS
 factors={'epoch','spaceLR','spaceLR_ES','spaceLR_IX','hands','hands_ES','hands_IX','SxH','SxH_ES','SxH_IX'}; %position independently for both hands somehow
 general_factors_per_hand_space={'PT_main','ExP','epoch_main'}; %position independently for both hands somehow
 
-idx_subregion   =find_column_index(tuning_per_unit_table,'Subregion');
+idx_subregion   =DAG_find_column_index(tuning_per_unit_table,'Subregion');
 temp_table=[tuning_per_unit_table(:,1:N_columns_unchanged) tuning_per_unit_table(:,idx_subregion)];
         
 n_table=0;
@@ -175,7 +175,7 @@ for t=1:numel(tasks)
             temp_table5=temp_table4;
             for m=1:numel(general_factors)
                 current_factor=general_factors{m};
-                idx=find_column_index(tuning_per_unit_table,[current_INORCH '_' current_factor '_' current_task '_' current_case]);
+                idx=DAG_find_column_index(tuning_per_unit_table,[current_INORCH '_' current_factor '_' current_task '_' current_case]);
                 if isempty(idx); continue; end;
                 temp_table5=[temp_table5 vertcat({[current_factor '_general']},tuning_per_unit_table(2:end,idx))];
             end
@@ -185,13 +185,13 @@ for t=1:numel(tasks)
             for h=1:numel(hands)
                 for m=1:numel(general_factors_per_hand)
                     current_factor=[hands{h} general_factors_per_hand{m}];
-                    idx=find_column_index(tuning_per_unit_table,[current_INORCH '_' current_factor '_' current_task '_' current_case]);
+                    idx=DAG_find_column_index(tuning_per_unit_table,[current_INORCH '_' current_factor '_' current_task '_' current_case]);
                     if isempty(idx); continue; end;
                     temp_table6=[temp_table6 vertcat({[current_factor '_general']},tuning_per_unit_table(2:end,idx))];
                 end
                 for s=1:numel(sides)
                     for f=1:numel(general_factors_per_hand_space)
-                        idx=find_column_index(tuning_per_unit_table,[current_INORCH '_' hands{h} '_' sides{s} '_' general_factors_per_hand_space{f} '_' current_task '_' current_case]);
+                        idx=DAG_find_column_index(tuning_per_unit_table,[current_INORCH '_' hands{h} '_' sides{s} '_' general_factors_per_hand_space{f} '_' current_task '_' current_case]);
                         if isempty(idx); continue; end;
                         temp_table6=[temp_table6 vertcat({[hands{h} '_' sides{s} '_' general_factors_per_hand_space{f} '_tuning']},tuning_per_unit_table(2:end,idx))];
                     end
@@ -204,13 +204,13 @@ for t=1:numel(tasks)
                 temp_table7=[temp_table6 vertcat({'epoch'},repmat({epoch},size(tuning_per_unit_table,1)-1,1))];
                 for f=1:numel(factors)
                     current_factor=factors{f};
-                    idx=find_column_index(tuning_per_unit_table,[current_INORCH '_' epoch '_' current_factor '_' current_task '_' current_case]);
+                    idx=DAG_find_column_index(tuning_per_unit_table,[current_INORCH '_' epoch '_' current_factor '_' current_task '_' current_case]);
                     if isempty(idx); continue; end;
                     temp_table7=[temp_table7 vertcat({[current_factor  '_tuning']},tuning_per_unit_table(2:end,idx))];
                 end
                 for h=1:numel(hands)
                     for f=1:numel(factors_per_hand)
-                        idx=find_column_index(tuning_per_unit_table,[current_INORCH '_' hands{h} '_' epoch '_' factors_per_hand{f} '_' current_task '_' current_case]);
+                        idx=DAG_find_column_index(tuning_per_unit_table,[current_INORCH '_' hands{h} '_' epoch '_' factors_per_hand{f} '_' current_task '_' current_case]);
                         if isempty(idx); continue; end;
                         temp_table7=[temp_table7 vertcat({[hands{h} '_' factors_per_hand{f} '_tuning']},tuning_per_unit_table(2:end,idx))];
                     end
@@ -227,7 +227,7 @@ for n=1:numel(final_cell_table)
     n_rows=size(completed_table,1);
     n_columns=size(completed_table,2);
     for c=1:size(table_for_updating,2)
-        idx=find_column_index(completed_table,table_for_updating{1,c});
+        idx=DAG_find_column_index(completed_table,table_for_updating{1,c});
         if isempty(idx)
             completed_table(1,n_columns+1) = table_for_updating(1,c);
             completed_table(n_rows+1:n_rows+size(table_for_updating,1)-1,n_columns+1) = table_for_updating(2:end,c);

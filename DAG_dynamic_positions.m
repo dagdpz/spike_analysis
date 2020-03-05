@@ -1,5 +1,4 @@
-
-function [subplot_pos, n_columns, n_rows]= dynamic_positions(U_POS)
+function [subplot_pos, n_columns, n_rows]= DAG_dynamic_positions(U_POS)
 sin_U_POS=round(vertcat(U_POS{:})*100)/100;
 U_POS_adjusted=sin_U_POS;
 [heights,~,d]=unique(U_POS_adjusted(:,2));

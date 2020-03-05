@@ -11,7 +11,7 @@ end
 if keys.RE.FR_subtract_baseline
     Sel_for_title =[Sel_for_title,{'base';'=';keys.RE.epoch_BL;', '}];
 end
-idx_group_parameter=find_column_index(tuning_per_unit_table,keys.RE.group_parameter);
+idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.RE.group_parameter);
 group_values=tuning_per_unit_table(:,idx_group_parameter);
 group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
 cell_in_any_group=[false; ~ismember(group_values(2:end),keys.RE.group_excluded)];
@@ -21,7 +21,7 @@ if isempty(unique_group_values)
     return;
 end
 complete_unit_list={population.unit_ID}';
-idx_unitID=find_column_index(tuning_per_unit_table,'unit_ID');
+idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 
 all_IDs={population.unit_ID};
 valid_IDs=ismember(all_IDs,tuning_per_unit_table(:,1));
@@ -76,7 +76,7 @@ u_effectors =unique(type_effectors(:,2));
 for t=1:size(type_effectors,1) %still didnt add effectors properly
     typ=type_effectors(t,1);
     eff=type_effectors(t,2);
-    keys=get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+    keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
     fig_title=sprintf('%s %s %s hnd %s ch %s %s normalized %s in %s grouped by %s ',...
         keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement,     mat2str(u_hands),mat2str(double(u_choice)),[Sel_for_title{:}],keys.RE.normalization,keys.RE.epoch_for_normalization,keys.RE.group_parameter);
     filename=sprintf('%s %s %s hnd %s ch %s %s N_%s %s %s ',...
@@ -174,10 +174,10 @@ for t=1:size(type_effectors,1) %still didnt add effectors properly
         figure_handle              = figure('units','normalized','outerposition',[0 0 1 1],'name',[fig_title type_effector_short{t} 'reference frame correlations']);
         for ep=1:size(EPOCHS,1)
             epoc=EPOCHS{ep,1};
-            col1=strfind(tuning_per_unit_table(:,find_column_index(tuning_per_unit_table,['in_AH_' epoc '_position_Msac_mov'])),'true');
-            col2=strfind(tuning_per_unit_table(:,find_column_index(tuning_per_unit_table,['in_AH_' epoc '_PxF_Msac_mov'])),'true');
-            col3=strfind(tuning_per_unit_table(:,find_column_index(tuning_per_unit_table,['in_AH_' epoc '_position_Msac_tar'])),'true');
-            col4=strfind(tuning_per_unit_table(:,find_column_index(tuning_per_unit_table,['in_AH_' epoc '_PxF_Msac_tar'])),'true');
+            col1=strfind(tuning_per_unit_table(:,DAG_find_column_index(tuning_per_unit_table,['in_AH_' epoc '_position_Msac_mov'])),'true');
+            col2=strfind(tuning_per_unit_table(:,DAG_find_column_index(tuning_per_unit_table,['in_AH_' epoc '_PxF_Msac_mov'])),'true');
+            col3=strfind(tuning_per_unit_table(:,DAG_find_column_index(tuning_per_unit_table,['in_AH_' epoc '_position_Msac_tar'])),'true');
+            col4=strfind(tuning_per_unit_table(:,DAG_find_column_index(tuning_per_unit_table,['in_AH_' epoc '_PxF_Msac_tar'])),'true');
             ANOVA_units=tuning_per_unit_table(cellfun(@(w,x,y,z) any(w)||any(x)||any(y)||any(z),col1,col2,col3,col4),1);
             
             subplot(ceil(sqrt(size(EPOCHS,1))),ceil(sqrt(size(EPOCHS,1))),ep)

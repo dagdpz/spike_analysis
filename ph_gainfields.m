@@ -17,7 +17,7 @@ end
 if keys.GF.FR_subtract_baseline
     Sel_for_title =[Sel_for_title,{'base';'=';keys.GF.epoch_BL;', '}];
 end
-idx_group_parameter=find_column_index(tuning_per_unit_table,keys.GF.group_parameter);
+idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.GF.group_parameter);
 group_values=tuning_per_unit_table(:,idx_group_parameter);
 group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
 cell_in_any_group=[false; ~ismember(group_values(2:end),keys.GF.group_excluded)];
@@ -27,7 +27,7 @@ if isempty(unique_group_values)
     return;
 end
 complete_unit_list={population.unit_ID}';
-idx_unitID=find_column_index(tuning_per_unit_table,'unit_ID');
+idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 
 %%  here we go
 N_units=numel(population);

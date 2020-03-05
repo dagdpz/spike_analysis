@@ -1,4 +1,4 @@
-function out=twoDgaussian_with_2_opposing_RFs_fit(x,y,phi1,xmax1,ymax1,zmax1,sx1,sy1,phi2,xmax2,ymax2,zmax2,sx2,sy2,minratio)
+function out=ph_2D_fit_gaussian_with_2_opposing_RFs(x,y,phi1,xmax1,ymax1,zmax1,sx1,sy1,phi2,xmax2,ymax2,zmax2,sx2,sy2,minratio)
 vector_between_two_peaks=xmax2+ymax2*1i-xmax1-ymax1*1i;
 
 
