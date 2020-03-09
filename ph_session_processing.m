@@ -111,67 +111,76 @@ for current_date = sessions(:)'
         data_per_block(blo_idx)=ph_run_state_alignment_per_trial(MA_out{1},keys); %
     end
     
-    %% Sorting by unit ID & plotting waveform/spikesorting overview
-    %sites = sort_by_site_ID(data_per_block);
-    pop_resorted = sort_by_unit_ID(data_per_block);
-    %by_block = sort_by_block(data_per_block);
-    clear data_per_block;  %% resort by unit ID instead of block
-    pop_resorted(ismember({pop_resorted.unit_ID},{'no unit'}))=[];              %% remove units that were not taken over from excel sheet (??)
-    pop_resorted = ph_accept_trials_per_unit(pop_resorted);                     %% add field accepted for each trial per unit
+    %% Sorting by unit/site/block ID & plotting waveform/spikesorting overview
     
-    % plot firing rate across time, mark blocks
+    if keys.cal.process_sites
+        sites = sort_by_site_ID(data_per_block);
+    end
+    if keys.cal.process_spikes
+        pop_resorted = sort_by_unit_ID(data_per_block);
+    end
+    if keys.cal.process_by_block
+        by_block = sort_by_block(data_per_block);
+    end
+    clear data_per_block;
     
+    if keys.cal.process_spikes
+        pop_resorted(ismember({pop_resorted.unit_ID},{'no unit'}))=[];              %% remove units that were not taken over from excel sheet (??)
+        pop_resorted = ph_accept_trials_per_unit(pop_resorted);                     %% add field accepted for each trial per unit
         
-    
-    % plot the cells not meeting criteria
-    idx_Neuron_ID=DAG_find_column_index(keys.sorting_table,'Neuron_ID');
-    idx_Site_ID=DAG_find_column_index(keys.sorting_table,'Site_ID');
-    all_unit_IDs=keys.sorting_table_units(:,idx_Neuron_ID);
-    all_site_IDs=keys.sorting_table_sites(:,idx_Site_ID);
-    if keys.plot.waveforms && any(~ismember({pop_resorted.unit_ID},all_unit_IDs))
-        plot_sorted_waveforms(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria');
-        plot_FR_across_time(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria FR over time');
-    end
-    %pop_resorted([pop_resorted.n_waveforms]<keys.cal.min_spikes_per_unit)=[];
-    
-    % Excluding cells that dont match criterions... i.e. pop_resorted.unit_ID wont be assigned
-    if keys.cal.units_from_sorting_table
-        pop_resorted(~ismember({pop_resorted.unit_ID},all_unit_IDs))=[];
-    end
-    
-    % Excluding sites that dont match criterions... i.e. sites.unit_ID wont be assigned
-%     if keys.cal.units_from_sorting_table
-%         sites(~ismember({sites.site_ID},all_site_IDs))=[];
-%     end
-    
-    % plot the cells used for further processing
-    if keys.plot.waveforms
-        plot_sorted_waveforms(pop_resorted,keys,'analyzed units');
-        plot_sorted_ISI(pop_resorted,keys,'analyzed units ISI')
-        plot_FR_across_time(pop_resorted,keys,'analyzed units FR over time')
-    end
-    
-    if ~isempty(pop_resorted)
-        pop_resorted=ph_epochs(pop_resorted,keys);
-        [pop_resorted.monkey]=deal(keys.monkey);
-        keys.tuning_per_unit_table=ph_ANOVAS(pop_resorted,keys);
+        % plot the cells not meeting criteria
+        idx_Neuron_ID=DAG_find_column_index(keys.sorting_table,'Neuron_ID');
+        idx_Site_ID=DAG_find_column_index(keys.sorting_table,'Site_ID');
+        all_unit_IDs=keys.sorting_table_units(:,idx_Neuron_ID);
+        all_site_IDs=keys.sorting_table_sites(:,idx_Site_ID);
+        if keys.plot.waveforms && any(~ismember({pop_resorted.unit_ID},all_unit_IDs))
+            plot_sorted_waveforms(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria');
+            plot_FR_across_time(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria FR over time');
+        end
+        %pop_resorted([pop_resorted.n_waveforms]<keys.cal.min_spikes_per_unit)=[];
         
-        %% plotting single cells per session
-        if keys.plot.single_cells && ~isempty(pop_resorted)
-            ph_plot_unit_per_condition(pop_resorted,keys);
+        % Excluding cells that dont match criterions... i.e. pop_resorted.unit_ID wont be assigned
+        if keys.cal.units_from_sorting_table
+            pop_resorted(~ismember({pop_resorted.unit_ID},all_unit_IDs))=[];
         end
         
-        %% Save population mat file per session and output
-        population=ph_reduce_population(pop_resorted);
-        save([keys.population_foldername filesep keys.population_filename '_' current_date{1} '.mat'],'population');
+        % plot the cells used for further processing
+        if keys.plot.waveforms
+            plot_sorted_waveforms(pop_resorted,keys,'analyzed units');
+            plot_sorted_ISI(pop_resorted,keys,'analyzed units ISI');
+            plot_FR_across_time(pop_resorted,keys,'analyzed units FR over time');
+        end
+        
+        if ~isempty(pop_resorted)
+            pop_resorted=ph_epochs(pop_resorted,keys);
+            [pop_resorted.monkey]=deal(keys.monkey);
+            keys.tuning_per_unit_table=ph_ANOVAS(pop_resorted,keys);
+            
+            %% plotting single cells per session
+            if keys.plot.single_cells && ~isempty(pop_resorted)
+                ph_plot_unit_per_condition(pop_resorted,keys);
+            end
+            
+            %% Save population mat file per session and output
+            population=ph_reduce_population(pop_resorted);
+            save([keys.population_foldername filesep keys.population_filename '_' current_date{1} '.mat'],'population');
+        end
+        
     end
-    
-%     if ~isempty(sites)      %% Save by site mat file per session
-%         save([keys.population_foldername filesep keys.sites_filename '_' current_date{1} '.mat'],'sites');
-%     end
-%     if ~isempty(by_block)     %% Save by block mat file per session
-%         save([keys.population_foldername filesep 'by_block_' keys.monkey(1:end-5) '_' current_date{1} '.mat'],'by_block');
-%     end
+    if keys.cal.process_sites
+        % Excluding sites that dont match criterions... i.e. sites.unit_ID wont be assigned
+        if keys.cal.units_from_sorting_table
+            sites(~ismember({sites.site_ID},all_site_IDs))=[];
+        end
+        
+        
+        if ~isempty(sites)      %% Save by site mat file per session
+            save([keys.population_foldername filesep keys.sites_filename '_' current_date{1} '.mat'],'sites');
+        end
+    end
+    if keys.cal.process_by_block && ~isempty(by_block)     %% Save by block mat file per session
+        save([keys.population_foldername filesep 'by_block_' keys.monkey(1:end-5) '_' current_date{1} '.mat'],'by_block');
+    end
 end
 
 end
@@ -509,41 +518,41 @@ for n_unit=1:numel(o)
     AT=NaN;
     for t=1:numel(o(n_unit).trial)
         AT=[AT o(n_unit).trial(t).arrival_times'+o(n_unit).trial(t).trial_onset_time];
-%         for n_spike_in_trial = 1:numel(o(n_unit).trial(t).arrival_times)
-%             if t==1 && n_spike_in_trial==1
-%                 continue;
-%             elseif n_spike_in_trial==1
-%                ISI(n_unit).trial(t).isi(n_spike_in_trial)=o(n_unit).trial(t).arrival_times(n_spike_in_trial) - o(n_unit).trial(t-1).arrival_times(end) + ...
-%                                                           o(n_unit).trial(t).trial_onset_time - o(n_unit).trial(t-1).trial_onset_time ; 
-%             else
-%             ISI(n_unit).trial(t).isi(n_spike_in_trial)=o(n_unit).trial(t).arrival_times(n_spike_in_trial) - o(n_unit).trial(t).arrival_times(n_spike_in_trial-1);
-%             end
-%         end
+        %         for n_spike_in_trial = 1:numel(o(n_unit).trial(t).arrival_times)
+        %             if t==1 && n_spike_in_trial==1
+        %                 continue;
+        %             elseif n_spike_in_trial==1
+        %                ISI(n_unit).trial(t).isi(n_spike_in_trial)=o(n_unit).trial(t).arrival_times(n_spike_in_trial) - o(n_unit).trial(t-1).arrival_times(end) + ...
+        %                                                           o(n_unit).trial(t).trial_onset_time - o(n_unit).trial(t-1).trial_onset_time ;
+        %             else
+        %             ISI(n_unit).trial(t).isi(n_spike_in_trial)=o(n_unit).trial(t).arrival_times(n_spike_in_trial) - o(n_unit).trial(t).arrival_times(n_spike_in_trial-1);
+        %             end
+        %         end
     end
     AT=unique(AT); % due to ovrelapping end and beginning of trial, spikes can be counted twice
     all_ISI = diff(AT); %cat(2,ISI(n_unit).trial.isi);
     
     if ~isempty(all_ISI)
-        hist_values = histc(all_ISI,x_bins); 
+        hist_values = histc(all_ISI,x_bins);
         perc_first_bin = (hist_values(1)/sum(hist_values))*100;
-%         histogram(all_ISI,x_bins,'FaceColor','r','EdgeColor','w');
-%         hist(all_ISI,x_bins)
-%         bar(log10(x_bins(2:end)),hist_values(2:end));
+        %         histogram(all_ISI,x_bins,'FaceColor','r','EdgeColor','w');
+        %         hist(all_ISI,x_bins)
+        %         bar(log10(x_bins(2:end)),hist_values(2:end));
         x_bins_bar=logspace(-3,0,31);
-%         bar(log10(x_bins(2:end-1)), hist_values(2:end-1))
-         bar(log10(x_bins_bar), hist_values)
+        %         bar(log10(x_bins(2:end-1)), hist_values(2:end-1))
+        bar(log10(x_bins_bar), hist_values)
         h = findobj(gca,'Type','patch');
         set(h,'FaceColor','r','EdgeColor','w');
-%         x_bins_ticks = [10^-3 10^-2 10^-1 0.5];
+        %         x_bins_ticks = [10^-3 10^-2 10^-1 0.5];
         x_bins_ticks = [-3:1];
         x_bins_ticks_label = [10^-3 10^-2 10^-1 0.5];
         set(gca,'ylim',[0 max([1 hist_values])],'xtick',x_bins_ticks,'box','off');%max(hist(all_ISI,x_bins)),'ycolor',[1 1 1],'xscale','log'
         set(gca,'XTickLabel',sprintf('%2.0e|',x_bins_ticks_label));
-%         h2 = findobj(gca,'Type','line');
-%         set(h2,'Marker','none');
-%         xlim([0,0.7]);
+        %         h2 = findobj(gca,'Type','line');
+        %         set(h2,'Marker','none');
+        %         xlim([0,0.7]);
         text(-0.45,max(hist_values),[num2str(perc_first_bin,'%4.1f') '%<1ms'],'FontSize',8)
-       
+        
     end
     unit_title={sprintf('%s SN/Si/St: %d/%d/%d',o(n_unit).unit_ID,o(n_unit).SNR_rating,o(n_unit).Single_rating,o(n_unit).stability_rating)...
         sprintf(['spk: %d ch/De: %d/%.2f b: ' num2str(unique([o(n_unit).trial.block]))],numel(all_ISI), o(n_unit).channel,o(n_unit).electrode_depth)}; %MP add number of spikes

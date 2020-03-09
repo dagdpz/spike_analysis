@@ -25,6 +25,10 @@ keys.batching.Subregions{1}{1}           =struct('monkey',{''},'target',{''},'gr
 keys.batching.n_Subregions               =numel(keys.batching.Subregions);
 
 %% criterions to exclude trials and units
+keys.cal.process_spikes                  =1;      % you can choose not to run spikes at all           
+keys.cal.process_sites                   =1;      % you can choose not to run lfp sites at all (saving processing time)             
+keys.cal.process_by_block                =1;      % you can choose not to run by block (body signals f.e.) at all (saving processing time)                   
+
 keys.cal.MA_selection                   ={'display',0,'keep_raw_data',1,'saccade_definition',4,'reach_1st_pos',1,'correlation_conditions',{}};                        % if you want to run MA with specific settings
 keys.cal.units_from_sorting_table       =1;                         % exclude units that are not in the sorting table (and therefore apply stability/single/SNT ratings)
 keys.cal.datasets                       =[];
