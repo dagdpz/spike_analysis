@@ -18,7 +18,7 @@ for unit=1:numel(population)
     if sum(tr_considered)>0
         for a=1:numel(keys.position_and_plotting_arrangements)
             keys.arrangement=keys.position_and_plotting_arrangements{a};
-            o=ph_arrange_positions_and_plots(population(unit).trial(tr_considered),keys);
+            o=ph_arrange_positions_and_plots(keys,population(unit).trial(tr_considered));
             
             
             for type=unique(types)
@@ -92,7 +92,7 @@ for unit=1:numel(population)
     end
     
     clear unit_table;
-    inital_fieldnames={'unit_ID','monkey','target','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
+    inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
     %inital_fieldnames={'unit_ID','monkey','target','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating'};  % for microstim dataset, waveforms were not defined yet
     unit_table(1,1:numel(inital_fieldnames))=inital_fieldnames;
     for fn=1:numel(inital_fieldnames)

@@ -112,8 +112,8 @@ for xory=keys.GA.xory
             units=find(all(unitidx,2))';
             for u=units
                 tr_con=ismember([population(u).trial.completed],keys.cal.completed) & [population(u).trial.accepted];
-                [pop]=ph_arrange_positions_and_plots(population(u).trial(tr_con),keys);
-                pop=ph_LR_to_CI(pop,population(u).target);
+                [pop]=ph_arrange_positions_and_plots(keys,population(u).trial(tr_con),population(u));
+                pop=ph_LR_to_CI(keys,pop);
                 poppos=vertcat(pop.trial.position);
                 %% normalization factor
                 for c=1:size(condition_matrix_p,1) %% position condition matrix...!

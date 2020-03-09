@@ -35,7 +35,7 @@ for unit=1:numel(population)
                 disp(sprintf('%s has no trials for effector %.0f type %.0f hands %s completed= %.0f',population(unit).unit_ID,effector,type,mat2str(keys.cal.reach_hand),keys.cal.completed));
                 continue;
             end
-            o=ph_arrange_positions_and_plots(population(unit).trial(o_index),keys);
+            o=ph_arrange_positions_and_plots(keys,population(unit).trial(o_index),population(unit));
             
             if any(hands(o_index)>0)
                 y_lim_PSTH=hnd_offset-keys.plot.excentricity_max_for_ylim*keys.plot.eyetrace_factor;

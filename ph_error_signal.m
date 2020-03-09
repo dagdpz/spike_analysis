@@ -87,7 +87,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
                     unit_IDs_te={population_te.unit_ID};
                     % here we go
                     for u=1:numel(population_te)
-                        pop=ph_LR_to_CI_raw(population_te(u),population_te(u).target);
+                        pop=ph_LR_to_CI(keys,population_te(u));
                         pop=ph_epochs(pop,keys);
                         trials=[pop.trial];
                         trials=trials([trials.success] & [trials.accepted] & [trials.effector]==eff & [trials.type]==typ);

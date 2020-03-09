@@ -1,7 +1,7 @@
 function ph_format_tuning_table(tuning_per_unit_table,keys)
 keys.tuning_table_foldername    =[keys.basepath_to_save keys.project_version];
 tuning_per_unit_table           =ph_add_Subregions_to_table(tuning_per_unit_table,keys.batching.Subregions);
-tuning_per_unit_table           =convert_LR_to_CI(tuning_per_unit_table);
+tuning_per_unit_table           =convert_LR_to_CI(tuning_per_unit_table,keys);
 save([keys.tuning_table_foldername filesep 'tuning_table_combined_CI'],'tuning_per_unit_table')
 
 tasktypes={};
@@ -16,17 +16,17 @@ excel_table=format_excel_tuning_table(tuning_per_unit_table,tasktypes,keys.posit
 xlswrite([keys.tuning_table_foldername filesep keys.tuning_table_filename],excel_table);
 end
 
-function tuning_per_unit_table=convert_LR_to_CI(tuning_per_unit_table)
-idx_target=DAG_find_column_index(tuning_per_unit_table,'target');
-R_hem=cellfun(@(x) strcmpi(x(end-1:end),'_R'),tuning_per_unit_table(:,idx_target));
-L_hem=cellfun(@(x) strcmpi(x(end-1:end),'_L'),tuning_per_unit_table(:,idx_target));
+function tuning_per_unit_table=convert_LR_to_CI(tuning_per_unit_table,keys)
+idx_target=DAG_find_column_index(tuning_per_unit_table,keys.contra_ipsi_relative_to); 
+R_hem=cellfun(@(x) strcmpi(x(end-1:end),'_R'),tuning_per_unit_table(:,idx_target)); % row index for right hemisphere
+L_hem=cellfun(@(x) strcmpi(x(end-1:end),'_L'),tuning_per_unit_table(:,idx_target)); % row index for left hemisphere
 
 %% Replacing left/right hemifield and hand preference by ipsi/contra
-O_entries={'LS','RS','LH','RH'};
-R_entries={'CS','IS','CH','IH'};
-L_entries={'IS','CS','IH','CH'};
-tuning_table_temp=tuning_per_unit_table(R_hem,:);
-for e=1:numel(O_entries)
+O_entries={'LS','RS','LH','RH'}; % Original entries
+R_entries={'CS','IS','CH','IH'}; % What they become for right hemisphere
+L_entries={'IS','CS','IH','CH'}; % What they become for left hemisphere
+tuning_table_temp=tuning_per_unit_table(R_hem,:);   % reduced table with only units form right hemisphere
+for e=1:numel(O_entries)                            % simply finding each table entry that refers to space (LS, RS, LH, RH), and replace it
     tuning_table_temp(cellfun(@(x) strcmp(x,O_entries{e}),tuning_table_temp))=R_entries(e);
 end
 tuning_per_unit_table(R_hem,:)=tuning_table_temp;
@@ -37,7 +37,7 @@ for e=1:numel(O_entries)
 end
 tuning_per_unit_table(L_hem,:)=tuning_table_temp;
 
-%% inverting effect sizes (ES) and index (IX) for right hemisphere, so R-L becomes C-I
+%% inverting effect sizes (ES) and index (IX) for right hemisphere, so R-L becomes C-I (ONLY INVERTING RIGHT HEMISPHERE HERE)
 ES_columns=cellfun(@(x) any(strfind(x,'_ES_')),tuning_per_unit_table(1,:));
 tuning_per_unit_table(R_hem,ES_columns)= cellfun(@(x) x*-1,tuning_per_unit_table(R_hem,ES_columns),'uniformoutput',false);
 
@@ -47,7 +47,8 @@ tuning_per_unit_table(R_hem,DF_columns)= cellfun(@(x) x*-1,tuning_per_unit_table
 IX_columns=cellfun(@(x) any(strfind(x,'_spaceLR_IX')) || any(strfind(x,'_hands_IX')),tuning_per_unit_table(1,:));
 tuning_per_unit_table(R_hem,IX_columns)= cellfun(@(x) x*-1,tuning_per_unit_table(R_hem,IX_columns),'uniformoutput',false);
 
-%% completing tuning table columns to have both hands for each respective parameter
+%% completing tuning table columns to have both hands for each respective parameter 
+%  entries will be empty, but at least the column names are there - we need this for the next step
 LH_columns=find(cellfun(@(x) any(strfind(x,'_LH_')),tuning_per_unit_table(1,:)));
 RH_columns=find(cellfun(@(x) any(strfind(x,'_RH_')),tuning_per_unit_table(1,:)));
 LH_column_names_as_RH=cellfun(@(x) strrep(x,'_LH_','_RH_'),tuning_per_unit_table(1,LH_columns),'uniformoutput',false);
@@ -62,23 +63,33 @@ if ~isempty(LH_missing)
     tuning_per_unit_table(1,end+1:end+numel(LH_missing))=LH_missing;
 end
 
+%% This next part is a bit confusing. We replaced all the entries so far ...
+% BUT the column headers are still in LH/RH LS/RS notation
+% and the tricky part here is, that we have to shuffle these columns,
+% because for 2 units from a different hemisphere, f.e. the value for CH
+% comes from a different original column (LH or RH)
+% The fact that we have both hand and space to modify doesnt
+% make it more complicated, we can address them independently in two steps (which
+% are pretty much the same)
+% We are only swapping columns for one hemisphere (the left, but this is irrelevant, as long as column headers are named accordingly) !!
+
 %% replacing LH and RH with IH and CH
-LH_columns=find(cellfun(@(x) any(strfind(x,'_LH_')),tuning_per_unit_table(1,:)));
-RH_columns=find(cellfun(@(x) any(strfind(x,'_RH_')),tuning_per_unit_table(1,:)));
-Lhem_LH=tuning_per_unit_table(L_hem,LH_columns);
-Lhem_RH=tuning_per_unit_table(L_hem,RH_columns);
-for c=LH_columns
+LH_columns=find(cellfun(@(x) any(strfind(x,'_LH_')),tuning_per_unit_table(1,:)));   % original LH columns
+RH_columns=find(cellfun(@(x) any(strfind(x,'_RH_')),tuning_per_unit_table(1,:)));   % original RH columns
+Lhem_LH=tuning_per_unit_table(L_hem,LH_columns);                                    % reduced table Left hemisphere left  hand (temporary stored information)
+Lhem_RH=tuning_per_unit_table(L_hem,RH_columns);                                    % reduced table Left hemisphere right hand (temporary stored information)
+for c=LH_columns                                                                    % looping through all LH columns to replace left hemisphere rows with respective RH entries
     table_title=tuning_per_unit_table{1,c};
     position_in_title_to_change=strfind(table_title,'_LH_')+1;
-    table_title(position_in_title_to_change)='R';
-    counterhand_column=DAG_find_column_index(tuning_per_unit_table,table_title);
-    tuning_per_unit_table(L_hem,c)=Lhem_RH(:,RH_columns==counterhand_column);
-    tuning_per_unit_table{1,c}(position_in_title_to_change)='C';
+    table_title(position_in_title_to_change)='R';                                   % we replaced LH with RH, so this is now the header of the column we want to replace left hemisphere entries
+    counterhand_column=DAG_find_column_index(tuning_per_unit_table,table_title);    % position of the respective RH column in the full table
+    tuning_per_unit_table(L_hem,c)=Lhem_RH(:,RH_columns==counterhand_column);       % here we replace all left hemisphere rows for the current (LH) column with the respective temporarily stored RH column entries
+    tuning_per_unit_table{1,c}(position_in_title_to_change)='C';                    % now we can rename the column, since we swapped RH entries to LH for left hemisphere, it's now contra hand (for both hemispheres!)
 end
-for c=RH_columns
+for c=RH_columns                                                                    % this is the same as above, but now for RH columns
     table_title=tuning_per_unit_table{1,c};
     position_in_title_to_change=strfind(table_title,'_RH_')+1;
-    table_title(position_in_title_to_change)='C';
+    table_title(position_in_title_to_change)='C';                                   % here's the only difference: there is no LH in the column headers any more, becuase we replaced it with CH
     counterhand_column=DAG_find_column_index(tuning_per_unit_table,table_title);
     tuning_per_unit_table(L_hem,c)=Lhem_LH(:,LH_columns==counterhand_column);
     tuning_per_unit_table{1,c}(position_in_title_to_change)='I';
@@ -87,14 +98,14 @@ end
 %% replacing LS and RS with IS and CS
 LS_columns=find(cellfun(@(x) any(strfind(x,'_LS_')),tuning_per_unit_table(1,:)));
 RS_columns=find(cellfun(@(x) any(strfind(x,'_RS_')),tuning_per_unit_table(1,:)));
-Lhem_LH=tuning_per_unit_table(L_hem,LS_columns);
-Lhem_RH=tuning_per_unit_table(L_hem,RS_columns);
+Lhem_LS=tuning_per_unit_table(L_hem,LS_columns);
+Lhem_RS=tuning_per_unit_table(L_hem,RS_columns);
 for c=LS_columns
     table_title=tuning_per_unit_table{1,c};
     position_in_title_to_change=strfind(table_title,'_LS_')+1;
     table_title(position_in_title_to_change)='R';
     counterhand_column=DAG_find_column_index(tuning_per_unit_table,table_title);
-    tuning_per_unit_table(L_hem,c)=Lhem_RH(:,RS_columns==counterhand_column);
+    tuning_per_unit_table(L_hem,c)=Lhem_RS(:,RS_columns==counterhand_column);
     tuning_per_unit_table{1,c}(position_in_title_to_change)='C';
 end
 for c=RS_columns
@@ -102,7 +113,7 @@ for c=RS_columns
     position_in_title_to_change=strfind(table_title,'_RS_')+1;
     table_title(position_in_title_to_change)='C';
     counterhand_column=DAG_find_column_index(tuning_per_unit_table,table_title);
-    tuning_per_unit_table(L_hem,c)=Lhem_LH(:,LS_columns==counterhand_column);
+    tuning_per_unit_table(L_hem,c)=Lhem_LS(:,LS_columns==counterhand_column);
     tuning_per_unit_table{1,c}(position_in_title_to_change)='I';
 end
 end
@@ -132,7 +143,7 @@ end
 end
 
 function completed_table=format_excel_tuning_table(tuning_per_unit_table,tasks,cases)
-N_columns_unchanged=11;
+N_columns_unchanged=12;
 in_or_ch={'in','ch'};
 hands={'AH','IH','CH'}; %%!!!
 sides={'IS','CS'}; %%!!!

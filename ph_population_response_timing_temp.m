@@ -110,7 +110,7 @@ for tye=1:size(type_effectors,1) %typ=unique(per_trial.types)
         for u=units
             tr_con=ismember([population(u).trial.completed],keys.cal.completed);
             [pop]=ph_arrange_positions_and_plots(population(u).trial(tr_con),keys);
-            pop=ph_LR_to_CI(pop,population(u).target);
+            pop=ph_LR_to_CI(pop,population(u),keys);
             
             %% average PSTH per unit
             for ce=1:size(conditions_eff,1)

@@ -174,7 +174,7 @@ end
 
 %% finding positions and fixations
 tr_con=ismember([all_trialz.completed],keys.cal.completed);
-[whatisthis]=ph_arrange_positions_and_plots(all_trialz(tr_con),keys);
+[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
 positions=unique(vertcat(whatisthis.trial.position),'rows');
 
 %adjust fixations... should be done inside ph_arrange_positions_and_plots
@@ -216,11 +216,11 @@ for tye=1:size(type_effectors,1)
         units=find(all(unitidx,2))';
         for u=units
             tr_con=ismember([population(u).trial.completed],keys.cal.completed) & [population(u).trial.accepted];
-            [pop]=ph_arrange_positions_and_plots(population(u).trial(tr_con),keys);
+            [pop]=ph_arrange_positions_and_plots(keys,population(u).trial(tr_con),population(u));
             
             [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{1})).perturbation]=deal(0);
             [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{2})).perturbation]=deal(1);
-            pop=ph_LR_to_CI(pop,population(u).target);
+            pop=ph_LR_to_CI(keys,pop);
             per_epoch=vertcat(pop.trial.epoch);
             if keys.PO.FR_subtract_baseline
                 baseline=repmat(vertcat(per_epoch(:,BL_epoch).FR),1,size(condition_matrix,1));

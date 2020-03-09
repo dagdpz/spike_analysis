@@ -90,7 +90,7 @@ for a=1:numel(keys.position_and_plotting_arrangements)
     keys.arrangement=keys.position_and_plotting_arrangements{a}; % important for ph_arrange_positions_and_plots
     
     tr_con=[all_trialz.success]==1;
-    [whatisthis]=ph_arrange_positions_and_plots(all_trialz(tr_con),keys);
+    [whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
     positions=unique(vertcat(whatisthis.trial.position),'rows');
     
     clear whatisthis
@@ -118,7 +118,7 @@ for a=1:numel(keys.position_and_plotting_arrangements)
             if sum(tr_u1)==0
                continue; 
             end
-            [pop1]=ph_arrange_positions_and_plots(population(u1).trial(tr_u1),keys);
+            [pop1]=ph_arrange_positions_and_plots(keys,population(u1).trial(tr_u1),population(u1));
                 trpos=vertcat(pop1.trial.position);
                 AAA=num2cell([trpos(:,1)+1i*trpos(:,2)].');
                 [pop1.trial.pos]=AAA{:};

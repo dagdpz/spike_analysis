@@ -82,7 +82,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
                     
                     % here we go
                     for u=1:numel(population)
-                        pop=ph_LR_to_CI_raw(population(u),population(u).target);
+                        pop=ph_LR_to_CI(keys,population(u));
                         
                         trials=[pop.trial];
                         trials=trials([trials.completed] & [trials.accepted]);

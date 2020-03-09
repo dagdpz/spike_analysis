@@ -214,6 +214,7 @@ for b=1:size(o_t,2)
                 n_trial(site_index)=1;
                 pop_resorted(site_index).site_ID          =o_t(b).trial(t).channel(c).site_ID;
                 pop_resorted(site_index).target           =o_t(b).trial(t).channel(c).target;
+                pop_resorted(site_index).perturbation_site=o_t(b).trial(t).channel(c).perturbation_site;
                 pop_resorted(site_index).grid_x           =o_t(b).trial(t).channel(c).grid_x;
                 pop_resorted(site_index).grid_y           =o_t(b).trial(t).channel(c).grid_y;
                 pop_resorted(site_index).electrode_depth  =o_t(b).trial(t).channel(c).electrode_depth;
@@ -279,6 +280,7 @@ for b=1:size(o_t,2)
                     
                     pop_resorted(unit_index).site_ID          =o_t(b).trial(t).unit(c,u).site_ID;
                     pop_resorted(unit_index).target           =o_t(b).trial(t).unit(c,u).target;
+                    pop_resorted(unit_index).perturbation_site=o_t(b).trial(t).unit(c,u).perturbation_site;
                     pop_resorted(unit_index).grid_x           =o_t(b).trial(t).unit(c,u).grid_x;
                     pop_resorted(unit_index).grid_y           =o_t(b).trial(t).unit(c,u).grid_y;
                     pop_resorted(unit_index).electrode_depth  =o_t(b).trial(t).unit(c,u).electrode_depth;

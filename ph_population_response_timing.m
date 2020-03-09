@@ -90,7 +90,7 @@ conditions_hf       = combvec(u_hemifields,conditions_out')';
 %     keys.arrangement=keys.position_and_plotting_arrangements{a}; % important for ph_arrange_positions_and_plots
 a=1;
 tr_con=ismember([all_trialz.completed],keys.cal.completed);
-[whatisthis]=ph_arrange_positions_and_plots(all_trialz(tr_con),keys);
+[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
 positions=unique(vertcat(whatisthis.trial.position),'rows');
 clear whatisthis
 
@@ -110,8 +110,8 @@ for t=1:size(type_effectors,1) %typ=unique(per_trial.types)
         units=find(all(unitidx,2))';
         for u=units
             tr_con=ismember([population(u).trial.completed],keys.cal.completed);
-            [pop]=ph_arrange_positions_and_plots(population(u).trial(tr_con),keys);
-            pop=ph_LR_to_CI(pop,population(u).target);
+            [pop]=ph_arrange_positions_and_plots(keys,population(u).trial(tr_con),population(u));
+            pop=ph_LR_to_CI(keys,pop);
             
             %% average PSTH per unit
             %clear trpar

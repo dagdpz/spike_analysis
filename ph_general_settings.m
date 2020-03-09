@@ -6,6 +6,7 @@ keys.labels.perturbations={'','_PT'};  %% AH!??
 keys.labels.choices={'in','ch'};
 
 keys.FR_subtract_baseline=0;
+keys.contra_ipsi_relative_to='target';
 
 %% general settings (multi-summary PSTH)
 

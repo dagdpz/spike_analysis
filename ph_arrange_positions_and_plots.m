@@ -1,4 +1,4 @@
-function [out_analysis]=ph_arrange_positions_and_plots(o,keys)
+function [pop]=ph_arrange_positions_and_plots(keys,o,pop_in)
 % this nasty piece of code defines positions, single cell plotting appearence (batching in figures/subplots/lines and color), as well as minimum number of trials per condition, 
 % all in one defined by keys.arrangement
 % con_for_figure:           which trials to place on the same figure
@@ -18,7 +18,11 @@ function [out_analysis]=ph_arrange_positions_and_plots(o,keys)
 % out_analysis.PSTH_summary_colors: colors used in type summary plots
 % out_analysis.line_labels: lables for the different lines in the summary plot legend
 %         
-        
+%% taking over per unit informaiton from original pop if applicable
+if nargin>2
+pop=rmfield(pop_in,'trial');
+end
+
 %% DEFINITION OF CONDITION INDICES TO PLOT, CURRENTLY TARGET LOCATION, FIXATION LOCATION, MOVEMENT VECTORS, CHOICE, HANDS
 [~, displacement_types] = center_displacement_working(o);       
 all_val=displacement_types(:,1:4);
@@ -141,9 +145,9 @@ switch keys.arrangement
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
         position_indexes        = cue_idx;
         hemifield_indexes       = (real([o.cue_pos]' - [o.fix_pos]')>0)+1;
-        out_analysis.PSTH_perpos_colors =   [1 0 0; 0 1 0];
-        out_analysis.PSTH_summary_colors=   [1 0 0; 1 1 0; 0 1 0; 0 1 1];
-        out_analysis.line_labels        =   {'err','suc'};
+        pop.PSTH_perpos_colors =   [1 0 0; 0 1 0];
+        pop.PSTH_summary_colors=   [1 0 0; 1 1 0; 0 1 0; 0 1 1];
+        pop.line_labels        =   {'err','suc'};
         
     case 'cue_position'
         con_for_figure          = suc_idx;
@@ -156,9 +160,9 @@ switch keys.arrangement
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
         position_indexes        = cue_idx;
         hemifield_indexes       = (real([o.cue_pos]' - [o.fix_pos]')>0)+1;
-        out_analysis.PSTH_perpos_colors =   jet(numel(shp_values));
-        out_analysis.PSTH_summary_colors=   [autumn(numel(shp_values));winter(numel(shp_values))] ;
-        out_analysis.line_labels        =   cue_shape_labels;
+        pop.PSTH_perpos_colors =   jet(numel(shp_values));
+        pop.PSTH_summary_colors=   [autumn(numel(shp_values));winter(numel(shp_values))] ;
+        pop.line_labels        =   cue_shape_labels;
         
     case 'hand_choices'
         con_for_line            = hch_idx;
@@ -166,9 +170,9 @@ switch keys.arrangement
         fig_title               = '';
         val_for_figure          = {hnd_cho_values};
         color_idx=ismember(hand_choice_color_combination(:,1),hnd_values) & ismember(hand_choice_color_combination(:,2),cho_values);
-        out_analysis.PSTH_perpos_colors     =   keys.hnd_choice_colors(ismember(hand_choice_color_combination,hnd_cho_values,'rows'),:);
-        out_analysis.PSTH_summary_colors    =   [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
-        out_analysis.line_labels            =   hand_choice_labels(ismember(hand_choice_color_combination,hnd_cho_values,'rows'));
+        pop.PSTH_perpos_colors     =   keys.hnd_choice_colors(ismember(hand_choice_color_combination,hnd_cho_values,'rows'),:);
+        pop.PSTH_summary_colors    =   [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
+        pop.line_labels            =   hand_choice_labels(ismember(hand_choice_color_combination,hnd_cho_values,'rows'));
         
     case 'options'
         con_for_figure          = hnd_idx;
@@ -177,9 +181,9 @@ switch keys.arrangement
         fig_title               = 'hand ';
         val_for_figure          = num2cell(hnd_values);
         color_idx=ismember(choice_color_combination,cho_values,'rows');
-        out_analysis.PSTH_perpos_colors     =   keys.hnd_choice_colors(color_idx,:);
-        out_analysis.PSTH_summary_colors    =   [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
-        out_analysis.line_labels            =   choice_labels(ismember(choice_color_combination,cho_values));
+        pop.PSTH_perpos_colors     =   keys.hnd_choice_colors(color_idx,:);
+        pop.PSTH_summary_colors    =   [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
+        pop.line_labels            =   choice_labels(ismember(choice_color_combination,cho_values));
         
     case 'hands_inactivation'
         con_for_figure          = cho_idx;
@@ -189,9 +193,9 @@ switch keys.arrangement
         val_for_figure          = num2cell(cho_values);
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
         color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
-        out_analysis.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
-        out_analysis.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
-        out_analysis.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
+        pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
+        pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
+        pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
         
     case 'hands_inactivation_in_ch'
         con_for_figure          = eff_idx;
@@ -201,9 +205,9 @@ switch keys.arrangement
         val_for_figure          = num2cell(eff_values);
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
         color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
-        out_analysis.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
-        out_analysis.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
-        out_analysis.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
+        pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
+        pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
+        pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
         
     case 'hands'
         con_for_figure          = cho_idx;
@@ -215,9 +219,9 @@ switch keys.arrangement
         val_for_figure          = num2cell(cho_values);
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
         color_idx=ismember(hand_eff_color_combination(:,1),hnd_values) & ismember(hand_eff_color_combination(:,2),eff_values);     
-        out_analysis.PSTH_perpos_colors     = keys.hnd_eff_colors(color_idx,:);
-        out_analysis.PSTH_summary_colors    = [keys.hnd_eff_colors_L(color_idx,:); keys.hnd_eff_colors_R(color_idx,:)] ;
-        out_analysis.line_labels            = hand_eff_labels(ismember(hand_eff_color_combination,hnd_eff_values,'rows'));
+        pop.PSTH_perpos_colors     = keys.hnd_eff_colors(color_idx,:);
+        pop.PSTH_summary_colors    = [keys.hnd_eff_colors_L(color_idx,:); keys.hnd_eff_colors_R(color_idx,:)] ;
+        pop.line_labels            = hand_eff_labels(ismember(hand_eff_color_combination,hnd_eff_values,'rows'));
         
     case 'fixation'
         con_for_row             = eff_idx;
@@ -230,9 +234,9 @@ switch keys.arrangement
         hemifield_indexes       = (real([o.fix_pos])'>0)+1;
         fixation_per_trial      = zeros(size(fix_val)); %% since we treat fixation as positions, there is no actual fixation needed any more!
         color_idx=ismember(choice_color_combination,cho_values,'rows');
-        out_analysis.PSTH_perpos_colors     = keys.colors.fix_offset;
-        out_analysis.PSTH_summary_colors    = [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
-        out_analysis.line_labels            = {''};
+        pop.PSTH_perpos_colors     = keys.colors.fix_offset;
+        pop.PSTH_summary_colors    = [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
+        pop.line_labels            = {''};
        
     case 'movement vectors'
         con_for_line            = fix_idx;
@@ -241,9 +245,9 @@ switch keys.arrangement
         color_idx               = ismember(choice_color_combination,cho_values,'rows');
         n_unique_lines=numel(unique(con_for_line));
         color_factors=linspace(0.3,1,n_unique_lines);
-        out_analysis.PSTH_perpos_colors     =   keys.colors.fix_offset;
-        out_analysis.PSTH_summary_colors    =   [(keys.hnd_choice_colors_L(color_idx,:)'*color_factors)'; (keys.hnd_choice_colors_R(color_idx,:)'*color_factors)'] ;
-        out_analysis.line_labels            =   fix_labels;
+        pop.PSTH_perpos_colors     =   keys.colors.fix_offset;
+        pop.PSTH_summary_colors    =   [(keys.hnd_choice_colors_L(color_idx,:)'*color_factors)'; (keys.hnd_choice_colors_R(color_idx,:)'*color_factors)'] ;
+        pop.line_labels            =   fix_labels;
         
     case 'target location by origin'
         con_for_line            = fix_idx;
@@ -256,40 +260,40 @@ switch keys.arrangement
         color_idx=ismember(choice_color_combination,cho_values,'rows');
         n_unique_lines=numel(unique(con_for_line));
         color_factors=linspace(0.3,1,n_unique_lines);
-        out_analysis.PSTH_perpos_colors     = keys.colors.fix_offset;
-        out_analysis.PSTH_summary_colors    = [(keys.hnd_choice_colors_L(color_idx,:)'*color_factors)'; (keys.hnd_choice_colors_R(color_idx,:)'*color_factors)'] ;
-        out_analysis.line_labels            = fix_labels;
+        pop.PSTH_perpos_colors     = keys.colors.fix_offset;
+        pop.PSTH_summary_colors    = [(keys.hnd_choice_colors_L(color_idx,:)'*color_factors)'; (keys.hnd_choice_colors_R(color_idx,:)'*color_factors)'] ;
+        pop.line_labels            = fix_labels;
 end
 
 %% subplot positions
-[subplot_pos, out_analysis.columns, out_analysis.rows]= DAG_dynamic_positions({val_for_sub_assignment});
+[subplot_pos, pop.columns, pop.rows]= DAG_dynamic_positions({val_for_sub_assignment});
 
 %% some preallocations
-out_analysis.figure_title_part      =fig_title;
+pop.figure_title_part      =fig_title;
 for n=1:numel(val_for_figure)
     temp     =[arrayfun(@num2str, val_for_figure{n}, 'unif', 0)'; repmat({' '},size(val_for_figure{n},1),1)'];
-    out_analysis.figure_title_value{n,1}     =[temp{:}];
+    pop.figure_title_value{n,1}     =[temp{:}];
 end
 
 %% Assigning each trial
-out_analysis.trial=o;
+pop.trial=o;
 for t=1:numel(o)
-    out_analysis.trial(t).line           =con_for_line(t);
-    out_analysis.trial(t).figure         =con_for_figure(t);
-    out_analysis.trial(t).column         =con_for_column(t);
-    out_analysis.trial(t).row            =con_for_row(t);
-    out_analysis.trial(t).hand           =hands(t);
-    out_analysis.trial(t).choice         =choices(t);
-    out_analysis.trial(t).fixation       =fixation_per_trial(t,:);
-    out_analysis.trial(t).title_part     =sub_title;
-    out_analysis.trial(t).subplot_pos    =subplot_pos(position_indexes(t));
-    out_analysis.trial(t).position       =val_for_pos_assignment(position_indexes(t),:);
-    out_analysis.trial(t).hemifield      =-1*(out_analysis.trial(t).position(1)<0)+1*(out_analysis.trial(t).position(1)>0);
+    pop.trial(t).line           =con_for_line(t);
+    pop.trial(t).figure         =con_for_figure(t);
+    pop.trial(t).column         =con_for_column(t);
+    pop.trial(t).row            =con_for_row(t);
+    pop.trial(t).hand           =hands(t);
+    pop.trial(t).choice         =choices(t);
+    pop.trial(t).fixation       =fixation_per_trial(t,:);
+    pop.trial(t).title_part     =sub_title;
+    pop.trial(t).subplot_pos    =subplot_pos(position_indexes(t));
+    pop.trial(t).position       =val_for_pos_assignment(position_indexes(t),:);
+    pop.trial(t).hemifield      =-1*(pop.trial(t).position(1)<0)+1*(pop.trial(t).position(1)>0);
 end
 
 %% trial criterion (very temporary) - needs to be separate for ch and IN, also for hands!...
-out_analysis.position_combinations  = [con_for_figure con_for_trial_crit position_indexes];
-out_analysis.hemifield_combinations = [con_for_figure con_for_trial_crit hemifield_indexes];
+pop.position_combinations  = [con_for_figure con_for_trial_crit position_indexes];
+pop.hemifield_combinations = [con_for_figure con_for_trial_crit hemifield_indexes];
 
 end
 

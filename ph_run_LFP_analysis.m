@@ -151,7 +151,7 @@ for sess=1:numel(population_names)
                 n_unit=n_unit+1;
                 keep_site=1;
             end
-            unitC=ph_arrange_positions_and_plots(unitC.trial(accepted),keys);
+            unitC=ph_arrange_positions_and_plots(keys,unitC.trial(accepted));
             %unitC.trial=unitC.trial(accepted);
             siteC.trial=siteC.trial(accepted);
             
