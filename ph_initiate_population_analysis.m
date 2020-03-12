@@ -1,6 +1,6 @@
 function ph_initiate_population_analysis(varargin)
 %ph_run_population_analysis('PPC_pulv_eye_hand',{'LIP_dPul_inj_working'},{'pop','ons','sct','ccs'})
-population_analysis_to_perform={'pop','beh','ons','sct','ccs','gaz','ref','gfl'}; 
+population_analysis_to_perform={'pop','beh','ons','sct','ccs','gaz','ref','gfl','hst'}; 
 
 if nargin>2
     population_analysis_to_perform=varargin{3};
@@ -154,8 +154,7 @@ for P=population_analysis_to_perform
                 switch ana
                     case 'ons'
                         keys=ph_make_subfolder('response timing',keys);
-                        %ph_population_response_timing(population,keys);
-                        ph_population_response_timing_temp(population,keys);
+                        ph_population_response_timing(population,keys);
                     case 'beh'
                         keys=ph_make_subfolder('behavior',keys);
                         ph_ephys_behavior(keys);

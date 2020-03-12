@@ -100,6 +100,8 @@ fitsettings.fittypes=keys.PO.fittypes;
 
 %% define conditions to look at
 all_trialz=[population.trial];
+tr_con=ismember([all_trialz.completed],keys.cal.completed);
+[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
 
 condition_parameters  ={'reach_hand','choice','perturbation'};
 per_trial.types       =[all_trialz.type];
@@ -107,10 +109,11 @@ per_trial.effectors   =[all_trialz.effector];
 per_trial.hands       =[all_trialz.reach_hand];
 per_trial.choice      =[all_trialz.choice];
 per_trial.perturbation=[all_trialz.perturbation];
+per_trial.hemifield   =[whatisthis.trial.hemifield];
 per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
 per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
 
-u_hemifields=[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
+u_hemifields=unique(per_trial.hemifield); %[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
 
 u_types     =unique(per_trial.types);
 u_effectors =unique(per_trial.effectors);
@@ -173,8 +176,6 @@ end
 
 
 %% finding positions and fixations
-tr_con=ismember([all_trialz.completed],keys.cal.completed);
-[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
 positions=unique(vertcat(whatisthis.trial.position),'rows');
 
 %adjust fixations... should be done inside ph_arrange_positions_and_plots
