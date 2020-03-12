@@ -8,7 +8,7 @@ tasktypes={};
 tasktypes_index=1;
 for effector=keys.cal.effectors
     for type=keys.cal.types
-        [~, tasktypes{tasktypes_index}]=get_type_effector_name(type,effector);
+        [~, tasktypes{tasktypes_index}]=MPA_get_type_effector_name(type,effector);
         tasktypes_index=tasktypes_index+1;
     end
 end

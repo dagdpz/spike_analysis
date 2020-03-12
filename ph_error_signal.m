@@ -77,7 +77,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
                     
                     typ=type_effectors(te,1);
                     eff=type_effectors(te,2);
-                    [~, type_effector_short]=get_type_effector_name(typ,eff);
+                    [~, type_effector_short]=MPA_get_type_effector_name(typ,eff);
                     idx_existing=DAG_find_column_index(tuning_per_unit_table,['existing_' 'in_AH_' type_effector_short '_' keys.arrangement(1:3)]);
                     idx_unit_ID=DAG_find_column_index(tuning_per_unit_table,['unit_ID']);
                     units_existing= [true; ismember(vertcat(tuning_per_unit_table{2:end,idx_existing}),true)];

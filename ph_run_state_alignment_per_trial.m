@@ -93,7 +93,7 @@ for t=1:n_trials
     rea_end = rea_ini + MA_out.reaches(t).dur;
     tri_end = MA_out.states(t).start_end;
     
-    get_expected_MA_states(trial(t).type,trial(t).effector,0);    %% set to 1 to allow later processing
+    MPA_get_expected_states(trial(t).type,trial(t).effector,0);    %% set to 1 to allow later processing
     movement_states       = [MA_STATES.SAC_INI MA_STATES.SAC_END MA_STATES.REA_INI MA_STATES.REA_END MA_STATES.TRI_END];
     movement_onsets       = [sac_ini sac_end rea_ini rea_end tri_end];
     movement_onsets       = movement_onsets(ismember(movement_states,MA_STATES.all_states));

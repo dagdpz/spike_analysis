@@ -76,7 +76,7 @@ type_effectors =[];
 for t=1:size(all_type_effectors,1)
     typ=all_type_effectors(t,1);
     eff=all_type_effectors(t,2);
-    [~, type_effector_short]=get_type_effector_name(typ,eff);
+    [~, type_effector_short]=MPA_get_type_effector_name(typ,eff);
     if ~ismember(type_effector_short,keys.conditions_to_plot) %|| sum(tr_con)<1
         continue;
     end
@@ -99,13 +99,13 @@ for a=1:numel(keys.position_and_plotting_arrangements)
     for t=1:size(type_effectors,1) %careful, because type_effectors is limited by keys.conditions_to_plot
         typ=type_effectors(t,1);
         eff=type_effectors(t,2);
-        get_expected_MA_states(typ,eff,sum(type_effectors(:,1)==typ)>1); %% does it make sense to distinguish by effector?
+        MPA_get_expected_states(typ,eff,sum(type_effectors(:,1)==typ)>1); %% does it make sense to distinguish by effector?
         keys.ALL_EPOCHS=keys.EPOCHS_PER_TYPE{typ};
         keys.EPOCHS=keys.ALL_EPOCHS(ismember([keys.ALL_EPOCHS{:,2}],MA_STATES.all_states),:);
         for hnd=1:numel(u_hands)
             
         condition_matrix_pairs    = combvec(u_hands(hnd),u_choice,[positions(:,1)+1i*positions(:,2)]')'; %% to take only instructed !
-        [~, type_effector_short]=get_type_effector_name(typ,eff);
+        [~, type_effector_short]=MPA_get_type_effector_name(typ,eff);
         tyc=hnd+(t-1)*numel(u_hands)+(a-1)*(numel(u_types)*numel(u_hands));
         tyc_label{tyc}=[type_effector_short hand_labels_LR{u_hands(hnd)+1} keys.arrangement];
       

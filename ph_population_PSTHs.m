@@ -135,7 +135,7 @@ type_effectors =[];
 for t=1:size(all_type_effectors,1)
     typ=all_type_effectors(t,1);
     eff=all_type_effectors(t,2);
-    [~, type_effector_short{t}]=get_type_effector_name(typ,eff);
+    [~, type_effector_short{t}]=MPA_get_type_effector_name(typ,eff);
     if ~ismember(type_effector_short{t},keys.conditions_to_plot) %|| sum(tr_con)<1
         continue;
     end
@@ -976,7 +976,7 @@ end
         for eff=u_effectors %% one figure for ech effector, somehting probably does not work here, because (!!) suplots in each figure
             ef=find(u_effectors==eff);
             keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
-            [~, type_effector_short] = get_type_effector_name(typ,eff);
+            [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
             plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
             PSTH_summary_handle(ef)     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
             for g=1:numel(unique_group_values)
@@ -1109,7 +1109,7 @@ end
         end
         for eff=u_effectors
             ef=find(u_effectors==eff);
-            [~, type_effector_short] = get_type_effector_name(typ,eff);
+            [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
             plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
             ph_title_and_save(PSTH_summary_handle(ef),  [filename plot_title_part ', ' type_effector_short],plot_title,keys)
         end
@@ -1119,7 +1119,7 @@ end
             
             for eff=u_effectors
                 ef=find(u_effectors==eff);
-                [~, type_effector_short] = get_type_effector_name(typ,eff);
+                [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
                 plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
                 PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
                 for g=1:numel(unique_group_values)
@@ -1218,7 +1218,7 @@ end
 % function plot_PSTH
 % for eff=u_effectors %% one figure for ech effector
 %     keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
-%     [~, type_effector_short] = get_type_effector_name(typ,eff);
+%     [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
 %     plot_title              = [fig_title type_effector_short plot_title_part];
 %     PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
 %     for g=1:numel(unique_group_values)
@@ -1314,7 +1314,7 @@ end
 %     y_lim= keys.PO.y_lim;
 % end
 % for eff=u_effectors
-%     [~, type_effector_short] = get_type_effector_name(typ,eff);
+%     [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
 %     plot_title              = [fig_title type_effector_short plot_title_part];
 %     %                 unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)) & tya_existing{t},idx_unitID));
 %     %                 group_units=find(all(unitidx,2) & units_valid)';

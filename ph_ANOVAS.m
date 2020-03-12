@@ -32,7 +32,7 @@ for unit=1:numel(population)
                 
                 for effector=unique(effectors)
                     keys=ph_get_epoch_keys(keys,type,effector,sum(type_effectors(:,1)==type)>1);
-                    [~, condition_fieldname_part]=get_type_effector_name(type,effector);
+                    [~, condition_fieldname_part]=MPA_get_type_effector_name(type,effector);
                     
                     tr_index= effectors==effector & types == type;% & ismember(hands,keys.cal.reach_hand);
                     tr_index= tr_index(tr_considered);
@@ -64,8 +64,8 @@ for unit=1:numel(population)
                 for comp=1:size(effectors_to_compare,2)
                     comp_eff=effectors_to_compare(:,comp);
                     keys=ph_get_epoch_keys(keys,type,comp_eff,1);
-                    [~, condition_fieldname_part1]=get_type_effector_name(type,comp_eff(1));
-                    [~, condition_fieldname_part2]=get_type_effector_name(type,comp_eff(2));
+                    [~, condition_fieldname_part1]=MPA_get_type_effector_name(type,comp_eff(1));
+                    [~, condition_fieldname_part2]=MPA_get_type_effector_name(type,comp_eff(2));
                     condition_fieldname_part=[condition_fieldname_part1 '_vs_' condition_fieldname_part2];
                     tr_index= ismember(effectors,comp_eff) & types == type & control;
                     tr_index= tr_index(tr_considered); %& ismember(hands,keys.cal.reach_hand);

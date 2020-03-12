@@ -52,7 +52,7 @@ for unit=1:numel(population)
                 for e=1:numel(effectors_on_figure)
                     clear hh hs hb
                     effector=effectors_on_figure(e);
-                    [type_effector_full, type_effector_short type_string] = get_type_effector_name(type,effector);
+                    [type_effector_full, type_effector_short type_string] = MPA_get_type_effector_name(type,effector);
                     
                     %% ANOVA results to print
                     anova_labels.epoch  = ['in_epoch_main_' type_effector_short '_' keys.arrangement(1:3)];
@@ -352,7 +352,7 @@ for unit=1:numel(population)
                             effector=effectors_in_row(er);
                             e=find(effectors_on_figure==effector);
                             R=numel(effectors_on_figure)*(r-1)+e;
-                            [type_effector_full, type_effector_short] = get_type_effector_name(type,effector);
+                            [type_effector_full, type_effector_short] = MPA_get_type_effector_name(type,effector);
                             con_counter=0;
                             for h=1:numel(unique_hemifields)
                                 for lin=1:max(unique_lines)
@@ -515,7 +515,7 @@ for unit=1:numel(population)
                     effector=effectors_on_figure(e);
                     o_e=o;
                     o_e.trial=o_e.trial(of_index & [o.trial.effector]==effector);
-                    [type_effector_full, type_effector_short] = get_type_effector_name(type,effector);
+                    [type_effector_full, type_effector_short] = MPA_get_type_effector_name(type,effector);
                     om=ph_arrange_movement_positions(population(unit).trial(oe_index),keys); %why not using o_e => this would separate into error and success
                     PSTH_perpos_colors=om.PSTH_perpos_colors;
                     

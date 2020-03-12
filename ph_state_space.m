@@ -161,7 +161,7 @@ type_effectors =[];
 for t=1:size(all_type_effectors,1)
     typ=all_type_effectors(t,1);
     eff=all_type_effectors(t,2);
-    [~, type_effector_short{t}]=get_type_effector_name(typ,eff);
+    [~, type_effector_short{t}]=MPA_get_type_effector_name(typ,eff);
     if ~ismember(type_effector_short{t},keys.conditions_to_plot) %|| sum(tr_con)<1
         continue;
     end
@@ -562,7 +562,7 @@ if keys.ST.combine_exp_conditions
         [Sel_for_title{:}],keys.monkey,keys.ST.group_parameter,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)),keys.ST.normalization,keys.ST.epoch_for_normalization);
     
     keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
-    [~, type_effector_short] = get_type_effector_name(typ,eff);
+    [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
     plot_title              = [fig_title type_effector_short plot_title_part];
     state_space_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
     conditions_plot=conditions_hf_complete;
@@ -595,7 +595,7 @@ if keys.ST.combine_exp_conditions
         [Sel_for_title{:}],keys.monkey,keys.ST.group_parameter,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)),keys.ST.normalization,keys.ST.epoch_for_normalization);
     
     keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
-    [~, type_effector_short] = get_type_effector_name(typ,eff);
+    [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
     plot_title              = [fig_title type_effector_short plot_title_part];
     state_space_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
     conditions_plot=conditions_hf_complete;
@@ -626,7 +626,7 @@ if keys.ST.combine_exp_conditions
         [Sel_for_title{:}],keys.monkey,keys.ST.group_parameter,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)),keys.ST.normalization,keys.ST.epoch_for_normalization);
     
     keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
-    [~, type_effector_short] = get_type_effector_name(typ,eff);
+    [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
     plot_title              = [fig_title type_effector_short plot_title_part];
     state_space_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
     
@@ -647,7 +647,7 @@ if keys.ST.combine_exp_conditions
     filename=sprintf('%s %s %s %s %s hnd %s ch %s N_%s %s',...
         [Sel_for_title{:}],keys.monkey,keys.ST.group_parameter,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)),keys.ST.normalization,keys.ST.epoch_for_normalization);
     keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
-    [~, type_effector_short] = get_type_effector_name(typ,eff);
+    [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
     plot_title              = [fig_title type_effector_short plot_title_part];
     state_space_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
     
@@ -715,7 +715,7 @@ else
             [Sel_for_title{:}],keys.monkey,keys.ST.group_parameter,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)),keys.ST.normalization,keys.ST.epoch_for_normalization,char(condition_name(cd)));
         
         keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
-        [~, type_effector_short] = get_type_effector_name(typ,eff);
+        [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
         plot_title              = [fig_title type_effector_short plot_title_part];
         state_space_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
         if strcmp(char(condition_name(cd)),'data_to_PCA_CT')

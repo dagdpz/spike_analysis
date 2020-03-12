@@ -159,7 +159,7 @@ for monkeys={'Both','Cur','Lin'}
     for t=1:size(all_type_effectors,1)
         typ=all_type_effectors(t,1);
         eff=all_type_effectors(t,2);
-        [~, type_effector_short{t}]=get_type_effector_name(typ,eff);
+        [~, type_effector_short{t}]=MPA_get_type_effector_name(typ,eff);
         if ~ismember(type_effector_short{t},keys.conditions_to_plot) %|| sum(tr_con)<1
             type_effector_short{t}=[];
             continue;
