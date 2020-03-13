@@ -208,12 +208,10 @@ for tt=1:numel(keys.HS.tasktypes)
             
             %unit_IDs=tuning_per_unit_table(2:end, idx.unit_ID);
             
-            units_ordered_by_singificance=[find(~significant(:,e));find(significant(:,e))]';
-            units_ordered_by_singificance(units_ordered_by_singificance>numel(A1_csch))=[];
             %% plot tuning rectangle per unit
             subplot(subplot_rows,numel(epochs),e);
             title([epoch ' ' num2str(numel(A1_isch))]);
-             for k=units_ordered_by_singificance
+             for k=[find(~significant(:,e));find(significant(:,e))]'
                 if significant(k,e)
                     current_color=map(angles_sum(k),:);
                 else
@@ -227,7 +225,7 @@ for tt=1:numel(keys.HS.tasktypes)
             %% plot tuning rectangle per unit
             subplot(subplot_rows,numel(epochs),numel(epochs)+e);
             title([epoch ' ' num2str(numel(A2_isch))]);
-             for k=units_ordered_by_singificance
+             for k=[find(~significant(:,e)) find(significant(:,e))]
                 if significant(k,e)
                     current_color=map(angles_sum(k),:);
                 else
@@ -252,7 +250,7 @@ for tt=1:numel(keys.HS.tasktypes)
             %                 end
             %             end
             
-            for k=units_ordered_by_singificance
+            for k=[find(~significant(:,e)) find(significant(:,e))]
                 if significant(k,e)
                     current_color=map(angles_sum(k),:);
                 else

@@ -31,7 +31,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
         keys.anova_table_file=[keys.basepath_to_save keys.project_version filesep 'tuning_table_combined_CI.mat'];
-        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf'}))
+        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','hst'}))
             population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
             population=ph_assign_perturbation_group(keys,population);
             population=ph_epochs(population,keys);
@@ -193,7 +193,7 @@ for P=population_analysis_to_perform
                         keys=ph_make_subfolder('hand_space',keys);
                         temp_epochs=keys.(AN).epochs;
                         keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{:});
-                        ph_hand_space_tuning_vector(keys); 
+                        ph_hand_space_tuning_vector(population,keys); 
                         keys.(AN).epochs=temp_epochs;
                 end
             end
