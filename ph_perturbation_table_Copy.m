@@ -6,6 +6,7 @@ keys=ph_general_settings(project,keys);
 
 keys.tt.IC_for_criterion            = 'in';
 %github test
+%test bruno
 
 project_specific_settings=[keys.db_folder filesep project filesep 'ph_project_settings.m'];
 run(project_specific_settings);
