@@ -118,7 +118,7 @@ for f=1:numel(keys.project_versions)
                 end
                 map = [1 1 1;  1 0 0; 0 0 0];%colors
                 colormap(map)   
-                 title(epoch);
+                title(epoch);
                  
             end
 
