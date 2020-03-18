@@ -20,8 +20,8 @@ for f=1:numel(keys.project_versions)
 %    if ~isempty(keys.project_versions{f})
 %         keys.project_version=keys.project_versions{f};
 %    end
-    version_folder=keys.project_versions;
-    keys.version_specific_settings=[keys.db_folder project filesep keys.project_version filesep 'ph_project_version_settings.m'];
+    version_folder=char(keys.project_versions);
+    keys.version_specific_settings=[keys.db_folder project filesep version_folder filesep 'ph_project_version_settings.m'];
     run(keys.version_specific_settings);
     keys.project_version=version_folder;
     
@@ -38,7 +38,7 @@ for f=1:numel(keys.project_versions)
             
             keys.tt.selection                   ={'target',target};
             tasktype=keys.tt.tasktypes{1};
-            keys.anova_table_file=horzcat(['Y:\Projects\' project '\ephys\' version_folder '\tuning_table_combined_CI.mat']);
+            keys.anova_table_file= ['Y:\Projects\' project '\ephys\' version_folder '\tuning_table_combined_CI.mat'];
             [tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
             [tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
             
@@ -55,13 +55,13 @@ for f=1:numel(keys.project_versions)
                 epochs={'Facq','Fhol','Cue','Del','PreS','PeriS'};
             end
             
-            
+            figure
             for e=1:numel(epochs)
                 
                 epoch=epochs{e};
                 
                 subplot(subplot_rows,numel(epochs)/2,e);
-                title(epoch);
+               
                 HSC = [1 2 3 4 5]; %Four Hand-Space conditons +1
                 
                 for unit = 1:(size(tuning_per_unit_table,1)-1)
@@ -109,11 +109,16 @@ for f=1:numel(keys.project_versions)
 % %              
     
                 end
+                
                 unit_IDs=tuning_per_unit_table(2:end, idx.unit_ID);
+                if any(strfind(target,'_L'))
                 pcolor(HSC,units_L,Df_L);
-%                 pcolor(HSC,units_R,Df_R);
+                else
+                pcolor(HSC,units_R,Df_R);
+                end
                 map = [1 1 1;  1 0 0; 0 0 0];%colors
-                colormap(map)    
+                colormap(map)   
+                 title(epoch);
                  
             end
 
