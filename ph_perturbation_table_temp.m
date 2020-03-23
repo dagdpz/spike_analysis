@@ -16,14 +16,16 @@ subplot_rows = 2;
 
 for f=1:numel(keys.project_versions)
     
-   keys.project_versions=versions;
-%    if ~isempty(keys.project_versions{f})
-%         keys.project_version=keys.project_versions{f};
-%    end
+    keys.project_versions=versions;
+    %    if ~isempty(keys.project_versions{f})
+    %         keys.project_version=keys.project_versions{f};
+    %    end
     version_folder=char(keys.project_versions);
     keys.version_specific_settings=[keys.db_folder project filesep version_folder filesep 'ph_project_version_settings.m'];
     run(keys.version_specific_settings);
     keys.project_version=version_folder;
+    
+    
     
     
     keys.tt.choices             = 0;
@@ -41,6 +43,10 @@ for f=1:numel(keys.project_versions)
             keys.anova_table_file= ['Y:\Projects\' project '\ephys\' version_folder '\tuning_table_combined_CI.mat'];
             [tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
             [tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
+            
+            if ~exist([keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table'],'dir')
+                mkdir([keys.basepath_to_save filesep keys.project_version],'perturbation_table');
+            end
             
             
             for kk=1:size(tuning_per_unit_table,2)
@@ -61,12 +67,12 @@ for f=1:numel(keys.project_versions)
                 epoch=epochs{e};
                 
                 subplot(subplot_rows,numel(epochs)/2,e);
-               
+                
                 HSC = [1 2 3 4 5]; %Four Hand-Space conditons +1
                 
                 for unit = 1:(size(tuning_per_unit_table,1)-1)
                     
-                   if any(strfind(target,'_L'))
+                    if any(strfind(target,'_L'))
                         
                         eff_IH_IS{unit} = [tuning_per_unit_table{unit+1, idx.(['in_CH_CS_' epoch '_PT_' tasktype])}];
                         eff_IH_CS{unit} = [tuning_per_unit_table{unit+1, idx.(['in_CH_IS_' epoch '_PT_' tasktype])}];
@@ -74,18 +80,18 @@ for f=1:numel(keys.project_versions)
                         eff_CH_CS{unit} = [tuning_per_unit_table{unit+1, idx.(['in_IH_IS_' epoch '_PT_' tasktype])}];
                         
                         
-                       eff_AH_AS_L=vertcat(eff_IH_IS,eff_IH_CS,eff_CH_IS,eff_CH_CS)';
-                       eff_L= strrep(eff_AH_AS_L,{'EN'}, '1');
-                       eff_L= strrep(eff_L,{'SU'}, '2');
-                       eff_L= strrep(eff_L,{'-'}, '0');
-                       %add an extra row and column of zeros so we Map to units,ie. 5x(no. of units + 1)
-                       Df_L= cellfun(@str2double,[eff_L repmat({'0'},size(eff_L,1),1)]);
-                       Df_L=vertcat(Df_L, zeros(1,size(eff_L,2)+1));
-                       units_L=[1:size(vertcat(tuning_per_unit_table(2:size(tuning_per_unit_table,1),1) ,'-'))];
-%                        
-                     
-
-                   else
+                        eff_AH_AS_L=vertcat(eff_IH_IS,eff_IH_CS,eff_CH_IS,eff_CH_CS)';
+                        eff_L= strrep(eff_AH_AS_L,{'EN'}, '1');
+                        eff_L= strrep(eff_L,{'SU'}, '2');
+                        eff_L= strrep(eff_L,{'-'}, '0');
+                        %add an extra row and column of zeros so we Map to units,ie. 5x(no. of units + 1)
+                        Df_L= cellfun(@str2double,[eff_L repmat({'0'},size(eff_L,1),1)]);
+                        Df_L=vertcat(Df_L, zeros(1,size(eff_L,2)+1));
+                        units_L=[1:size(vertcat(tuning_per_unit_table(2:size(tuning_per_unit_table,1),1) ,'-'))];
+                        %
+                        
+                        
+                    else
                         
                         eff_IH_IS{unit} = [tuning_per_unit_table{unit+1, idx.(['in_IH_IS_' epoch '_PT_' tasktype])}];
                         eff_IH_CS{unit} = [tuning_per_unit_table{unit+1, idx.(['in_IH_CS_' epoch '_PT_' tasktype])}];
@@ -93,45 +99,52 @@ for f=1:numel(keys.project_versions)
                         eff_CH_CS{unit} = [tuning_per_unit_table{unit+1, idx.(['in_CH_CS_' epoch '_PT_' tasktype])}];
                         
                         
-                       eff_AH_AS_R=vertcat(eff_IH_IS,eff_IH_CS,eff_CH_IS,eff_CH_CS)';
-                       eff_R= strrep(eff_AH_AS_R,{'EN'}, '1');
-                       eff_R= strrep(eff_R,{'SU'}, '2');
-                       eff_R= strrep(eff_R,{'-'}, '0');
-                     %add an extra row and column of zeros so we Map to units,ie. 5x(no. of units + 1)
-                       Df_R= cellfun(@str2double,[eff_R repmat({'0'},size(eff_R,1),1)]);
-                       Df_R=vertcat(Df_R, zeros(1,size(eff_R,2)+1));
-                       units_R=[1:size(vertcat(tuning_per_unit_table(2:size(tuning_per_unit_table,1),1) ,'-'))];
-                         
+                        eff_AH_AS_R=vertcat(eff_IH_IS,eff_IH_CS,eff_CH_IS,eff_CH_CS)';
+                        eff_R= strrep(eff_AH_AS_R,{'EN'}, '1');
+                        eff_R= strrep(eff_R,{'SU'}, '2');
+                        eff_R= strrep(eff_R,{'-'}, '0');
+                        %add an extra row and column of zeros so we Map to units,ie. 5x(no. of units + 1)
+                        Df_R= cellfun(@str2double,[eff_R repmat({'0'},size(eff_R,1),1)]);
+                        Df_R=vertcat(Df_R, zeros(1,size(eff_R,2)+1));
+                        units_R=[1:size(vertcat(tuning_per_unit_table(2:size(tuning_per_unit_table,1),1) ,'-'))];
                         
-                   end
-                   
-
-% %              
-    
+                        
+                    end
+                    
+                    
+                    % %
+                    
                 end
                 
                 unit_IDs=tuning_per_unit_table(2:end, idx.unit_ID);
                 if any(strfind(target,'_L'))
-                pcolor(HSC,units_L,Df_L);
+                    pcolor(HSC,units_L,Df_L);
                 else
-                pcolor(HSC,units_R,Df_R);
+                    pcolor(HSC,units_R,Df_R);
                 end
                 x=HSC;
                 set(gca,'XTick',[1.5,2.5,3.5,4.5])
                 set(gca,'XTickLabel',{'IH-IS','IH-CS','CH-IS','CH-CS'})
                 map = [1 1 1;  1 0 0; 0 0 0];%colors
-                colormap(map)   
+                colormap(map)
                 title(epoch);
-                 
+                
+                
             end
-
+            
+            figure_title=[keys.monkey '_' target '_' tasktype];
+            filename=[keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table' filesep figure_title];
+            mtit(figure_title, 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
+            export_fig(filename, '-pdf','-transparent') % pdf by run
+            
         end
     end
 end
-            
+
 % %                    xlabel('Hand Space Conditions')
-% % 
-% %                    ylabel('Units')  
+% %
+% %                    ylabel('Units')
+close all
 
 disp('done');
 
