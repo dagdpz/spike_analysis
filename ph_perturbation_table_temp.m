@@ -117,8 +117,8 @@ for f=1:numel(keys.project_versions)
                 pcolor(HSC,units_R,Df_R);
                 end
                 x=HSC;
-                xticks([1.5,2.5,3.5,4.5])
-                xticklabels({'IH-IS','IH-CS','CH-IS','CH-CS'})
+                set(gca,'XTick',[1.5,2.5,3.5,4.5])
+                set(gca,'XTickLabel',{'IH-IS','IH-CS','CH-IS','CH-CS'})
                 map = [1 1 1;  1 0 0; 0 0 0];%colors
                 colormap(map)   
                 title(epoch);
