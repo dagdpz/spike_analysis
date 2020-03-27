@@ -6,7 +6,7 @@ tr_in=[MA_out.physiology];
 n_chans_u = max(arrayfun(@(x) size(x.spike_arrival_times,1),tr_in));  % is this nonempty channels only?
 n_chans_s = 1;
 if isfield(tr_in,'TDT_LFPx')
-    nonempty=find(arrayfun(@(x) isempy(x.TDT_LFPx),tr_in));
+    nonempty=find(arrayfun(@(x) isempty(x.TDT_LFPx),tr_in));
     n_chans_s = size(tr_in(nonempty(1)).TDT_LFPx,1);  % first nonempty trial, is this nonempty channels only?
 end
 %n_chans=max([n_chans_u n_chans_s]);
@@ -230,7 +230,7 @@ for t=1:n_trials
             trial(t).unit(c,u).waveforms            =tr_in(t).spike_waveforms{c,u}(wf_idx,:);
             
             %% ADDING PREVIOUS SPIKES TO CURRENT TRIAL (shift_in_seconds before trial onset)
-            if t>1
+            if t>1 && ~ismember(t-1,invalid_trials)
                 prev_trial_spike_arrival_times = tr_in(t-1).spike_arrival_times{c,u} -(trial(t).trial_onset_time -MA_out.states(t-1).trial_onset_time);
                 tr_in(t).spike_arrival_times{c,u} = [prev_trial_spike_arrival_times(prev_trial_spike_arrival_times>-shift_in_seconds); tr_in(t).spike_arrival_times{c,u}];
             end
