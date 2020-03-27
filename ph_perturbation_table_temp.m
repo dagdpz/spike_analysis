@@ -97,7 +97,7 @@ for f=1:numel(keys.project_versions)
                                 avg_unit_response_L (counter_average_L,:)= [1 0];
                             elseif sum((Df_L(counter_average_L, :))==2)>=2 && sum((Df_L(counter_average_L, :))==1)<2 % at least 2 black but no more than 1 red
                                 avg_unit_response_L (counter_average_L,:)= [2 0];
-                            elseif sum((Df_L(counter_average_L, :))==0)>=2 && sum((Df_L(counter_average_L, :))==(1|2))<=1 %at least 2 white but not 1 red and 1 black
+                            elseif sum((Df_L(counter_average_L, :))==0)>=2 && ((sum((Df_L(counter_average_L, :))==1))+(sum((Df_L(counter_average_L, :))==2)))<2 %at least 2 white but not 1 red and 1 black
                                 avg_unit_response_L (counter_average_L, :)= [0 0];
                             else 
                                 avg_unit_response_L (counter_average_L,:)= [3 0]; %inconsistent cases
@@ -129,7 +129,7 @@ for f=1:numel(keys.project_versions)
                                 avg_unit_response_R (counter_average_R,:)= [1 0];
                             elseif sum((Df_R(counter_average_R, :))==2)>=2 && sum((Df_R(counter_average_R, :))==1)<2 % at least 2 black but no more than 1 red
                                 avg_unit_response_R (counter_average_R,:)= [2 0];
-                            elseif sum((Df_R(counter_average_R, :))==0)>=2 && sum((Df_R(counter_average_R, :))==(1|2))<=1 %at least 2 white but not 1 red and 1 black
+                            elseif sum((Df_R(counter_average_R, :))==0)>=2 && ((sum((Df_R(counter_average_R, :))==1))+(sum((Df_R(counter_average_R, :))==2)))<2 %at least 2 white but not 1 red and 1 black
                                 avg_unit_response_R (counter_average_R,:)= [0 0];
                             else 
                                 avg_unit_response_R (counter_average_R,:)= [3 0]; %inconsistent cases
@@ -151,10 +151,12 @@ for f=1:numel(keys.project_versions)
                % x=HSC;
                % set(gca,'XTick',[1.5,2.5,3.5,4.5])
                % set(gca,'XTickLabel',{'IH-IS','IH-CS','CH-IS','CH-CS'})
-                map = [1 1 1;  1 0 0; 0 0 0];%colors
+                map = [1 1 1;  1 0 0; 0 0 0; 0 1 0];%colors
                 colormap(map)
-                colorbar
+                hh = colorbar;
+                set (hh, 'ylim', [0 4]);
                 title(epoch);
+                colorbar
                 
                 
             end
