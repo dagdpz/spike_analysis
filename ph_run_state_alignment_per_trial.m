@@ -6,7 +6,7 @@ tr_in=[MA_out.physiology];
 n_chans_u = max(arrayfun(@(x) size(x.spike_arrival_times,1),tr_in));  % is this nonempty channels only?
 n_chans_s = 1;
 if isfield(tr_in,'TDT_LFPx')
-    nonempty=find(arrayfun(@(x) isempty(x.TDT_LFPx),tr_in));
+    nonempty=find(arrayfun(@(x) ~isempty(x.TDT_LFPx),tr_in));
     n_chans_s = size(tr_in(nonempty(1)).TDT_LFPx,1);  % first nonempty trial, is this nonempty channels only?
 end
 %n_chans=max([n_chans_u n_chans_s]);
