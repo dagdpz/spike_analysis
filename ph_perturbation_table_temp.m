@@ -68,7 +68,7 @@ for f=1:numel(keys.project_versions)
                 
                 subplot(subplot_rows,numel(epochs)/2,e);
                 
-                HSC = [1 2]; %Four Hand-Space conditons +1
+                HSC = [1 2 3 4 5 6 7]; %Four Hand-Space conditons +1
                 
                 for unit = 1:(size(tuning_per_unit_table,1)-1)
                     
@@ -84,6 +84,7 @@ for f=1:numel(keys.project_versions)
                         eff_L= strrep(eff_AH_AS_L,{'EN'}, '1');
                         eff_L= strrep(eff_L,{'SU'}, '2');
                         eff_L= strrep(eff_L,{'-'}, '0');
+                        
                        
                         %add an extra row and column of zeros so we Map to units,ie. 5x(no. of units + 1)
                         Df_L= cellfun(@str2double,[eff_L repmat({'0'},size(eff_L,1),1)]);
@@ -92,7 +93,7 @@ for f=1:numel(keys.project_versions)
                         
                         %create average response per unit per epoch L side(BG)
                         avg_unit_response_L = [];
-                        for counter_average_L = 1 : size(Df_L,1)
+                        for counter_average_L = 1 : size( Df_L,1)
                             if sum((Df_L(counter_average_L, :))==1)>=2 && sum((Df_L(counter_average_L, :))==2)<2 %at least 2 red but no more than 1 black
                                 avg_unit_response_L (counter_average_L,:)= [1 0];
                             elseif sum((Df_L(counter_average_L, :))==2)>=2 && sum((Df_L(counter_average_L, :))==1)<2 % at least 2 black but no more than 1 red
@@ -124,7 +125,7 @@ for f=1:numel(keys.project_versions)
                         
                         %create average response per unit per epoch R side(BG)
                         avg_unit_response_R = [];
-                        for counter_average_R = 1 : size(Df_R, 1)
+                        for counter_average_R = 1 : size( Df_R, 1)
                             if sum((Df_R(counter_average_R, :))==1)>=2 && sum((Df_R(counter_average_R, :))==2)<2 %at least 2 red but no more than 1 black
                                 avg_unit_response_R (counter_average_R,:)= [1 0];
                             elseif sum((Df_R(counter_average_R, :))==2)>=2 && sum((Df_R(counter_average_R, :))==1)<2 % at least 2 black but no more than 1 red
@@ -143,10 +144,14 @@ for f=1:numel(keys.project_versions)
                 end
                 
                 unit_IDs=tuning_per_unit_table(2:end, idx.unit_ID);
+                
                 if any(strfind(target,'_L'))
-                    pcolor(HSC,units_L,avg_unit_response_L);
+                    
+                    to_plot_L = horzcat(Df_L,avg_unit_response_L);
+                    pcolor(HSC,units_L,to_plot_L);
                 else
-                    pcolor(HSC,units_R,avg_unit_response_R);
+                    to_plot_R = horzcat(Df_R,avg_unit_response_R);
+                    pcolor(HSC,units_R,to_plot_R);
                 end
                % x=HSC;
                % set(gca,'XTick',[1.5,2.5,3.5,4.5])

@@ -1,4 +1,4 @@
-function ph_perturbation_table_Copy(project,versions)
+function ph_perturbation_table_temp(project,versions)
 % This function aim to compare the effect of perturbation PER UNIT accross
 % different task condition and epochs
 keys=struct;
@@ -68,7 +68,7 @@ for f=1:numel(keys.project_versions)
                 
                 subplot(subplot_rows,numel(epochs)/2,e);
                 
-                HSC = [1 2]; %Four Hand-Space conditons +1
+                HSC = [1 2 3 4 5 6]; %Four Hand-Space conditons +1
                 
                 for unit = 1:(size(tuning_per_unit_table,1)-1)
                     
@@ -84,6 +84,7 @@ for f=1:numel(keys.project_versions)
                         eff_L= strrep(eff_AH_AS_L,{'EN'}, '1');
                         eff_L= strrep(eff_L,{'SU'}, '2');
                         eff_L= strrep(eff_L,{'-'}, '0');
+                        
                        
                         %add an extra row and column of zeros so we Map to units,ie. 5x(no. of units + 1)
                         Df_L= cellfun(@str2double,[eff_L repmat({'0'},size(eff_L,1),1)]);
@@ -92,12 +93,12 @@ for f=1:numel(keys.project_versions)
                         
                         %create average response per unit per epoch L side(BG)
                         avg_unit_response_L = [];
-                        for counter_average_L = 1 : size(Df_L,1)
+                        for counter_average_L = 1 : size(eff_L,1)
                             if sum((Df_L(counter_average_L, :))==1)>=2 && sum((Df_L(counter_average_L, :))==2)<2 %at least 2 red but no more than 1 black
                                 avg_unit_response_L (counter_average_L,:)= [1 0];
                             elseif sum((Df_L(counter_average_L, :))==2)>=2 && sum((Df_L(counter_average_L, :))==1)<2 % at least 2 black but no more than 1 red
                                 avg_unit_response_L (counter_average_L,:)= [2 0];
-                            elseif sum((Df_L(counter_average_L, :))==0)>=2 && sum((Df_L(counter_average_L, :))==(1|2))<=1 %at least 2 white but not 1 red and 1 black
+                            elseif sum((Df_L(counter_average_L, :))==0)>=2 && ((sum((Df_L(counter_average_L, :))==1))+(sum((Df_L(counter_average_L, :))==2)))<2 %at least 2 white but not 1 red and 1 black
                                 avg_unit_response_L (counter_average_L, :)= [0 0];
                             else 
                                 avg_unit_response_L (counter_average_L,:)= [3 0]; %inconsistent cases
@@ -124,12 +125,12 @@ for f=1:numel(keys.project_versions)
                         
                         %create average response per unit per epoch R side(BG)
                         avg_unit_response_R = [];
-                        for counter_average_R = 1 : size(Df_R, 1)
+                        for counter_average_R = 1 : size(eff_R, 1)
                             if sum((Df_R(counter_average_R, :))==1)>=2 && sum((Df_R(counter_average_R, :))==2)<2 %at least 2 red but no more than 1 black
                                 avg_unit_response_R (counter_average_R,:)= [1 0];
                             elseif sum((Df_R(counter_average_R, :))==2)>=2 && sum((Df_R(counter_average_R, :))==1)<2 % at least 2 black but no more than 1 red
                                 avg_unit_response_R (counter_average_R,:)= [2 0];
-                            elseif sum((Df_R(counter_average_R, :))==0)>=2 && sum((Df_R(counter_average_R, :))==(1|2))<=1 %at least 2 white but not 1 red and 1 black
+                            elseif sum((Df_R(counter_average_R, :))==0)>=2 && ((sum((Df_R(counter_average_R, :))==1))+(sum((Df_R(counter_average_R, :))==2)))<2 %at least 2 white but not 1 red and 1 black
                                 avg_unit_response_R (counter_average_R,:)= [0 0];
                             else 
                                 avg_unit_response_R (counter_average_R,:)= [3 0]; %inconsistent cases
@@ -143,8 +144,11 @@ for f=1:numel(keys.project_versions)
                 end
                 
                 unit_IDs=tuning_per_unit_table(2:end, idx.unit_ID);
+                
                 if any(strfind(target,'_L'))
-                    pcolor(HSC,units_L,avg_unit_response_L);
+                    eff_L = str2double(eff_L);
+                    to_plot_L = horzcat(eff_L,avg_unit_response_L);
+                    pcolor(HSC,units_L,to_plot_L);
                 else
                     pcolor(HSC,units_R,avg_unit_response_R);
                 end
@@ -152,11 +156,13 @@ for f=1:numel(keys.project_versions)
                % set(gca,'XTick',[1.5,2.5,3.5,4.5])
                % set(gca,'XTickLabel',{'IH-IS','IH-CS','CH-IS','CH-CS'})
                 map = [1 1 1;  1 0 0; 0 0 0; 0 1 0];%colors
+                cb = colorbar;
+                cb.Label.String = 'Effect of Inactivation';
+                caxis([0 3]);
+                colorbar('LimitsMode', 'manual', 'Limits', [0 3], 'Ticks',[0,1,2,3],'TickLabels',{'No Effect','Enhance','Supression','Inconsistent'})
+                %set (hh, 'ylim', [0 3]);
                 colormap(map)
-                hh = colorbar;
-                set (hh, 'ylim', [0 4]);
                 title(epoch);
-                colorbar
                 
                 
             end
