@@ -152,11 +152,13 @@ for f=1:numel(keys.project_versions)
                % set(gca,'XTick',[1.5,2.5,3.5,4.5])
                % set(gca,'XTickLabel',{'IH-IS','IH-CS','CH-IS','CH-CS'})
                 map = [1 1 1;  1 0 0; 0 0 0; 0 1 0];%colors
+                cb = colorbar;
+                cb.Label.String = 'Effect of Inactivation';
+                caxis([0 3]);
+                colorbar('LimitsMode', 'manual', 'Limits', [0 3], 'Ticks',[0,1,2,3],'TickLabels',{'No Effect','Enhance','Supression','Inconsistent'})
+                %set (hh, 'ylim', [0 3]);
                 colormap(map)
-                hh = colorbar;
-                set (hh, 'ylim', [0 4]);
                 title(epoch);
-                colorbar
                 
                 
             end
