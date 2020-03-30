@@ -35,8 +35,8 @@ end
 NaNpar=num2cell(NaN(1,n_trials));
 trial=struct('type',NaNpar,'effector',NaNpar,'reach_hand',NaNpar,'choice',NaNpar,'success',NaNpar,'fix_pos',NaNpar,'tar_pos',NaNpar,'trial_onset_time',NaNpar,...
     'time_axis',NaNpar,'x_eye',NaNpar,'y_eye',NaNpar,'x_hnd',NaNpar,'y_hnd',NaNpar,'states_onset',NaNpar); %add all fields of trial(?)
-invalid_trials=[];
-
+trials_wo_phys=[];
+trials_wo_cond=[];
 %% main loop
 for t=1:n_trials
     trial_states=MA_out.states(t).TDT_states;
@@ -46,7 +46,7 @@ for t=1:n_trials
     %%W:\Data\Linus_phys_combined_monkeypsych_TDT\20150521\Lincombined2015-05-21_03_block_01.mat
     if isempty(trial_states_onset) || (t==n_trials && trial_states(end)~=1) || (t==n_trials-1 && trial_states(end)~=1) || (trial_states(end)~=90 && trial_states(end)~=99 && trial_states(end)~=1)%% Curius 20150603 block 4 trial 166
         %&& (t==n_trials-1 || t==n_trials) % last trial bug that should get fixed in TDT_trial_struct_working  line 30
-        invalid_trials=[invalid_trials t];
+        trials_wo_phys=[trials_wo_phys t];
         continue;
     end
     trial(t).date          = str2num(keys.date);
@@ -108,7 +108,7 @@ for t=1:n_trials
     
     %% excluding unwanted trials from the beginning... this is actually sort of problematic
     if ~ismember(trial(t).type,keys.cal.types) || ~ismember(trial(t).effector,keys.cal.effectors) || ~ismember(trial(t).reach_hand,keys.cal.reach_hand)
-        invalid_trials=[invalid_trials t];
+        trials_wo_cond=[trials_wo_cond t];
         continue;
     end
     
@@ -230,7 +230,7 @@ for t=1:n_trials
             trial(t).unit(c,u).waveforms            =tr_in(t).spike_waveforms{c,u}(wf_idx,:);
             
             %% ADDING PREVIOUS SPIKES TO CURRENT TRIAL (shift_in_seconds before trial onset)
-            if t>1 && ~ismember(t-1,invalid_trials)
+            if t>1 && ~ismember(t-1,trials_wo_phys)
                 prev_trial_spike_arrival_times = tr_in(t-1).spike_arrival_times{c,u} -(trial(t).trial_onset_time -MA_out.states(t-1).trial_onset_time);
                 tr_in(t).spike_arrival_times{c,u} = [prev_trial_spike_arrival_times(prev_trial_spike_arrival_times>-shift_in_seconds); tr_in(t).spike_arrival_times{c,u}];
             end
@@ -239,6 +239,7 @@ for t=1:n_trials
     end
     
 end
+invalid_trials=sort([trials_wo_phys trials_wo_cond]); % important change: differentiation between phys not present and condition mismatches
 trial(invalid_trials)=[];
 o.trial=trial;
 o.block=keys.block;
