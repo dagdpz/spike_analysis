@@ -35,6 +35,8 @@ for f=1:numel(keys.project_versions)
     
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
+        avg_unit_epoch_L=[];
+        avg_unit_epoch_R=[];
         for t=1:numel(keys.batching.targets)
             target=keys.batching.targets{t};
             
@@ -68,7 +70,7 @@ for f=1:numel(keys.project_versions)
                 
                 subplot(subplot_rows,numel(epochs)/2,e);
                 
-                HSC = [1 2 3 4 5 6]; %Four Hand-Space conditons +1
+                HSC = [1 2 3 4 5 6 7]; %Four Hand-Space conditons +1
                 
                 for unit = 1:(size(tuning_per_unit_table,1)-1)
                     
@@ -92,8 +94,7 @@ for f=1:numel(keys.project_versions)
                         units_L=[1:size(vertcat(tuning_per_unit_table(2:size(tuning_per_unit_table,1),1) ,'-'))];
                         
                         %create average response per unit per epoch L side(BG)
-                        avg_unit_response_L = [];
-                        for counter_average_L = 1 : size(eff_L,1)
+                        for counter_average_L = 1 : size( Df_L,1)
                             if sum((Df_L(counter_average_L, :))==1)>=2 && sum((Df_L(counter_average_L, :))==2)<2 %at least 2 red but no more than 1 black
                                 avg_unit_response_L (counter_average_L,:)= [1 0];
                             elseif sum((Df_L(counter_average_L, :))==2)>=2 && sum((Df_L(counter_average_L, :))==1)<2 % at least 2 black but no more than 1 red
@@ -104,7 +105,7 @@ for f=1:numel(keys.project_versions)
                                 avg_unit_response_L (counter_average_L,:)= [3 0]; %inconsistent cases
                             end
                         end
-                                               
+                        
                     else
                         
                         eff_IH_IS{unit} = [tuning_per_unit_table{unit+1, idx.(['in_IH_IS_' epoch '_PT_' tasktype])}];
@@ -125,7 +126,7 @@ for f=1:numel(keys.project_versions)
                         
                         %create average response per unit per epoch R side(BG)
                         avg_unit_response_R = [];
-                        for counter_average_R = 1 : size(eff_R, 1)
+                        for counter_average_R = 1 : size( Df_R, 1)
                             if sum((Df_R(counter_average_R, :))==1)>=2 && sum((Df_R(counter_average_R, :))==2)<2 %at least 2 red but no more than 1 black
                                 avg_unit_response_R (counter_average_R,:)= [1 0];
                             elseif sum((Df_R(counter_average_R, :))==2)>=2 && sum((Df_R(counter_average_R, :))==1)<2 % at least 2 black but no more than 1 red
@@ -136,25 +137,28 @@ for f=1:numel(keys.project_versions)
                                 avg_unit_response_R (counter_average_R,:)= [3 0]; %inconsistent cases
                             end
                         end
-                        
                     end
-                    
-                    
-                    
+
                 end
                 
                 unit_IDs=tuning_per_unit_table(2:end, idx.unit_ID);
-                
+                table_unit_IDs = [unit_IDs; 0];
+
                 if any(strfind(target,'_L'))
-                    eff_L = str2double(eff_L);
-                    to_plot_L = horzcat(eff_L,avg_unit_response_L);
+                    to_plot_L = horzcat(Df_L,avg_unit_response_L);
+                    avg_unit_epoch_L = horzcat(avg_unit_epoch_L, avg_unit_response_L(:,1));
                     pcolor(HSC,units_L,to_plot_L);
+
+
                 else
-                    pcolor(HSC,units_R,avg_unit_response_R);
+                    to_plot_R = horzcat(Df_R,avg_unit_response_R);
+                    avg_unit_epoch_R = horzcat(avg_unit_epoch_R, avg_unit_response_R(:,1));
+                    pcolor(HSC,units_R,to_plot_R);
+
                 end
-               % x=HSC;
-               % set(gca,'XTick',[1.5,2.5,3.5,4.5])
-               % set(gca,'XTickLabel',{'IH-IS','IH-CS','CH-IS','CH-CS'})
+                x=HSC;
+                set(gca,'XTick',[1.5,2.5,3.5,4.5, 5.5, 6.5])
+                set(gca,'XTickLabel',{'IH-IS','IH-CS','CH-IS','CH-CS', '', 'Avg Response'})
                 map = [1 1 1;  1 0 0; 0 0 0; 0 1 0];%colors
                 cb = colorbar;
                 cb.Label.String = 'Effect of Inactivation';
@@ -163,17 +167,26 @@ for f=1:numel(keys.project_versions)
                 %set (hh, 'ylim', [0 3]);
                 colormap(map)
                 title(epoch);
+
                 
+
                 
             end
-            
             figure_title=[keys.monkey '_' target '_' tasktype];
             filename=[keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table' filesep figure_title];
             mtit(figure_title, 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
             export_fig(filename, '-pdf','-transparent') % pdf by run
             
         end
+        avg_unit_response_table = table(table_unit_IDs,  avg_unit_epoch_L, avg_unit_epoch_R); 
+        avg_unit_response_table = splitvars(avg_unit_response_table, 'avg_unit_epoch_L', 'NewVariableNames',{'Facq_L','Fhol_L','Cue_L','Del_L','PreS_L','PeriS_L'});
+        avg_unit_response_table = splitvars(avg_unit_response_table,'avg_unit_epoch_R', 'NewVariableNames',{'Facq_R','Fhol_R','Cue_R','Del_R','PreS_R','PeriS_R'});
+        table_temp_path =  [keys.basepath_to_save filesep keys.project_version filesep 'avg_unit_response_table'];
+        table_title=[keys.monkey '_' keys.project_version];
+        table_path = [table_current_path filesep table_title '.txt'];
+        writetable(avg_unit_response_table, table_path)  
     end
+
 end
 
 % %                    xlabel('Hand Space Conditions')
