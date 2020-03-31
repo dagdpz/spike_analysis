@@ -187,8 +187,8 @@ for f=1:numel(keys.project_versions)
         
         table_path_L =  [keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table'];
         table_path_R =  [keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table'];
-        save([table_path_L filesep 'avg_unit_epoch_L_table.mat'], 'avg_unit_epoch_L_table');
-        save([table_path_R filesep 'avg_unit_epoch_R_table.mat'], 'avg_unit_epoch_R_table');
+        save([table_path_L filesep keys.monkey '_MIP_L_' tasktype '_' 'avg_units_table.mat'], 'avg_unit_epoch_L_table');
+        save([table_path_R filesep keys.monkey '_MIP_R_' tasktype '_' 'avg_units_table.mat'], 'avg_unit_epoch_R_table');
 
     end
 
