@@ -35,6 +35,8 @@ for f=1:numel(keys.project_versions)
     
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
+        avg_unit_epoch_L=[];
+        avg_unit_epoch_R=[];
         for t=1:numel(keys.batching.targets)
             target=keys.batching.targets{t};
             
@@ -62,8 +64,6 @@ for f=1:numel(keys.project_versions)
             end
             
             figure
-            avg_unit_epoch_L=[];
-            avg_unit_epoch_R=[];
             for e=1:numel(epochs)
                 
                 epoch=epochs{e};
@@ -172,14 +172,21 @@ for f=1:numel(keys.project_versions)
 
                 
             end
-            %table_avg_unit_response = table(table_unit_IDs,  avg_unit_epoch_L, avg_unit_epoch_R); 
             figure_title=[keys.monkey '_' target '_' tasktype];
             filename=[keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table' filesep figure_title];
             mtit(figure_title, 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
             export_fig(filename, '-pdf','-transparent') % pdf by run
             
         end
+        %create table with unit_ID, average response per epoch for both
+        %hemispheres and exports it as txt file
+        avg_unit_response_table = table(table_unit_IDs,  avg_unit_epoch_L, avg_unit_epoch_R); 
+        avg_unit_response_table = splitvars(avg_unit_response_table, 'avg_unit_epoch_L', 'NewVariableNames',{'Facq_L','Fhol_L','Cue_L','Del_L','PreS_L','PeriS_L'});
+        avg_unit_response_table = splitvars(avg_unit_response_table,'avg_unit_epoch_R', 'NewVariableNames',{'Facq_R','Fhol_R','Cue_R','Del_R','PreS_R','PeriS_R'});
+        table_path =  [keys.basepath_to_save filesep keys.project_version filesep 'avg_unit_response_table'];
+        writetable(avg_unit_response_table, table_path);  
     end
+
 end
 
 % %                    xlabel('Hand Space Conditions')
