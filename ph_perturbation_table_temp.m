@@ -62,6 +62,8 @@ for f=1:numel(keys.project_versions)
             end
             
             figure
+            avg_unit_epoch_L=[];
+            avg_unit_epoch_R=[];
             for e=1:numel(epochs)
                 
                 epoch=epochs{e};
@@ -92,7 +94,6 @@ for f=1:numel(keys.project_versions)
                         units_L=[1:size(vertcat(tuning_per_unit_table(2:size(tuning_per_unit_table,1),1) ,'-'))];
                         
                         %create average response per unit per epoch L side(BG)
-                        avg_unit_response_L = [];
                         for counter_average_L = 1 : size( Df_L,1)
                             if sum((Df_L(counter_average_L, :))==1)>=2 && sum((Df_L(counter_average_L, :))==2)<2 %at least 2 red but no more than 1 black
                                 avg_unit_response_L (counter_average_L,:)= [1 0];
@@ -104,7 +105,7 @@ for f=1:numel(keys.project_versions)
                                 avg_unit_response_L (counter_average_L,:)= [3 0]; %inconsistent cases
                             end
                         end
-                                               
+                        
                     else
                         
                         eff_IH_IS{unit} = [tuning_per_unit_table{unit+1, idx.(['in_IH_IS_' epoch '_PT_' tasktype])}];
@@ -136,26 +137,28 @@ for f=1:numel(keys.project_versions)
                                 avg_unit_response_R (counter_average_R,:)= [3 0]; %inconsistent cases
                             end
                         end
-                        
                     end
-                    
-                    
-                    
+
                 end
                 
                 unit_IDs=tuning_per_unit_table(2:end, idx.unit_ID);
-                
+                table_unit_IDs = [unit_IDs; 0];
+
                 if any(strfind(target,'_L'))
-                    
                     to_plot_L = horzcat(Df_L,avg_unit_response_L);
+                    avg_unit_epoch_L = horzcat(avg_unit_epoch_L, avg_unit_response_L(:,1));
                     pcolor(HSC,units_L,to_plot_L);
+
+
                 else
                     to_plot_R = horzcat(Df_R,avg_unit_response_R);
+                    avg_unit_epoch_R = horzcat(avg_unit_epoch_R, avg_unit_response_R(:,1));
                     pcolor(HSC,units_R,to_plot_R);
+
                 end
-               % x=HSC;
-               % set(gca,'XTick',[1.5,2.5,3.5,4.5])
-               % set(gca,'XTickLabel',{'IH-IS','IH-CS','CH-IS','CH-CS'})
+                x=HSC;
+                set(gca,'XTick',[1.5,2.5,3.5,4.5, 5.5, 6.5])
+                set(gca,'XTickLabel',{'IH-IS','IH-CS','CH-IS','CH-CS', '', 'Avg Response'})
                 map = [1 1 1;  1 0 0; 0 0 0; 0 1 0];%colors
                 cb = colorbar;
                 cb.Label.String = 'Effect of Inactivation';
@@ -164,10 +167,12 @@ for f=1:numel(keys.project_versions)
                 %set (hh, 'ylim', [0 3]);
                 colormap(map)
                 title(epoch);
+
                 
+
                 
             end
-            
+            %table_avg_unit_response = table(table_unit_IDs,  avg_unit_epoch_L, avg_unit_epoch_R); 
             figure_title=[keys.monkey '_' target '_' tasktype];
             filename=[keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table' filesep figure_title];
             mtit(figure_title, 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
