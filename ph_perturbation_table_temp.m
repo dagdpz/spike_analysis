@@ -90,8 +90,8 @@ for f=1:numel(keys.project_versions)
                        
                         %add an extra row and column of zeros so we Map to units,ie. 5x(no. of units + 1)
                         Df_L= cellfun(@str2double,[eff_L repmat({'0'},size(eff_L,1),1)]);
-                        Df_L=vertcat(Df_L, zeros(1,size(eff_L,2)+1));
-                        units_L=[1:size(vertcat(tuning_per_unit_table(2:size(tuning_per_unit_table,1),1) ,'-'))];
+%                         Df_L=vertcat(Df_L, zeros(1,size(eff_L,2)+1));
+                        units_L=[1:size(vertcat(tuning_per_unit_table(2:size(tuning_per_unit_table,1)- 1,1) ,'-'))];
                         
                         %create average response per unit per epoch L side(BG)
                         for counter_average_L = 1 : size( Df_L,1)
@@ -121,8 +121,8 @@ for f=1:numel(keys.project_versions)
                         
                         %add an extra row and column of zeros so we Map to units,ie. 5x(no. of units + 1)
                         Df_R= cellfun(@str2double,[eff_R repmat({'0'},size(eff_R,1),1)]);
-                        Df_R=vertcat(Df_R, zeros(1,size(eff_R,2)+1));
-                        units_R=[1:size(vertcat(tuning_per_unit_table(2:size(tuning_per_unit_table,1),1) ,'-'))];
+%                         Df_R=vertcat(Df_R, zeros(1,size(eff_R,2)+1));
+                        units_R=[1:size(vertcat(tuning_per_unit_table(2:size(tuning_per_unit_table,1) - 1,1) ,'-'))];
                         
                         %create average response per unit per epoch R side(BG)
                         avg_unit_response_R = [];
@@ -149,7 +149,7 @@ for f=1:numel(keys.project_versions)
                     
                     %create table for left hemisphere with unit_ID and
                     %average response per epoch (BG)
-                    unit_IDs_L = [unit_IDs; 0];
+                    unit_IDs_L = [unit_IDs];
                     avg_unit_epoch_L = horzcat(avg_unit_epoch_L, avg_unit_response_L(:,1));
                     avg_unit_epoch_L_table = table(unit_IDs_L,  avg_unit_epoch_L); 
                 else
@@ -159,7 +159,7 @@ for f=1:numel(keys.project_versions)
                     %create table for right hemisphere with unit_ID and
                     %average response per epoch (BG)
                     avg_unit_epoch_R = horzcat(avg_unit_epoch_R, avg_unit_response_R(:,1));
-                    unit_IDs_R = [unit_IDs; 0];
+                    unit_IDs_R = [unit_IDs];
                     avg_unit_epoch_R_table = table(unit_IDs_R,  avg_unit_epoch_R); 
 
                 end
