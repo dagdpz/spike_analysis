@@ -184,11 +184,11 @@ for f=1:numel(keys.project_versions)
         end
         avg_unit_epoch_L_table = splitvars(avg_unit_epoch_L_table, 'avg_unit_epoch_L', 'NewVariableNames',{'Facq','Fhol','Cue','Del','PreS','PeriS'});
         avg_unit_epoch_R_table = splitvars(avg_unit_epoch_R_table, 'avg_unit_epoch_R', 'NewVariableNames',{'Facq','Fhol','Cue','Del','PreS','PeriS'});
-        
-        table_path_L =  [keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table'];
-        table_path_R =  [keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table'];
-        save([table_path_L filesep keys.monkey '_MIP_L_' tasktype '_' 'avg_units_table.mat'], 'avg_unit_epoch_L_table');
-        save([table_path_R filesep keys.monkey '_MIP_R_' tasktype '_' 'avg_units_table.mat'], 'avg_unit_epoch_R_table');
+        avg_unit_epoch_L_struct = table2struct (avg_unit_epoch_L_table);
+        avg_unit_epoch_R_struct = table2struct (avg_unit_epoch_R_table);     
+        struct_path =  [keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table'];
+        save([struct_path filesep keys.monkey '_MIP_L_' tasktype '_' 'avg_units_struct.mat'], 'avg_unit_epoch_L_struct');
+        save([struct_path filesep keys.monkey '_MIP_R_' tasktype '_' 'avg_units_struct.mat'], 'avg_unit_epoch_R_struct');
 
     end
 
