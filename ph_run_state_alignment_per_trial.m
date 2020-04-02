@@ -109,7 +109,7 @@ for t=1:n_trials
     
     %% excluding unwanted trials from the beginning... this is actually sort of problematic
     if ~ismember(trial(t).type,keys.cal.types) || ~ismember(trial(t).effector,keys.cal.effectors) || ~ismember(trial(t).reach_hand,keys.cal.reach_hand)
-        invalid_trials=[invalid_trials t];
+        trials_wo_cond=[trials_wo_cond t];
         continue;
     end
     
