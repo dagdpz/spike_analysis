@@ -47,7 +47,7 @@ for t=1:n_trials
     %%W:\Data\Linus_phys_combined_monkeypsych_TDT\20150521\Lincombined2015-05-21_03_block_01.mat
     if isempty(trial_states_onset) || (t==n_trials && trial_states(end)~=1) || (t==n_trials-1 && trial_states(end)~=1) || (trial_states(end)~=90 && trial_states(end)~=99 && trial_states(end)~=1)%% Curius 20150603 block 4 trial 166
         %&& (t==n_trials-1 || t==n_trials) % last trial bug that should get fixed in TDT_trial_struct_working  line 30
-        invalid_trials=[invalid_trials t];
+        trials_wo_phys=[trials_wo_phys t];
         continue;
     end
     trial(t).date          = str2num(keys.date);
