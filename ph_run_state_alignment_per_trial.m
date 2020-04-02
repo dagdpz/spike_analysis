@@ -240,6 +240,7 @@ for t=1:n_trials
     end
     
 end
+invalid_trials=sort([trials_wo_phys trials_wo_cond]); % important change: differentiation between phys not present and condition mismatches
 trial(invalid_trials)=[];
 o.trial=trial;
 o.block=keys.block;
