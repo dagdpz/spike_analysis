@@ -35,7 +35,8 @@ end
 NaNpar=num2cell(NaN(1,n_trials));
 trial=struct('type',NaNpar,'effector',NaNpar,'reach_hand',NaNpar,'choice',NaNpar,'success',NaNpar,'fix_pos',NaNpar,'tar_pos',NaNpar,'trial_onset_time',NaNpar,...
     'time_axis',NaNpar,'x_eye',NaNpar,'y_eye',NaNpar,'x_hnd',NaNpar,'y_hnd',NaNpar,'states_onset',NaNpar); %add all fields of trial(?)
-invalid_trials=[];
+trials_wo_phys=[];
+trials_wo_cond=[];
 
 %% main loop
 for t=1:n_trials
