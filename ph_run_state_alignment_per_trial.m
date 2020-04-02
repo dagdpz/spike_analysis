@@ -230,7 +230,7 @@ for t=1:n_trials
             trial(t).unit(c,u).waveforms            =tr_in(t).spike_waveforms{c,u}(wf_idx,:);
             
             %% ADDING PREVIOUS SPIKES TO CURRENT TRIAL (shift_in_seconds before trial onset)
-            if t>1
+            if t>1 && ~ismember(t-1,trials_wo_phys)
                 prev_trial_spike_arrival_times = tr_in(t-1).spike_arrival_times{c,u} -(trial(t).trial_onset_time -MA_out.states(t-1).trial_onset_time);
                 tr_in(t).spike_arrival_times{c,u} = [prev_trial_spike_arrival_times(prev_trial_spike_arrival_times>-shift_in_seconds); tr_in(t).spike_arrival_times{c,u}];
             end
