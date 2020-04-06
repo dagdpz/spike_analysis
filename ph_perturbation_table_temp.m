@@ -57,10 +57,10 @@ for f=1:numel(keys.project_versions)
             
             
             if any(strfind(keys.project_version,'MIP'))
-                epochs={'Facq','Fhol','Cue','Del','PreR','PeriR'};
+                epochs={'INI', 'Facq','Fhol','Cue','EDel','Del','PreR','PeriR','PostR','Thol'};
                 
             elseif  any(strfind(keys.project_version,'LIP'))
-                epochs={'Facq','Fhol','Cue','Del','PreS','PeriS'};
+                epochs={'INI', 'Facq','Fhol','Cue','EDel','Del','PreR','PeriR','PostR','Thol'};
             end
             
             figure
