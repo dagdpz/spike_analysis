@@ -182,8 +182,8 @@ for f=1:numel(keys.project_versions)
             export_fig(filename, '-pdf','-transparent') % pdf by run
             
         end
-        avg_unit_epoch_L_table = splitvars(avg_unit_epoch_L_table, 'avg_unit_epoch_L', 'NewVariableNames',{'Facq','Fhol','Cue','Del','PreS','PeriS'});
-        avg_unit_epoch_R_table = splitvars(avg_unit_epoch_R_table, 'avg_unit_epoch_R', 'NewVariableNames',{'Facq','Fhol','Cue','Del','PreS','PeriS'});
+        avg_unit_epoch_L_table = splitvars(avg_unit_epoch_L_table, 'avg_unit_epoch_L', 'NewVariableNames',{'INI', 'Facq','Fhol','Cue','EDel','Del','PreR','PeriR','PostR','Thol'});
+        avg_unit_epoch_R_table = splitvars(avg_unit_epoch_R_table, 'avg_unit_epoch_R', 'NewVariableNames',{'INI', 'Facq','Fhol','Cue','EDel','Del','PreR','PeriR','PostR','Thol'});
         avg_unit_epoch_MIP_L = table2struct (avg_unit_epoch_L_table);
         avg_unit_epoch_MIP_R = table2struct (avg_unit_epoch_R_table);     
         struct_path =  [keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table'];
