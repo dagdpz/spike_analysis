@@ -35,8 +35,8 @@ for f=1:numel(keys.project_versions)
     
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
-        avg_unit_epoch_L=[];
-        avg_unit_epoch_R=[];
+        %avg_unit_epoch_L=[];
+        %avg_unit_epoch_R=[];
         for t=1:numel(keys.batching.targets)
             target=keys.batching.targets{t};
             
@@ -149,18 +149,22 @@ for f=1:numel(keys.project_versions)
                     
                     %create table for left hemisphere with unit_ID and
                     %average response per epoch (BG)
-                    unit_IDs_L = [unit_IDs];
-                    avg_unit_epoch_L = horzcat(avg_unit_epoch_L, avg_unit_response_L(:,1));
-                    avg_unit_epoch_L_table = table(unit_IDs_L,  avg_unit_epoch_L); 
+                    %unit_IDs_L = [unit_IDs];
+                    %avg_unit_epoch_L = horzcat(avg_unit_epoch_L, avg_unit_response_L(:,1));
+                    avg_unit_epoch_MIP_L.unit_ID = [unit_IDs];
+                    avg_unit_epoch_MIP_L.(epochs{e}) = avg_unit_response_L(:,1); 
+                    %avg_unit_epoch_L_table = table(unit_IDs_L,  avg_unit_epoch_L); 
                 else
                     to_plot_R = horzcat(Df_R,avg_unit_response_R);
                     pcolor(HSC,units_R,to_plot_R);
 
                     %create table for right hemisphere with unit_ID and
                     %average response per epoch (BG)
-                    avg_unit_epoch_R = horzcat(avg_unit_epoch_R, avg_unit_response_R(:,1));
-                    unit_IDs_R = [unit_IDs];
-                    avg_unit_epoch_R_table = table(unit_IDs_R,  avg_unit_epoch_R); 
+                    %avg_unit_epoch_R = horzcat(avg_unit_epoch_R, avg_unit_response_R(:,1));
+                    %unit_IDs_R = [unit_IDs];
+                    %avg_unit_epoch_R_table = table(unit_IDs_R,  avg_unit_epoch_R); 
+                    avg_unit_epoch_MIP_R.unit_ID = [unit_IDs];
+                    avg_unit_epoch_MIP_R.(epochs{e}) = avg_unit_response_R(:,1);
 
                 end
                 x=HSC;
@@ -170,7 +174,7 @@ for f=1:numel(keys.project_versions)
                 cb = colorbar;
                 cb.Label.String = 'Effect of Inactivation';
                 caxis([0 3]);
-                colorbar('LimitsMode', 'manual', 'Limits', [0 3], 'Ticks',[0,1,2,3],'TickLabels',{'No Effect','Enhance','Supression','Inconsistent'})
+                %colorbar('LimitsMode', 'manual', 'Limits', [0 3], 'Ticks',[0,1,2,3],'TickLabels',{'No Effect','Enhance','Supression','Inconsistent'})
                 %set (hh, 'ylim', [0 3]);
                 colormap(map)
                 title(epoch);
@@ -182,10 +186,10 @@ for f=1:numel(keys.project_versions)
             export_fig(filename, '-pdf','-transparent') % pdf by run
             
         end
-        avg_unit_epoch_L_table = splitvars(avg_unit_epoch_L_table, 'avg_unit_epoch_L', 'NewVariableNames',{'INI', 'Facq','Fhol','Cue','EDel','Del','PreR','PeriR','PostR','Thol'});
-        avg_unit_epoch_R_table = splitvars(avg_unit_epoch_R_table, 'avg_unit_epoch_R', 'NewVariableNames',{'INI', 'Facq','Fhol','Cue','EDel','Del','PreR','PeriR','PostR','Thol'});
-        avg_unit_epoch_MIP_L = table2struct (avg_unit_epoch_L_table);
-        avg_unit_epoch_MIP_R = table2struct (avg_unit_epoch_R_table);     
+        %avg_unit_epoch_L_table = splitvars(avg_unit_epoch_L_table, 'avg_unit_epoch_L', 'NewVariableNames',{'INI', 'Facq','Fhol','Cue','EDel','Del','PreR','PeriR','PostR','Thol'});
+        %avg_unit_epoch_R_table = splitvars(avg_unit_epoch_R_table, 'avg_unit_epoch_R', 'NewVariableNames',{'INI', 'Facq','Fhol','Cue','EDel','Del','PreR','PeriR','PostR','Thol'});
+        %avg_unit_epoch_MIP_L = table2struct (avg_unit_epoch_L_table);
+        %avg_unit_epoch_MIP_R = table2struct (avg_unit_epoch_R_table);     
         struct_path =  [keys.basepath_to_save filesep keys.project_version filesep 'perturbation_table'];
         save([struct_path filesep keys.monkey '_MIP_L_' tasktype '_' 'avg_units_struct.mat'], 'avg_unit_epoch_MIP_L');
         save([struct_path filesep keys.monkey '_MIP_R_' tasktype '_' 'avg_units_struct.mat'], 'avg_unit_epoch_MIP_R');
