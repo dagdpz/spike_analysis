@@ -1,5 +1,5 @@
 function ph_initiate_population_analysis(varargin)
-%ph_run_population_analysis('PPC_pulv_eye_hand',{'LIP_dPul_inj_working'},{'pop','ons','sct','ccs'})
+%ph_initiate_population_analysis('PPC_pulv_eye_hand',{'LIP_dPul_inj_working'},{'pop','ons','sct','ccs'})
 population_analysis_to_perform={'pop','beh','ons','sct','ccs','gaz','ref','gfl','hst'}; 
 
 if nargin>2

@@ -271,6 +271,8 @@ for b=1:size(o_t,2)
                     o_t(b).trial(t).arrival_times                   =o_t(b).trial(t).unit(c,u).arrival_times;
                     o_t(b).trial(t).dataset                         =o_t(b).trial(t).unit(c,u).dataset;
                     o_t(b).trial(t).perturbation                    =o_t(b).trial(t).unit(c,u).perturbation;
+                    o_t(b).trial(t).FR_average                      =o_t(b).trial(t).unit(c,u).FR_average;
+                    %o_t(b).trial(t).stability_auto                =o_t(b).trial(t).unit(c,u).stability_auto;
                     
                     trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
                     tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
@@ -297,6 +299,8 @@ for b=1:size(o_t,2)
                     o_t(b).trial(t).arrival_times             =o_t(b).trial(t).unit(c,u).arrival_times;
                     o_t(b).trial(t).dataset                   =o_t(b).trial(t).unit(c,u).dataset;
                     o_t(b).trial(t).perturbation              =o_t(b).trial(t).unit(c,u).perturbation;
+                    o_t(b).trial(t).FR_average                =o_t(b).trial(t).unit(c,u).FR_average;
+                    %o_t(b).trial(t).stability_auto                =o_t(b).trial(t).unit(c,u).stability_auto;
                     
                     trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
                     tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
@@ -423,16 +427,13 @@ if ~isempty(temp_xlsx)
     keys.sorting_table_units = sorting_table;
     keys.sorting_table_sites = sorting_table;
     keys.sorting_table       = sorting_table;
-    stability_index=DAG_find_column_index(sorting_table,'Stability_rank');
-    single_index=DAG_find_column_index(sorting_table,'Single_rank');
-    SNR_index=DAG_find_column_index(sorting_table,'SNR_rank');
+%     stability_index=DAG_find_column_index(sorting_table,'Stability_rank');
+%     single_index=DAG_find_column_index(sorting_table,'Single_rank');
+%     SNR_index=DAG_find_column_index(sorting_table,'SNR_rank');
     usable_index=DAG_find_column_index(sorting_table,'Usable');
-    to_exclude_u=~ismember([sorting_table{2:end,stability_index}]',keys.cal.stablity) ...
-        | ~ismember([sorting_table{2:end,single_index}]',keys.cal.single_rating)...
-        | ~ismember([sorting_table{2:end,SNR_index}]',keys.cal.SNR_rating);
     to_exclude_s=~ismember([sorting_table{2:end,usable_index}]',1); % think about other site criterias and maybe we want an option to include not usable?
-    keys.sorting_table_units([false;to_exclude_u],:) = [];
-    keys.sorting_table_sites([false;to_exclude_s],:) = [];
+%     keys.sorting_table_units([false;to_exclude_u],:) = [];
+     keys.sorting_table_sites([false;to_exclude_s],:) = [];
 end
 xlswrite([keys.tuning_table_foldername filesep keys.sorted_neurons_filename],sorting_table);
 end
@@ -458,9 +459,19 @@ for u=units
         FR_mean=double(nanmean([o(u).trial(tr_idx).FR_average]));
         start_block=o(u).trial(find(tr_idx,1,'first')).run_onset_time-o(u).trial(1).run_onset_time;
         end_block=start_block+o(u).trial(find(tr_idx,1,'last')).trial_onset_time;
-        plot([start_block end_block],[FR_mean FR_mean],'k','linewidth',4)
-        plot([start_block start_block],[0 FR_mean],'k','linewidth',4)
-        plot([end_block end_block],[0 FR_mean],'k','linewidth',4)
+        automatic_stability=[o(u).stability_rating];automatic_stability=automatic_stability(1);
+        if automatic_stability==1
+            col='g';
+        elseif automatic_stability==2
+            col='b';
+        else
+            col='r';
+        end
+        
+        
+        plot([start_block end_block],[FR_mean FR_mean],col,'linewidth',4)
+        plot([start_block start_block],[0 FR_mean],col,'linewidth',4)
+        plot([end_block end_block],[0 FR_mean],col,'linewidth',4)
         text(start_block, FR_mean/2,sprintf('B%d: %0.1f + %0.1f',b,FR_mean,FR_std))
         %plot()
     end

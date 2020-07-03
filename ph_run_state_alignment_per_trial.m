@@ -235,12 +235,48 @@ for t=1:n_trials
                 tr_in(t).spike_arrival_times{c,u} = [prev_trial_spike_arrival_times(prev_trial_spike_arrival_times>-shift_in_seconds); tr_in(t).spike_arrival_times{c,u}];
             end
             trial(t).unit(c,u).arrival_times= tr_in(t).spike_arrival_times{c,u};
+            
+            %% average firing rate (during task)
+        t1=min(trial(t).states_onset);
+        t2=trial(t).states_onset(end-1);
+        AT=trial(t).unit(c,u).arrival_times;
+        trial(t).unit(c,u).FR_average=sum(AT>t1 & AT<t2)/(t2-t1);   
         end
     end
     
 end
 invalid_trials=sort([trials_wo_phys trials_wo_cond]); % important change: differentiation between phys not present and condition mismatches
 trial(invalid_trials)=[];
+
+%% automatic stibility (dependent on fano factor of Frs per trial   
+units_cat=cat(3,trial.unit);
+for c=1:n_chans_u,
+    for u=1:n_units
+        FRs_cat=[units_cat(c,u,:).FR_average];
+        fano=nanstd(FRs_cat)/nanmean(FRs_cat);
+        if fano < 0.2; %0.05
+            stability=1;
+        elseif fano < 0.4
+            stability=2;
+        else
+            stability=3;
+        end
+        for t=1:numel(trial) % another loop? not so cool
+            if keys.cal.automatic_stablity
+            trial(t).unit(c,u).stability_rating=stability;
+            end
+            to_exclude_u=~ismember(trial(t).unit(c,u).stability_rating,keys.cal.stablity) ...
+                | ~ismember(trial(t).unit(c,u).Single_rating,keys.cal.single_rating)...
+                | ~ismember(trial(t).unit(c,u).SNR_rating,keys.cal.SNR_rating);
+            if to_exclude_u && ~strcmp(trial(t).unit(c,u).unit_ID,'no unit')
+                trial(t).unit(c,u).unit_ID=from_excel_per_unit(c,u).unit_identifier;
+            end
+        end
+    end
+end
+
+
+
 o.trial=trial;
 o.block=keys.block;
 end
@@ -273,8 +309,8 @@ r_Run   = DAG_find_row_index(xlsx_table(:,idx_Run),keys.run);
 r_Unit  = DAG_find_row_index(xlsx_table(:,idx_Unit),char(96+unit));
 r_Chan  = DAG_find_row_index(xlsx_table(:,idx_Channel),channel);
 
-unit_identifier=[keys.date '_block_' num2str(keys.block) '_run_' num2str(keys.run) '_ch_' num2str(channel) '_u_' char(96+unit)];
-site_identifier=[keys.date '_block_' num2str(keys.block) '_run_' num2str(keys.run) '_ch_' num2str(channel)];
+from_excel.unit_identifier=[keys.date '_block_' num2str(keys.block) '_run_' num2str(keys.run) '_ch_' num2str(channel) '_u_' char(96+unit)];
+from_excel.site_identifier=[keys.date '_block_' num2str(keys.block) '_run_' num2str(keys.run) '_ch_' num2str(channel)];
 if per_unit
     row                         =find(r_Date & r_Block & r_Run & r_Chan & r_Unit );
     if numel(row)>1
@@ -284,8 +320,8 @@ else
     row                         =find(r_Date & r_Block & r_Run & r_Chan);
 end
 if isempty(row)
-    from_excel.unique_neuron           = {unit_identifier};
-    from_excel.site                    = {site_identifier};
+    from_excel.unique_neuron           = {from_excel.unit_identifier};
+    from_excel.site                    = {from_excel.site_identifier};
     from_excel.SNR_rating              = {-1};
     from_excel.Single_rating           = {-1};
     from_excel.stability_rating        = {-1};
@@ -297,7 +333,7 @@ if isempty(row)
     from_excel.perturbation            = {0};
     from_excel.perturbation_site       = {'NA'};
     if unitexistsindata
-        fprintf(2, 'no matching sorting for %s \n', unit_identifier);
+        fprintf(2, 'no matching sorting for %s \n', from_excel.unit_identifier);
     end
 else
     row=row(1);

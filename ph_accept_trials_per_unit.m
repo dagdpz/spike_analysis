@@ -1,12 +1,12 @@
 function pop_resorted = ph_accept_trials_per_unit(pop_resorted)
 for u=1:numel(pop_resorted)
-    for t=1:numel(pop_resorted(u).trial)
-        t1=min(pop_resorted(u).trial(t).states_onset);
-        %t2=max(pop_resorted(u).trial(t).states_onset);
-        t2=pop_resorted(u).trial(t).states_onset(end-1);
-        AT=pop_resorted(u).trial(t).arrival_times;
-        pop_resorted(u).trial(t).FR_average=sum(AT>t1 & AT<t2)/(t2-t1);        
-    end
+%     for t=1:numel(pop_resorted(u).trial)
+%         t1=min(pop_resorted(u).trial(t).states_onset);
+%         %t2=max(pop_resorted(u).trial(t).states_onset);
+%         t2=pop_resorted(u).trial(t).states_onset(end-1);
+%         AT=pop_resorted(u).trial(t).arrival_times;
+%         pop_resorted(u).trial(t).FR_average=sum(AT>t1 & AT<t2)/(t2-t1);        
+%     end
     FRs=[pop_resorted(u).trial.FR_average];
     FRsT=FRs;
     unit_mean=double(nanmedian(FRsT));
