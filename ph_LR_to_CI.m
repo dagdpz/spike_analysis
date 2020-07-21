@@ -9,7 +9,7 @@ function pop=ph_LR_to_CI(keys,pop)
 % Right_hemisphere_targets={'dPulv_r','PUL_r','PUL_R','MIP_R','LIP_R'};
 % keys.contra_ipsi_relative_to
 target=pop.(keys.contra_ipsi_relative_to);
-if strcmpi(target(end-1:end),'_R')
+if strcmpi(target(end-1:end),'_L')
     poptr=num2cell([pop.trial.hemifield]*-1);
     [pop.trial.hemifield]=deal(poptr{:});
     poptr=cellfun(@(x) x.*[-1,1],{pop.trial.position},'uniformoutput',false);
