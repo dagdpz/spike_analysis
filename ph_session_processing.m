@@ -320,8 +320,14 @@ for u=1:numel(pop_resorted)
     wf_minmax=[min(pop_resorted(u).waveform_average) max(pop_resorted(u).waveform_average)];
     if ~isempty(wf_minmax) && all(~isnan(wf_minmax))
         pop_resorted(u).waveform_width = sum(abs(pop_resorted(u).waveform_average-pop_resorted(u).waveform_average(end)))/24414.0625/diff(wf_minmax); %% sampling rate hardcoded here
+         %interpolate waveform average and calculate through to peak time
+         wave_average_extra = interp1(1:size(pop_resorted(u).waveform_average,2),pop_resorted(u).waveform_average,[1:0.2:32],'spline');
+         min_wf = find(wave_average_extra == min(wave_average_extra));
+         max_wf = find(wave_average_extra == max(wave_average_extra(min_wf:end)));
+         pop_resorted(u).waveform_through_to_peak = (max_wf - min_wf)/24414.0625;
     else
         pop_resorted(u).waveform_width = -1; %% sampling rate hardcoded here
+        pop_resorted(u).waveform_through_to_peak = -1;
     end
     
 end

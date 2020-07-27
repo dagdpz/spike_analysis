@@ -92,7 +92,7 @@ for unit=1:numel(population)
     end
     
     clear unit_table;
-    inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
+    inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_average','waveform_width','waveform_through_to_peak'};
     %inital_fieldnames={'unit_ID','monkey','target','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating'};  % for microstim dataset, waveforms were not defined yet
     unit_table(1,1:numel(inital_fieldnames))=inital_fieldnames;
     for fn=1:numel(inital_fieldnames)
