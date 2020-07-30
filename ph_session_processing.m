@@ -324,7 +324,7 @@ for u=1:numel(pop_resorted)
          wave_average_extra = interp1(1:size(pop_resorted(u).waveform_average,2),pop_resorted(u).waveform_average,[1:0.2:32],'spline');
          min_wf = find(wave_average_extra == min(wave_average_extra));
          max_wf = find(wave_average_extra == max(wave_average_extra(min_wf:end)));
-         pop_resorted(u).waveform_through_to_peak = (max_wf - min_wf)/24414.0625;
+         pop_resorted(u).waveform_through_to_peak = (max_wf - min_wf)*(8.3333e-06); %bins are not same time anymore because of interpolation
     else
         pop_resorted(u).waveform_width = -1; %% sampling rate hardcoded here
         pop_resorted(u).waveform_through_to_peak = -1;
