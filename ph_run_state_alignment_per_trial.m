@@ -252,7 +252,18 @@ trial(invalid_trials)=[];
 units_cat=cat(3,trial.unit);
 for c=1:n_chans_u,
     for u=1:n_units
+        
         FRs_cat=[units_cat(c,u,:).FR_average];
+        FRs_cat=FRs_cat(FRs_cat~=0);
+        
+        unit_mean=double(nanmedian(FRs_cat));
+        unit_std=double(nanstd(FRs_cat));
+        confidence_interval=3*unit_std; %poisson?
+        %confidence_interval=sqrt(unit_mean)*1.96; %poisson?
+        % here is the actual criterion
+        FRs_cat=FRs_cat(FRs_cat>(log(1+exp(unit_mean-confidence_interval))) & FRs_cat<(log(1+exp(unit_mean+confidence_interval))));
+        
+        FRs_cat=smooth(FRs_cat,10);
         fano=nanstd(FRs_cat)/nanmean(FRs_cat);
         if fano < 0.2; %0.05
             stability=1;

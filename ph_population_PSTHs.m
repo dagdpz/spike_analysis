@@ -12,9 +12,10 @@ legend_labels_hf={'NH IS IN' 'NH IS CH' 'IH IS IN' 'IH IS CH' 'CH IS IN' 'CH IS 
     'NH IS IN P' 'NH IS CH P' 'IH IS IN P' 'IH IS CH P' 'CH IS IN P' 'CH IS CH P'...
     'NH VS IN P' 'NH VS CH P' 'IH VS IN P' 'IH VS CH P' 'CH VS IN P' 'CH VS CH P'...
     'NH CS IN P' 'NH CS CH P' 'IH CS IN P' 'IH CS CH P' 'CH CS IN P' 'CH CS CH P'};
-legend_labels_pref={'NH NP IN' 'NH NP CH' 'IH NP IN' 'IH NP CH' 'CH NP IN' 'CH NP CH' ...
+legend_labels_pref={
+    'NH NP IN' 'NH NP CH' 'IH NP IN' 'IH NP CH' 'CH NP IN' 'CH NP CH' ...
     'NH PF IN' 'NH PF CH' 'IH PF IN' 'IH PF CH' 'CH PF IN' 'CH PF CH' ...
-    'NH NP IN P' 'NH NP CH P' 'IH NP IN P' 'IH NP CH P' 'CH NP IN P' 'CH NP CH P'  ...
+    'NH NP IN P' 'NH NP CH P' 'IH NP IN P' 'IH NP CH P' 'CH NP IN P' 'CH NP CH P'...
     'NH PF IN P' 'NH PF CH P' 'IH PF IN P' 'IH PF CH P' 'CH PF IN P' 'CH PF CH P'};
 
 cols=keys.colors;
@@ -149,7 +150,7 @@ condition_matrix            = combvec(u_hands,u_choice, u_perturbation,u_hemifie
 conditions_out              = combvec(u_effectors,u_hands,u_choice, u_perturbation)';
 conditions_hf               = combvec(u_hemifields,conditions_out')';
 conditions_hf_complete      = combvec(u_hemifields,conditions_out')';
-conditions_pref             = combvec([1 0],conditions_out')';
+conditions_pref             = combvec([0 1],conditions_out')';
 
 if any(u_hands~=0) && any(u_perturbation==1) %splitting to all 4 hand space conditions if hands are involved
     [~,~,columns_hf] = unique(conditions_hf(:,[1,3]),'rows');
@@ -204,11 +205,6 @@ for tye=1:size(type_effectors,1)
         keys.PO.epoch_GB=[keys.ANOVAS_PER_TYPE(typ).epoch{strcmp(keys.ANOVAS_PER_TYPE(typ).epoch(:,2),keys.PO.epoch_RF),1}]; %% gaussian baseline depends on the epoch for resposne field
     end
     if isempty(keys.PO.epoch_GB); keys.PO.epoch_GB={''}; end
-    DN_epoch     =find(ismember(keys.EPOCHS(:,1),keys.PO.epoch_for_normalization));
-    RF_epoch   =find(ismember(keys.EPOCHS(:,1),keys.PO.epoch_RF));
-    BL_epoch          =find(ismember(keys.EPOCHS(:,1),keys.PO.epoch_BL));
-    PF_epoch        =find(ismember(keys.EPOCHS(:,1),keys.PO.epoch_PF));
-    gaussian_bl_epoch       =find(ismember(keys.EPOCHS(:,1),keys.PO.epoch_GB));
     
     pref_valid(t,:)=zeros(size(complete_unit_list,1),1);
     norm_factor=NaN(size(complete_unit_list,1),size(condition_matrix,1));
@@ -223,6 +219,13 @@ for tye=1:size(type_effectors,1)
             [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{2})).perturbation]=deal(1);
             pop=ph_LR_to_CI(keys,pop);
             per_epoch=vertcat(pop.trial.epoch);
+            present_epochs={per_epoch(1,:).state};
+            
+            DN_epoch     =find(ismember(present_epochs,keys.PO.epoch_for_normalization));
+            RF_epoch   =find(ismember(present_epochs,keys.PO.epoch_RF));
+            BL_epoch          =find(ismember(present_epochs,keys.PO.epoch_BL));
+            PF_epoch        =find(ismember(present_epochs,keys.PO.epoch_PF));
+            gaussian_bl_epoch       =find(ismember(present_epochs,keys.PO.epoch_GB));
             if keys.PO.FR_subtract_baseline
                 baseline=repmat(vertcat(per_epoch(:,BL_epoch).FR),1,size(condition_matrix,1));
             else
@@ -323,7 +326,7 @@ for tye=1:size(type_effectors,1)
             per_epoch=vertcat(pop.trial(tr_con).epoch);
             for p=1:size(positions,1)
                 tr_hemi=all(abs(bsxfun(@minus,vertcat(pop.trial.position),positions(p,:)))<1.5,2) & [pop.trial.choice]'==0;
-                FR_for_pref(p)=nanmean([per_epoch((tr_hemi(tr_con)),PF_epoch).FR]);
+                FR_for_pref(p)=nanmean([per_epoch((tr_hemi(tr_con)),PF_epoch).FR])-nanmean(baseline(tr_hemi & tr_con'));
             end
             if ischar(unique_group_values{g}) && strcmp(unique_group_values{g},'su') %very specific rule, be aware of this one!
                 [~,pref_idx]=min(FR_for_pref);
@@ -417,12 +420,12 @@ for tye=1:size(type_effectors,1)
                             end
                         end
                         ix = tr_con & tr_pos;
-                        if p==pref_idx                            
+                        if p==unpref_idx
                             condition(t,c).per_preference(1).window(w).unit(u).average_spike_density=...
                                 ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
                             condition(t,c).per_preference(1).effector=eff;
                         end
-                        if p==unpref_idx
+                        if p==pref_idx
                             condition(t,c).per_preference(2).window(w).unit(u).average_spike_density=...
                                 ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
                             condition(t,c).per_preference(2).effector=eff;

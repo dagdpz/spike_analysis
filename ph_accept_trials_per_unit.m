@@ -9,6 +9,7 @@ for u=1:numel(pop_resorted)
 %     end
     FRs=[pop_resorted(u).trial.FR_average];
     FRsT=FRs;
+    FRsT=FRsT(FRsT~=0);
     unit_mean=double(nanmedian(FRsT));
     unit_std=double(nanstd(FRsT));
     confidence_interval=3*unit_std; %poisson?

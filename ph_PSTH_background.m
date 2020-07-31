@@ -26,26 +26,37 @@ for w=1:size(keys.PSTH_WINDOWS,1)
     epochs_in_window=relative_epochs(:,1)>=t_before_state & relative_epochs(:,2)<=t_after_state ;
     epochs_in_window(~ismember(epoch_names,keys.ANOVAS.main))=false;
     states_in_window(~ismember(states,keys.plot.events))=false;
-    
     % plot only desired events and epochs
     state_positions=relative_state_onset(states_in_window)+state_shift;
+    [state_positions, state_positions_idx]=sort(state_positions);
+    state_names_in_window=state_names(states_in_window);
+    state_names_in_window=state_names_in_window(state_positions_idx);
+    x_limframe=get(gca,'xlim');
     if ~isempty(state_positions)
         line([state_positions; state_positions],y_limframe,'color',[0.8 0.8 0.8],'linewidth',1);
         %here we loop, just so not everything is one text object later, which is sort of a bug in export_fig
         temp_state_onsets=absolute_state_onsets(states_in_window);
         for p=1:numel(state_positions)
             text(double(state_positions(p)),diff(y_limframe)*-0.07+y_limframe(1),num2str(round(temp_state_onsets(p)*1000)),...
-                'fontsize',8*fontsize_factor,'horizontalalignment','center','color',[p p p]/255); %this is a trick: becuase they are plotted in different colors, they will be diffrent elements in adobe
+                'rotation',45,'fontsize',8*fontsize_factor,'horizontalalignment','center'); %this is a trick: becuase they are plotted in different colors, they will be diffrent elements in adobe
+            if p>1 && state_positions(p)-state_positions(p-1)<diff(x_limframe)/100
+                current_y=prev_y-diff(y_limframe)*0.15;                
+            else
+                current_y=y_limframe(2)-diff(y_limframe)*0.15;
+            end
+            text(double(state_positions(p)),current_y,state_names_in_window(p),...
+                'fontsize',6*fontsize_factor,'interpreter','none','rotation',90,'verticalalignment','top');  %label for state
+            prev_y=current_y;
         end
-        text(double(state_positions'),ones(size(state_positions'))*(y_limframe(2)-diff(y_limframe)*0.15),state_names(states_in_window),...
-            'fontsize',6*fontsize_factor,'interpreter','none','rotation',90,'verticalalignment','top');  %label for state
-        line([state_shift state_shift],y_limframe,'color',[1 0 1],'linewidth',1);
+%         text(double(state_positions'),ones(size(state_positions'))*(y_limframe(2)-diff(y_limframe)*0.15),state_names(states_in_window),...
+%             'fontsize',6*fontsize_factor,'interpreter','none','rotation',90,'verticalalignment','top');  %label for state
+        line([state_shift state_shift],y_limframe,'color','k','linewidth',2.5);
     end
     text(state_seperator+(t_after_state-t_before_state)/2,y_limPSTH(2)-diff(y_limPSTH)*0.05,window_label,...
         'color',[1 0 1],'fontsize',6*fontsize_factor,'horizontalalignment','center','verticalalignment','top');
     for ep=find(epochs_in_window')
         ptch=rectangle('Position',[relative_epochs(ep,1)+state_shift y_limPSTH(1) diff(relative_epochs(ep,:)) diff(y_limPSTH)*0.1],'EdgeColor','none','FaceColor',[0.8 0.8 0.8]); %frame for indicating FR window
-        text(double(state_shift+relative_epochs(ep,1)+diff(relative_epochs(ep,:))/2),y_limPSTH(1)+diff(y_limPSTH)*0.05,epoch_names(ep),'color',[ep ep ep]/255,'verticalalignment','middle','horizontalalignment','center','fontsize',6*fontsize_factor);
+        text(double(state_shift+relative_epochs(ep,1)+diff(relative_epochs(ep,:))/2),y_limPSTH(1)+diff(y_limPSTH)*0.01,epoch_names(ep),'color',[ep ep ep]/255,'verticalalignment','middle','horizontalalignment','left','rotation',90,'fontsize',6*fontsize_factor);
         uistack(ptch, 'bottom');
     end
     line([state_seperator state_shift+t_after_state],[y_limframe(1) y_limframe(1)],'linewidth',1,'color','k');

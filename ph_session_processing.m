@@ -268,6 +268,7 @@ for b=1:size(o_t,2)
                     end
                     n_trial(unit_index_processed)                   =n_trial(unit_index_processed)+1;
                     o_t(b).trial(t).waveforms                       =o_t(b).trial(t).unit(c,u).waveforms;
+                    o_t(b).trial(t).stability_rating                =o_t(b).trial(t).unit(c,u).stability_rating;
                     o_t(b).trial(t).arrival_times                   =o_t(b).trial(t).unit(c,u).arrival_times;
                     o_t(b).trial(t).dataset                         =o_t(b).trial(t).unit(c,u).dataset;
                     o_t(b).trial(t).perturbation                    =o_t(b).trial(t).unit(c,u).perturbation;
@@ -296,6 +297,7 @@ for b=1:size(o_t,2)
                     pop_resorted(unit_index).grid_y           =o_t(b).trial(t).unit(c,u).grid_y;
                     pop_resorted(unit_index).electrode_depth  =o_t(b).trial(t).unit(c,u).electrode_depth;
                     o_t(b).trial(t).waveforms                 =o_t(b).trial(t).unit(c,u).waveforms;
+                    o_t(b).trial(t).stability_rating          =o_t(b).trial(t).unit(c,u).stability_rating;
                     o_t(b).trial(t).arrival_times             =o_t(b).trial(t).unit(c,u).arrival_times;
                     o_t(b).trial(t).dataset                   =o_t(b).trial(t).unit(c,u).dataset;
                     o_t(b).trial(t).perturbation              =o_t(b).trial(t).unit(c,u).perturbation;
@@ -450,16 +452,20 @@ units=1:numel(o);
 for u=units
     subplot(n_columns_rows,n_columns_rows,u);
     hold on;
-    plot([o(u).trial.trial_onset_time]+[o(u).trial.run_onset_time]-o(u).trial(1).run_onset_time,[o(u).trial.FR_average]);
+        FR_smoothed=smooth([o(u).trial.FR_average],10);
+    plot([o(u).trial.trial_onset_time]+[o(u).trial.run_onset_time]-o(u).trial(1).run_onset_time,FR_smoothed);
     trial_blocks=[o(u).trial.block];
+    trial_accepted=[o(u).trial.accepted];
+    trial_stability=[o(u).trial.stability_rating];
     unique_blocks=unique(trial_blocks);
     for b=unique_blocks
-        tr_idx=trial_blocks==b;
-        FR_std=double(nanstd([o(u).trial(tr_idx).FR_average]));
-        FR_mean=double(nanmean([o(u).trial(tr_idx).FR_average]));
+        tr_idx=trial_blocks==b & trial_accepted;
+        if sum(tr_idx)<2; continue; end;            % it can happen that an entire block is not accepted if FR changed drastically
+        FR_std=double(nanstd(FR_smoothed(tr_idx)));
+        FR_mean=double(nanmean(FR_smoothed(tr_idx)));
         start_block=o(u).trial(find(tr_idx,1,'first')).run_onset_time-o(u).trial(1).run_onset_time;
         end_block=start_block+o(u).trial(find(tr_idx,1,'last')).trial_onset_time;
-        automatic_stability=[o(u).stability_rating];automatic_stability=automatic_stability(1);
+        automatic_stability=trial_stability(tr_idx);automatic_stability=automatic_stability(1);
         if automatic_stability==1
             col='g';
         elseif automatic_stability==2
@@ -509,8 +515,10 @@ for n_unit=1:numel(o)
     unit_title={sprintf('%s SN/Si/St: %d/%d/%d',o(n_unit).unit_ID,o(n_unit).SNR_rating,o(n_unit).Single_rating,o(n_unit).stability_rating)...
         sprintf(['spk: %d ch/De: %d/%.2f b: ' num2str(unique([o(n_unit).trial.block]))],n_sel_spike_wf, o(n_unit).channel,o(n_unit).electrode_depth)}; %MP add number of spikes
     title(unit_title,'interpreter','none','fontsize',6)
+    if  max(max(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) > min(min(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) % not sure what this bug is about... Lin 20160303 
     set(gca,'xtick',[],'xcolor',[1 1 1],'FontSize',6,'ytick',...
         [min(min(all_spikes_wf(1:50:n_sel_spike_wf*50,:)')) max(max(all_spikes_wf(1:50:n_sel_spike_wf*50,:)'))]);          %MP remove X-axis keep Y-axis to have scale and show max/min values on Y axis
+    end
 end
 title_and_save(WF_summary_handle,fig_title,keys)
 end
