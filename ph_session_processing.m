@@ -481,8 +481,9 @@ for u=units
         text(start_block, FR_mean/2,sprintf('B%d: %0.1f + %0.1f',b,FR_mean,FR_std))
         %plot()
     end
-    
-    title(o(u).unit_ID,'interpreter','none');
+    unit_title={sprintf('%s ',o(u).unit_ID),...
+        sprintf(['ch/De: %d/%.2f b: ' o(u).block_unit{:}],o(u).channel,o(u).electrode_depth)}; %MP add number of spikes
+    title(unit_title,'interpreter','none');
 end
 title_and_save(FR_summary_handle,fig_title,keys)
 end
@@ -512,8 +513,8 @@ for n_unit=1:numel(o)
         plot(all_spikes_wf(1:50:n_sel_spike_wf*50,:)');
     end
     plot(wf_per_block','-k','linewidth',2);
-    unit_title={sprintf('%s SN/Si/St: %d/%d/%d',o(n_unit).unit_ID,o(n_unit).SNR_rating,o(n_unit).Single_rating,o(n_unit).stability_rating)...
-        sprintf(['spk: %d ch/De: %d/%.2f b: ' num2str(unique([o(n_unit).trial.block]))],n_sel_spike_wf, o(n_unit).channel,o(n_unit).electrode_depth)}; %MP add number of spikes
+    unit_title={sprintf('%s SN/Si/St: %d/%d/%d',o(n_unit).unit_ID,round(o(n_unit).SNR_rating*10)/10,round(o(n_unit).Single_rating*10)/10,round(o(n_unit).stability_rating*10)/10),...
+        sprintf(['spk: %d ch/De: %d/%.2f b: ' o(n_unit).block_unit{:}],n_sel_spike_wf, o(n_unit).channel,o(n_unit).electrode_depth)}; %MP add number of spikes
     title(unit_title,'interpreter','none','fontsize',6)
     if  max(max(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) > min(min(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) % not sure what this bug is about... Lin 20160303 
     set(gca,'xtick',[],'xcolor',[1 1 1],'FontSize',6,'ytick',...
