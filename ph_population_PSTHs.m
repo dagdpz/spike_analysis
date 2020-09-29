@@ -17,6 +17,9 @@ legend_labels_pref={
     'NH PF IN' 'NH PF CH' 'IH PF IN' 'IH PF CH' 'CH PF IN' 'CH PF CH' ...
     'NH NP IN P' 'NH NP CH P' 'IH NP IN P' 'IH NP CH P' 'CH NP IN P' 'CH NP CH P'...
     'NH PF IN P' 'NH PF CH P' 'IH PF IN P' 'IH PF CH P' 'CH PF IN P' 'CH PF CH P'};
+legend_labels_pos={
+    'NH IN' 'NH CH' 'IH IN' 'IH CH' 'CH IN' 'CH CH' ...
+    'NH IN P' 'NH CH P' 'IH IN P' 'IH CH P' 'CH IN P' 'CH CH P'};
 
 cols=keys.colors;
 
@@ -31,13 +34,18 @@ keys.pref_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.
     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;...
     [cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/610]; %%temporary for inactivation
+keys.pos_colors=[[cols.NH_IN;cols.NH_CH;cols.IH_IN;cols.IH_CH;cols.CH_IN;cols.CH_CH]/255;...
+    [cols.NH_IN;cols.NH_CH;cols.IH_IN;cols.IH_CH;cols.CH_IN;cols.CH_CH]/610]; %%temporary for inactivation
 
 %% tuning table preparation and grouping
 [tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
 [tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
-if keys.PO.FR_subtract_baseline
+if keys.PO.FR_subtract_baseline || keys.cal.divide_baseline_for_ANOVA
+    if keys.PO.FR_subtract_baseline 
     Sel_for_title =[Sel_for_title,{'base';'=';keys.PO.epoch_BL;', '}];
+    end
     keys.FR_subtract_baseline=0;
+    keys.cal.divide_baseline_for_ANOVA=0;
     population=ph_epochs(population,keys); %to undo baseline subtraction from FR per epochs, so that we can subtract in a meaningful way for population PSTH
 end
 idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.PO.group_parameter);
@@ -244,6 +252,8 @@ for tye=1:size(type_effectors,1)
                         trpar(end+1,:)=[pop.trial.type]==typ & [pop.trial.effector]==eff;
                     case 'by_perturbation'
                         trpar=[pop.trial.type]==typ & [pop.trial.effector]==eff & [pop.trial.perturbation]==condition_matrix(n,strcmp(condition_parameters,'perturbation'));
+                    case 'by_hand'
+                        trpar=[pop.trial.type]==typ & [pop.trial.effector]==eff & [pop.trial.reach_hand]==condition_matrix(n,strcmp(condition_parameters,'reach_hand'));
                     case 'by_effector'
                         trpar=[pop.trial.type]==typ & [pop.trial.effector]==eff;
                     case 'by_type'
@@ -312,10 +322,12 @@ for tye=1:size(type_effectors,1)
                 baseline(:)=deal(nanmean(SD));
             end
             
-            norm_factor(u,:)=deal(max([norm_factor(u,:) 0])); % now we always normalize to maximum condition, 0 makes sure some value is there..
+            %% this line here, what to do with it?
+            
+            %norm_factor(u,:)=deal(max([norm_factor(u,:) 0])); % now we always normalize to maximum condition, 0 makes sure some value is there..
             %% correct normalization factors if they are too low
             if any(norm_factor(u,:)<1)
-                baseline=baseline+1-nanmean(norm_factor(u,:));
+                %baseline=baseline+1-nanmean(norm_factor(u,:)); %not sure what this was meant for?
                 norm_factor(u,:)=deal(1);
             end
             
@@ -556,12 +568,26 @@ for t=1:size(condition,1)
         unique_group_values_tmp=unique_group_values;
         for gt=1:numel(unique_group_values_tmp)
             unique_group_values=unique_group_values_tmp(gt);
-            %% PSTH per position plot
+            
+            
+            %% PSTH per position plot 
+            current=[condition(t,:).per_position];
+            current=current(:);
+            conditions_PSTH=conditions_out; %%???
+            legend_labels=legend_labels_pos;
+            plot_title_part=['=' unique_group_values{1} ' PSTHs per position'];
+            units_valid=ones(size(complete_unit_list,1),1);
+            column_indexes=columns_pref;
+            plot_PSTH_no_empties
+            
+            if false
+            
+            %% PSTH per position plot (by initial fixation)
             current=[condition(t,:).per_position_fixation];
             current=current(:);
             conditions_PSTH=conditions_pref; %%???
             legend_labels={'-15', '0', '+15'};
-            plot_title_part=['=' unique_group_values{1} ' PSTHs per position'];
+            plot_title_part=['=' unique_group_values{1} ' PSTHs per position F'];
             units_valid=ones(size(complete_unit_list,1),1);
             column_indexes=columns_pref;
             plot_PSTH_no_empties
@@ -593,6 +619,8 @@ for t=1:size(condition,1)
             units_valid=ones(size(complete_unit_list,1),1);
             column_indexes=columns_pref;
             plot_PSTH_no_empties
+            
+            end
         end
         unique_group_values=unique_group_values_tmp;
     end
@@ -640,6 +668,8 @@ for t=1:size(condition,1)
                     continue;
                 end
                 switch fittype
+                    case {'none'}
+                        SC=1:numel(Parameters_temp);
                     case {'sigmoidal','linear'}
                         [~, SC] =sort([Parameters_temp.phi]);
                     case {'gaussian1'}
@@ -1027,13 +1057,23 @@ end
                         col=(conditions_PSTH(c,1))*6 + (conditions_PSTH(c,3))*2 + (conditions_PSTH(c,4)+1) + (conditions_PSTH(c,5)*12);
                         current_color=keys.pref_colors(col,:);
                         spl(spn)=spl(spn)+1;
-                    elseif any(strfind(plot_title_part,'per position'))
+                    elseif any(strfind(plot_title_part,'per position F'))
                         %% still need to fix colors if different conditions are present, AND fix overwriting of different groups.... (how about legends?)
                         column=c; %irrelevant
                         spn=subplot_pos(pos_sub_idx(c))+(ef-1)*sp_per_effector;
                         sph(spn)=subplot(rows_to_loop,max(columns_to_loop),spn-(ef-1)*sp_per_effector);
                         col=fix_sub_idx(c);
                         current_color=keys.colors.fix_offset(col,:);
+                        signs=[current(c).sign.unit];
+                        spl(spn)=spl(spn)+1;
+                    elseif any(strfind(plot_title_part,'per position'))
+                        %% still need to fix colors if different conditions are present, AND fix overwriting of different groups.... (how about legends?)
+                        column=c; %irrelevant
+                        spn=subplot_pos(pos_sub_idx(c))+(ef-1)*sp_per_effector;
+                        sph(spn)=subplot(rows_to_loop,max(columns_to_loop),spn-(ef-1)*sp_per_effector);
+                        ctemp=sum(find(pos_sub_idx==pos_sub_idx(c))<=c);
+                        col=(conditions_PSTH(ctemp,2))*2 + (conditions_PSTH(ctemp,3)+1) + (conditions_PSTH(ctemp,4)*6);
+                        current_color=keys.pos_colors(col,:);
                         signs=[current(c).sign.unit];
                         spl(spn)=spl(spn)+1;
                     end
@@ -1074,7 +1114,9 @@ end
                             state_shift=state_shift+t_after_state-t_before_state+0.1;
                         end
                         legend_line_handles=[legend_line_handles errorbarhandle.mainLine];
-                        title(sprintf('%s = %s, N =%s ',keys.PO.group_parameter,unique_group_values{g},n_units_title_part{spn}),'interpreter','tex'); %%
+                        group_para=keys.PO.group_parameter; group_para(strfind(group_para,'_'))='-';
+                        group_val=unique_group_values{g}; group_val(strfind(group_val,'_'))='-';
+                        title(sprintf('%s = %s, N =%s ',group_para,unique_group_values{g},n_units_title_part{spn}),'interpreter','tex'); %%
                     end
                 end
                 y_lim(spn,:)=get(gca,'ylim');

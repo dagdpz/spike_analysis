@@ -36,6 +36,7 @@ for w=1:size(keys.PSTH_WINDOWS,1)
         line([state_positions; state_positions],y_limframe,'color',[0.8 0.8 0.8],'linewidth',1);
         %here we loop, just so not everything is one text object later, which is sort of a bug in export_fig
         temp_state_onsets=absolute_state_onsets(states_in_window);
+        temp_state_onsets=temp_state_onsets(state_positions_idx);
         for p=1:numel(state_positions)
             text(double(state_positions(p)),diff(y_limframe)*-0.07+y_limframe(1),num2str(round(temp_state_onsets(p)*1000)),...
                 'rotation',45,'fontsize',8*fontsize_factor,'horizontalalignment','center'); %this is a trick: becuase they are plotted in different colors, they will be diffrent elements in adobe

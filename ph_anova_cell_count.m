@@ -31,6 +31,7 @@ keys.SxH_mod_index=0;
 S_xH_legend={'IS','IHIS','IH','IHCS','CS','CHCS','CH','CHIS','none','no anova'};
 spacelegend={'CS','IS','No tuning','No anova'};
 handlegend={'CH','IH','No tuning','No anova'};
+effectorlegend={'EF1','EF2','No tuning','No anova'};
 
 inactivation_legend={'CS:EN','CS:EN & IS:EN','IS:EN','CS:SU & IS:EN','CS:SU','CS:SU & IS:SU','IS:SU','CS:EN & IS:SU', 'No tuning'};
 space_position_legend={'CS','IS','Position','No tuning'};
@@ -46,6 +47,7 @@ gaze_and_fixation_x_position_legend={'Position','Gaze','G+P','G+P+GxP','P+GxP','
 legend1={};
 legend2={};
 cols=keys.colors;
+
 if strcmp(keys.CC.factor,'hand')
     keys.all_colors{1}   =[cols.CH_IN; cols.IH_IN; cols.NO_TU; cols.NO_AN]/255;
     legend1=handlegend;
@@ -74,11 +76,16 @@ elseif strcmp(keys.CC.factor,'epoch_all') %% epoch colors...
 end
 
 all_titles=keys.CC.epochs;
+
 if strcmp(keys.CC.plot_type,'per_epoch')
     x_labels=keys.CC.tasktypes;
 elseif strcmp(keys.CC.plot_type,'per_task')
     all_titles=keys.CC.tasktypes;
     x_labels=keys.CC.epochs;
+elseif strcmp(keys.CC.plot_type,'effector')
+    x_labels=keys.CC.epochs;
+    keys.all_colors{1}   =[cols.EP_EN; cols.EP_SU; cols.NO_TU; cols.NO_AN]/255;
+    legend1=effectorlegend;
 elseif strcmp(keys.CC.plot_type,'hemi_and_epoch')
     x_labels={'space','epoch'};
     keys.all_colors{1}   =[cols.EP_EN; cols.EP_BI; cols.EP_SU; cols.NO_TU; cols.NO_AN]/255;
@@ -208,7 +215,7 @@ for sub= 1:size(pie_data,1)
             x=pie_data{sub,level};
             ylim_bar=max([size(keys.tuning_table,1)-1 1]);
         end
-        if strcmp(keys.CC.plot_type,'per_epoch') || strcmp(keys.CC.plot_type,'per_task') || ...
+        if strcmp(keys.CC.plot_type,'per_epoch') || strcmp(keys.CC.plot_type,'per_task') || strcmp(keys.CC.plot_type,'effector') || ...
                 strcmp(keys.CC.plot_type,'visuomotor')
             current_colors=repmat(keys.all_colors{1},numel(x)/(size(keys.all_colors{1},1)),1);
         elseif strcmp(keys.CC.plot_type,'space_and_epoch') || strcmp(keys.CC.plot_type,'hemi_and_epoch') || strcmp(keys.CC.plot_type,'space_x_hand') ||...
@@ -330,6 +337,18 @@ no_anova_marker=keys.n1;
 no_tuning_marker=keys.n1-1;
 
 switch keys.CC.plot_type
+    case 'effector'
+        keys.n=keys.n1;
+        for e=1:numel(keys.CC.epochs)
+            d=1;
+            tuning_variables{1}= [keys.CC.IC_to_plot '_' keys.CC.factor '_' keys.CC.epochs{e} '_effector_' keys.CC.tasktypes{1} '_vs_' keys.CC.tasktypes{2} '_' keys.arrangement(1:3) ];
+            tuning{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
+            
+            pie_tmp=[];
+            pie_tmp=get_pie_multilevel(keys,pie_tmp,tuning);
+            multilevel_data(e,:)=pie_tmp;
+        end
+        
     case 'per_epoch'
         keys.n=keys.n1;
         for e=1:numel(keys.CC.epochs)
@@ -355,8 +374,7 @@ switch keys.CC.plot_type
                     case 'hand'
                         tuning_variables{1}= [keys.CC.IC_to_plot '_' keys.CC.epochs{e} '_hands_'   keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
                     case 'choice1'
-                        tuning_variables{1}= [keys.CC.IC_to_plot '_AH_' keys.CC.epochs{e} '_RF_choice1_'     keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
-                        
+                        tuning_variables{1}= [keys.CC.IC_to_plot '_AH_' keys.CC.epochs{e} '_RF_choice1_'     keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];                        
                 end
                 tuning{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
             end
@@ -689,6 +707,17 @@ if ~ valid
 end
 
 switch keys.CC.factor
+    case {'CH_CS','CH_IS','IH_CS','IH_IS'}
+        EF1=ismember(table(2:end,index.(tuning_variables{1})),keys.CC.tasktypes{1});
+        EF2=ismember(table(2:end,index.(tuning_variables{1})),keys.CC.tasktypes{2});
+        NA=ismember(table(2:end,index.(tuning_variables{1})),'-');
+        
+        clear read_out
+        read_out(EF1)                =1;
+        read_out(EF2)                =2;
+        read_out(~EF1 & ~EF2  &  ~NA)=3;
+        read_out(NA)                 =4;    
+    
     case 'space_and_hand'
         IStuning=ismember(table(2:end,index.(tuning_variables{1})),'IS') & keys.SXH_or_interaction; %keys.space_or_interaction;
         CStuning=ismember(table(2:end,index.(tuning_variables{1})),'CS') & keys.SXH_or_interaction; %keys.space_or_interaction;

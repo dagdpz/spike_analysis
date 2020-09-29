@@ -6,6 +6,7 @@ keys.labels.perturbations={'','_PT'};  %% AH!??
 keys.labels.choices={'in','ch'};
 
 keys.FR_subtract_baseline=0;
+keys.cal.divide_baseline_for_ANOVA=0;
 keys.contra_ipsi_relative_to='target';
 
 %% general settings (multi-summary PSTH)
@@ -133,9 +134,9 @@ keys.colors.lhd_hor         =[0 0 1];
 % cell count colors
 keys.colors.NO_AN   =[255 255 255];
 keys.colors.NO_TU   =[128 128 128];
-keys.colors.EP_EN   =[239  65  54];
+keys.colors.EP_EN   =[255  65  0];
 keys.colors.EP_BI   =[106 189  69];
-keys.colors.EP_SU   =[0   174 239];
+keys.colors.EP_SU   =[0   65 255];
 keys.colors.CR      =[255   0   0];
 keys.colors.UC      =[127   0   0];
 

@@ -6,7 +6,8 @@ Xout=combvec(xout,yout)';
 Z=double(zin(:));
 
 X=[xin(~isnan(Z)),yin(~isnan(Z))];
-Z=Z(~isnan(Z))-double(baseline(~isnan(Z)));
+baseline=baseline(~isnan(Z));
+Z=Z(~isnan(Z))-double(baseline);
 disregard_baseline=0;
 if any(~isnan(Z) & ~baseline==0)
     disregard_baseline=1;
@@ -359,7 +360,9 @@ if any(fitfun_valid)
     R2_a=max(R2_adjusted);
     
     Out.bestfit=fitfuns{best_R2_index};
+    if any(secondbest_R2_index)
     Out.secondbestfit=fitfuns{secondbest_R2_index};
+    end
     %R2_a=Out.(Out.bestfit).R2;
     Zout=Out.(Out.bestfit).Zout;
 end

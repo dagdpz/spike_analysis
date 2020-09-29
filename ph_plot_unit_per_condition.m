@@ -31,6 +31,9 @@ for unit=1:numel(population)
             if keys.cal.completed
                 o_index = o_index & [population(unit).trial.completed]==1;  %% success/completed
             end
+            eff_for_typ=effectors(o_index);
+            effectors_effector_loop=unique(eff_for_typ);
+
             if sum(o_index)==0;
                 disp(sprintf('%s has no trials for effector %.0f type %.0f hands %s completed= %.0f',population(unit).unit_ID,effector,type,mat2str(keys.cal.reach_hand),keys.cal.completed));
                 continue;
@@ -47,7 +50,7 @@ for unit=1:numel(population)
                 title_value=vertcat(o.figure_title_value{fig});
                 title_part=o.figure_title_part;
                 of_index=[o.trial.figure]==fig;
-                effectors_on_figure=effectors_effector_loop(ismember(effectors_effector_loop,effectors(of_index)));
+                effectors_on_figure=effectors_effector_loop(ismember(effectors_effector_loop,eff_for_typ(of_index)));
                 unique_lines=unique([o.trial(of_index).line]);
                 for e=1:numel(effectors_on_figure)
                     clear hh hs hb

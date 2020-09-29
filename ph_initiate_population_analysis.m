@@ -71,6 +71,7 @@ for P=population_analysis_to_perform
         keys.(AN).epoch_PF='INI';
         keys.(AN).epoch_GB='INI';
         keys.(AN).epoch_for_normalization='INI'; %%%epoch_for_normalization ... divisive!
+        keys.(AN).epoch_DN='INI';
         keys.(AN).epoch_RF='INI';
         keys.(AN).fittypes={'sigmoidal','linear','gaussian1'}; %,'gaussian2' %,'linear'
                 
@@ -79,6 +80,7 @@ for P=population_analysis_to_perform
         keys.(AN).normalization='none'; 
         keys.(AN).plot_RF=0; 
         keys.(AN).y_lim=[]; 
+        keys.(AN).link_y_lim=1; 
         keys.(AN).group_parameter='ungrouped';
         keys.(AN).group_excluded={'','-'}; 
         
@@ -166,7 +168,7 @@ for P=population_analysis_to_perform
                         ph_scatter(keys);
                     case 'ccs'
                         temp_epochs=keys.(AN).epochs;
-                        keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{:});
+                        keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{1});
                         for pie=[0,1]
                             for percent=[0,1]
                                 keys.CC.plot_as_pie=pie;

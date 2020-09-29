@@ -12,18 +12,20 @@ for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
 
-legend_labels={'NH IS IN' 'NH IS CH' 'IH IS IN' 'IH IS CH' 'CH IS IN' 'CH IS CH' 'NH CS IN' 'NH CS CH' 'IH CS IN' 'IH CS CH' 'CH CS IN' 'CH CS CH' };
+%legend_labels={'NH IS IN' 'NH IS CH' 'IH IS IN' 'IH IS CH' 'CH IS IN' 'CH IS CH' 'NH CS IN' 'NH CS CH' 'IH CS IN' 'IH CS CH' 'CH CS IN' 'CH CS CH' };
 cols=keys.colors;
 keys.line_colors=[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;
     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;
-n_col=size(keys.line_colors,1);
+%n_col=size(keys.line_colors,1);
 
 %% tuning table preparation and grouping
 [tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
 [tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
-% if keys.FR_subtract_baseline
-%     Sel_for_title =[Sel_for_title,{'base';'=';keys.epoch_BL;', '}];
-% end
+if keys.FR_subtract_baseline || keys.cal.divide_baseline_for_ANOVA
+    keys.FR_subtract_baseline=0;
+    keys.cal.divide_baseline_for_ANOVA=0;
+    population=ph_epochs(population,keys); %to undo baseline subtraction from FR per epochs, so that we can subtract in a meaningful way for population PSTH
+end
 idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.ON.group_parameter);
 group_values=tuning_per_unit_table(:,idx_group_parameter);
@@ -123,34 +125,53 @@ for tye=1:size(type_effectors,1) %typ=unique(per_trial.types)
                 end
                 trpar(end+1,:)=[pop.trial.type]==typ & [pop.trial.effector]==eff;
                 tr_con=all(trpar,1);
-                per_epoch=vertcat(pop.trial(tr_con).epoch);
+                per_epoch=vertcat(pop.trial(tr_con).epoch); 
+                %% why does this still contain both reaches and saccade (windows?) ???
+                
+                
+                present_epochs={per_epoch(1,:).state};                
+                DN_epoch     =find(ismember(present_epochs,keys.ON.epoch_DN));
+                
                 
                 % why hemifields independently in this piece of code? cause
-                % meybe we want to add positions...
+                % maybe we want to add positions...
                 for f=1:numel(u_hemifields) %hemifield (as compared to positions!
                     trtemp=[pop.trial.hemifield]==u_hemifields(f);
                     trials_for_SD=find(tr_con & trtemp);
                     
                     % epoch averages for specific conditions
                     if any(trtemp(tr_con))
-                        condition(t,c).per_hemifield(f).unit(u).epoch_averages=...
+                        group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages=...
                             nanmean(reshape([per_epoch(trtemp(tr_con),:).FR],size(per_epoch(trtemp(tr_con),:))),1);
                     else
-                        condition(t,c).per_hemifield(f).unit(u).epoch_averages=NaN(size(vertcat(pop.trial(1).epoch)));
+                        group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages=NaN(size(vertcat(pop.trial(1).epoch)));
                     end
                     
+                    %% Baseline computation .. very incomplete at this point
+                    D_baseline=1;
+                    S_baseline=0;
+                    switch keys.ON.normalization
+                        case 'per_condition'
+                            D_baseline=max([group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages(DN_epoch) 1]);
+                        case 'per_hand'
+                            D_baseline=max([group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages(DN_epoch) 1]);
+                        case 'None'
+                            D_baseline=1;
+                    end
+                    
+                    
                     for wn=1:size(keys.PSTH_WINDOWS,1)
-                        % calculate significance for a few bins surrounding
+                        % temporarily change window size!
                         temp_window=keys.PSTH_WINDOWS(wn,:);
                         keys.PSTH_WINDOWS{wn,3}=keys.PSTH_WINDOWS{wn,3}-keys.n_consecutive_bins_significant*keys.PSTH_binwidth;
                         keys.PSTH_WINDOWS{wn,4}=keys.PSTH_WINDOWS{wn,4}+keys.n_consecutive_bins_significant*keys.PSTH_binwidth;
                         for tr=1:numel(trials_for_SD)
-                            condition(t,c).per_hemifield(f).window(wn).unit(u).average_spike_density(tr,:)=...
-                                ph_spike_density(pop.trial(trials_for_SD(tr)),wn,keys,0,1);
+                            group(g).condition(t,c).per_hemifield(f).window(wn).unit(u).average_spike_density(tr,:)=...
+                                ph_spike_density(pop.trial(trials_for_SD(tr)),wn,keys,S_baseline,D_baseline);
                         end
                         if isempty(trials_for_SD)
-                            condition(t,c).per_hemifield(f).window(wn).unit(u).average_spike_density(1,:)=...
-                                NaN(size(ph_spike_density(pop.trial(1),wn,keys,0,1)));
+                            group(g).condition(t,c).per_hemifield(f).window(wn).unit(u).average_spike_density(1,:)=...
+                                NaN(size(ph_spike_density(pop.trial(1),wn,keys,S_baseline,D_baseline)));
                         end
                         keys.PSTH_WINDOWS(wn,:)=temp_window;
                     end
@@ -162,262 +183,307 @@ end
 %end
 
 %% condition comparison
-comparisons_per_effector=keys.ON.comparisons_per_effector;
+comparisons=keys.ON.comparisons_per_effector;
 condition_parameters_comparissons = [{'hemifield'} {'effector'} condition_parameters];
 
-% effector comparison only possible if several_effectors
-for t=1:size(condition,1)
-    typ=u_types(t); %u_types(mod(t-1,numel(u_types))+1);
-    current=[condition(t,:).per_hemifield];
-    current_unit=vertcat(current.unit);
-    current_window=vertcat(current.window);
-    unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)) & tya_existing{t},idx_unitID));
-    units=find(all(unitidx,2));
-    for comp=1:numel(comparisons_per_effector)
-        cM1=true(size(conditions_hf));
-        cM2=true(size(conditions_hf));
-        for k=1:numel(condition_parameters_comparissons)
-            if isfield(comparisons_per_effector,condition_parameters_comparissons{k}) &&...
-                    ~ isempty(comparisons_per_effector(comp).(condition_parameters_comparissons{k}))
-                cM1(~ismember(conditions_hf(:,k),comparisons_per_effector(comp).(condition_parameters_comparissons{k}){1}),k)=false;
-                cM2(~ismember(conditions_hf(:,k),comparisons_per_effector(comp).(condition_parameters_comparissons{k}){2}),k)=false;
+% comparisons_per_effector is misleading, because effector comparison is
+% possible as well
+for g=1:numel(unique_group_values)
+    condition=group(g).condition;
+    for t=1:size(condition,1)
+        typ=u_types(t); %u_types(mod(t-1,numel(u_types))+1);
+        current=[condition(t,:).per_hemifield];
+        current_unit=vertcat(current.unit);
+        current_window=vertcat(current.window);
+        unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)) & tya_existing{t},idx_unitID));
+        units=find(all(unitidx,2));
+        for comp=1:numel(comparisons)
+            
+            %% condition selection
+            cM1=true(size(conditions_hf));
+            cM2=true(size(conditions_hf));
+            for k=1:numel(condition_parameters_comparissons)
+                if isfield(comparisons(comp),condition_parameters_comparissons{k}) &&...
+                        ~ isempty(comparisons(comp).(condition_parameters_comparissons{k}))
+                    cM1(~ismember(conditions_hf(:,k),comparisons(comp).(condition_parameters_comparissons{k}){1}),k)=false;
+                    cM2(~ismember(conditions_hf(:,k),comparisons(comp).(condition_parameters_comparissons{k}){2}),k)=false;
+                end
             end
-        end
-        n=1;
-        c1=find(all(cM1,2));
-        c2=find(all(cM2,2));
-        for u=1:numel(units)
-            %% baseline definition (for epoch tuning so far... CHECK dimensions of epoch_averages!!)
-            epoch_averages=vertcat(current_unit(unique([c1; c2]),units(u)).epoch_averages);
-            baseline=nanmean(epoch_averages(:,ismember(keys.EPOCHS(:,1),comparisons_per_effector(comp).baseline_epoch)));
+            c1=find(all(cM1,2));
+            c2=find(all(cM2,2));
+            
+            
+            keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+            wo=find(ismember(keys.PSTH_WINDOWS(:,1),comparisons(comp).order_onset{1})):size(keys.PSTH_WINDOWS,1);
+            
+            for u=1:numel(units)
+                %% baseline definition (for epoch tuning so far... CHECK dimensions of epoch_averages!!)
+                epoch_averages=vertcat(current_unit(unique([c1; c2]),units(u)).epoch_averages);
+                baseline=nanmean(epoch_averages(:,ismember(keys.EPOCHS(:,1),comparisons(comp).baseline_epoch)));
+                
+                onset_found=0;
+                for wn=1:numel(current(1).window)
+                    temp_sigbins=ph_compare_by_bin_by_trial(current_window(:,wn),c1,c2,baseline,units(u),keys.n_consecutive_bins_significant);
+                    sigbins(t).per_group(g).comparison(comp).window(wn).bins(u,:)=temp_sigbins(keys.n_consecutive_bins_significant+1:end-keys.n_consecutive_bins_significant); % return to original window size
+                    
+                    %% tuning_onset (once per unit, (certain time before/after), until whenever)
+                    %% defines also order onset
+                    if wn >= wo(1)  %% could be better...
+                        direction=temp_sigbins(1:end-keys.n_consecutive_bins_significant); % keep the first few bins (consecutive)
+                        if wn==wo(1)
+                            n_bins_disregarded_beginning    =keys.n_consecutive_bins_significant+round((comparisons(comp).order_onset{2}-keys.PSTH_WINDOWS{wo(1),3})/keys.PSTH_binwidth);
+                            %onset_correction=round(comparisons_per_effector(comp).order_onset{2}/keys.PSTH_binwidth);
+                        else
+                            n_bins_disregarded_beginning=keys.n_consecutive_bins_significant;
+                            %onset_correction=round(keys.PSTH_WINDOWS{wo(1),3}/keys.PSTH_binwidth);
+                        end
+                        onset=find(~isnan(direction(n_bins_disregarded_beginning+1:end)),1);
+                        if ~isempty(onset) && onset==1 && n_bins_disregarded_beginning>0%% if tuning was already there in the first bin, go backwards !!
+                            onset=find(isnan([direction(n_bins_disregarded_beginning:-1:1) NaN]),1)*-1+2;
+                        end
+                        if isempty(onset) || onset_found
+                            sigbins(t).per_group(g).comparison(comp).window(wn).tuning_onset(u)=NaN;
+                            sigbins(t).per_group(g).comparison(comp).window(wn).tuning_direction(u)=NaN;
+                        else
+                            onset= onset+n_bins_disregarded_beginning;
+                            sigbins(t).per_group(g).comparison(comp).window(wn).tuning_direction(u)=direction(onset);
+                            onset= onset-keys.n_consecutive_bins_significant+round(keys.PSTH_WINDOWS{wo(1),3}/keys.PSTH_binwidth);
+                            sigbins(t).per_group(g).comparison(comp).window(wn).tuning_onset(u)=onset;
+                            onset_found=1;
+                        end
+                        
+                    end
+                end
+            end
+            
+            %% N_tuned
             for wn=1:numel(current(1).window)
-                temp_sigbins=ph_compare_by_bin_by_trial(current_window(:,wn),c1,c2,baseline,units(u),keys.n_consecutive_bins_significant);
-                sigbins(t).per_effector(n).comparison(comp).window(wn).bins(u,:)=temp_sigbins(keys.n_consecutive_bins_significant+1:end-keys.n_consecutive_bins_significant);
+                concatinated_after_onset=[sigbins(t).per_group(g).comparison(comp).window(wn).bins];
+                sigbins(t).per_group(g).comparison(comp).window(wn).n_tuned_cells=[sum(concatinated_after_onset==1,1); sum(concatinated_after_onset==-1,1)];
             end
-        end
-        
-        %% re-order dependent on tuning onset
-        keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
-        wo=find(ismember(keys.PSTH_WINDOWS(:,1),comparisons_per_effector(comp).order_onset{1})):size(keys.PSTH_WINDOWS,1);
-        n_bins_disregarded_beginning    =round((comparisons_per_effector(comp).order_onset{2}-keys.PSTH_WINDOWS{wo(1),3})/keys.PSTH_binwidth);
-        n_bins_disregarded_end          =round((comparisons_per_effector(comp).order_onset{3}-keys.PSTH_WINDOWS{wo(1),3})/keys.PSTH_binwidth);
-        n_bins_regarded                 =round((comparisons_per_effector(comp).order_onset{3}-comparisons_per_effector(comp).order_onset{2})/keys.PSTH_binwidth+1);
-        concatinated_after_onset=[sigbins(t).per_effector(n).comparison(comp).window(wo).bins];
-        concatinated_after_onset(:,end+1)=0;
-        clear tuning_onset
-        % i feel there should be a smarter way then just looping again
-        for u=1:numel(units)
-            tuning_onset(u)=find(~isnan([concatinated_after_onset(u,n_bins_disregarded_beginning+1:end)]),1); % in bins?
-            if tuning_onset(u)==1 && n_bins_disregarded_beginning>0%% if tuning was already there in the first bin, go backwards !!
-                tuning_onset(u)=find(isnan([concatinated_after_onset(u,n_bins_disregarded_beginning:-1:1) NaN]),1)*-1+2; % in bins?
+            
+            %% unit_order dependent on tuning onset
+            tuning_onset_all_windows=vertcat(sigbins(t).per_group(g).comparison(comp).window(wo).tuning_onset);
+            tuning_onset=tuning_onset_all_windows(1,:);
+            for ww=numel(wo):-1:1
+                to_replace=~isnan(tuning_onset_all_windows(ww,:));
+                tuning_onset(to_replace)=tuning_onset_all_windows(ww,to_replace)+ww*1000; %% assuming no window has more than 100 bins
             end
-            tuning_direction(u)=concatinated_after_onset(u,tuning_onset(u)+n_bins_disregarded_beginning);
+            [~, sigbins(t).per_group(g).comparison(comp).unit_order]=sort(tuning_onset);
         end
-        concatinated_after_onset(:,1:n_bins_disregarded_beginning)=[];
-        tuning_direction(tuning_onset>n_bins_disregarded_end-n_bins_disregarded_beginning)=NaN;
-        [~, sigbins(t).per_effector(n).comparison(comp).unit_order]=sort(tuning_onset);
-        sigbins(t).per_effector(n).comparison(comp).tuning_onset=tuning_onset;%+comparisons_per_effector(comp).order_onset{2};
-        sigbins(t).per_effector(n).comparison(comp).tuning_direction=tuning_direction;
-        sigbins(t).per_effector(n).comparison(comp).n_tuned_cells=[sum(concatinated_after_onset(:,1:n_bins_regarded)==1,1); sum(concatinated_after_onset(:,1:n_bins_regarded)==-1,1)];
     end
 end
 
 %% plots
 for t=1:numel(sigbins)
     typ=u_types(mod(t-1,numel(u_types))+1);
-    current=[sigbins(t).per_effector];
-    
-    fig_title=sprintf('Selection: %s %s %s hnd %s ch %s %s grouped by %s',...
-        [Sel_for_title{:}],keys.monkey,[keys.conditions_to_plot{:}],mat2str(u_hands),mat2str(double(u_choice)),keys.arrangement,keys.ON.group_parameter);
-    filename=sprintf('%s %s %s %s %s hnd %s ch %s',...
-        [Sel_for_title{:}],keys.monkey,keys.ON.group_parameter,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)));
-    
-    plot_1_title            = [keys.ON.comparisons_title ' ' fig_title  ' per bin'];
-    
-    %% tuning per bin plot
-    PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_1_title);
-    % for g=1:numel(unique_group_values)
-    %         unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)) & tya_existing{t},idx_unitID));
-    %         group_units=find(all(unitidx,2))';
-    %
-    %         if true %%reducing to only units that have each condition
-    %             current_window=vertcat(current.window);
-    %             current_units=vertcat(current_window(:,1).unit);
-    %             group_units=intersect(group_units,find(all(arrayfun(@(x) ~isempty(x.average_spike_density),current_units),1)));
-    %         end
-    column=1;
-    keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
-    n=1;
-    for comp=1:numel(comparisons_per_effector)
-        subplot(numel(comparisons_per_effector),1,(comp-1)+column)
-        hold on
-        col=comparisons_per_effector(comp).colors;
-        unit_order=current(n).comparison(comp).unit_order;
-        state_shift=0;
-        for w=1:size(keys.PSTH_WINDOWS,1)
-            t_before_state=keys.PSTH_WINDOWS{w,3};
-            t_after_state=keys.PSTH_WINDOWS{w,4};
-            bins=t_before_state:keys.PSTH_binwidth:t_after_state;
-            bins=bins+state_shift-t_before_state;
-            to_plot1=current(n).comparison(comp).window(w).bins(unit_order,:);
-            to_plot1(isnan(to_plot1))=0;
-            to_plot2=to_plot1;
-            to_plot1(to_plot1==-1)=0;
-            to_plot2(to_plot2==1)=0;
-            to_plot2(to_plot2==-1)=1;
-            to_plot_white=to_plot1==0&to_plot2==0;
-            clear C
-            C(:,:,1) = to_plot1*col(1,1)+to_plot2*col(2,1)+to_plot_white;
-            C(:,:,2) = to_plot1*col(1,2)+to_plot2*col(2,2)+to_plot_white;
-            C(:,:,3) = to_plot1*col(1,3)+to_plot2*col(2,3)+to_plot_white;
-            image([state_shift state_shift+t_after_state-t_before_state],[0 size(to_plot1,1)],C);
-            state_shift=state_shift+t_after_state-t_before_state+0.1;
-        end
-        %                 legend_line_handles=[legend_line_handles errorbarhandle.mainLine];
-        title(comparisons_per_effector(comp).title);
-    end
-    
-    %title(sprintf('%s = %s, N (NH/CH/IH) =%s ',keys.ON.group_parameter,unique_group_values{g},num2str(n_units)),'interpreter','none');
-    y_lim(n,comp)=size(to_plot1,1);
-    
-    %% subplot appearance, and tuning lines
-    ylimmax=max(max(y_lim));
-    ylimmin=0;
-    y_lim=[ylimmin ylimmax];
-    %     if ~isempty(keys.population_ylim)
-    %         y_lim= keys.population_ylim;
-    %     end
-    column=1;
-    for comp=1:numel(comparisons_per_effector)
-        hold on
-        subplot(numel(comparisons_per_effector),1,(comp-1)+column)
+    for g=1:numel(unique_group_values)
+        current=[sigbins(t).per_group(g)];
         
-        %% choices? hands? errm here its only relevant for event and epoch onsets
-        tr=[all_trialz.type]==typ & ismember([all_trialz.effector],u_effectors) & [all_trialz.completed]==1;
-        %set(gca,'xtick',get(gca,'xtick')*keys.PSTH_binwidth);
-        ph_PSTH_background(all_trialz(tr),y_lim,y_lim,y_lim,keys,1)
+        fig_title=sprintf('Selection: %s %s %s hnd %s ch %s %s, %s = %s',...
+            [Sel_for_title{:}],keys.monkey,[keys.conditions_to_plot{:}],mat2str(u_hands),mat2str(double(u_choice)),keys.arrangement,keys.ON.group_parameter,unique_group_values{g});
+        filename=sprintf('%s %s %s = %s %s %s hnd %s ch %s',...
+            [Sel_for_title{:}],keys.monkey,keys.ON.group_parameter,unique_group_values{g},[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)));
         
-    end
-    ph_title_and_save(PSTH_summary_handle,  [keys.ON.comparisons_title ' ' filename ' PSTHs'],plot_1_title,keys)
-    
-    
-    %% tuning onset plot
-    plot_2_title            = [keys.ON.comparisons_title ' ' fig_title  ' tuning onset'];
-    PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_2_title);
-    % for g=1:numel(unique_group_values)
-    %         unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)) & tya_existing{t},idx_unitID));
-    %         group_units=find(all(unitidx,2))';
-    %
-    %         if true %%reducing to only units that have each condition
-    %             current_window=vertcat(current.window);
-    %             current_units=vertcat(current_window(:,1).unit);
-    %             group_units=intersect(group_units,find(all(arrayfun(@(x) ~isempty(x.average_spike_density),current_units),1)));
-    %         end
-    column=1;
-    keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
-    
-    n=1;% find(u_effectors==eff);
-    clear x_lim sp
-    for comp=1:numel(comparisons_per_effector)
-        sp(comp)=subplot(numel(comparisons_per_effector),1,(comp-1)+column);
-        hold on
-        col=comparisons_per_effector(comp).colors;
+        plot_1_title            = [keys.ON.comparisons_title ' ' fig_title  ' per bin'];
         
-        unit_order=current(n).comparison(comp).unit_order;
-        N_total=numel(unit_order);
-        tuning_direction=current(n).comparison(comp).tuning_direction;
-        to_plot1=(sigbins(t).per_effector(n).comparison(comp).tuning_onset(tuning_direction==1)-1)*keys.PSTH_binwidth*1000;
-        to_plot2=(sigbins(t).per_effector(n).comparison(comp).tuning_onset(tuning_direction==-1)-1)*keys.PSTH_binwidth*1000;
-        to_plot1(to_plot1<0)=[];to_plot2(to_plot2<0)=[]; % remove tuning onsets before respective threshold
-        
-        maxbin=max([to_plot1 to_plot2])/1000+keys.ON.comparisons_per_effector(comp).order_onset{2};
-        bins=(keys.ON.comparisons_per_effector(comp).order_onset{2}:keys.PSTH_binwidth:maxbin)*1000;%keys.ON.comparisons_per_effector(comp).order_onset{3})*1000;
-        mean1=nanmean(to_plot1); mean2=nanmean(to_plot2);
-        median1=nanmedian(to_plot1); median2=nanmedian(to_plot2);
-        std1=std(to_plot1); std2=std(to_plot2);
-        to_plot1=hist(to_plot1,(bins-bins(1)))/N_total*100;
-        to_plot2=hist(to_plot2,(bins-bins(1)))/N_total*100;
-        %to_plot1(1)=0; to_plot1(2)=0; % removing
-        
-        plot(bins,to_plot1,'color',col(1,:),'linewidth',1);
-        text(bins(2),max([to_plot1,to_plot2])*2/3,num2str(round(sum(to_plot1))),'color',col(1,:));
-        text(bins(2),max([to_plot1,to_plot2])/3,[num2str(round(mean1)) ' ' num2str(round(median1)) ' std=' num2str(round(std1))] ,'color',col(1,:));
-        plot(bins,to_plot2,'color',col(2,:),'linewidth',1);
-        text(bins(4),max([to_plot1,to_plot2])*2/3,num2str(round(sum(to_plot2))),'color',col(2,:));
-        text(bins(4),max([to_plot1,to_plot2])/3,[num2str(round(mean2)) ' ' num2str(round(median2)) ' std=' num2str(round(std2))] ,'color',col(2,:));
-        x_lim(comp,:)=get(gca,'xlim');
-        title(comparisons_per_effector(comp).title);
-    end
-    
-    % setting same x axis for all subplots
-    max_x_diff=max(diff(x_lim,1,2));
-    for comp=1:numel(comparisons_per_effector)
-        subplot(sp(comp));
-        set(gca,'xlim',[x_lim(comp,1) x_lim(comp,1)+max_x_diff]);
-    end
-    
-    ph_title_and_save(PSTH_summary_handle,  [keys.ON.comparisons_title ' ' filename ' tuning onset'],plot_2_title,keys)
-    %             legend(legend_line_handles,legend_labels(legend_label_indexes));
-    
-    %% n tuned cells plot
-    plot_3_title            = [keys.ON.comparisons_title ' ' fig_title  ' n tuned cells'];
-    PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_3_title);
-    % for g=1:numel(unique_group_values)
-    %         unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)) & tya_existing{t},idx_unitID));
-    %         group_units=find(all(unitidx,2))';
-    %
-    %         if true %%reducing to only units that have each condition
-    %             current_window=vertcat(current.window);
-    %             current_units=vertcat(current_window(:,1).unit);
-    %             group_units=intersect(group_units,find(all(arrayfun(@(x) ~isempty(x.average_spike_density),current_units),1)));
-    %         end
-    column=1;
-    keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
-    n=1;
-    clear x_lim sp
-    for comp=1:numel(comparisons_per_effector)
-        
-        sp(comp)=subplot(numel(comparisons_per_effector),numel(u_effectors),(comp-1)*numel(u_effectors)+column);
-        hold on
-        col=comparisons_per_effector(comp).colors;
-        unit_order=current(n).comparison(comp).unit_order;
-        N_total=numel(unit_order); % for getting fraction
-        
-        to_plot1=sigbins(t).per_effector(n).comparison(comp).n_tuned_cells(1,:)/N_total*100;
-        to_plot2=sigbins(t).per_effector(n).comparison(comp).n_tuned_cells(2,:)/N_total*100;
-        bins=(keys.ON.comparisons_per_effector(comp).order_onset{2}:keys.PSTH_binwidth:keys.ON.comparisons_per_effector(comp).order_onset{3})*1000;%keys.ON.comparisons_per_effector(comp).order_onset{3})*1000;
-        
-        max1=bins(to_plot1==max(to_plot1));
-        max2=bins(to_plot2==max(to_plot2));
-        plot(bins,to_plot1,'color',col(1,:),'linewidth',1);
-        plot(bins,to_plot2,'color',col(2,:),'linewidth',1);
-        y_lim=get(gca,'ylim');
-        if ~isempty(max1)
-            max1=nanmean(max1);
-            line([max1 max1],[0 y_lim(2)],'color',col(1,:),'linewidth',1);
-            text(max1-(bins(end)-bins(1))/100,y_lim(2)/2,num2str(max1),'rotation',90);
-        end
-        if ~isempty(max2)
-            max2=nanmean(max2);
-            line([max2 max2],[0 y_lim(2)],'color',col(2,:),'linewidth',1);
-            text(max2-(bins(end)-bins(1))/100,y_lim(2)/2,num2str(max2),'rotation',90);
+        %% tuning per bin plot
+        PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_1_title);
+        column=1;
+        keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+        n=1;
+        for comp=1:numel(comparisons)
+            wo=find(ismember(keys.PSTH_WINDOWS(:,1),comparisons(comp).order_onset{1}));
+            subplot(numel(comparisons),1,(comp-1)+column)
+            hold on
+            col=comparisons(comp).colors;
+            unit_order=current(n).comparison(comp).unit_order;
+            state_shift=0;
+            for w=1:size(keys.PSTH_WINDOWS,1)
+                t_before_state=keys.PSTH_WINDOWS{w,3};
+                t_after_state=keys.PSTH_WINDOWS{w,4};
+                bins=t_before_state:keys.PSTH_binwidth:t_after_state;
+                bins=bins+state_shift-t_before_state;
+                to_plot1=current(n).comparison(comp).window(w).bins(unit_order,:);
+                to_plot1(isnan(to_plot1))=0;
+                to_plot2=to_plot1;
+                to_plot1(to_plot1==-1)=0;
+                to_plot2(to_plot2==1)=0;
+                to_plot2(to_plot2==-1)=1;
+                to_plot_white=to_plot1==0&to_plot2==0;
+                clear C
+                C(:,:,1) = to_plot1*col(1,1)+to_plot2*col(2,1)+to_plot_white;
+                C(:,:,2) = to_plot1*col(1,2)+to_plot2*col(2,2)+to_plot_white;
+                C(:,:,3) = to_plot1*col(1,3)+to_plot2*col(2,3)+to_plot_white;
+                image([state_shift state_shift+t_after_state-t_before_state],[0 size(to_plot1,1)],C);
+                if w==wo(1)
+                    %make line for onset
+                    x1=bins(1)+keys.ON.comparisons_per_effector(comp).order_onset{2}-t_before_state;
+                    onset_handle(comp)=plot([x1 x1],[0 size(to_plot1,1)],'color',[218 165 32]/255,'linewidth',2);
+                end
+                state_shift=state_shift+t_after_state-t_before_state+0.1;
+            end
+            title([comparisons(comp).title ' Aligned to: ' comparisons(comp).order_onset{1} ', BL: ' comparisons(comp).baseline_epoch]);
+            y_lim(comp)=size(to_plot1,1);
         end
         
-        %                 legend_line_handles=[legend_line_handles errorbarhandle.mainLine];
-        x_lim(comp,:)=get(gca,'xlim');
-        title(comparisons_per_effector(comp).title);
+        
+        % subplot appearance, and tuning lines
+        ylimmax=max(max(y_lim));
+        ylimmin=0;
+        y_lim=[ylimmin ylimmax];
+        column=1;
+        for comp=1:numel(comparisons)
+            hold on
+            subplot(numel(comparisons),1,(comp-1)+column)
+            
+            %% choices? hands? errm here its only relevant for event and epoch onsets
+            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],u_effectors) & [all_trialz.completed]==1;
+            ph_PSTH_background(all_trialz(tr),y_lim,y_lim,y_lim,keys,1)
+            % set ydata
+            uistack(onset_handle(comp), 'top');
+        end
+        ph_title_and_save(PSTH_summary_handle,  [keys.ON.comparisons_title ' ' filename ' PSTHs'],plot_1_title,keys)
+        
+        
+        %% n tuned cells plot
+        plot_3_title            = [keys.ON.comparisons_title ' ' fig_title  ' n tuned cells'];
+        PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_3_title);
+        column=1;
+        keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+        n=1;
+        clear x_lim sp
+        for comp=1:numel(comparisons)
+            subplot(numel(comparisons),1,(comp-1)+column)
+            hold on
+            col=comparisons(comp).colors;
+            unit_order=current(n).comparison(comp).unit_order;
+            N_total=numel(unit_order); % for getting fraction
+            state_shift=0;
+            for w=1:size(keys.PSTH_WINDOWS,1)
+                t_before_state=keys.PSTH_WINDOWS{w,3};
+                t_after_state=keys.PSTH_WINDOWS{w,4};
+                bins=t_before_state:keys.PSTH_binwidth:t_after_state;
+                bins=bins+state_shift-t_before_state;
+                to_plot1=sigbins(t).per_group(g).comparison(comp).window(w).n_tuned_cells(1,:)/N_total*100;
+                to_plot2=sigbins(t).per_group(g).comparison(comp).window(w).n_tuned_cells(2,:)/N_total*100;
+                plot(bins,to_plot1,'color',col(1,:),'linewidth',1);
+                plot(bins,to_plot2,'color',col(2,:),'linewidth',1);
+                state_shift=state_shift+t_after_state-t_before_state+0.1;
+                
+                
+                maxbin1=nanmean(find(to_plot1==max(to_plot1)))-1;   maxbin2=nanmean(find(to_plot2==max(to_plot2)))-1;
+                bins_before=t_before_state/keys.PSTH_binwidth;
+                max1=maxbin1+ bins_before; max2=maxbin2 + bins_before;
+                
+                x1=bins(1)+maxbin1*keys.PSTH_binwidth;
+                plot([x1 x1],[0 max(to_plot1)],'color',col(1,:),'linewidth',1);
+                texttoplot=['Max=' b2t(max1,keys)];
+                text(x1,max(to_plot1),texttoplot,'color',col(1,:));
+                
+                x2=bins(1)+maxbin2*keys.PSTH_binwidth;
+                plot([x2 x2],[0 max(to_plot2)],'color',col(2,:),'linewidth',1);
+                texttoplot=['Max=' b2t(max2,keys)];
+                text(x2,max(to_plot2),texttoplot,'color',col(2,:));
+            end
+            title([comparisons(comp).title ' Aligned to: ' comparisons(comp).order_onset{1} ', BL: ' comparisons(comp).baseline_epoch]);
+            y_lim(comp)=diff(get(gca,'ylim'));
+        end
+        
+        %% subplot appearance, and tuning lines
+        if keys.ON.link_y_lim  % key for autscale
+            y_lim(1:numel(comparisons))=max(max(y_lim));
+        end
+        column=1;
+        for comp=1:numel(comparisons)
+            hold on
+            subplot(numel(comparisons),1,(comp-1)+column)
+            lims=[0 y_lim(comp)];
+            %% choices? hands? errm here its only relevant for event and epoch onsets
+            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],u_effectors) & [all_trialz.completed]==1;
+            ph_PSTH_background(all_trialz(tr),lims,lims,lims,keys,1)
+        end
+        
+        ph_title_and_save(PSTH_summary_handle,  [keys.ON.comparisons_title ' ' filename ' fraction tuned'],plot_3_title,keys)
+        
+        
+        %% tuning onset plot
+        plot_2_title            = [keys.ON.comparisons_title ' ' fig_title  ' tuning onset'];
+        PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_2_title);
+        column=1;
+        keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+        
+        n=1;% find(u_effectors==eff);
+        clear x_lim sp
+        for comp=1:numel(comparisons)
+            
+            wo=find(ismember(keys.PSTH_WINDOWS(:,1),comparisons(comp).order_onset{1}));
+            
+            subplot(numel(comparisons),1,(comp-1)+column)
+            hold on
+            col=comparisons(comp).colors;
+            unit_order=current(n).comparison(comp).unit_order;
+            N_total=numel(unit_order); % for getting fraction
+            state_shift=0;
+            for w=1:size(keys.PSTH_WINDOWS,1)
+                tuning_direction=current(n).comparison(comp).window(w).tuning_direction;
+                t_before_state=keys.PSTH_WINDOWS{w,3};
+                t_after_state=keys.PSTH_WINDOWS{w,4};
+                bins=t_before_state:keys.PSTH_binwidth:t_after_state;
+                bins=bins+state_shift-t_before_state;
+                onset1=sigbins(t).per_group(g).comparison(comp).window(w).tuning_onset(tuning_direction==1);
+                onset2=sigbins(t).per_group(g).comparison(comp).window(w).tuning_onset(tuning_direction==-1);
+                to_plot1=hist(onset1-t_before_state/keys.PSTH_binwidth,1:numel(bins))/N_total*100;
+                to_plot2=hist(onset2-t_before_state/keys.PSTH_binwidth,1:numel(bins))/N_total*100;
+                plot(bins,to_plot1,'color',col(1,:),'linewidth',1);
+                plot(bins,to_plot2,'color',col(2,:),'linewidth',1);
+                state_shift=state_shift+t_after_state-t_before_state+0.1;
+                if w==wo(1)
+                    maxbin1=nanmean(find(to_plot1==max(to_plot1)))-1;   maxbin2=nanmean(find(to_plot2==max(to_plot2)))-1;
+                    bins_before=t_before_state/keys.PSTH_binwidth;
+                    max1=maxbin1+ bins_before; max2=maxbin2 + bins_before;
+                    mean1=nanmean(onset1)-1; mean2=nanmean(onset2)-1;
+                    median1=nanmedian(onset1)-1; median2=nanmedian(onset2)-1;
+                    std1=nanstd(to_plot1); std2=nanstd(to_plot2);
+                    
+                    x1=bins(1)+maxbin1*keys.PSTH_binwidth;
+                    plot([x1 x1],[0 max(to_plot1)],'color',col(1,:),'linewidth',1);
+                    texttoplot=['Max=' b2t(max1,keys)  ', u=' b2t(mean1,keys)  ' std=' b2t(std1,keys) ' med=' b2t(median1,keys)];
+                    text(x1,max(to_plot1),texttoplot,'color',col(1,:));
+                    
+                    x2=bins(1)+maxbin2*keys.PSTH_binwidth;
+                    plot([x2 x2],[0 max(to_plot2)],'color',col(2,:),'linewidth',1);
+                    texttoplot=['Max=' b2t(max2,keys)  ', u=' b2t(mean2,keys)  ' std=' b2t(std2,keys) ' med=' b2t(median2,keys)];
+                    text(x2,max(to_plot2),texttoplot,'color',col(2,:));
+                    
+                    %make line for onset
+                    x1=bins(1)+keys.ON.comparisons_per_effector(comp).order_onset{2}-t_before_state;
+                    onset_handle(comp)=plot([x1 x1],[0 max([to_plot1 to_plot2])],'color',[218 165 32]/255,'linewidth',2);
+                    
+                end
+            end
+            title([comparisons(comp).title ' Aligned to: ' comparisons(comp).order_onset{1} ', BL: ' comparisons(comp).baseline_epoch]);
+            y_lim(comp)=diff(get(gca,'ylim'));
+        end
+        
+        %% subplot appearance, and tuning lines
+        if keys.ON.link_y_lim % key for autscale
+            y_lim(1:numel(comparisons))=max(max(y_lim));
+        end
+        column=1;
+        for comp=1:numel(comparisons)
+            hold on
+            subplot(numel(comparisons),1,(comp-1)+column)
+            lims=[0 y_lim(comp)];
+            %% choices? hands? errm here its only relevant for event and epoch onsets
+            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],u_effectors) & [all_trialz.completed]==1;
+            % set ydata
+            ph_PSTH_background(all_trialz(tr),lims,lims,lims,keys,1)
+            uistack(onset_handle(comp), 'top');
+        end
+        
+        ph_title_and_save(PSTH_summary_handle,  [keys.ON.comparisons_title ' ' filename ' tuning onset'],plot_2_title,keys)
     end
-    
-    % setting same x axis for all subplots
-    max_x_diff=max(diff(x_lim,1,2));
-    for comp=1:numel(comparisons_per_effector)
-        subplot(sp(comp));
-        set(gca,'xlim',[x_lim(comp,1) x_lim(comp,1)+max_x_diff]);
-    end
-    
-    ph_title_and_save(PSTH_summary_handle,  [keys.ON.comparisons_title ' ' filename ' fraction tuned'],plot_3_title,keys)
-    %             legend(legend_line_handles,legend_labels(legend_label_indexes));
-    
 end
 end
 
@@ -452,4 +518,8 @@ end
 
 %% negative for condition 2 larger
 hn(hn==1 & nanmean(C2)>nanmean(C1))=-1;
+end
+
+function texttoplot=b2t(mean1,keys)
+texttoplot=num2str(round((mean1*keys.PSTH_binwidth)*1000));
 end
