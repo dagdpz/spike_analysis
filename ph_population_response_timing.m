@@ -1,6 +1,8 @@
 function ph_population_response_timing(population,modified_keys)
 %load('W:\Projects\Pulv_microstim_behavior\ephys\ephys_analysis_v5_July2016_coordinates\monkeys_Combined_mem.mat')
 keys.n_consecutive_bins_significant=5;
+% keys.gaussian_kernel                    =0.02; 
+% keys.gaussian_kernel                    =0.005; 
 warning('off','MATLAB:catenate:DimensionMismatch');
 
 %%% !!!!!!!! make sure epochs (baseline, cue, .... make sense for all effectors)
@@ -109,11 +111,11 @@ for tye=1:size(type_effectors,1) %typ=unique(per_trial.types)
     for g=1:numel(unique_group_values)
         unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g))&tya_existing{t},idx_unitID));
         units=find(all(unitidx,2))';
+        group(g).units=units;
         for u=units
             tr_con=ismember([population(u).trial.completed],keys.cal.completed);
             [pop]=ph_arrange_positions_and_plots(keys,population(u).trial(tr_con),population(u));
             pop=ph_LR_to_CI(keys,pop);
-            
             %% average PSTH per unit
             for ce=1:size(conditions_eff,1)
                 c=find(ismember(conditions_out,[eff conditions_eff(ce,:)],'rows'));
@@ -223,7 +225,7 @@ for g=1:numel(unique_group_values)
                 
                 onset_found=0;
                 for wn=1:numel(current(1).window)
-                    temp_sigbins=ph_compare_by_bin_by_trial(current_window(:,wn),c1,c2,baseline,units(u),keys.n_consecutive_bins_significant);
+                    temp_sigbins=ph_compare_by_bin_by_trial(current_window(:,wn),c1,c2,baseline,units(u),keys);
                     sigbins(t).per_group(g).comparison(comp).window(wn).bins(u,:)=temp_sigbins(keys.n_consecutive_bins_significant+1:end-keys.n_consecutive_bins_significant); % return to original window size
                     
                     %% tuning_onset (once per unit, (certain time before/after), until whenever)
@@ -278,10 +280,11 @@ end
 for t=1:numel(sigbins)
     typ=u_types(mod(t-1,numel(u_types))+1);
     for g=1:numel(unique_group_values)
+        N_total=numel(group(g).units);
         current=[sigbins(t).per_group(g)];
         
-        fig_title=sprintf('Selection: %s %s %s hnd %s ch %s %s, %s = %s',...
-            [Sel_for_title{:}],keys.monkey,[keys.conditions_to_plot{:}],mat2str(u_hands),mat2str(double(u_choice)),keys.arrangement,keys.ON.group_parameter,unique_group_values{g});
+        fig_title=sprintf('Selection: %s %s %s hnd %s ch %s %s, %s = %s N=%s ',...
+            [Sel_for_title{:}],keys.monkey,[keys.conditions_to_plot{:}],mat2str(u_hands),mat2str(double(u_choice)),keys.arrangement,keys.ON.group_parameter,unique_group_values{g},mat2str(double(N_total)));
         filename=sprintf('%s %s %s = %s %s %s hnd %s ch %s',...
             [Sel_for_title{:}],keys.monkey,keys.ON.group_parameter,unique_group_values{g},[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)));
         
@@ -358,7 +361,7 @@ for t=1:numel(sigbins)
             hold on
             col=comparisons(comp).colors;
             unit_order=current(n).comparison(comp).unit_order;
-            N_total=numel(unit_order); % for getting fraction
+            %N_total=numel(unit_order); % for getting fraction
             state_shift=0;
             for w=1:size(keys.PSTH_WINDOWS,1)
                 t_before_state=keys.PSTH_WINDOWS{w,3};
@@ -378,12 +381,12 @@ for t=1:numel(sigbins)
                 
                 x1=bins(1)+maxbin1*keys.PSTH_binwidth;
                 plot([x1 x1],[0 max(to_plot1)],'color',col(1,:),'linewidth',1);
-                texttoplot=['Max=' b2t(max1,keys)];
+                texttoplot=['Max=' num2str(max(to_plot1)) '/' b2t(max1,keys)];
                 text(x1,max(to_plot1),texttoplot,'color',col(1,:));
                 
                 x2=bins(1)+maxbin2*keys.PSTH_binwidth;
                 plot([x2 x2],[0 max(to_plot2)],'color',col(2,:),'linewidth',1);
-                texttoplot=['Max=' b2t(max2,keys)];
+                texttoplot=['Max=' num2str(max(to_plot2)) '/' b2t(max2,keys)];
                 text(x2,max(to_plot2),texttoplot,'color',col(2,:));
             end
             title([comparisons(comp).title ' Aligned to: ' comparisons(comp).order_onset{1} ', BL: ' comparisons(comp).baseline_epoch]);
@@ -448,12 +451,12 @@ for t=1:numel(sigbins)
                     
                     x1=bins(1)+maxbin1*keys.PSTH_binwidth;
                     plot([x1 x1],[0 max(to_plot1)],'color',col(1,:),'linewidth',1);
-                    texttoplot=['Max=' b2t(max1,keys)  ', u=' b2t(mean1,keys)  ' std=' b2t(std1,keys) ' med=' b2t(median1,keys)];
+                    texttoplot=['Max=' num2str(max(to_plot1)) '/' b2t(max1,keys)  ', u=' b2t(mean1,keys)  ' std=' b2t(std1,keys) ' med=' b2t(median1,keys)];
                     text(x1,max(to_plot1),texttoplot,'color',col(1,:));
                     
                     x2=bins(1)+maxbin2*keys.PSTH_binwidth;
                     plot([x2 x2],[0 max(to_plot2)],'color',col(2,:),'linewidth',1);
-                    texttoplot=['Max=' b2t(max2,keys)  ', u=' b2t(mean2,keys)  ' std=' b2t(std2,keys) ' med=' b2t(median2,keys)];
+                    texttoplot=['Max=' num2str(max(to_plot2)) '/' b2t(max2,keys)  ', u=' b2t(mean2,keys)  ' std=' b2t(std2,keys) ' med=' b2t(median2,keys)];
                     text(x2,max(to_plot2),texttoplot,'color',col(2,:));
                     
                     %make line for onset
@@ -487,20 +490,22 @@ for t=1:numel(sigbins)
 end
 end
 
-function hn=ph_compare_by_bin_by_trial(in,c1,c2,baseline,u,n_consecutive_bins)
+function hn=ph_compare_by_bin_by_trial(in,c1,c2,baseline,u,keys)
 C1=[];
 C2=[];
 for cc=c1(:)'
     C1=[C1;vertcat(in(cc).unit(u).average_spike_density)];
 end
 if all(c1==c2) %% epoch comparison (only possibly desired comparison if conditions are exactly identical)
-    ho=ttest(C1,baseline,0.05,'both',1);
+    %ho=ttest(C1,baseline,0.05,'both',1);
     C2=ones(1,size(C1,2))*baseline;
+    ho=do_stats(C1,C2,keys,1);
 else
     for cc=c2(:)'
         C2=[C2;vertcat(in(cc).unit(u).average_spike_density)];
     end
-    ho=ttest2(C1,C2,0.05,'both','equal',1);
+    %ho=ttest2(C1,C2,0.05,'both','equal',1);
+    ho=do_stats(C1,C2,keys,0);
 end
 
 % not sure why there are nan values though (STS memory saccades)
@@ -511,7 +516,7 @@ starts=find(diff([0 ho])==1);
 ends=find(diff([ho 0])==-1);
 hn=NaN(size(ho));
 for x=1:numel(starts)
-    if ends(x)+1 > starts(x)+n_consecutive_bins
+    if ends(x)+1 > starts(x)+keys.n_consecutive_bins_significant
         hn(starts(x):ends(x))=1;
     end
 end
@@ -522,4 +527,27 @@ end
 
 function texttoplot=b2t(mean1,keys)
 texttoplot=num2str(round((mean1*keys.PSTH_binwidth)*1000));
+end
+
+
+function h=do_stats(Amat,Bmat,keys,paired)
+%h = ttest2(A,B);
+%ho=ttest2(A,B,0.05,'both','equal',1);
+for k=1:size(Amat,2)
+    A=Amat(:,k);
+    B=Bmat(:,k);
+    if paired
+        if any(~isnan(A)&~isnan(B))
+            [~, h(k)] = signrank(A,B);
+        else
+            h(k)=0;
+        end
+    else
+        if any(~isnan(A)) && any (~isnan(B))
+            [~, h(k)] = ranksum(A,B);
+        else
+            h(k)=0;
+        end
+    end
+end
 end

@@ -58,9 +58,23 @@ for P=population_analysis_to_perform
     ana=P{:};
     AN=upper(ana(1:2));
     for cc=1:numel(keys_in.(ana))
-        keys=keys_in;
-        
+        keys=keys_in;        
         keys.(AN).position_and_plotting_arrangements=keys_in.position_and_plotting_arrangements;
+        
+        %% DEFAULTS
+        
+        % tuning table keys (trial criterias and such)
+%         keys.tt.choices                         = 0;
+%         keys.tt.perturbations                   = 0;
+%         keys.tt.hands                           = 0;
+%         keys.tt.IC_for_criterion                = 'in';
+%         keys.tt.unselect                        = {};
+%         keys.tt.combine_tuning_properties       = {};        
+%         keys.tt.selection                       = {};
+        %grouping keys
+        keys.(AN).group_parameter='ungrouped';
+        keys.(AN).group_excluded={'','-'}; 
+        
         % presets
         keys.(AN).logarithmic_scale=0;
         keys.(AN).absolutes=0;
@@ -78,15 +92,17 @@ for P=population_analysis_to_perform
         keys.(AN).FR_subtract_baseline=0;
         keys.(AN).baseline_per_trial=0;
         keys.(AN).normalization='none'; 
+        
+        % plotting keys
         keys.(AN).plot_RF=0; 
+        keys.(AN).plot_per_position=0;
+        keys.(AN).plot_posneg=0;
         keys.(AN).y_lim=[]; 
         keys.(AN).link_y_lim=1; 
-        keys.(AN).group_parameter='ungrouped';
-        keys.(AN).group_excluded={'','-'}; 
         
         keys.(AN).IC_to_plot='in';
-        keys.(AN).plot_per_position=0;
         keys.(AN).fontsize_factor=1.5;
+        
         
         keys.(AN).split_SUs={''};
         keys.(AN).RF_frame_colors                 	= {};
@@ -94,16 +110,11 @@ for P=population_analysis_to_perform
         keys.(AN).RF_frame_parameter                = '';
         keys.(AN).RF_columns                        = [];
         keys.(AN).RF_rows                           = [];
-                
-        %% defaults
-        keys.tt.choices                         = 0;
-        keys.tt.perturbations                   = 0;
-        keys.tt.hands                           = 0;
-        keys.tt.IC_for_criterion                = 'in';
-        keys.tt.unselect                        = {};
-        keys.tt.combine_tuning_properties       = {};
         
-        % plot specific keys
+        
+        
+        
+        %% key asignment
         FN=fieldnames(keys_in.(ana)(cc));
         FN=FN(~ismember(FN,'tt'));
         for fn=FN'
@@ -169,14 +180,14 @@ for P=population_analysis_to_perform
                     case 'ccs'
                         temp_epochs=keys.(AN).epochs;
                         keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{1});
-                        for pie=[0,1]
-                            for percent=[0,1]
-                                keys.CC.plot_as_pie=pie;
-                                keys.CC.percent=percent;
+%                         for pie=[0,1]
+%                             for percent=[0,1]
+                                keys.CC.plot_as_pie=1;
+                                keys.CC.percent=0;
                                 %keys=ph_make_subfolder('scatter',keys);
                                 ph_anova_cell_count(keys);
-                            end
-                        end
+%                             end
+%                         end
                         keys.(AN).epochs=temp_epochs;
                     case 'gaz'
                         keys=ph_make_subfolder('gaze_analysis',keys);
@@ -197,6 +208,9 @@ for P=population_analysis_to_perform
                         keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{:});
                         ph_hand_space_tuning_vector(population,keys); 
                         keys.(AN).epochs=temp_epochs;
+                    case 'cpy'
+                        keys=ph_make_subfolder(keys.CP.foldername,keys);
+                        ph_copy_single_units(keys); 
                 end
             end
         end

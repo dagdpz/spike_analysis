@@ -101,7 +101,7 @@ tuning_per_unit_table(:,end+1)=combined_column;
 
 %% create space OR interaction column
 taskcases=unique(taskcases);
-epochs={'Fhol','Cue','MemE','MemL','PreS','PeriS','Pre2','Peri2','PreG','CueG','TIhol','THol'};
+epochs={'Fhol','Cue','Cue2','EDel','Del','MemE','MemL','PreS','PreR','PeriS','Pre2','Peri2','PreG','CueG','TIhol','THol'};
 for t=1:numel(taskcases)
     taskcase=taskcases{t};
     idx.space   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_spaceLR_main_'   taskcase] );
@@ -114,18 +114,24 @@ for t=1:numel(taskcases)
     
     
     for e=1:numel(epochs)
-        idx.(epochs{e})     =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_' epochs{e} '_epoch_'   taskcase] );
-        idx.([epochs{e} '_space_DF'])     =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion epochs{e} '_spaceLR_DF_'   taskcase] );
-        idx.([epochs{e} '_IS_FR'])   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
-        idx.([epochs{e} '_CS_FR'])   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
-        idx.([epochs{e} '_IS_EN'])   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_IS_' epochs{e} '_epoch_DF_'  taskcase] );
-        idx.([epochs{e} '_CS_EN'])   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_CS_' epochs{e} '_epoch_DF_'  taskcase] );
-        idx.([epochs{e} '_in_space_DF'])     =DAG_find_column_index(tuning_per_unit_table,['in_' epochs{e} '_spaceLR_DF_'   taskcase] );
-        idx.([epochs{e} '_ch_space_DF'])     =DAG_find_column_index(tuning_per_unit_table,['ch_' epochs{e} '_spaceLR_DF_'   taskcase] );
-        idx.([epochs{e} '_in_IS_FR'])   =DAG_find_column_index(tuning_per_unit_table,['in_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
-        idx.([epochs{e} '_in_CS_FR'])   =DAG_find_column_index(tuning_per_unit_table,['in_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
-        idx.([epochs{e} '_ch_IS_FR'])   =DAG_find_column_index(tuning_per_unit_table,['ch_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
-        idx.([epochs{e} '_ch_CS_FR'])   =DAG_find_column_index(tuning_per_unit_table,['ch_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.(epochs{e})                     =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_' epochs{e} '_epoch_'   taskcase] );
+        idx.([epochs{e} '_space_DF'])       =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion epochs{e} '_spaceLR_DF_'   taskcase] );
+        idx.([epochs{e} '_IS_FR'])          =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.([epochs{e} '_CS_FR'])          =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.([epochs{e} '_IS_EN'])          =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_IS_' epochs{e} '_epoch_DF_'  taskcase] );
+        idx.([epochs{e} '_CS_EN'])          =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_CS_' epochs{e} '_epoch_DF_'  taskcase] );
+        idx.([epochs{e} '_in_space_DF'])    =DAG_find_column_index(tuning_per_unit_table,['in_' epochs{e} '_spaceLR_DF_'   taskcase] );
+        idx.([epochs{e} '_ch_space_DF'])    =DAG_find_column_index(tuning_per_unit_table,['ch_' epochs{e} '_spaceLR_DF_'   taskcase] );
+        idx.([epochs{e} '_in_IS_FR'])       =DAG_find_column_index(tuning_per_unit_table,['in_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.([epochs{e} '_in_CS_FR'])       =DAG_find_column_index(tuning_per_unit_table,['in_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.([epochs{e} '_ch_IS_FR'])       =DAG_find_column_index(tuning_per_unit_table,['ch_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.([epochs{e} '_ch_CS_FR'])       =DAG_find_column_index(tuning_per_unit_table,['ch_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
+        
+        
+        idx.([epochs{e} '_in_IH_space'])       =DAG_find_column_index(tuning_per_unit_table,['in_IH_' epochs{e} '_spaceLR_'  taskcase] );
+        idx.([epochs{e} '_in_CH_space'])       =DAG_find_column_index(tuning_per_unit_table,['in_CH_' epochs{e} '_spaceLR_'  taskcase] );
+        idx.([epochs{e} '_in_IS_hands'])       =DAG_find_column_index(tuning_per_unit_table,['in_IS_' epochs{e} '_hands_'  taskcase] );
+        idx.([epochs{e} '_in_CS_hands'])       =DAG_find_column_index(tuning_per_unit_table,['in_CS_' epochs{e} '_hands_'  taskcase] );
         
     end
     
@@ -154,6 +160,11 @@ for t=1:numel(taskcases)
         if ~isempty(idx.([epochs{e} '_ch_IS_FR']));   tuning_per_unit_table([false; cellfun(@(x) isempty(x) ,tuning_per_unit_table(2:end,idx.([epochs{e} '_ch_IS_FR'])))],idx.([epochs{e} '_ch_IS_FR']))={single(NaN)}; end;
         if ~isempty(idx.([epochs{e} '_ch_CS_FR']));   tuning_per_unit_table([false; cellfun(@(x) isempty(x) ,tuning_per_unit_table(2:end,idx.([epochs{e} '_ch_CS_FR'])))],idx.([epochs{e} '_ch_CS_FR']))={single(NaN)}; end;
         
+        
+        if ~isempty(idx.([epochs{e} '_in_IH_space']));   tuning_per_unit_table([false; cellfun(@(x) isempty(x) ,tuning_per_unit_table(2:end,idx.([epochs{e} '_in_IH_space'])))],idx.([epochs{e} '_in_IH_space']))      ={'-'}; end;
+        if ~isempty(idx.([epochs{e} '_in_CH_space']));   tuning_per_unit_table([false; cellfun(@(x) isempty(x) ,tuning_per_unit_table(2:end,idx.([epochs{e} '_in_CH_space'])))],idx.([epochs{e} '_in_CH_space']))      ={'-'}; end;
+        if ~isempty(idx.([epochs{e} '_in_IS_hands']));   tuning_per_unit_table([false; cellfun(@(x) isempty(x) ,tuning_per_unit_table(2:end,idx.([epochs{e} '_in_IS_hands'])))],idx.([epochs{e} '_in_IS_hands']))      ={'-'}; end;
+        if ~isempty(idx.([epochs{e} '_in_CS_hands']));   tuning_per_unit_table([false; cellfun(@(x) isempty(x) ,tuning_per_unit_table(2:end,idx.([epochs{e} '_in_CS_hands'])))],idx.([epochs{e} '_in_CS_hands']))      ={'-'}; end;
     end
     
     %
@@ -508,6 +519,7 @@ for t=1:numel(taskcases)
     
     
     for e=1:numel(epochs)
+        
         if any(idx.([epochs{e} '_ch_space_DF'])) && any(idx.([epochs{e} '_in_IS_FR'])) && any(idx.([epochs{e} '_in_CS_FR'])) && any(idx.([epochs{e} '_ch_IS_FR'])) && any(idx.([epochs{e} '_ch_CS_FR']))
             
             n_column=n_column+1;
@@ -516,6 +528,109 @@ for t=1:numel(taskcases)
                 (cell2mat(tuning_per_unit_table(2:end,idx.([epochs{e} '_in_IS_FR']))) + cell2mat(tuning_per_unit_table(2:end,idx.([epochs{e} '_in_CS_FR']))) +...
                 cell2mat(tuning_per_unit_table(2:end,idx.([epochs{e} '_ch_IS_FR']))) + cell2mat(tuning_per_unit_table(2:end,idx.([epochs{e} '_ch_CS_FR']))))); %% /2 !! for mean
         end
+        
+        
+        
+        if any(idx.([epochs{e} '_in_IH_space'])) && any(idx.([epochs{e} '_in_CH_space'])) && any(idx.([epochs{e} '_in_IS_hands'])) && any(idx.([epochs{e} '_in_CS_hands']))
+            
+            
+            IH_CS=strcmp(tuning_per_unit_table(:,idx.([epochs{e} '_in_IH_space'])),'CS');
+            IH_IS=strcmp(tuning_per_unit_table(:,idx.([epochs{e} '_in_IH_space'])),'IS');
+            CH_CS=strcmp(tuning_per_unit_table(:,idx.([epochs{e} '_in_CH_space'])),'CS');
+            CH_IS=strcmp(tuning_per_unit_table(:,idx.([epochs{e} '_in_CH_space'])),'IS');
+            IS_CH=strcmp(tuning_per_unit_table(:,idx.([epochs{e} '_in_IS_hands'])),'CH');
+            IS_IH=strcmp(tuning_per_unit_table(:,idx.([epochs{e} '_in_IS_hands'])),'IH');
+            CS_CH=strcmp(tuning_per_unit_table(:,idx.([epochs{e} '_in_CS_hands'])),'CH');
+            CS_IH=strcmp(tuning_per_unit_table(:,idx.([epochs{e} '_in_CS_hands'])),'IH');
+            incongruent_space=  (IH_CS & CH_IS) | (IH_IS & CH_CS);
+            incongruent_hands=  (IS_CH & CS_IH) | (IS_IH & CS_CH);
+            
+            CS= (IH_CS | CH_CS) & ~incongruent_space;
+            IS= (IH_IS | CH_IS) & ~incongruent_space;
+            CH= (IS_CH | CS_CH) & ~incongruent_hands;
+            IH= (IS_IH | CS_IH) & ~incongruent_hands;
+            
+            
+            n_column=n_column+1;
+            tuning_per_unit_table(CS,n_column)={'CS'};
+            tuning_per_unit_table(IS,n_column)={'IS'};
+            tuning_per_unit_table(~(CS|IS),n_column)={'-'};
+            tuning_per_unit_table(incongruent_space,n_column)={'incongruent'};
+            tuning_per_unit_table{1,n_column}=['in_' epochs{e} '_space_perhand_' taskcase];
+            
+            
+            n_column=n_column+1;
+            tuning_per_unit_table(CH,n_column)={'CH'};
+            tuning_per_unit_table(IH,n_column)={'IH'};
+            tuning_per_unit_table(~(CH|IH),n_column)={'-'};
+            tuning_per_unit_table(incongruent_hands,n_column)={'incongruent'};
+            tuning_per_unit_table{1,n_column}=['in_' epochs{e} '_hands_perspace_' taskcase];
+        end
     end
 end
+
+%% across tasks combinations
+idx.preS_spaceperhand=DAG_find_column_index(tuning_per_unit_table,'in_PreS_space_perhand_Ddsa_han');
+idx.preR_spaceperhand=DAG_find_column_index(tuning_per_unit_table,'in_PreR_space_perhand_Ddre_han');
+if any(idx.preS_spaceperhand) && any(idx.preR_spaceperhand)
+    
+    R_CS=strcmp(tuning_per_unit_table(:,idx.preR_spaceperhand),'CS');
+    R_IS=strcmp(tuning_per_unit_table(:,idx.preR_spaceperhand),'IS');
+    S_CS=strcmp(tuning_per_unit_table(:,idx.preS_spaceperhand),'CS');
+    S_IS=strcmp(tuning_per_unit_table(:,idx.preS_spaceperhand),'IS');
+    incongruent_space=  (R_CS & S_IS) | (R_IS & S_CS);
+    CS= (R_CS | S_CS) & ~incongruent_space;
+    IS= (R_IS | S_IS) & ~incongruent_space;
+    
+    
+    n_column=n_column+1;
+    tuning_per_unit_table(CS | IS,n_column)={'tuned'};
+    %tuning_per_unit_table(IS,n_column)={'IS'};
+    tuning_per_unit_table(~(CS|IS),n_column)={'-'};
+    tuning_per_unit_table(incongruent_space,n_column)={'incongruent'};
+    tuning_per_unit_table{1,n_column}='in_Pre_space_perhand_Ddre_or_Ddsa';
+end
+
+idx.preS_handperspace=DAG_find_column_index(tuning_per_unit_table,'in_PreS_hands_perspace_Ddsa_han');
+idx.preR_handperspace=DAG_find_column_index(tuning_per_unit_table,'in_PreR_hands_perspace_Ddre_han');
+if any(idx.preS_handperspace) && any(idx.preR_handperspace)
+    
+    R_CH=strcmp(tuning_per_unit_table(:,idx.preR_handperspace),'CH');
+    R_IH=strcmp(tuning_per_unit_table(:,idx.preR_handperspace),'IH');
+    S_CH=strcmp(tuning_per_unit_table(:,idx.preS_handperspace),'CH');
+    S_IH=strcmp(tuning_per_unit_table(:,idx.preS_handperspace),'IH');
+    incongruent_space=  (R_CH & S_IH) | (R_IH & S_CH);
+    CH= (R_CH | S_CH) & ~incongruent_space;
+    IH= (R_IH | S_IH) & ~incongruent_space;
+    
+    
+    n_column=n_column+1;
+    tuning_per_unit_table(CH | IH,n_column)={'tuned'};
+    %tuning_per_unit_table(IS,n_column)={'IS'};
+    tuning_per_unit_table(~(CH|IH),n_column)={'-'};
+    tuning_per_unit_table(incongruent_space,n_column)={'incongruent'};
+    tuning_per_unit_table{1,n_column}='in_Pre_hands_perspace_Ddre_or_Ddsa';
+end
+
+idx.CueS_spaceperhand=DAG_find_column_index(tuning_per_unit_table,'in_Cue_space_perhand_Ddsa_han');
+idx.CueR_spaceperhand=DAG_find_column_index(tuning_per_unit_table,'in_Cue_space_perhand_Ddre_han');
+if any(idx.preS_spaceperhand) && any(idx.preR_spaceperhand)
+    
+    R_CS=strcmp(tuning_per_unit_table(:,idx.CueR_spaceperhand),'CS');
+    R_IS=strcmp(tuning_per_unit_table(:,idx.CueR_spaceperhand),'IS');
+    S_CS=strcmp(tuning_per_unit_table(:,idx.CueS_spaceperhand),'CS');
+    S_IS=strcmp(tuning_per_unit_table(:,idx.CueS_spaceperhand),'IS');
+    incongruent_space=  (R_CS & S_IS) | (R_IS & S_CS);
+    CS= (R_CS | S_CS) & ~incongruent_space;
+    IS= (R_IS | S_IS) & ~incongruent_space;
+    
+    
+    n_column=n_column+1;
+    tuning_per_unit_table(CS | IS,n_column)={'tuned'};
+    %tuning_per_unit_table(IS,n_column)={'IS'};
+    tuning_per_unit_table(~(CS|IS),n_column)={'-'};
+    tuning_per_unit_table(incongruent_space,n_column)={'incongruent'};
+    tuning_per_unit_table{1,n_column}='in_Cue_space_perhand_Ddre_or_Ddsa';
+end
+
 end
