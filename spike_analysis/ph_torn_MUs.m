@@ -1,4 +1,4 @@
-function population=ph_classification(population,modified_keys)
+function population=ph_torn_MUs(population,modified_keys)
 
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
@@ -7,13 +7,13 @@ end
 %% tuning table preparation and grouping
 [tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
 [tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
-if keys.CL.FR_subtract_baseline
-    Sel_for_title =[Sel_for_title,{'base';'=';keys.GF.epoch_BL;', '}];
+if keys.TO.FR_subtract_baseline
+    Sel_for_title =[Sel_for_title,{'base';'=';keys.TO.epoch_BL;', '}];
 end
-idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.CL.group_parameter);
+idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.TO.group_parameter);
 group_values=tuning_per_unit_table(:,idx_group_parameter);
 group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
-cell_in_any_group=[false; ~ismember(group_values(2:end),keys.CL.group_excluded)];
+cell_in_any_group=[false; ~ismember(group_values(2:end),keys.TO.group_excluded)];
 unique_group_values=unique(group_values(cell_in_any_group));
 if isempty(unique_group_values)
     disp('no relevant groups found');
@@ -22,6 +22,93 @@ end
 complete_unit_list={population.unit_ID}';
 %
 idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
+
+
+%% som eundefined stuff
+user=getUserName;
+dropboxpath=['C:\Users\' user '\Dropbox'];
+keys.batching.monkeys={'Linus','Curius'};
+
+keys.SNR_single=[1,2];
+keys.SiR_single=1;
+keys.StR_single=1;
+
+sorting_table={};
+for m=1:numel(keys.batching.monkeys)
+    monkey=keys.batching.monkeys{m};
+    keys.sorted_neurons_filename =keys.(monkey).sorted_neurons_filename;
+    keys.sorted_neurons_sheetname=keys.(monkey).sorted_neurons_sheetname;
+    keys.date=keys.(monkey).date;
+    keys.monkey                     =[monkey '_phys'];
+    keys.sorted_neurons_foldername  =[dropboxpath '\DAG\phys\' monkey '_phys_dpz'];
+    keys.tuning_table_foldername    =[keys.drive filesep keys.basepath_to_save filesep keys.project_version];
+    keys.tuning_table_filename      =['tuning_table_combined'];
+    keys.population_foldername      =[keys.drive filesep keys.basepath_to_save filesep keys.project_version];
+    keys.population_filename        =['population_' monkey];
+    keys.sites_filename             =['sites_' monkey];
+    keys.filelist_formatted         =keys.(monkey).filelist_formatted;
+    
+    
+    temp_xlsx=dir(fullfile(keys.sorted_neurons_foldername,[keys.sorted_neurons_filename '*.xls*']));
+    if ~isempty(temp_xlsx)
+        excel_sheet= [keys.sorted_neurons_foldername filesep temp_xlsx(1).name];
+        [~,~,ST] = xlsread(excel_sheet,keys.sorted_neurons_sheetname); 
+        sorting_table(1,:)=ST(1,1:25); %%% 1:25 because size is not identical
+        sorting_table=[sorting_table;ST(2:end,1:25)];
+    end
+    
+end
+
+ID_ix=DAG_find_column_index(sorting_table,'Neuron_ID');
+block_ix=DAG_find_column_index(sorting_table,'Block');
+SNR_ix=DAG_find_column_index(sorting_table,'SNR_rank');
+Single_ix=DAG_find_column_index(sorting_table,'Single_rank');
+Stability_ix=DAG_find_column_index(sorting_table,'Stability_rank');
+
+for g=1:numel(unique_group_values)
+    clear suindexes
+    unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
+    units=find(all(unitidx,2))';
+    whatsthis=[population(units).trial];
+    alltypes=[whatsthis.type];
+    u_types=unique(alltypes);
+    
+    for typ=u_types
+        n=0;
+        for u=units
+            n=n+1;
+            ID=complete_unit_list{u};
+            trials=[population(u).trial];
+            trials=trials([trials.type]==typ);
+            if size(trials,2)>0
+                blocks=unique([trials.block]);
+                rows=[false; ismember(sorting_table(2:end,ID_ix),ID) & ismember(vertcat(sorting_table{2:end,block_ix}),blocks)];
+                SNR=[sorting_table{rows,SNR_ix}];
+                SiR=[sorting_table{rows,Single_ix}];
+                StR=[sorting_table{rows,Stability_ix}];
+            else
+                SNR=NaN;
+                SiR=NaN;
+                StR=NaN;
+            end
+            
+            unit_torn=  (any(ismember(SNR,keys.SNR_single)) & any(~ismember(SNR,keys.SNR_single))) |...
+                (any(ismember(SiR,keys.SiR_single)) & any(~ismember(SiR,keys.SiR_single))) |...
+                (any(ismember(StR,keys.StR_single)) & any(~ismember(StR,keys.StR_single)));
+            
+            
+            per_type(typ).rankings(n).SNR=SNR;
+            per_type(typ).rankings(n).SiR=SiR;
+            per_type(typ).rankings(n).StR=StR;
+            per_type(typ).rankings(n).unit_torn=unit_torn;
+            
+        end
+    end
+end
+
+
+
+
 
 
 for g=1:numel(unique_group_values)
@@ -134,10 +221,10 @@ for g=1:numel(unique_group_values)
     %popuation_total=population;
     sugainindex(1,:)=(suindexes(1,:)|suindexes(2,:))&~(ANOVA_position_effect&[RF_per_epoch_cue.significant_gain]);
     sugainindex(2,:)=(suindexes(1,:)|suindexes(2,:))&ANOVA_position_effect&[RF_per_epoch_cue.significant_gain];
-%     sugainindex(3,:)=suindexes(2,:)&~(ANOVA_position_effect&[RF_per_epoch_cue.significant_gain]);
-%     sugainindex(4,:)=suindexes(2,:)&ANOVA_position_effect&[RF_per_epoch_cue.significant_gain];
-%     sugainindex(5,:)=suindexes(3,:)&~(ANOVA_position_effect&[RF_per_epoch_cue.significant_gain]);
-%     sugainindex(6,:)=suindexes(3,:)&ANOVA_position_effect&[RF_per_epoch_cue.significant_gain];
+    %     sugainindex(3,:)=suindexes(2,:)&~(ANOVA_position_effect&[RF_per_epoch_cue.significant_gain]);
+    %     sugainindex(4,:)=suindexes(2,:)&ANOVA_position_effect&[RF_per_epoch_cue.significant_gain];
+    %     sugainindex(5,:)=suindexes(3,:)&~(ANOVA_position_effect&[RF_per_epoch_cue.significant_gain]);
+    %     sugainindex(6,:)=suindexes(3,:)&ANOVA_position_effect&[RF_per_epoch_cue.significant_gain];
     sugainindex(3,:)=suindexes(3,:)&~(ANOVA_position_effect&[RF_per_epoch_cue.significant_gain]);
     sugainindex(4,:)=suindexes(3,:)&ANOVA_position_effect&[RF_per_epoch_cue.significant_gain];
     
@@ -153,15 +240,15 @@ for g=1:numel(unique_group_values)
     colormap(cols);
     for h=1:size(histoindex,1)
         if h==1 || h==3
-        histo(:,h)=hist(FR(histoindex(h,:) | histoindex(h+1,:)),bins);
-        means(h)=nanmean(FR(histoindex(h,:) | histoindex(h+1,:)));
-        medians(h)=nanmedian(FR(histoindex(h,:) | histoindex(h+1,:)));
-        stds(h)=nanstd(FR(histoindex(h,:) | histoindex(h+1,:)));
+            histo(:,h)=hist(FR(histoindex(h,:) | histoindex(h+1,:)),bins);
+            means(h)=nanmean(FR(histoindex(h,:) | histoindex(h+1,:)));
+            medians(h)=nanmedian(FR(histoindex(h,:) | histoindex(h+1,:)));
+            stds(h)=nanstd(FR(histoindex(h,:) | histoindex(h+1,:)));
         else
-        histo(:,h)=hist(FR(histoindex(h,:)),bins);
-        means(h)=nanmean(FR(histoindex(h,:)));
-        medians(h)=nanmedian(FR(histoindex(h,:)));
-        stds(h)=nanstd(FR(histoindex(h,:)));
+            histo(:,h)=hist(FR(histoindex(h,:)),bins);
+            means(h)=nanmean(FR(histoindex(h,:)));
+            medians(h)=nanmedian(FR(histoindex(h,:)));
+            stds(h)=nanstd(FR(histoindex(h,:)));
         end
         Ns(h)=sum(histoindex(h,:));
     end
@@ -189,7 +276,7 @@ for g=1:numel(unique_group_values)
     plot_title=[keys.tt.tasktypes{:} ' number of trials'];
     filename=plot_title;
     figure_handle= figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
-   
+    
     subplot(3,1,1)
     bins=0:1:max(N_per_condition);
     hist(N_per_condition,bins)

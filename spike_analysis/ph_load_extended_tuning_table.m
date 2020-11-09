@@ -85,7 +85,7 @@ end
 
 combined_column=cell(size(tuning_per_unit_table,1),1);
 for props=2:size(keys.tt.combine_tuning_properties,2)
-    column_index=find_column_index(tuning_per_unit_table,keys.tt.combine_tuning_properties{1,props});
+    column_index=DAG_find_column_index(tuning_per_unit_table,keys.tt.combine_tuning_properties{1,props});
     if isempty(column_index)
         disp(['column not found: ' keys.tt.combine_tuning_properties{1,props}]);
         continue;
@@ -104,28 +104,28 @@ taskcases=unique(taskcases);
 epochs={'Fhol','Cue','MemE','MemL','PreS','PeriS','Pre2','Peri2','PreG','CueG','TIhol','THol'};
 for t=1:numel(taskcases)
     taskcase=taskcases{t};
-    idx.space   =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_spaceLR_main_'   taskcase] );
-    idx.epoch   =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_epoch_main_'     taskcase] );
-    idx.hands   =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_hands_main_'     taskcase] );
-    idx.SxH     =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_SxH_'            taskcase] );
-    idx.ExS     =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_ExS_'            taskcase] );
-    idx.ExH     =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_ExH_'            taskcase] );
-    idx.ESH     =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_ExSxH_'          taskcase] );
+    idx.space   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_spaceLR_main_'   taskcase] );
+    idx.epoch   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_epoch_main_'     taskcase] );
+    idx.hands   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_hands_main_'     taskcase] );
+    idx.SxH     =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_SxH_'            taskcase] );
+    idx.ExS     =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_ExS_'            taskcase] );
+    idx.ExH     =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_ExH_'            taskcase] );
+    idx.ESH     =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_ExSxH_'          taskcase] );
     
     
     for e=1:numel(epochs)
-        idx.(epochs{e})     =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_' epochs{e} '_epoch_'   taskcase] );
-        idx.([epochs{e} '_space_DF'])     =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion epochs{e} '_spaceLR_DF_'   taskcase] );
-        idx.([epochs{e} '_IS_FR'])   =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
-        idx.([epochs{e} '_CS_FR'])   =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
-        idx.([epochs{e} '_IS_EN'])   =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_IS_' epochs{e} '_epoch_DF_'  taskcase] );
-        idx.([epochs{e} '_CS_EN'])   =find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_CS_' epochs{e} '_epoch_DF_'  taskcase] );
-        idx.([epochs{e} '_in_space_DF'])     =find_column_index(tuning_per_unit_table,['in_' epochs{e} '_spaceLR_DF_'   taskcase] );
-        idx.([epochs{e} '_ch_space_DF'])     =find_column_index(tuning_per_unit_table,['ch_' epochs{e} '_spaceLR_DF_'   taskcase] );
-        idx.([epochs{e} '_in_IS_FR'])   =find_column_index(tuning_per_unit_table,['in_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
-        idx.([epochs{e} '_in_CS_FR'])   =find_column_index(tuning_per_unit_table,['in_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
-        idx.([epochs{e} '_ch_IS_FR'])   =find_column_index(tuning_per_unit_table,['ch_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
-        idx.([epochs{e} '_ch_CS_FR'])   =find_column_index(tuning_per_unit_table,['ch_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.(epochs{e})     =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_' epochs{e} '_epoch_'   taskcase] );
+        idx.([epochs{e} '_space_DF'])     =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion epochs{e} '_spaceLR_DF_'   taskcase] );
+        idx.([epochs{e} '_IS_FR'])   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.([epochs{e} '_CS_FR'])   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.([epochs{e} '_IS_EN'])   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_IS_' epochs{e} '_epoch_DF_'  taskcase] );
+        idx.([epochs{e} '_CS_EN'])   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_AH_CS_' epochs{e} '_epoch_DF_'  taskcase] );
+        idx.([epochs{e} '_in_space_DF'])     =DAG_find_column_index(tuning_per_unit_table,['in_' epochs{e} '_spaceLR_DF_'   taskcase] );
+        idx.([epochs{e} '_ch_space_DF'])     =DAG_find_column_index(tuning_per_unit_table,['ch_' epochs{e} '_spaceLR_DF_'   taskcase] );
+        idx.([epochs{e} '_in_IS_FR'])   =DAG_find_column_index(tuning_per_unit_table,['in_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.([epochs{e} '_in_CS_FR'])   =DAG_find_column_index(tuning_per_unit_table,['in_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.([epochs{e} '_ch_IS_FR'])   =DAG_find_column_index(tuning_per_unit_table,['ch_AH_IS_' epochs{e} '_epoch_FR_'  taskcase] );
+        idx.([epochs{e} '_ch_CS_FR'])   =DAG_find_column_index(tuning_per_unit_table,['ch_AH_CS_' epochs{e} '_epoch_FR_'  taskcase] );
         
     end
     

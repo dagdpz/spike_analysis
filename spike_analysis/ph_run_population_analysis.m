@@ -30,7 +30,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
         keys.anova_table_file=[keys.drive '\Projects\' project '\ephys\' keys.project_version '\tuning_table_combined_CI.mat'];
-        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf'}))
+        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','tou'}))
             population=ph_load_population([keys.drive filesep keys.basepath_to_save filesep keys.project_version],['population_' keys.monkey]);
             population=ph_assign_perturbation_group(keys,population);
             population=ph_epochs(population,keys);
@@ -174,6 +174,9 @@ for P=population_analysis_to_perform
                     case 'clf'
                         keys=ph_make_subfolder('classification',keys);
                         ph_classification(population,keys); 
+                    case 'tou'
+                        keys=ph_make_subfolder('classification',keys);
+                        ph_torn_MUs(population,keys); 
                 end
             end
         end

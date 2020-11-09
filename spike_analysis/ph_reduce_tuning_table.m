@@ -1,7 +1,7 @@
 function [tuning_per_unit_table Sel_for_title]=ph_reduce_tuning_table(tuning_per_unit_table,keys)
 
 %% monkey
-idx_unitID=find_column_index(tuning_per_unit_table,'unit_ID');
+idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 if numel(keys.monkey)>3
     tuning_per_unit_table=tuning_per_unit_table([true; ~cellfun(@isempty,strfind(tuning_per_unit_table(2:end,idx_unitID),keys.monkey(1:3)))],:);
 end
@@ -15,7 +15,7 @@ for t=1:size(tasktypes_hands_choices,2) %% crashes for not existing monkey
     choice  =tasktypes_hands_choices(3,t)+1;
     perturbation  =tasktypes_hands_choices(4,t)+1;
     column_title=['existing_' keys.labels.choices{choice} '_' keys.labels.handsIC{hand} keys.labels.perturbations{perturbation} '_' keys.tt.tasktypes{tasktype}];
-    column_index=find_column_index(tuning_per_unit_table,column_title);
+    column_index=DAG_find_column_index(tuning_per_unit_table,column_title);
     if ~isempty(column_index)
         cell_idx_tuning_table=cell_idx_tuning_table & cell2mat(tuning_per_unit_table(2:end,column_index));
     else
@@ -29,7 +29,7 @@ tuning_per_unit_table=tuning_per_unit_table([true;cell_idx_tuning_table],:);
 if size(tuning_per_unit_table,1)>1
     cell_idx_tuning_table=true(size(tuning_per_unit_table,1)-1,1);
     for sel=1:size(keys.tt.selection,1)
-        column_index=find_column_index(tuning_per_unit_table,keys.tt.selection{sel,1});
+        column_index=DAG_find_column_index(tuning_per_unit_table,keys.tt.selection{sel,1});
         if isempty(column_index)
             disp(['column not found: ' keys.tt.selection{sel,1}]);
             continue;
@@ -49,7 +49,7 @@ end
 if size(tuning_per_unit_table,1)>1
     cell_idx_tuning_table=true(size(tuning_per_unit_table,1)-1,1);
     for sel=1:size(keys.tt.unselect,1)
-        column_index=find_column_index(tuning_per_unit_table,keys.tt.unselect{sel,1});
+        column_index=DAG_find_column_index(tuning_per_unit_table,keys.tt.unselect{sel,1});
         if isempty(column_index)
             disp(['column not found: ' keys.tt.unselect{sel,1}]);
             continue;

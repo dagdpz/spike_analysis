@@ -909,63 +909,63 @@ keys.pop(cc).FR_subtract_baseline    = 0;
 
 % %% Scatter keys
 cs=0;  
-% to test
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac','Vsac'};
-keys.sct(cs).X='in_AH_IS_CueG_epoch_DF_Msac_opt';
-keys.sct(cs).Y='in_AH_IS_PreG_epoch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_CueG_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PreG_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
-
-%% visually guided versus memory
+% % to test
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac','Vsac'};
+% keys.sct(cs).X='in_AH_IS_CueG_epoch_DF_Msac_opt';
+% keys.sct(cs).Y='in_AH_IS_PreG_epoch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_CueG_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PreG_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
 % 
-
-%% uNCOMMENT
-
-% supra or sublinear
-% visually guided versus memory guided DF CONTRA CUE
-cs=cs+1;  
-keys.sct(cs).tt.tasktypes={'Msac_opt','Vsac_opt'};
-keys.sct(cs).X='in_AH_CS_CueG_epoch_DF_Vsac_opt';
-keys.sct(cs).Y='PreCueSum_CS_Msac_opt';
-keys.sct(cs).X_sig='in_AH_CS_CueG_epoch_Vsac_opt';
-keys.sct(cs).Y_sig='in_AH_CS_CueG_epoch_Vsac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
-
-% visually guided versus memory guided DF IPSI CUE
-cs=cs+1;  
-keys.sct(cs).tt.tasktypes={'Msac_opt','Vsac_opt'};
-keys.sct(cs).X='in_AH_IS_CueG_epoch_DF_Vsac_opt';
-keys.sct(cs).Y='PreCueSum_IS_Msac_opt';
-keys.sct(cs).X_sig='in_AH_IS_CueG_epoch_Vsac_opt';
-keys.sct(cs).Y_sig='in_AH_IS_CueG_epoch_Vsac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
-
-% visually guided versus memory guided FR CONTRA CUE
-cs=cs+1;  
-keys.sct(cs).tt.tasktypes={'Msac_opt','Vsac_opt'};
-keys.sct(cs).X='in_AH_CS_CueG_epoch_FR_Vsac_opt';
-keys.sct(cs).Y='PreCueMean_CS_Msac_opt';
-keys.sct(cs).X_sig='in_AH_CS_CueG_epoch_Vsac_opt';
-keys.sct(cs).Y_sig='in_AH_CS_CueG_epoch_Vsac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
-
-% visually guided versus memory guided FR IPSI CUE
-cs=cs+1;  
-keys.sct(cs).tt.tasktypes={'Msac_opt','Vsac_opt'};
-keys.sct(cs).X='in_AH_IS_CueG_epoch_FR_Vsac_opt';
-keys.sct(cs).Y='PreCueMean_IS_Msac_opt';
-keys.sct(cs).X_sig='in_AH_IS_CueG_epoch_Vsac_opt';
-keys.sct(cs).Y_sig='in_AH_IS_CueG_epoch_Vsac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
-
-%%% UNBTIL HERE
+% %% visually guided versus memory
+% % 
+% 
+% %% uNCOMMENT
+% 
+% % supra or sublinear
+% % visually guided versus memory guided DF CONTRA CUE
+% cs=cs+1;  
+% keys.sct(cs).tt.tasktypes={'Msac_opt','Vsac_opt'};
+% keys.sct(cs).X='in_AH_CS_CueG_epoch_DF_Vsac_opt';
+% keys.sct(cs).Y='PreCueSum_CS_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_CS_CueG_epoch_Vsac_opt';
+% keys.sct(cs).Y_sig='in_AH_CS_CueG_epoch_Vsac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
+% 
+% % visually guided versus memory guided DF IPSI CUE
+% cs=cs+1;  
+% keys.sct(cs).tt.tasktypes={'Msac_opt','Vsac_opt'};
+% keys.sct(cs).X='in_AH_IS_CueG_epoch_DF_Vsac_opt';
+% keys.sct(cs).Y='PreCueSum_IS_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_IS_CueG_epoch_Vsac_opt';
+% keys.sct(cs).Y_sig='in_AH_IS_CueG_epoch_Vsac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
+% 
+% % visually guided versus memory guided FR CONTRA CUE
+% cs=cs+1;  
+% keys.sct(cs).tt.tasktypes={'Msac_opt','Vsac_opt'};
+% keys.sct(cs).X='in_AH_CS_CueG_epoch_FR_Vsac_opt';
+% keys.sct(cs).Y='PreCueMean_CS_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_CS_CueG_epoch_Vsac_opt';
+% keys.sct(cs).Y_sig='in_AH_CS_CueG_epoch_Vsac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
+% 
+% % visually guided versus memory guided FR IPSI CUE
+% cs=cs+1;  
+% keys.sct(cs).tt.tasktypes={'Msac_opt','Vsac_opt'};
+% keys.sct(cs).X='in_AH_IS_CueG_epoch_FR_Vsac_opt';
+% keys.sct(cs).Y='PreCueMean_IS_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_IS_CueG_epoch_Vsac_opt';
+% keys.sct(cs).Y_sig='in_AH_IS_CueG_epoch_Vsac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
+% 
+% %%% UNBTIL HERE
 
 
 
@@ -1031,1101 +1031,1178 @@ keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt
 
 %% comparison choice and instructed tuning
 
-% preferred position
+% % preferred position
+% 
+% % Cue
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Cue_prefP_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Cue_prefP_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Cue_position_Msac_opt';
+% keys.sct(cs).Y_sig='ch_AH_Cue_position_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % MemE
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_MemE_prefP_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemE_prefP_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemE_position_Msac_opt';
+% keys.sct(cs).Y_sig='ch_AH_MemE_position_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % MemL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_MemL_prefP_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemL_prefP_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemL_position_Msac_opt';
+% keys.sct(cs).Y_sig='ch_AH_MemL_position_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % PreS
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_PreS_prefP_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PreS_prefP_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PreS_position_Msac_opt';
+% keys.sct(cs).Y_sig='ch_AH_PreS_position_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % PeriS
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_PeriS_prefP_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PeriS_prefP_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PeriS_position_Msac_opt';
+% keys.sct(cs).Y_sig='ch_AH_PeriS_position_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % TIhol
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_TIhol_prefP_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_TIhol_prefP_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_TIhol_position_Msac_opt';
+% keys.sct(cs).Y_sig='ch_AH_TIhol_position_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% %% index
+% 
+% % Cue
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_Cue_spaceCI_IX_Msac_opt';
+% keys.sct(cs).Y='ch_Cue_spaceCI_IX_Msac_opt';
+% keys.sct(cs).X_sig='in_Cue_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_Cue_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % MemE
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_MemE_spaceCI_IX_Msac_opt';
+% keys.sct(cs).Y='ch_MemE_spaceCI_IX_Msac_opt';
+% keys.sct(cs).X_sig='in_MemE_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_MemE_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % MemL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_MemL_spaceCI_IX_Msac_opt';
+% keys.sct(cs).Y='ch_MemL_spaceCI_IX_Msac_opt';
+% keys.sct(cs).X_sig='in_MemL_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_MemL_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % PreS
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_PreS_spaceCI_IX_Msac_opt';
+% keys.sct(cs).Y='ch_PreS_spaceCI_IX_Msac_opt';
+% keys.sct(cs).X_sig='in_PreS_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_PreS_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % PeriS
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_PeriS_spaceCI_IX_Msac_opt';
+% keys.sct(cs).Y='ch_PeriS_spaceCI_IX_Msac_opt';
+% keys.sct(cs).X_sig='in_PeriS_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_PeriS_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % TIhol
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_TIhol_spaceCI_IX_Msac_opt';
+% keys.sct(cs).Y='ch_TIhol_spaceCI_IX_Msac_opt';
+% keys.sct(cs).X_sig='in_TIhol_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_TIhol_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% %% FR differences
+% 
+% % Cue
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_Cue_spaceLR_DF_Msac_opt';
+% keys.sct(cs).Y='ch_Cue_spaceLR_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_Cue_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_Cue_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % MemE
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_MemE_spaceLR_DF_Msac_opt';
+% keys.sct(cs).Y='ch_MemE_spaceLR_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_MemE_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_MemE_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % MemL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_MemL_spaceLR_DF_Msac_opt';
+% keys.sct(cs).Y='ch_MemL_spaceLR_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_MemL_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_MemL_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % PreS
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_PreS_spaceLR_DF_Msac_opt';
+% keys.sct(cs).Y='ch_PreS_spaceLR_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_PreS_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_PreS_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % PeriS
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_PeriS_spaceLR_DF_Msac_opt';
+% keys.sct(cs).Y='ch_PeriS_spaceLR_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_PeriS_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_PeriS_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% % TIhol
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_TIhol_spaceLR_DF_Msac_opt';
+% keys.sct(cs).Y='ch_TIhol_spaceLR_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_TIhol_spaceLR_Msac_opt';
+% keys.sct(cs).Y_sig='ch_TIhol_spaceLR_Msac_opt';
+% keys.sct(cs).color_option='monkeys_by_marker';
+% keys.sct(cs).tt.choices=[0,1];
+
+%% same for Vsac
+% 
+% 'Cue',      4,	0.07,	0.17,   'INI';...
+%     'CueG',     4,	0.04,	0.14,   'INI';...
+%     'PreS',     60,	-0.1,	-0.01,  'INI';...
+%     'PeriS',    60,	-0.01,  0.05,   'INI';...
+%     'TholG',     5,	0,      0.15,    'INI';...
+%     'Thol',     20,	-0.3,	0,      'INI';...
 
 % Cue
 cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Cue_prefP_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Cue_prefP_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Cue_position_Msac_opt';
-keys.sct(cs).Y_sig='ch_AH_Cue_position_Msac_opt';
+keys.sct(cs).tt.tasktypes={'Vsac_opt'};
+keys.sct(cs).X='in_Cue_spaceLR_DF_Vsac_opt';
+keys.sct(cs).Y='ch_Cue_spaceLR_DF_Vsac_opt';
+keys.sct(cs).X_sig='in_Cue_spaceLR_Vsac_opt';
+keys.sct(cs).Y_sig='ch_Cue_spaceLR_Vsac_opt';
 keys.sct(cs).color_option='monkeys_by_marker';
 keys.sct(cs).tt.choices=[0,1];
-
-% MemE
+% CueG
 cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_MemE_prefP_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemE_prefP_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemE_position_Msac_opt';
-keys.sct(cs).Y_sig='ch_AH_MemE_position_Msac_opt';
+keys.sct(cs).tt.tasktypes={'Vsac_opt'};
+keys.sct(cs).X='in_CueG_spaceLR_DF_Vsac_opt';
+keys.sct(cs).Y='ch_CueG_spaceLR_DF_Vsac_opt';
+keys.sct(cs).X_sig='in_CueG_spaceLR_Vsac_opt';
+keys.sct(cs).Y_sig='ch_CueG_spaceLR_Vsac_opt';
 keys.sct(cs).color_option='monkeys_by_marker';
 keys.sct(cs).tt.choices=[0,1];
-
-% MemL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_MemL_prefP_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemL_prefP_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemL_position_Msac_opt';
-keys.sct(cs).Y_sig='ch_AH_MemL_position_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
 % PreS
 cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_PreS_prefP_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PreS_prefP_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PreS_position_Msac_opt';
-keys.sct(cs).Y_sig='ch_AH_PreS_position_Msac_opt';
+keys.sct(cs).tt.tasktypes={'Vsac_opt'};
+keys.sct(cs).X='in_PreS_spaceLR_DF_Vsac_opt';
+keys.sct(cs).Y='ch_PreS_spaceLR_DF_Vsac_opt';
+keys.sct(cs).X_sig='in_PreS_spaceLR_Vsac_opt';
+keys.sct(cs).Y_sig='ch_PreS_spaceLR_Vsac_opt';
 keys.sct(cs).color_option='monkeys_by_marker';
 keys.sct(cs).tt.choices=[0,1];
-
 % PeriS
 cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_PeriS_prefP_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PeriS_prefP_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PeriS_position_Msac_opt';
-keys.sct(cs).Y_sig='ch_AH_PeriS_position_Msac_opt';
+keys.sct(cs).tt.tasktypes={'Vsac_opt'};
+keys.sct(cs).X='in_PeriS_spaceLR_DF_Vsac_opt';
+keys.sct(cs).Y='ch_PeriS_spaceLR_DF_Vsac_opt';
+keys.sct(cs).X_sig='in_PeriS_spaceLR_Vsac_opt';
+keys.sct(cs).Y_sig='ch_PeriS_spaceLR_Vsac_opt';
 keys.sct(cs).color_option='monkeys_by_marker';
 keys.sct(cs).tt.choices=[0,1];
-
-% TIhol
+% TholG
 cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_TIhol_prefP_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_TIhol_prefP_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_TIhol_position_Msac_opt';
-keys.sct(cs).Y_sig='ch_AH_TIhol_position_Msac_opt';
+keys.sct(cs).tt.tasktypes={'Vsac_opt'};
+keys.sct(cs).X='in_TholG_spaceLR_DF_Vsac_opt';
+keys.sct(cs).Y='ch_TholG_spaceLR_DF_Vsac_opt';
+keys.sct(cs).X_sig='in_TholG_spaceLR_Vsac_opt';
+keys.sct(cs).Y_sig='ch_TholG_spaceLR_Vsac_opt';
 keys.sct(cs).color_option='monkeys_by_marker';
 keys.sct(cs).tt.choices=[0,1];
-
-%% index
-
-% Cue
+% Thol
 cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_Cue_spaceCI_IX_Msac_opt';
-keys.sct(cs).Y='ch_Cue_spaceCI_IX_Msac_opt';
-keys.sct(cs).X_sig='in_Cue_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_Cue_spaceLR_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
-% MemE
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_MemE_spaceCI_IX_Msac_opt';
-keys.sct(cs).Y='ch_MemE_spaceCI_IX_Msac_opt';
-keys.sct(cs).X_sig='in_MemE_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_MemE_spaceLR_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
-% MemL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_MemL_spaceCI_IX_Msac_opt';
-keys.sct(cs).Y='ch_MemL_spaceCI_IX_Msac_opt';
-keys.sct(cs).X_sig='in_MemL_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_MemL_spaceLR_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
-% PreS
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_PreS_spaceCI_IX_Msac_opt';
-keys.sct(cs).Y='ch_PreS_spaceCI_IX_Msac_opt';
-keys.sct(cs).X_sig='in_PreS_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_PreS_spaceLR_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
-% PeriS
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_PeriS_spaceCI_IX_Msac_opt';
-keys.sct(cs).Y='ch_PeriS_spaceCI_IX_Msac_opt';
-keys.sct(cs).X_sig='in_PeriS_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_PeriS_spaceLR_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
-% TIhol
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_TIhol_spaceCI_IX_Msac_opt';
-keys.sct(cs).Y='ch_TIhol_spaceCI_IX_Msac_opt';
-keys.sct(cs).X_sig='in_TIhol_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_TIhol_spaceLR_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
-%% FR differences
-
-% Cue
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_Cue_spaceLR_DF_Msac_opt';
-keys.sct(cs).Y='ch_Cue_spaceLR_DF_Msac_opt';
-keys.sct(cs).X_sig='in_Cue_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_Cue_spaceLR_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
-% MemE
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_MemE_spaceLR_DF_Msac_opt';
-keys.sct(cs).Y='ch_MemE_spaceLR_DF_Msac_opt';
-keys.sct(cs).X_sig='in_MemE_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_MemE_spaceLR_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
-% MemL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_MemL_spaceLR_DF_Msac_opt';
-keys.sct(cs).Y='ch_MemL_spaceLR_DF_Msac_opt';
-keys.sct(cs).X_sig='in_MemL_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_MemL_spaceLR_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
-% PreS
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_PreS_spaceLR_DF_Msac_opt';
-keys.sct(cs).Y='ch_PreS_spaceLR_DF_Msac_opt';
-keys.sct(cs).X_sig='in_PreS_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_PreS_spaceLR_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
-% PeriS
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_PeriS_spaceLR_DF_Msac_opt';
-keys.sct(cs).Y='ch_PeriS_spaceLR_DF_Msac_opt';
-keys.sct(cs).X_sig='in_PeriS_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_PeriS_spaceLR_Msac_opt';
-keys.sct(cs).color_option='monkeys_by_marker';
-keys.sct(cs).tt.choices=[0,1];
-
-% TIhol
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_TIhol_spaceLR_DF_Msac_opt';
-keys.sct(cs).Y='ch_TIhol_spaceLR_DF_Msac_opt';
-keys.sct(cs).X_sig='in_TIhol_spaceLR_Msac_opt';
-keys.sct(cs).Y_sig='ch_TIhol_spaceLR_Msac_opt';
+keys.sct(cs).tt.tasktypes={'Vsac_opt'};
+keys.sct(cs).X='in_Thol_spaceLR_DF_Vsac_opt';
+keys.sct(cs).Y='ch_Thol_spaceLR_DF_Vsac_opt';
+keys.sct(cs).X_sig='in_Thol_spaceLR_Vsac_opt';
+keys.sct(cs).Y_sig='ch_Thol_spaceLR_Vsac_opt';
 keys.sct(cs).color_option='monkeys_by_marker';
 keys.sct(cs).tt.choices=[0,1];
 
 %% Choice
 
 
-%% Cue
-% PrefIN CHOICE HEMI Cue pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Cue_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Cue_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI Cue ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Cue_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Cue_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE HEMI Cue pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Cue_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Cue_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI Cue ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Cue_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Cue_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE HEMI Cue pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Cue_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Cue_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Cue_spaceLR_Msac_opt','-'};
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI Cue TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Cue_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Cue_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Cue_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE HEMI Cue pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Cue_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Cue_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Cue_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI Cue TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Cue_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Cue_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Cue_spaceLR_Msac_opt','-'};
-
-
-
-%% MemE
-% PrefIN CHOICE HEMI MemE pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_MemE_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemE_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI MemE ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_MemE_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemE_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE HEMI MemE pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_MemE_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemE_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI MemE ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_MemE_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemE_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE HEMI MemE pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_MemE_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemE_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_MemE_spaceLR_Msac_opt','-'};
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI MemE TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_MemE_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemE_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_MemE_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE HEMI MemE pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_MemE_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemE_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_MemE_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI MemE TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_MemE_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemE_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_MemE_spaceLR_Msac_opt','-'};
-
-
-%% MemL
-% PrefIN CHOICE HEMI MemL pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_MemL_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemL_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI MemL ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_MemL_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemL_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE HEMI MemL pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_MemL_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemL_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI MemL ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_MemL_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemL_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE HEMI MemL pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_MemL_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemL_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_MemL_spaceLR_Msac_opt','-'};
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI MemL TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_MemL_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemL_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_MemL_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE HEMI MemL pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_MemL_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemL_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_MemL_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI MemL TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_MemL_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_MemL_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_MemL_spaceLR_Msac_opt','-'};
-
-
-%% PreS
-% PrefIN CHOICE HEMI PreS pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_PreS_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PreS_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI PreS ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_PreS_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PreS_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE HEMI PreS pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_PreS_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PreS_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI PreS ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_PreS_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PreS_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE HEMI PreS pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_PreS_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PreS_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_PreS_spaceLR_Msac_opt','-'};
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI PreS TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_PreS_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PreS_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_PreS_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE HEMI PreS pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_PreS_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PreS_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_PreS_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI PreS TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_PreS_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PreS_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_PreS_spaceLR_Msac_opt','-'};
-
-
-%% Pre2
-% PrefIN CHOICE HEMI Pre2 pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Pre2_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Pre2_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI Pre2 ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Pre2_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Pre2_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE HEMI Pre2 pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Pre2_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Pre2_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI Pre2 ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Pre2_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Pre2_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE HEMI Pre2 pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Pre2_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Pre2_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Pre2_spaceLR_Msac_opt','-'};
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI Pre2 TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Pre2_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Pre2_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Pre2_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE HEMI Pre2 pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Pre2_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Pre2_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Pre2_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI Pre2 TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Pre2_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Pre2_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Pre2_spaceLR_Msac_opt','-'};
-
-
-%% PeriS
-% PrefIN CHOICE HEMI PeriS pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_PeriS_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PeriS_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI PeriS ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_PeriS_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PeriS_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE HEMI PeriS pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_PeriS_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PeriS_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI PeriS ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_PeriS_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PeriS_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE HEMI PeriS pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_PeriS_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PeriS_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_PeriS_spaceLR_Msac_opt','-'};
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI PeriS TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_PeriS_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PeriS_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_PeriS_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE HEMI PeriS pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_PeriS_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PeriS_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_PeriS_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI PeriS TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_PeriS_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_PeriS_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_PeriS_spaceLR_Msac_opt','-'};
-
-%% Peri2
-% PrefIN CHOICE HEMI Peri2 pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Peri2_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Peri2_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI Peri2 ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Peri2_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Peri2_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE HEMI Peri2 pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Peri2_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Peri2_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI Peri2 ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Peri2_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Peri2_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE HEMI Peri2 pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Peri2_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Peri2_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Peri2_spaceLR_Msac_opt','-'};
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI Peri2 TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Peri2_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Peri2_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Peri2_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE HEMI Peri2 pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_Peri2_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Peri2_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Peri2_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI Peri2 TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_Peri2_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_Peri2_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_Peri2_spaceLR_Msac_opt','-'};
-
-%% TIhol
-% PrefIN CHOICE HEMI TIhol pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_TIhol_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_TIhol_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI TIhol ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_TIhol_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_TIhol_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE HEMI TIhol pref vs unpreferred ALL
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_TIhol_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_TIhol_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI TIhol ALL
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_TIhol_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_TIhol_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-
-
-% PrefIN CHOICE HEMI TIhol pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_TIhol_prefHO_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_TIhol_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_TIhol_spaceLR_Msac_opt','-'};
-
-
-% PrefIN CHOICE vs INSTRUCTED HEMI TIhol TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_TIhol_prefHI_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_TIhol_prefHI_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_TIhol_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE HEMI TIhol pref vs unpreferred TUNED
-cs=cs+1; 
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='ch_AH_TIhol_prefHOch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_TIhol_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_TIhol_spaceLR_Msac_opt','-'};
-
-
-% PrefCH CHOICE vs INSTRUCTED HEMI TIhol TUNED
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_TIhol_prefHIch_DF_Msac_opt';
-keys.sct(cs).Y='ch_AH_TIhol_prefHIch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
-keys.sct(cs).color_option='ENSU_as_color';
-keys.sct(cs).absolutes=1;
-keys.sct(cs).tt.choices=[0,1];
-keys.sct(cs).tt.unselect={'in_TIhol_spaceLR_Msac_opt','-'};
-
-% VMI plots
-% VMI ipsi versus contra POST
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='VMI_postEN_IS_Msac_opt';
-keys.sct(cs).Y='VMI_postEN_CS_Msac_opt';
-keys.sct(cs).X_sig='VMI_postEN_Msac_opt';
-keys.sct(cs).Y_sig='VMI_postEN_Msac_opt';
-keys.sct(cs).hist_column='VMI_postEN_Msac_opt';
-keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
-keys.sct(cs).color_option='FR_as_color';
-
-% VMI ipsi vs contra PERI
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='VMI_periEN_IS_Msac_opt';
-keys.sct(cs).Y='VMI_periEN_CS_Msac_opt';
-keys.sct(cs).X_sig='VMI_periEN_Msac_opt';
-keys.sct(cs).Y_sig='VMI_periEN_Msac_opt';
-keys.sct(cs).hist_column='VMI_periEN_Msac_opt';
-keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
-keys.sct(cs).color_option='FR_as_color';
-
-% IPSI peri2 vs cue enhancement, VMI as colors
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_IS_Cue_epoch_DF_Msac_opt';
-keys.sct(cs).Y='in_AH_IS_Peri2_epoch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_IS_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_IS_Peri2_epoch_Msac_opt';
-keys.sct(cs).VMI='VMI_periEN_IS_Msac_opt';
-keys.sct(cs).hist_column='VMI_periEN_Msac_opt';
-keys.sct(cs).categories={'visual_peri_Msac_opt';'visuomotor_peri_Msac_opt';'motor_peri_Msac_opt'};
-keys.sct(cs).color_option='VMI_as_color';
-keys.sct(cs).logarithmic_scale=1;
-
-% CONTRA peri2 vs cue enhancement, VMI as colors
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_CS_Cue_epoch_DF_Msac_opt';
-keys.sct(cs).Y='in_AH_CS_Peri2_epoch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_CS_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_CS_Peri2_epoch_Msac_opt';
-keys.sct(cs).VMI='VMI_periEN_CS_Msac_opt';
-keys.sct(cs).hist_column='VMI_periEN_CS_Msac_opt';
-keys.sct(cs).categories={'visual_peri_Msac_opt';'visuomotor_peri_Msac_opt';'motor_peri_Msac_opt'};
-keys.sct(cs).color_option='VMI_as_color';
-keys.sct(cs).logarithmic_scale=1;
-
-% IPSI periS vs cue enhancement, VMI as colors
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_IS_Cue_epoch_DF_Msac_opt';
-keys.sct(cs).Y='in_AH_IS_PeriS_epoch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_IS_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_IS_PeriS_epoch_Msac_opt';
-keys.sct(cs).VMI='VMI_periEN_IS_Msac_opt';
-keys.sct(cs).hist_column='VMI_periEN_IS_Msac_opt';
-keys.sct(cs).categories={'visual_peri_Msac_opt';'visuomotor_peri_Msac_opt';'motor_peri_Msac_opt'};
-keys.sct(cs).color_option='VMI_as_color';
-keys.sct(cs).logarithmic_scale=1;
-
-% CONTRA periS vs cue enhancement, VMI as colors
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_CS_Cue_epoch_DF_Msac_opt';
-keys.sct(cs).Y='in_AH_CS_PeriS_epoch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_CS_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_CS_PeriS_epoch_Msac_opt';
-keys.sct(cs).VMI='VMI_periEN_CS_Msac_opt';
-keys.sct(cs).hist_column='VMI_periEN_CS_Msac_opt';
-keys.sct(cs).categories={'visual_peri_Msac_opt';'visuomotor_peri_Msac_opt';'motor_peri_Msac_opt'};
-keys.sct(cs).color_option='VMI_as_color';
-keys.sct(cs).logarithmic_scale=1;
-
-% IPSI post vs cue enhancement, VMI as colors
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_IS_Cue_epoch_DF_Msac_opt';
-keys.sct(cs).Y='in_AH_IS_TIhol_epoch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_IS_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_IS_TIhol_epoch_Msac_opt';
-keys.sct(cs).VMI='VMI_postEN_IS_Msac_opt';
-keys.sct(cs).hist_column='VMI_postEN_IS_Msac_opt';
-keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
-keys.sct(cs).color_option='VMI_as_color';
-keys.sct(cs).logarithmic_scale=1;
-
-% CONTRA post vs cue enhancement, VMI as colors
-cs=cs+1;
-keys.sct(cs).tt.tasktypes={'Msac_opt'};
-keys.sct(cs).X='in_AH_CS_Cue_epoch_DF_Msac_opt';
-keys.sct(cs).Y='in_AH_CS_TIhol_epoch_DF_Msac_opt';
-keys.sct(cs).X_sig='in_AH_CS_Cue_epoch_Msac_opt';
-keys.sct(cs).Y_sig='in_AH_CS_TIhol_epoch_Msac_opt';
-keys.sct(cs).VMI='VMI_postEN_CS_Msac_opt';
-keys.sct(cs).hist_column='VMI_postEN_CS_Msac_opt';
-keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
-keys.sct(cs).color_option='VMI_as_color';
-keys.sct(cs).logarithmic_scale=1;
+% %% Cue
+% % PrefIN CHOICE HEMI Cue pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Cue_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Cue_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI Cue ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Cue_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Cue_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE HEMI Cue pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Cue_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Cue_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI Cue ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Cue_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Cue_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE HEMI Cue pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Cue_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Cue_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Cue_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI Cue TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Cue_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Cue_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Cue_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE HEMI Cue pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Cue_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Cue_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Cue_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI Cue TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Cue_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Cue_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Cue_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Cue_spaceLR_Msac_opt','-'};
+% 
+% 
+% 
+% %% MemE
+% % PrefIN CHOICE HEMI MemE pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_MemE_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemE_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI MemE ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_MemE_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemE_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE HEMI MemE pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_MemE_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemE_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI MemE ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_MemE_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemE_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE HEMI MemE pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_MemE_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemE_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_MemE_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI MemE TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_MemE_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemE_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_MemE_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE HEMI MemE pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_MemE_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemE_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_MemE_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI MemE TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_MemE_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemE_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemE_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_MemE_spaceLR_Msac_opt','-'};
+% 
+% 
+% %% MemL
+% % PrefIN CHOICE HEMI MemL pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_MemL_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemL_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI MemL ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_MemL_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemL_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE HEMI MemL pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_MemL_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemL_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI MemL ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_MemL_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemL_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE HEMI MemL pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_MemL_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemL_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_MemL_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI MemL TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_MemL_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemL_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_MemL_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE HEMI MemL pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_MemL_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemL_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_MemL_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI MemL TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_MemL_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_MemL_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_MemL_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_MemL_spaceLR_Msac_opt','-'};
+% 
+% 
+% %% PreS
+% % PrefIN CHOICE HEMI PreS pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_PreS_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PreS_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI PreS ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_PreS_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PreS_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE HEMI PreS pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_PreS_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PreS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI PreS ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_PreS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PreS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE HEMI PreS pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_PreS_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PreS_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_PreS_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI PreS TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_PreS_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PreS_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_PreS_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE HEMI PreS pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_PreS_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PreS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_PreS_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI PreS TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_PreS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PreS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PreS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_PreS_spaceLR_Msac_opt','-'};
+% 
+% 
+% %% Pre2
+% % PrefIN CHOICE HEMI Pre2 pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Pre2_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Pre2_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI Pre2 ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Pre2_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Pre2_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE HEMI Pre2 pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Pre2_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Pre2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI Pre2 ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Pre2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Pre2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE HEMI Pre2 pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Pre2_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Pre2_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Pre2_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI Pre2 TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Pre2_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Pre2_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Pre2_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE HEMI Pre2 pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Pre2_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Pre2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Pre2_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI Pre2 TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Pre2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Pre2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Pre2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Pre2_spaceLR_Msac_opt','-'};
+% 
+% 
+% %% PeriS
+% % PrefIN CHOICE HEMI PeriS pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_PeriS_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PeriS_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI PeriS ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_PeriS_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PeriS_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE HEMI PeriS pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_PeriS_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PeriS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI PeriS ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_PeriS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PeriS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE HEMI PeriS pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_PeriS_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PeriS_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_PeriS_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI PeriS TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_PeriS_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PeriS_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_PeriS_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE HEMI PeriS pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_PeriS_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PeriS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_PeriS_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI PeriS TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_PeriS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_PeriS_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_PeriS_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_PeriS_spaceLR_Msac_opt','-'};
+% 
+% %% Peri2
+% % PrefIN CHOICE HEMI Peri2 pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Peri2_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Peri2_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI Peri2 ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Peri2_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Peri2_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE HEMI Peri2 pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Peri2_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Peri2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI Peri2 ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Peri2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Peri2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE HEMI Peri2 pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Peri2_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Peri2_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Peri2_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI Peri2 TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Peri2_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Peri2_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Peri2_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE HEMI Peri2 pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_Peri2_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Peri2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Peri2_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI Peri2 TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_Peri2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_Peri2_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_Peri2_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_Peri2_spaceLR_Msac_opt','-'};
+% 
+% %% TIhol
+% % PrefIN CHOICE HEMI TIhol pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_TIhol_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_TIhol_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI TIhol ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_TIhol_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_TIhol_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE HEMI TIhol pref vs unpreferred ALL
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_TIhol_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_TIhol_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI TIhol ALL
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_TIhol_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_TIhol_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% 
+% 
+% % PrefIN CHOICE HEMI TIhol pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_TIhol_prefHO_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_TIhol_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_TIhol_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefIN CHOICE vs INSTRUCTED HEMI TIhol TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_TIhol_prefHI_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_TIhol_prefHI_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_TIhol_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE HEMI TIhol pref vs unpreferred TUNED
+% cs=cs+1; 
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='ch_AH_TIhol_prefHOch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_TIhol_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_TIhol_spaceLR_Msac_opt','-'};
+% 
+% 
+% % PrefCH CHOICE vs INSTRUCTED HEMI TIhol TUNED
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_TIhol_prefHIch_DF_Msac_opt';
+% keys.sct(cs).Y='ch_AH_TIhol_prefHIch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_TIhol_epoch_Msac_opt';
+% keys.sct(cs).color_option='ENSU_as_color';
+% keys.sct(cs).absolutes=1;
+% keys.sct(cs).tt.choices=[0,1];
+% keys.sct(cs).tt.unselect={'in_TIhol_spaceLR_Msac_opt','-'};
+% 
+% % VMI plots
+% % VMI ipsi versus contra POST
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='VMI_postEN_IS_Msac_opt';
+% keys.sct(cs).Y='VMI_postEN_CS_Msac_opt';
+% keys.sct(cs).X_sig='VMI_postEN_Msac_opt';
+% keys.sct(cs).Y_sig='VMI_postEN_Msac_opt';
+% keys.sct(cs).hist_column='VMI_postEN_Msac_opt';
+% keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
+% keys.sct(cs).color_option='FR_as_color';
+% 
+% % VMI ipsi vs contra PERI
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='VMI_periEN_IS_Msac_opt';
+% keys.sct(cs).Y='VMI_periEN_CS_Msac_opt';
+% keys.sct(cs).X_sig='VMI_periEN_Msac_opt';
+% keys.sct(cs).Y_sig='VMI_periEN_Msac_opt';
+% keys.sct(cs).hist_column='VMI_periEN_Msac_opt';
+% keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
+% keys.sct(cs).color_option='FR_as_color';
+% 
+% % IPSI peri2 vs cue enhancement, VMI as colors
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_IS_Cue_epoch_DF_Msac_opt';
+% keys.sct(cs).Y='in_AH_IS_Peri2_epoch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_IS_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_IS_Peri2_epoch_Msac_opt';
+% keys.sct(cs).VMI='VMI_periEN_IS_Msac_opt';
+% keys.sct(cs).hist_column='VMI_periEN_Msac_opt';
+% keys.sct(cs).categories={'visual_peri_Msac_opt';'visuomotor_peri_Msac_opt';'motor_peri_Msac_opt'};
+% keys.sct(cs).color_option='VMI_as_color';
+% keys.sct(cs).logarithmic_scale=1;
+% 
+% % CONTRA peri2 vs cue enhancement, VMI as colors
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_CS_Cue_epoch_DF_Msac_opt';
+% keys.sct(cs).Y='in_AH_CS_Peri2_epoch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_CS_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_CS_Peri2_epoch_Msac_opt';
+% keys.sct(cs).VMI='VMI_periEN_CS_Msac_opt';
+% keys.sct(cs).hist_column='VMI_periEN_CS_Msac_opt';
+% keys.sct(cs).categories={'visual_peri_Msac_opt';'visuomotor_peri_Msac_opt';'motor_peri_Msac_opt'};
+% keys.sct(cs).color_option='VMI_as_color';
+% keys.sct(cs).logarithmic_scale=1;
+% 
+% % IPSI periS vs cue enhancement, VMI as colors
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_IS_Cue_epoch_DF_Msac_opt';
+% keys.sct(cs).Y='in_AH_IS_PeriS_epoch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_IS_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_IS_PeriS_epoch_Msac_opt';
+% keys.sct(cs).VMI='VMI_periEN_IS_Msac_opt';
+% keys.sct(cs).hist_column='VMI_periEN_IS_Msac_opt';
+% keys.sct(cs).categories={'visual_peri_Msac_opt';'visuomotor_peri_Msac_opt';'motor_peri_Msac_opt'};
+% keys.sct(cs).color_option='VMI_as_color';
+% keys.sct(cs).logarithmic_scale=1;
+% 
+% % CONTRA periS vs cue enhancement, VMI as colors
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_CS_Cue_epoch_DF_Msac_opt';
+% keys.sct(cs).Y='in_AH_CS_PeriS_epoch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_CS_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_CS_PeriS_epoch_Msac_opt';
+% keys.sct(cs).VMI='VMI_periEN_CS_Msac_opt';
+% keys.sct(cs).hist_column='VMI_periEN_CS_Msac_opt';
+% keys.sct(cs).categories={'visual_peri_Msac_opt';'visuomotor_peri_Msac_opt';'motor_peri_Msac_opt'};
+% keys.sct(cs).color_option='VMI_as_color';
+% keys.sct(cs).logarithmic_scale=1;
+% 
+% % IPSI post vs cue enhancement, VMI as colors
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_IS_Cue_epoch_DF_Msac_opt';
+% keys.sct(cs).Y='in_AH_IS_TIhol_epoch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_IS_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_IS_TIhol_epoch_Msac_opt';
+% keys.sct(cs).VMI='VMI_postEN_IS_Msac_opt';
+% keys.sct(cs).hist_column='VMI_postEN_IS_Msac_opt';
+% keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
+% keys.sct(cs).color_option='VMI_as_color';
+% keys.sct(cs).logarithmic_scale=1;
+% 
+% % CONTRA post vs cue enhancement, VMI as colors
+% cs=cs+1;
+% keys.sct(cs).tt.tasktypes={'Msac_opt'};
+% keys.sct(cs).X='in_AH_CS_Cue_epoch_DF_Msac_opt';
+% keys.sct(cs).Y='in_AH_CS_TIhol_epoch_DF_Msac_opt';
+% keys.sct(cs).X_sig='in_AH_CS_Cue_epoch_Msac_opt';
+% keys.sct(cs).Y_sig='in_AH_CS_TIhol_epoch_Msac_opt';
+% keys.sct(cs).VMI='VMI_postEN_CS_Msac_opt';
+% keys.sct(cs).hist_column='VMI_postEN_CS_Msac_opt';
+% keys.sct(cs).categories={'visual_Msac_opt';'visuomotor_Msac_opt';'motor_Msac_opt'};
+% keys.sct(cs).color_option='VMI_as_color';
+% keys.sct(cs).logarithmic_scale=1;
+
+
+%% classification
+cc=0;
+
+cc=cc+1;
+keys.tou(cc).tt.IC_for_criterion='in';
+keys.tou(cc).conditions_to_plot={'Msac'};
+keys.tou(cc).position_and_plotting_arrangements={'options'};
+keys.tou(cc).tt.selection={'target','dPul'};
+keys.tou(cc).tt.hands=0;
+keys.tou(cc).tt.choices=[0,1];
+keys.tou(cc).tt.perturbations=0;
 
 
 
