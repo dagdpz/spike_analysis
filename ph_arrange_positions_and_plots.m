@@ -197,7 +197,31 @@ switch keys.arrangement
         pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
         pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
         
+        case 'eye_inactivation'
+        con_for_figure          = cho_idx;
+        con_for_line            = ptb_idx;
+        con_for_trial_crit      = perturbation_group;
+        fig_title               = 'choice ';
+        val_for_figure          = num2cell(cho_values);
+        [~,~,con_for_column]    = unique([hemifield_indexes],'rows');
+        color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
+        pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
+        pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
+        pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
+        
     case 'hands_inactivation_in_ch'
+        con_for_figure          = eff_idx;
+        con_for_line            = chp_idx;
+        con_for_trial_crit      = con_for_line;
+        fig_title               = 'choice_instructed_comp ';
+        val_for_figure          = num2cell(eff_values);
+        [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
+        color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
+        pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
+        pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
+        pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
+        
+        case 'hands_in_ch'
         con_for_figure          = eff_idx;
         con_for_line            = chp_idx;
         con_for_trial_crit      = con_for_line;

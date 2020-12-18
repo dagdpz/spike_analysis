@@ -46,7 +46,7 @@ keys.cal.perturbation_groups            ={0,[2,3,4,5,6,7,8]};       % which pert
 
 %% folders and filenames
 keys.filelist_as_blocks     =0;
-keys.drive                  =DAG_get_server_IP;
+keys.drive                  = 'Y:';
 keys.basepath_to_save       =[keys.drive 'Projects' filesep project filesep 'ephys' filesep];
 keys.project_versions       ={''};
 spike_analysis_location     =which('ph_initiation');
@@ -84,7 +84,7 @@ keys.Linus.color      =[0 0 255]/255;
 keys.Curius.color     =[255 0 0]/255;
 keys.Tesla.color      ='y';
 keys.Cornelius.color  ='m';
-keys.Bacchus.color    ='b';
+keys.Bacchus.color    =[0 1 0];
 
 keys.Flaffus.marker    ='<';
 keys.Linus.marker      ='s';
@@ -170,18 +170,31 @@ keys.colors.RH_LS_IN=[0 255 0];
 keys.colors.RH_LS_CH=[0 128 0];
 
 % population contra ipsi PSTH colors
-keys.colors.NH_CS_IN=[255 0 64];
-keys.colors.NH_CS_CH=[128 0 32];
-keys.colors.IH_CS_IN=[255 0 255];
-keys.colors.IH_CS_CH=[128 0 128];
-keys.colors.CH_CS_IN=[255 128 0];
-keys.colors.CH_CS_CH=[128 64 0];
-keys.colors.NH_IS_IN=[0 255 255];
-keys.colors.NH_IS_CH=[0 128 128];
-keys.colors.IH_IS_IN=[0 128 255];
-keys.colors.IH_IS_CH=[0 64 128];
-keys.colors.CH_IS_IN=[0 255 0];
-keys.colors.CH_IS_CH=[0 128 0];
+% keys.colors.NH_CS_IN=[255 0 64];
+% keys.colors.NH_CS_CH=[128 0 32];
+% keys.colors.IH_CS_IN=[255 0 255];
+% keys.colors.IH_CS_CH=[128 0 128];
+% keys.colors.CH_CS_IN=[255 128 0];
+% keys.colors.CH_CS_CH=[128 64 0];
+% keys.colors.NH_IS_IN=[0 255 255];
+% keys.colors.NH_IS_CH=[0 128 128];
+% keys.colors.IH_IS_IN=[0 128 255];
+% keys.colors.IH_IS_CH=[0 64 128];
+% keys.colors.CH_IS_IN=[0 255 0];
+% keys.colors.CH_IS_CH=[0 128 0];
+
+keys.colors.NH_IS_IN=[255 0 64];
+keys.colors.NH_IS_CH=[128 0 32];
+keys.colors.CH_IS_IN=[255 0 255];
+keys.colors.CH_IS_CH=[128 0 128];
+keys.colors.IH_IS_IN=[255 128 0];
+keys.colors.IH_IS_CH=[128 64 0];
+keys.colors.NH_CS_IN=[0 255 255];
+keys.colors.NH_CS_CH=[0 128 128];
+keys.colors.CH_CS_IN=[0 128 255];
+keys.colors.CH_CS_CH=[0 64 128];
+keys.colors.IH_CS_IN=[0 255 0];
+keys.colors.IH_CS_CH=[0 128 0];
 %% these need to be fixed somehow
 keys.colors.NH_VS_IN=[150 150 150];
 keys.colors.NH_VS_CH=[80 80 80];
