@@ -24,7 +24,7 @@ version=keys.project_version;
 %     version=versions{v};
 fromdir=['Y:\Projects\' project '\ephys\' version '\single_cell_examples'];
 todir=['Y:\Projects\' project '\ephys\' version '\' keys.CP.foldername];
-
+save([todir '\list'],'example_list')
 k=1;
 for ex=1:numel(example_list)
     name=example_list{ex};

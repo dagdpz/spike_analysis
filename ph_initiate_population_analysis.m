@@ -63,14 +63,6 @@ for P=population_analysis_to_perform
         
         %% DEFAULTS
         
-        % tuning table keys (trial criterias and such)
-%         keys.tt.choices                         = 0;
-%         keys.tt.perturbations                   = 0;
-%         keys.tt.hands                           = 0;
-%         keys.tt.IC_for_criterion                = 'in';
-%         keys.tt.unselect                        = {};
-%         keys.tt.combine_tuning_properties       = {};        
-%         keys.tt.selection                       = {};
         %grouping keys
         keys.(AN).group_parameter='ungrouped';
         keys.(AN).group_excluded={'','-'}; 
@@ -167,13 +159,13 @@ for P=population_analysis_to_perform
                 switch ana
                     case 'ons'
                         keys=ph_make_subfolder('response timing',keys);
-                        ph_population_response_timing(population,keys);
+                        ph_population_response_timing_tmp(population,keys);
                     case 'beh'
                         keys=ph_make_subfolder('behavior',keys);
                         ph_ephys_behavior(keys);
                     case 'pop'
                         keys=ph_make_subfolder('population_analysis',keys);
-                        ph_population_PSTHs(population,keys);
+                        ph_population_PSTHs_tmp(population,keys);
                     case 'sct'
                         keys=ph_make_subfolder('scatter',keys);
                         ph_scatter(keys);

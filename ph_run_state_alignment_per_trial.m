@@ -67,15 +67,27 @@ for t=1:n_trials
     MA_out.reaches(t).end_all=MA_out.reaches(t).ini+MA_out.reaches(t).dur;
     MA_out.reaches(t).endpos_all=MA_out.reaches(t).endpos;
     MA_out.reaches(t).startpos_all=MA_out.reaches(t).startpos;
-    if ismember(trial(t).effector,[0,3])
-        Movement=MA_out.saccades(t);
-    else
-        Movement=MA_out.reaches(t);
-    end
     trial(t).sac_off     = MA_out.saccades(t).endpos-MA_out.saccades(t).tar_pos;
     trial(t).sac_lat     = MA_out.saccades(t).lat;
     trial(t).rea_off     = MA_out.reaches(t).endpos-MA_out.reaches(t).tar_pos;
     trial(t).rea_lat     = MA_out.reaches(t).lat;
+    
+    sac_ini = MA_out.states(t).start_obs + MA_out.saccades(t).lat;
+    sac_end = sac_ini + MA_out.saccades(t).dur;
+    rea_ini = MA_out.states(t).start_obs + MA_out.reaches(t).lat;
+    rea_end = rea_ini + MA_out.reaches(t).dur;
+    tri_end = MA_out.states(t).start_end;
+    
+    
+    if ismember(trial(t).effector,[0,3])
+        Movement=MA_out.saccades(t);
+        mov_ini=sac_ini;
+        mov_end=sac_end;
+    else
+        Movement=MA_out.reaches(t);
+        mov_ini=rea_ini;
+        mov_end=rea_end;
+    end
     
     trial(t).fix_pos     = Movement.fix_pos;
     trial(t).tar_pos     = Movement.tar_pos;
@@ -88,15 +100,9 @@ for t=1:n_trials
     trial(t).col_bri            = Movement.col_bri;
     trial(t).target_selected    = Movement.target_selected;
     
-    sac_ini = MA_out.states(t).start_obs + MA_out.saccades(t).lat;
-    sac_end = sac_ini + MA_out.saccades(t).dur;
-    rea_ini = MA_out.states(t).start_obs + MA_out.reaches(t).lat;
-    rea_end = rea_ini + MA_out.reaches(t).dur;
-    tri_end = MA_out.states(t).start_end;
-    
     MPA_get_expected_states(trial(t).type,trial(t).effector,0);    %% set to 1 to allow later processing
-    movement_states       = [MA_STATES.SAC_INI MA_STATES.SAC_END MA_STATES.REA_INI MA_STATES.REA_END MA_STATES.TRI_END];
-    movement_onsets       = [sac_ini sac_end rea_ini rea_end tri_end];
+    movement_states       = [MA_STATES.SAC_INI MA_STATES.SAC_END MA_STATES.REA_INI MA_STATES.REA_END MA_STATES.MOV_INI MA_STATES.MOV_END MA_STATES.TRI_END];
+    movement_onsets       = [sac_ini sac_end rea_ini rea_end mov_ini mov_end tri_end];
     movement_onsets       = movement_onsets(ismember(movement_states,MA_STATES.all_states));
     movement_states       = movement_states(ismember(movement_states,MA_STATES.all_states));
     

@@ -83,21 +83,6 @@ else % this is for previous version (backwards compatibility) ... not needed any
 end
 
 
-combined_column=cell(size(tuning_per_unit_table,1),1);
-for props=2:size(keys.tt.combine_tuning_properties,2)
-    column_index=DAG_find_column_index(tuning_per_unit_table,keys.tt.combine_tuning_properties{1,props});
-    if isempty(column_index)
-        disp(['column not found: ' keys.tt.combine_tuning_properties{1,props}]);
-        continue;
-    end
-    combined_column=cellfun(@(x,y) cat(2,x,num2str(y)),combined_column,tuning_per_unit_table(:,column_index),'uniformoutput',false);
-end
-if ~isempty(keys.tt.combine_tuning_properties)
-    combined_column{1,1}=keys.tt.combine_tuning_properties{1};
-else
-    combined_column{1,1}='combined_effects';
-end
-tuning_per_unit_table(:,end+1)=combined_column;
 
 %% create space OR interaction column
 taskcases=unique(taskcases);
@@ -633,4 +618,27 @@ if any(idx.preS_spaceperhand) && any(idx.preR_spaceperhand)
     tuning_per_unit_table{1,n_column}='in_Cue_space_perhand_Ddre_or_Ddsa';
 end
 
+
+
+
+
+
+combined_column=cell(size(tuning_per_unit_table,1),1);
+for props=2:size(keys.tt.combine_tuning_properties,2)
+    column_index=DAG_find_column_index(tuning_per_unit_table,keys.tt.combine_tuning_properties{1,props});
+    if isempty(column_index)
+        disp(['column not found: ' keys.tt.combine_tuning_properties{1,props}]);
+        continue;
+    end
+    combined_column=cellfun(@(x,y) cat(2,x,num2str(y)),combined_column,tuning_per_unit_table(:,column_index),'uniformoutput',false);
 end
+if ~isempty(keys.tt.combine_tuning_properties)
+    combined_column{1,1}=keys.tt.combine_tuning_properties{1};
+else
+    combined_column{1,1}='combined_effects';
+end
+tuning_per_unit_table(:,end+1)=combined_column;
+
+
+end
+

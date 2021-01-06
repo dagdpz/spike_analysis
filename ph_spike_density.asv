@@ -17,8 +17,8 @@ switch keys.kernel_type
     case 'gaussian'
         Kernel=normpdf(-5*keys.gaussian_kernel:0.001:5*keys.gaussian_kernel,0,keys.gaussian_kernel);
     case 'box'
-        n_bins=round(2*keys.gaussian_kernel/0.001);
-        Kernel=ones(1,n_bins)/n_bins;        
+        n_bins=
+        Kernel=normpdf(-5*keys.gaussian_kernel:0.001:5*keys.gaussian_kernel,0,keys.gaussian_kernel);        
 end
         
 

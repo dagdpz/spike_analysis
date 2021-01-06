@@ -20,7 +20,9 @@ for unit=1:numel(population)
             keys.arrangement=keys.position_and_plotting_arrangements{a};
             o=ph_arrange_positions_and_plots(keys,population(unit).trial(tr_considered));
             
-            
+            keys.normalization_field='AN';
+            o=ph_condition_normalization(o,keys);
+
             for type=unique(types)
                 %% check carefully multicomp epochs !!
                 keys.main_multicomp                     =keys.ANOVAS_PER_TYPE(type).main;
@@ -34,9 +36,8 @@ for unit=1:numel(population)
                     keys=ph_get_epoch_keys(keys,type,effector,sum(type_effectors(:,1)==type)>1);
                     [~, condition_fieldname_part]=MPA_get_type_effector_name(type,effector);
                     
-                    tr_index= effectors==effector & types == type;% & ismember(hands,keys.cal.reach_hand);
-                    tr_index= tr_index(tr_considered);
-                    
+                    tr_index= [o.trial.effector]==effector & [o.trial.type]==type ;% & ismember(hands,keys.cal.reach_hand);
+                                       
                     if sum(tr_index)==0;
                         disp(sprintf('no trials for effector %.0f type %.0f hands %s completed= %.0f',effector,type,mat2str(keys.cal.reach_hand),keys.cal.completed));
                         continue;

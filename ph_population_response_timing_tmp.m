@@ -13,22 +13,94 @@ Right_hemisphere_targets={'dPulv_r','MIP_R'};
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
+
+keys.kernel_type                        ='box'; % we take box kernel here!!
 %legend_labels={'NH IS IN' 'NH IS CH' 'IH IS IN' 'IH IS CH' 'CH IS IN' 'CH IS CH' 'NH CS IN' 'NH CS CH' 'IH CS IN' 'IH CS CH' 'CH CS IN' 'CH CS CH' };
 cols=keys.colors;
 keys.line_colors=[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;
     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;
 %n_col=size(keys.line_colors,1);
 
+% %% tuning table preparation and grouping
+% [tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
+% [tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
+% if keys.FR_subtract_baseline || keys.cal.divide_baseline_for_ANOVA
+%     keys.FR_subtract_baseline=0;
+%     keys.cal.divide_baseline_for_ANOVA=0;
+%     population=ph_epochs(population,keys); %to undo baseline subtraction from FR per epochs, so that we can subtract in a meaningful way for population PSTH
+% end
+% idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
+% idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.ON.group_parameter);
+% group_values=tuning_per_unit_table(:,idx_group_parameter);
+% group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
+% cell_in_any_group=[false; ~ismember(group_values(2:end),keys.ON.group_excluded)];
+% unique_group_values=unique(group_values(cell_in_any_group));
+% if isempty(unique_group_values)
+%     disp('no relevant groups found');
+%     return;
+% end
+% complete_unit_list={population.unit_ID}';
+% 
+% %% define conditions to look at
+% all_trialz=[population.trial];
+% 
+% %condition_parameters  ={'type','effector','reach_hand','choice'};
+% %condition_parameters  ={'reach_hand','choice','hemifield'};
+% condition_parameters  ={'reach_hand','choice','perturbation'};
+% per_trial.types       =[all_trialz.type];
+% per_trial.effectors   =[all_trialz.effector];
+% per_trial.hands       =[all_trialz.reach_hand];
+% per_trial.choice      =[all_trialz.choice];
+% per_trial.perturbation=[all_trialz.perturbation];
+% 
+% 
+% %hemifields=unique([whatisthis.trial.hemifield]);
+% %u_hemifields=[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
+% u_hemifields=[-1,1]; % why does this have to be hardcoded? And what do we do with vertical targets?
+% u_types     =unique(per_trial.types);
+% u_effectors =unique(per_trial.effectors);
+% u_hands     =unique(per_trial.hands);
+% u_choice    =unique(per_trial.choice);
+% u_perturbation    =unique(per_trial.perturbation);
+% u_perturbation=u_perturbation(~isnan(u_perturbation));
+% 
+% %% limit conditions key?
+% u_hands     =u_hands(ismember(u_hands,keys.tt.hands));
+% u_choice    =u_choice(ismember(u_choice,keys.tt.choices));
+% 
+% all_type_effectors      = combvec(u_types,u_effectors)';
+% type_effectors =[];
+% 
+% % redifine type_effectors to include only relevant
+% for t=1:size(all_type_effectors,1)
+%     typ=all_type_effectors(t,1);
+%     eff=all_type_effectors(t,2);
+%     [~, type_effector_short{t}]=MPA_get_type_effector_name(typ,eff);
+%     if ~ismember(type_effector_short{t},keys.conditions_to_plot) %|| sum(tr_con)<1
+%         continue;
+%     end
+%     type_effectors=[type_effectors; all_type_effectors(t,:)];
+% end
+% type_effector_short(~ismember(type_effector_short,keys.conditions_to_plot))=[];
+% u_types     =unique(type_effectors(:,1))';
+% u_effectors =unique(type_effectors(:,2))';
+
 %% tuning table preparation and grouping
+
+keys.normalization_field='ON';
 [tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
 [tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
-if keys.FR_subtract_baseline || keys.cal.divide_baseline_for_ANOVA
-    keys.FR_subtract_baseline=0;
-    keys.cal.divide_baseline_for_ANOVA=0;
-    population=ph_epochs(population,keys); %to undo baseline subtraction from FR per epochs, so that we can subtract in a meaningful way for population PSTH
-end
-idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
+% if keys.PO.FR_subtract_baseline || keys.cal.divide_baseline_for_ANOVA
+%     if keys.PO.FR_subtract_baseline 
+%     Sel_for_title =[Sel_for_title,{'base';'=';keys.PO.epoch_BL;', '}];
+%     end
+%     keys.FR_subtract_baseline=0;
+%     keys.cal.divide_baseline_for_ANOVA=0;
+%     population=ph_epochs(population,keys); %to undo baseline subtraction from FR per epochs, so that we can subtract in a meaningful way for population PSTH
+% end
 idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.ON.group_parameter);
+idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
+idx_RF_frame=DAG_find_column_index(tuning_per_unit_table,keys.ON.RF_frame_parameter);
 group_values=tuning_per_unit_table(:,idx_group_parameter);
 group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
 cell_in_any_group=[false; ~ismember(group_values(2:end),keys.ON.group_excluded)];
@@ -37,35 +109,17 @@ if isempty(unique_group_values)
     disp('no relevant groups found');
     return;
 end
+tuning_per_unit_table=tuning_per_unit_table(cell_in_any_group,:);
+group_values=group_values(cell_in_any_group);
 complete_unit_list={population.unit_ID}';
+population=population(ismember(complete_unit_list,tuning_per_unit_table(:,idx_unitID)));
 
-%% define conditions to look at
+
 all_trialz=[population.trial];
-
-%condition_parameters  ={'type','effector','reach_hand','choice'};
-%condition_parameters  ={'reach_hand','choice','hemifield'};
-condition_parameters  ={'reach_hand','choice','perturbation'};
 per_trial.types       =[all_trialz.type];
 per_trial.effectors   =[all_trialz.effector];
-per_trial.hands       =[all_trialz.reach_hand];
-per_trial.choice      =[all_trialz.choice];
-per_trial.perturbation=[all_trialz.perturbation];
-
-
-%hemifields=unique([whatisthis.trial.hemifield]);
-%u_hemifields=[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
-u_hemifields=[-1,1]; % why does this have to be hardcoded? And what do we do with vertical targets?
 u_types     =unique(per_trial.types);
 u_effectors =unique(per_trial.effectors);
-u_hands     =unique(per_trial.hands);
-u_choice    =unique(per_trial.choice);
-u_perturbation    =unique(per_trial.perturbation);
-u_perturbation=u_perturbation(~isnan(u_perturbation));
-
-%% limit conditions key?
-u_hands     =u_hands(ismember(u_hands,keys.tt.hands));
-u_choice    =u_choice(ismember(u_choice,keys.tt.choices));
-
 all_type_effectors      = combvec(u_types,u_effectors)';
 type_effectors =[];
 
@@ -83,6 +137,60 @@ type_effector_short(~ismember(type_effector_short,keys.conditions_to_plot))=[];
 u_types     =unique(type_effectors(:,1))';
 u_effectors =unique(type_effectors(:,2))';
 
+
+%% define conditions to look at
+all_trialz=[population.trial];
+per_trial.types       =[all_trialz.type];
+per_trial.effectors   =[all_trialz.effector];
+
+tr_con=ismember([all_trialz.completed],keys.cal.completed);
+[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
+
+condition_parameters  ={'reach_hand','choice','perturbation'};
+per_trial.types       =[all_trialz.type];
+per_trial.effectors   =[all_trialz.effector];
+per_trial.hands       =[all_trialz.reach_hand];
+per_trial.choice      =[all_trialz.choice];
+per_trial.perturbation=[all_trialz.perturbation];
+per_trial.hemifield   =[whatisthis.trial.hemifield];
+per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
+per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
+
+u_hemifields=unique(per_trial.hemifield); %[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
+% 
+% u_types     =unique(per_trial.types);
+% u_effectors =unique(per_trial.effectors);
+u_hands     =unique(per_trial.hands);
+u_choice    =unique(per_trial.choice);
+u_perturbation    =unique(per_trial.perturbation);
+u_perturbation=u_perturbation(~isnan(u_perturbation));
+
+%% limit conditions key?
+if ~any(keys.tt.hands==0) % cause hands 0 is any hand
+u_hands     =u_hands(ismember(u_hands,keys.tt.hands));
+end
+u_choice    =u_choice(ismember(u_choice,keys.tt.choices));
+
+
+% reduce trials to only valid
+unit_valid=true(size(population));
+for u=1:numel(population)
+    poptr=population(u).trial;
+   valid=ismember([poptr.effector],u_effectors) & ismember([poptr.type],u_types) & ismember([poptr.choice],u_choice) & ismember([poptr.reach_hand],u_hands);
+   population(u).trial=population(u).trial(valid);
+   if sum(valid)==0
+       unit_valid(u)=false;
+   end
+end
+population=population(unit_valid);
+complete_unit_list={population.unit_ID}';
+unit_valid=ismember(tuning_per_unit_table(:,idx_unitID),complete_unit_list);
+group_values=group_values(unit_valid);
+tuning_per_unit_table=tuning_per_unit_table(unit_valid,:);
+
+[~, condition2, condition]=ph_condition_normalization(population,keys);
+
+
 condition_matrix    = combvec(u_hands,u_choice, u_perturbation,u_hemifields)';
 conditions_out      = combvec(u_effectors,u_hands,u_choice, u_perturbation)';
 conditions_hf       = combvec(u_hemifields,conditions_out')';
@@ -93,95 +201,95 @@ tr_con=ismember([all_trialz.completed],keys.cal.completed);
 [whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
 positions=unique(vertcat(whatisthis.trial.position),'rows');
 clear whatisthis
-
-%% type? (+effector?)
-for tye=1:size(type_effectors,1) %typ=unique(per_trial.types)
-    typ=type_effectors(tye,1);
-    eff=type_effectors(tye,2);
-    conditions_eff=conditions_out(conditions_out(:,1)==eff,2:end);
-    t=find(u_types==typ);
-    
-    %% here we need to work on...!!! 'in_NH_' NOT IDEAL AT ALL
-    % why do we need this at all????
-    idx_existing=DAG_find_column_index(tuning_per_unit_table,['existing_' 'in_AH_' type_effector_short{tye} '_' keys.arrangement(1:3)]);
-    tya_existing{t}= [true; ismember(vertcat(tuning_per_unit_table{2:end,idx_existing}),true)];
-    keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
-    
-    for g=1:numel(unique_group_values)
-        unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g))&tya_existing{t},idx_unitID));
-        units=find(all(unitidx,2))';
-        group(g).units=units;
-        for u=units
-            tr_con=ismember([population(u).trial.completed],keys.cal.completed);
-            [pop]=ph_arrange_positions_and_plots(keys,population(u).trial(tr_con),population(u));
-            pop=ph_LR_to_CI(keys,pop);
-            %% average PSTH per unit
-            for ce=1:size(conditions_eff,1)
-                c=find(ismember(conditions_out,[eff conditions_eff(ce,:)],'rows'));
-                clear trpar
-                
-                for par=1:numel(condition_parameters)
-                    fn=condition_parameters{par};
-                    trpar(par,:)=[pop.trial.(fn)]==conditions_eff(ce,par); %condition_matrix_wohf?
-                end
-                trpar(end+1,:)=[pop.trial.type]==typ & [pop.trial.effector]==eff;
-                tr_con=all(trpar,1);
-                per_epoch=vertcat(pop.trial(tr_con).epoch); 
-                %% why does this still contain both reaches and saccade (windows?) ???
-                
-                
-                present_epochs={per_epoch(1,:).state};                
-                DN_epoch     =find(ismember(present_epochs,keys.ON.epoch_DN));
-                
-                
-                % why hemifields independently in this piece of code? cause
-                % maybe we want to add positions...
-                for f=1:numel(u_hemifields) %hemifield (as compared to positions!
-                    trtemp=[pop.trial.hemifield]==u_hemifields(f);
-                    trials_for_SD=find(tr_con & trtemp);
-                    
-                    % epoch averages for specific conditions
-                    if any(trtemp(tr_con))
-                        group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages=...
-                            nanmean(reshape([per_epoch(trtemp(tr_con),:).FR],size(per_epoch(trtemp(tr_con),:))),1);
-                    else
-                        group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages=NaN(size(vertcat(pop.trial(1).epoch)));
-                    end
-                    
-                    %% Baseline computation .. very incomplete at this point
-                    D_baseline=1;
-                    S_baseline=0;
-                    switch keys.ON.normalization
-                        case 'per_condition'
-                            D_baseline=max([group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages(DN_epoch) 1]);
-                        case 'per_hand'
-                            D_baseline=max([group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages(DN_epoch) 1]);
-                        case 'None'
-                            D_baseline=1;
-                    end
-                    
-                    
-                    for wn=1:size(keys.PSTH_WINDOWS,1)
-                        % temporarily change window size!
-                        temp_window=keys.PSTH_WINDOWS(wn,:);
-                        keys.PSTH_WINDOWS{wn,3}=keys.PSTH_WINDOWS{wn,3}-keys.n_consecutive_bins_significant*keys.PSTH_binwidth;
-                        keys.PSTH_WINDOWS{wn,4}=keys.PSTH_WINDOWS{wn,4}+keys.n_consecutive_bins_significant*keys.PSTH_binwidth;
-                        for tr=1:numel(trials_for_SD)
-                            group(g).condition(t,c).per_hemifield(f).window(wn).unit(u).average_spike_density(tr,:)=...
-                                ph_spike_density(pop.trial(trials_for_SD(tr)),wn,keys,S_baseline,D_baseline);
-                        end
-                        if isempty(trials_for_SD)
-                            group(g).condition(t,c).per_hemifield(f).window(wn).unit(u).average_spike_density(1,:)=...
-                                NaN(size(ph_spike_density(pop.trial(1),wn,keys,S_baseline,D_baseline)));
-                        end
-                        keys.PSTH_WINDOWS(wn,:)=temp_window;
-                    end
-                end
-            end
-        end
-    end
-end
-%end
+% 
+% %% type? (+effector?)
+% for tye=1:size(type_effectors,1) %typ=unique(per_trial.types)
+%     typ=type_effectors(tye,1);
+%     eff=type_effectors(tye,2);
+%     conditions_eff=conditions_out(conditions_out(:,1)==eff,2:end);
+%     t=find(u_types==typ);
+%     
+%     %% here we need to work on...!!! 'in_NH_' NOT IDEAL AT ALL
+%     % why do we need this at all????
+%     idx_existing=DAG_find_column_index(tuning_per_unit_table,['existing_' 'in_AH_' type_effector_short{tye} '_' keys.arrangement(1:3)]);
+%     tya_existing{t}= [true; ismember(vertcat(tuning_per_unit_table{2:end,idx_existing}),true)];
+%     keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+%     
+%     for g=1:numel(unique_group_values)
+%         unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g))&tya_existing{t},idx_unitID));
+%         units=find(all(unitidx,2))';
+%         group(g).units=units;
+%         for u=units
+%             tr_con=ismember([population(u).trial.completed],keys.cal.completed);
+%             [pop]=ph_arrange_positions_and_plots(keys,population(u).trial(tr_con),population(u));
+%             pop=ph_LR_to_CI(keys,pop);
+%             %% average PSTH per unit
+%             for ce=1:size(conditions_eff,1)
+%                 c=find(ismember(conditions_out,[eff conditions_eff(ce,:)],'rows'));
+%                 clear trpar
+%                 
+%                 for par=1:numel(condition_parameters)
+%                     fn=condition_parameters{par};
+%                     trpar(par,:)=[pop.trial.(fn)]==conditions_eff(ce,par); %condition_matrix_wohf?
+%                 end
+%                 trpar(end+1,:)=[pop.trial.type]==typ & [pop.trial.effector]==eff;
+%                 tr_con=all(trpar,1);
+%                 per_epoch=vertcat(pop.trial(tr_con).epoch); 
+%                 %% why does this still contain both reaches and saccade (windows?) ???
+%                 
+%                 
+%                 present_epochs={per_epoch(1,:).state};                
+%                 DN_epoch     =find(ismember(present_epochs,keys.ON.epoch_DN));
+%                 
+%                 
+%                 % why hemifields independently in this piece of code? cause
+%                 % maybe we want to add positions...
+%                 for f=1:numel(u_hemifields) %hemifield (as compared to positions!
+%                     trtemp=[pop.trial.hemifield]==u_hemifields(f);
+%                     trials_for_SD=find(tr_con & trtemp);
+%                     
+%                     % epoch averages for specific conditions
+%                     if any(trtemp(tr_con))
+%                         group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages=...
+%                             nanmean(reshape([per_epoch(trtemp(tr_con),:).FR],size(per_epoch(trtemp(tr_con),:))),1);
+%                     else
+%                         group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages=NaN(size(vertcat(pop.trial(1).epoch)));
+%                     end
+%                     
+%                     %% Baseline computation .. very incomplete at this point
+%                     D_baseline=1;
+%                     S_baseline=0;
+%                     switch keys.ON.normalization
+%                         case 'per_condition'
+%                             D_baseline=max([group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages(DN_epoch) 1]);
+%                         case 'per_hand'
+%                             D_baseline=max([group(g).condition(t,c).per_hemifield(f).unit(u).epoch_averages(DN_epoch) 1]);
+%                         case 'None'
+%                             D_baseline=1;
+%                     end
+%                     
+%                     
+%                     for wn=1:size(keys.PSTH_WINDOWS,1)
+%                         % temporarily change window size!
+%                         temp_window=keys.PSTH_WINDOWS(wn,:);
+%                         keys.PSTH_WINDOWS{wn,3}=keys.PSTH_WINDOWS{wn,3}-keys.n_consecutive_bins_significant*keys.PSTH_binwidth;
+%                         keys.PSTH_WINDOWS{wn,4}=keys.PSTH_WINDOWS{wn,4}+keys.n_consecutive_bins_significant*keys.PSTH_binwidth;
+%                         for tr=1:numel(trials_for_SD)
+%                             group(g).condition(t,c).per_hemifield(f).window(wn).unit(u).average_spike_density(tr,:)=...
+%                                 ph_spike_density(pop.trial(trials_for_SD(tr)),wn,keys,S_baseline,D_baseline);
+%                         end
+%                         if isempty(trials_for_SD)
+%                             group(g).condition(t,c).per_hemifield(f).window(wn).unit(u).average_spike_density(1,:)=...
+%                                 NaN(size(ph_spike_density(pop.trial(1),wn,keys,S_baseline,D_baseline)));
+%                         end
+%                         keys.PSTH_WINDOWS(wn,:)=temp_window;
+%                     end
+%                 end
+%             end
+%         end
+%     end
+% end
+% %end
 
 %% condition comparison
 comparisons=keys.ON.comparisons_per_effector;
@@ -190,13 +298,16 @@ condition_parameters_comparissons = [{'hemifield'} {'effector'} condition_parame
 % comparisons_per_effector is misleading, because effector comparison is
 % possible as well
 for g=1:numel(unique_group_values)
-    condition=group(g).condition;
+%     condition=group(g).condition;
     for t=1:size(condition,1)
         typ=u_types(t); %u_types(mod(t-1,numel(u_types))+1);
         current=[condition(t,:).per_hemifield];
         current_unit=vertcat(current.unit);
         current_window=vertcat(current.window);
-        unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)) & tya_existing{t},idx_unitID));
+%     % why do we need this at all????
+%     idx_existing=DAG_find_column_index(tuning_per_unit_table,['existing_' 'in_AH_' type_effector_short{tye} '_' keys.arrangement(1:3)]);
+%     tya_existing{t}= [true; ismember(vertcat(tuning_per_unit_table{2:end,idx_existing}),true)];
+        unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
         units=find(all(unitidx,2));
         for comp=1:numel(comparisons)
             
@@ -279,7 +390,7 @@ end
 for t=1:numel(sigbins)
     typ=u_types(mod(t-1,numel(u_types))+1);
     for g=1:numel(unique_group_values)
-        N_total=numel(group(g).units);
+        N_total=sum(ismember(group_values,unique_group_values{g}));
         current=[sigbins(t).per_group(g)];
         
         fig_title=sprintf('Selection: %s %s %s hnd %s ch %s %s, %s = %s N=%s ',...
