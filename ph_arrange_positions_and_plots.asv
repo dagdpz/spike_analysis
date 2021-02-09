@@ -52,6 +52,7 @@ effectors               =[o.effector]';
 perturbations_orig      =[o.perturbation]';
 
 
+all_tar_pos
 % KK distractor task
 %1. Nb of stimuli -> 2 or 3
 Settings.TaskParameter.target_color_dim                    = [128,0,0];
