@@ -52,7 +52,6 @@ effectors               =[o.effector]';
 perturbations_orig      =[o.perturbation]';
 
 
-all_tar_pos
 % KK distractor task
 %1. Nb of stimuli -> 2 or 3
 Settings.TaskParameter.target_color_dim                    = [128,0,0];
@@ -64,10 +63,12 @@ num_distr_per_trial = cellfun(@(x) sum(~ismember(x,Settings.TaskParameter.fixati
 StimulusType = sum([num_targets_per_trial; num_distr_per_trial] );
 
 trial_cond.single_targ = find(num_targets_per_trial == 1 & num_distr_per_trial == 0); % target only trials
+trial_cond.single_distr = find(num_targets_per_trial == 0 & num_distr_per_trial == 1 ); % distr only trials
 
 trial_cond.targ_targ_2HF = find(num_targets_per_trial == 2 & x_pos1HF_stimuli' == 3); % target-target trials
           
 %% distractor_color
+distr_color_per_trial = cellfun(@(x) x(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows'),:),{o.col_dim},'UniformOutput',0);
 
         
             if isequal(Settings.TaskParameter.analyze_distr_colors,'any')
@@ -78,8 +79,8 @@ trial_cond.targ_targ_2HF = find(num_targets_per_trial == 2 & x_pos1HF_stimuli' =
             distr_colors_all = [NaN,NaN,NaN];
             idx = 1;
             distr_ID = 0;
-            distractors = nan(num_distr_colors2ana,OSt(u).num_trials_task);
-            for trial_no = 1:OSt(u).num_trials_task
+            distractors = nan(num_distr_colors2ana, size([o.n],2));
+            for trial_no = 1:size([o.n],2)
                 curr_distr_colors = distr_color_per_trial{trial_no};
                 if size(distr_color_per_trial{trial_no},1) > 1
                     if ~isequal(curr_distr_colors(1,:),curr_distr_colors(2,:));
@@ -113,10 +114,16 @@ trial_cond.targ_targ_2HF = find(num_targets_per_trial == 2 & x_pos1HF_stimuli' =
             [G_R_ratio_sorted,ind]     = sort(G_R_ratio);
             distr_colors2ana_sorted    = distr_colors2ana(ind,:);
             distractor_color           = distractors(ind,:); % indices for each distractor color(rows) in each trial (columns)
-            
-trial_cond.single_distr_Difficult = find(num_targets_per_trial == 0 & num_distr_per_trial == 1 & isnan(distractor_color(2,:)')); % distr only trials
 
-distr_color_per_trial = cellfun(@(x) x(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows'),:),{o.col_dim},'UniformOutput',0);
+            %% Each row contains one Difficulty level (0 = only target, 1 = Easiest to X = Most difficult)
+            disp('Hier stimmt etwas nicht')
+            AllDifficulties= [];
+for i_diff = 1: length(ind)
+Difficulty = isnan(distractor_color( i_diff ,:)); % distr only trials
+AllDifficulties = [AllDifficulties; Difficulty]; 
+end
+
+
 red_targets_per_trial = cellfun(@(x) find(ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
 distr_per_trial = cellfun(@(x) find(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
 fix_per_trial = cellfun(@(x) find(ismember(x,Settings.TaskParameter.fixation_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
@@ -220,6 +227,15 @@ fixation_per_trial      = fix_val;
 
 %% specifics
 switch keys.arrangement 
+        case 'StimulusType_Difficulty_Position'
+     fig_title               = '';
+     con_for_figure          = hnd_idx;
+     val_for_figure          = {shp_values};
+
+     con_for_line            = suc_idx;
+     position_indexes        = cue_idx;
+     sub_title               = 'cue position';   
+
     case 'success_in_cue'
         con_for_line            = suc_idx;
         con_for_trial_crit      = con_for_line;

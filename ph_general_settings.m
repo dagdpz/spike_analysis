@@ -1,4 +1,4 @@
-% function keys=ph_general_settings(project,keys)
+function keys=ph_general_settings(project,keys)
 %% condition_identifiers
 keys.labels.handsLR={'AH','LH','RH'};
 keys.labels.handsIC={'AH','IH','CH'};  %% AH!??
