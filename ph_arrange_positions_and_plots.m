@@ -30,12 +30,14 @@ fix_val=displacement_types(:,1:2);
 tar_val=displacement_types(:,3:4);
 cue_val=displacement_types(:,5:6);
 mov_val=displacement_types(:,3:4) - displacement_types(:,1:2);
+stm_val=displacement_types(:,7:8);
 
-all_idx=displacement_types(:,7);
-fix_idx=displacement_types(:,8);
-mov_idx=displacement_types(:,9);
-tar_idx=displacement_types(:,10);
-cue_idx=displacement_types(:,11);
+all_idx=displacement_types(:,8);
+fix_idx=displacement_types(:,9);
+mov_idx=displacement_types(:,10);
+tar_idx=displacement_types(:,11);
+cue_idx=displacement_types(:,12);
+stm_idx=displacement_types(:,14);
 non_idx=ones(size(displacement_types,1),1);
 
 [~,u_all_idx_idx]=unique(all_idx);
@@ -43,6 +45,7 @@ non_idx=ones(size(displacement_types,1),1);
 [~,u_tar_idx_idx]=unique(tar_idx);
 [~,u_cue_idx_idx]=unique(cue_idx);
 [~,u_mov_idx_idx]=unique(mov_idx);
+[~,u_stm_idx_idx]=unique(stm_idx);
 
 choices                 =[o.choice]';
 hands                   =[o.reach_hand]';
@@ -183,7 +186,7 @@ end
 [cho_ptb_values,~,chp_idx]  =unique([choices perturbations],'rows');
 
 
-[diff_values,~,diff_idx]      =unique(difficulty);
+[diff_values,~,diff_idx]      =unique(difficulty+3*success');
 [Styp_values,~,Styp_idx]      =unique(StimulusType);
 
 
@@ -248,14 +251,15 @@ switch keys.arrangement
      val_for_figure          = {Styp_values};
 
      con_for_line            = diff_idx';
-     pop.line_labels        =   {'Diff','Easy','Tar'};
+     pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
 
-     position_indexes        = tar_idx;
-     val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
-     val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
-     sub_title               = 'tar position';   
-     pop.PSTH_perpos_colors =   [1 0 0; 0 1 0; 0 1 0];
+     position_indexes        = stm_idx;
+     val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+     val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+     sub_title               = 'stimulus position';   
+     pop.PSTH_perpos_colors =   [autumn(5);winter(5)] ;
      pop.PSTH_summary_colors=   [autumn(5);winter(5)] ;
+    hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
      con_for_trial_crit      = con_for_line;
 
     case 'success_in_cue'
@@ -427,19 +431,23 @@ movement_direction  =NaN(size(trial'));
 fixation            =NaN(size(trial'));
 target              =NaN(size(trial'));
 cuepos              =NaN(size(trial'));
-%distractor          =NaN(size(trial'));
+stmpos              =NaN(size(trial'));
 
-% give the position for tar2, tar3 distractor position
-%trial.dis_pos
-
-%trial.tar2_pos = trial.all_tar_pos(1)
-%trial.tar3_pos = trial.all_tar_pos(1)
+for t=1:numel(trial)
+    allpos=trial(t).all_tar_pos;
+    correct_tar=trial(t).correct_targets;
+    correct_pos=allpos(correct_tar);
+    if correct_pos==0 %% distractor only or double_distractor
+        correct_pos=allpos(allpos~=0);
+    end
+    trial(t).stm_pos=correct_pos(1);
+end
 
 s_a=unique_positions([trial.fix_pos],Precision);
 s_b=unique_positions([trial.tar_pos] - [trial.fix_pos],Precision);
 s_c=unique_positions([trial.tar_pos],Precision);
 s_d=unique_positions([trial.cue_pos],Precision);
-%s_e=unique_positions([trial.dis_pos],Precision);
+s_e=unique_positions([trial.stm_pos],Precision);
 
 for t=1:numel(trial)
     for k=1:numel(s_a)
@@ -461,13 +469,12 @@ for t=1:numel(trial)
         if abs(trial(t).cue_pos - s_d(k)) < Precision
             cuepos(t)=s_d(k);
         end
+    end    
+    for k=1:numel(s_e)
+        if abs(trial(t).stm_pos - s_e(k)) < Precision
+            stmpos(t)=s_e(k);
+        end
     end
-    
-%     for k=1:numel(s_e)
-%         if abs(trial(t).dis_pos - s_e(k)) < Precision
-%             dispos(t)=s_d(k);
-%         end
-%     end
 end
 
 [~,~,unique_condition]      =unique([real(fixation),imag(fixation),real(target),imag(target)],'rows');
@@ -475,17 +482,17 @@ end
 [~,~,movement_direction]    =unique([real(movement_direction),imag(movement_direction)],'rows');
 [~,~,target_location]       =unique([real(target),imag(target)],'rows');
 [~,~,cue_location]          =unique([real(cuepos),imag(cuepos)],'rows');
-%[~,~,distractor_location]       =unique([real(distractor),imag(distractor)],'rows');
+[~,~,stimulus_location]       =unique([real(stmpos),imag(stmpos)],'rows');
 
 fix_y=imag(nanmean(fixation));
 fixation=fixation-1i*fix_y;
 target=target-1i*fix_y;
 
-displacement_types=[real(fixation) imag(fixation) real(target) imag(target) real(cuepos) imag(cuepos), ...
-    unique_condition fixation_location movement_direction target_location, cue_location]; % real(distractor) imag(distractor)
+displacement_types=[real(fixation) imag(fixation) real(target) imag(target) real(cuepos) imag(cuepos), real(stmpos) imag(stmpos),...
+    unique_condition fixation_location movement_direction target_location, cue_location, stimulus_location]; % 
 
 if numel(trial)==0
-    displacement_types=NaN(1,12);
+    displacement_types=NaN(1,14);
 end
 end
 
