@@ -52,7 +52,7 @@ effectors               =[o.effector]';
 perturbations_orig      =[o.perturbation]';
 
 
-% KK distractor task
+%% KK distractor task - define new index
 %1. Nb of stimuli -> 2 or 3
 Settings.TaskParameter.target_color_dim                    = [128,0,0];
 Settings.TaskParameter.fixation_color_dim                  = [60,60,60];
@@ -65,9 +65,9 @@ StimulusType = sum([num_targets_per_trial; num_distr_per_trial] );
 trial_cond.single_targ = find(num_targets_per_trial == 1 & num_distr_per_trial == 0); % target only trials
 trial_cond.single_distr = find(num_targets_per_trial == 0 & num_distr_per_trial == 1 ); % distr only trials
 
-trial_cond.targ_targ_2HF = find(num_targets_per_trial == 2 & x_pos1HF_stimuli' == 3); % target-target trials
+%trial_cond.targ_targ_2HF = find(num_targets_per_trial == 2 & x_pos1HF_stimuli' == 3); % target-target trials
           
-%% distractor_color
+% distractor_color
 distr_color_per_trial = cellfun(@(x) x(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows'),:),{o.col_dim},'UniformOutput',0);
 
         
@@ -116,33 +116,41 @@ distr_color_per_trial = cellfun(@(x) x(~ismember(x,Settings.TaskParameter.fixati
             distractor_color           = distractors(ind,:); % indices for each distractor color(rows) in each trial (columns)
 
             %% Each row contains one Difficulty level (0 = only target, 1 = Easiest to X = Most difficult)
-            disp('Hier stimmt etwas nicht')
-            AllDifficulties= [];
+            AllDifficulties= distractor_color;difficulty= [];
 for i_diff = 1: length(ind)
-Difficulty = isnan(distractor_color( i_diff ,:)); % distr only trials
-AllDifficulties = [AllDifficulties; Difficulty]; 
+AllDifficulties(i_diff, ~isnan(distractor_color( i_diff ,:))) = i_diff ; 
+AllDifficulties(i_diff, isnan(distractor_color( i_diff ,:))) = 0;  % distr only trials
 end
+AllDifficulties(i_diff +1, sum(AllDifficulties,1 ) == 0) = i_diff +1; 
+difficulty = sum(AllDifficulties, 1); 
 
 
-red_targets_per_trial = cellfun(@(x) find(ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
-distr_per_trial = cellfun(@(x) find(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
-fix_per_trial = cellfun(@(x) find(ismember(x,Settings.TaskParameter.fixation_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
-
-
-red_targets_per_trial_empty = cellfun(@(x) isempty(x),red_targets_per_trial,'UniformOutput',1);            
-two_red_targets_per_trial = cellfun(@(x) isequal(size(x,1),2),red_targets_per_trial,'UniformOutput',1);
-two_distr_per_trial = cellfun(@(x) isequal(size(x,1),2),distr_per_trial,'UniformOutput',1);
-
-correct_target_per_trial = red_targets_per_trial;
-correct_target_per_trial(red_targets_per_trial_empty) = fix_per_trial(red_targets_per_trial_empty);
-            
-red_targ_or_distr_per_trial = red_targets_per_trial; %sgl stimuli
-red_targ_or_distr_per_trial(red_targets_per_trial_empty) = distr_per_trial(red_targets_per_trial_empty);
-non_fix_stimuli_per_trial = red_targ_or_distr_per_trial; % also includes targ_targ and distr_distr trials
-red_targ_or_distr_per_trial(two_red_targets_per_trial) = {[]};
-red_targ_or_distr_per_trial(two_distr_per_trial) = {[]}; % contains indices of the target (if present and only if it is a single target or a target-distractor trial)
-            
+% 
+% red_targets_per_trial = cellfun(@(x) find(ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
+% distr_per_trial = cellfun(@(x) find(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
+% fix_per_trial = cellfun(@(x) find(ismember(x,Settings.TaskParameter.fixation_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
+% 
+% 
+% red_targets_per_trial_empty = cellfun(@(x) isempty(x),red_targets_per_trial,'UniformOutput',1);            
+% two_red_targets_per_trial = cellfun(@(x) isequal(size(x,1),2),red_targets_per_trial,'UniformOutput',1);
+% two_distr_per_trial = cellfun(@(x) isequal(size(x,1),2),distr_per_trial,'UniformOutput',1);
+% 
+% correct_target_per_trial = red_targets_per_trial;
+% correct_target_per_trial(red_targets_per_trial_empty) = fix_per_trial(red_targets_per_trial_empty);
+%             
+% red_targ_or_distr_per_trial = red_targets_per_trial; %sgl stimuli
+% red_targ_or_distr_per_trial(red_targets_per_trial_empty) = distr_per_trial(red_targets_per_trial_empty);
+% non_fix_stimuli_per_trial = red_targ_or_distr_per_trial; % also includes targ_targ and distr_distr trials
+% red_targ_or_distr_per_trial(two_red_targets_per_trial) = {[]};
+% red_targ_or_distr_per_trial(two_distr_per_trial) = {[]}; % contains indices of the target (if present and only if it is a single target or a target-distractor trial)
+%             
 target_selected      =[o.target_selected]'; %Which target selected
+
+
+
+
+
+
 %% perturbation (painful, because its either in groups - for analysis, or by block (actuallz original perturbation value from table) - for single cell plotting
 perturbations=zeros(size(perturbations_orig));
 unique_perturbations_temp=unique(perturbations_orig);
@@ -173,6 +181,13 @@ end
 [hnd_blo_values,~,hbl_idx]  =unique([hands blocks],'rows');
 [hnd_eff_values,~,hef_idx]  =unique([hands effectors],'rows');
 [cho_ptb_values,~,chp_idx]  =unique([choices perturbations],'rows');
+
+
+[diff_values,~,diff_idx]      =unique(difficulty);
+[Styp_values,~,Styp_idx]      =unique(StimulusType);
+
+
+
 
 %% labels
 hand_labels         ={'NH','NH CH','LH','LH CH','RH','RH CH'};
@@ -228,18 +243,20 @@ fixation_per_trial      = fix_val;
 %% specifics
 switch keys.arrangement 
         case 'StimulusType_Difficulty_Position'
-     fig_title               = '';
-     con_for_figure          = hnd_idx;
-     val_for_figure          = {shp_values};
+     fig_title               = 'StimulusType_Difficulty_Position';
+     con_for_figure          = Styp_idx';
+     val_for_figure          = {Styp_values};
 
-     con_for_line            = suc_idx;
-     pop.line_labels        =   {'err','suc'};
+     con_for_line            = diff_idx';
+     pop.line_labels        =   {'Diff','Easy','Tar'};
 
-     position_indexes        = cue_idx;
-     val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
-     sub_title               = 'cue position';   
-     pop.PSTH_perpos_colors =   [1 0 0; 0 1 0];
-     pop.PSTH_summary_colors=   [1 0 0; 1 1 0; 0 1 0; 0 1 1];
+     position_indexes        = tar_idx;
+     val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
+     sub_title               = 'tar position';   
+     pop.PSTH_perpos_colors =   [1 0 0; 0 1 0; 0 1 0];
+     pop.PSTH_summary_colors=   [autumn(5);winter(5)] ;
+     con_for_trial_crit      = con_for_line;
+
     case 'success_in_cue'
         con_for_line            = suc_idx;
         con_for_trial_crit      = con_for_line;
