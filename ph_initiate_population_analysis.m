@@ -28,6 +28,8 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     if keys.batching.combine_monkeys
         keys.batching.monkeys={''};
     end    
+    keys=ph_make_subfolder('version_log',keys);
+    save([keys.basepath_to_save keys.project_version filesep 'version_log' filesep datestr(clock,'YYYYmmDD-HHMM')],'keys');
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
         keys.anova_table_file=[keys.basepath_to_save keys.project_version filesep 'tuning_table_combined_CI.mat'];
@@ -80,7 +82,6 @@ for P=population_analysis_to_perform
         keys.(AN).epoch_DN='INI';
         keys.(AN).epoch_RF='INI';
         keys.(AN).fittypes={'sigmoidal','linear','gaussian1'}; %,'gaussian2' %,'linear'
-                
         keys.(AN).FR_subtract_baseline=0;
         keys.(AN).baseline_per_trial=0;
         keys.(AN).normalization='none'; 
@@ -91,20 +92,14 @@ for P=population_analysis_to_perform
         keys.(AN).plot_posneg=0;
         keys.(AN).y_lim=[]; 
         keys.(AN).link_y_lim=1; 
-        
         keys.(AN).IC_to_plot='in';
         keys.(AN).fontsize_factor=1.5;
-        
-        
         keys.(AN).split_SUs={''};
         keys.(AN).RF_frame_colors                 	= {};
         keys.(AN).RF_frame_entries                 	= {};
         keys.(AN).RF_frame_parameter                = '';
         keys.(AN).RF_columns                        = [];
         keys.(AN).RF_rows                           = [];
-        
-        
-        
         
         %% key asignment
         FN=fieldnames(keys_in.(ana)(cc));
@@ -159,13 +154,13 @@ for P=population_analysis_to_perform
                 switch ana
                     case 'ons'
                         keys=ph_make_subfolder('response timing',keys);
-                        ph_population_response_timing_tmp(population,keys);
+                        ph_population_response_timing(population,keys);
                     case 'beh'
                         keys=ph_make_subfolder('behavior',keys);
                         ph_ephys_behavior(keys);
                     case 'pop'
                         keys=ph_make_subfolder('population_analysis',keys);
-                        ph_population_PSTHs_tmp(population,keys);
+                        ph_population_PSTHs(population,keys);
                     case 'sct'
                         keys=ph_make_subfolder('scatter',keys);
                         ph_scatter(keys);
@@ -194,7 +189,6 @@ for P=population_analysis_to_perform
                         keys=ph_make_subfolder('classification',keys);
                         ph_classification(population,keys); 
                     case 'hst'
-                        
                         keys=ph_make_subfolder('hand_space',keys);
                         temp_epochs=keys.(AN).epochs;
                         keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{:});

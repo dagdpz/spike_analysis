@@ -20,8 +20,6 @@ if nargin < 5,
 end
 project=keys.project;
 version=keys.project_version;
-% for v=1:numel(versions)
-%     version=versions{v};
 fromdir=['Y:\Projects\' project '\ephys\' version '\single_cell_examples'];
 todir=['Y:\Projects\' project '\ephys\' version '\' keys.CP.foldername];
 save([todir '\list'],'example_list')
@@ -46,14 +44,6 @@ for ex=1:numel(example_list)
 end
 k = k - 1;
 
-% 
-% if ~isdir(todir),
-%     [success,message] = mkdir(todir);
-%     if ~success,
-%         disp(message);
-%         return;
-%     end
-% end
 success=1;
 for f=1:k,
     if remove_original,
@@ -70,8 +60,5 @@ end
 if success,
     fprintf('Copied %d files from %s to %s\n',k,fromdir,todir);
 end
-%     end
-% end
-
 
 end

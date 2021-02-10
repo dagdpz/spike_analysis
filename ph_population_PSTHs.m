@@ -29,25 +29,17 @@ keys.line_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.
     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;...
     [cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
     cols.NH_VS_IN;cols.NH_VS_CH;cols.IH_VS_IN;cols.IH_VS_CH;cols.CH_VS_IN;cols.CH_VS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/610]; %%temporary for inactivation
+    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/510]; %%temporary for inactivation
 keys.pref_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;...
     [cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/610]; %%temporary for inactivation
+    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/510]; %%temporary for inactivation
 keys.pos_colors=[[cols.NH_IN;cols.NH_CH;cols.IH_IN;cols.IH_CH;cols.CH_IN;cols.CH_CH]/255;...
-    [cols.NH_IN;cols.NH_CH;cols.IH_IN;cols.IH_CH;cols.CH_IN;cols.CH_CH]/610]; %%temporary for inactivation
+    [cols.NH_IN;cols.NH_CH;cols.IH_IN;cols.IH_CH;cols.CH_IN;cols.CH_CH]/510]; %%temporary for inactivation
 
 %% tuning table preparation and grouping
 [tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
 [tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
-if keys.PO.FR_subtract_baseline || keys.cal.divide_baseline_for_ANOVA
-    if keys.PO.FR_subtract_baseline 
-    Sel_for_title =[Sel_for_title,{'base';'=';keys.PO.epoch_BL;', '}];
-    end
-    keys.FR_subtract_baseline=0;
-    keys.cal.divide_baseline_for_ANOVA=0;
-    population=ph_epochs(population,keys); %to undo baseline subtraction from FR per epochs, so that we can subtract in a meaningful way for population PSTH
-end
 idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.PO.group_parameter);
 idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 idx_RF_frame=DAG_find_column_index(tuning_per_unit_table,keys.PO.RF_frame_parameter);
@@ -59,84 +51,18 @@ if isempty(unique_group_values)
     disp('no relevant groups found');
     return;
 end
+tuning_per_unit_table=tuning_per_unit_table(cell_in_any_group,:);
+group_values=group_values(cell_in_any_group);
 complete_unit_list={population.unit_ID}';
-
-%% markers for different monkeys and colors for different grid holes
-idx_grid_x=DAG_find_column_index(tuning_per_unit_table,'grid_x');
-idx_grid_y=DAG_find_column_index(tuning_per_unit_table,'grid_y');
-idx_grid_z=DAG_find_column_index(tuning_per_unit_table,'electrode_depth');
-
-monkey_markers={};
-for m=1:numel(keys.batching.monkeys)
-    if isfield(keys,keys.batching.monkeys{m})
-        monkey_markers=[monkey_markers keys.(keys.batching.monkeys{m}).marker];
-    else
-        monkey_markers=[monkey_markers 'o'];
-    end
-end
-gridhole_colors={[70 0 0;255 0 0],[0 70 0;0 255 0],[0 70 70; 0 255 255],[70 70 0; 255 255 0]};
+population=population(ismember(complete_unit_list,tuning_per_unit_table(:,idx_unitID)));
+%complete_unit_list={population.unit_ID}';
 
 
-monkey_per_cell=cellfun(@(x) x(1:3),tuning_per_unit_table(:,idx_unitID),'uniformoutput',false);
-[unique_monkeys]=unique(monkey_per_cell(2:end));
-for m=1:numel(unique_monkeys)
-    idx_m=cell_in_any_group&ismember(monkey_per_cell,unique_monkeys(m));
-    [unique_grid2_values{m}]=unique(cell2mat([tuning_per_unit_table(idx_m,idx_grid_x), tuning_per_unit_table(idx_m,idx_grid_y)]),'rows');
-    
-    if ~isempty(unique_grid2_values{m})
-        unique_gridx_values{m}=[unique_grid2_values{m}(:,1)];
-        unique_gridy_values{m}=[unique_grid2_values{m}(:,2)];
-        
-        %electrode_depth_range{m}=[min([tuning_per_unit_table{idx_m,idx_grid_z}]) max([tuning_per_unit_table{idx_m,idx_grid_z}])];
-        for gh=1:numel(unique_gridx_values{m})
-            idx_g=[false; ismember([tuning_per_unit_table{2:end,idx_grid_x}],unique_gridx_values{m}(gh))' & ismember([tuning_per_unit_table{2:end,idx_grid_y}],unique_gridy_values{m}(gh) )'];
-            electrode_depth_range{m}{gh}=[min([tuning_per_unit_table{idx_m & idx_g,idx_grid_z}]) max([tuning_per_unit_table{idx_m & idx_g,idx_grid_z}])];
-        end
-    end
-end
-
-%% gaussian fit settings
-fitsettings.sd_max_x=12;
-fitsettings.sd_x_min_ratio=0.125;%0.125;
-fitsettings.sd_max_y=fitsettings.sd_max_x;
-fitsettings.sd_xy_min_ratio=0.25;
-fitsettings.sd_xy_max_ratio=1;
-fitsettings.sd_y_min_ratio=fitsettings.sd_x_min_ratio;
-fitsettings.xout=[-30:30]; % range for gaussian fit
-fitsettings.yout=[-15:15];
-fitsettings.range_factor=1;
-fitsettings.fittypes=keys.PO.fittypes;
-
-%% define conditions to look at
 all_trialz=[population.trial];
-tr_con=ismember([all_trialz.completed],keys.cal.completed);
-[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
-
-condition_parameters  ={'reach_hand','choice','perturbation'};
 per_trial.types       =[all_trialz.type];
 per_trial.effectors   =[all_trialz.effector];
-per_trial.hands       =[all_trialz.reach_hand];
-per_trial.choice      =[all_trialz.choice];
-per_trial.perturbation=[all_trialz.perturbation];
-per_trial.hemifield   =[whatisthis.trial.hemifield];
-per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
-per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
-
-u_hemifields=unique(per_trial.hemifield); %[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
-
 u_types     =unique(per_trial.types);
 u_effectors =unique(per_trial.effectors);
-u_hands     =unique(per_trial.hands);
-u_choice    =unique(per_trial.choice);
-u_perturbation    =unique(per_trial.perturbation);
-u_perturbation=u_perturbation(~isnan(u_perturbation));
-
-%% limit conditions key?
-if ~any(keys.tt.hands==0) % cause hands 0 is any hand
-u_hands     =u_hands(ismember(u_hands,keys.tt.hands));
-end
-u_choice    =u_choice(ismember(u_choice,keys.tt.choices));
-
 all_type_effectors      = combvec(u_types,u_effectors)';
 type_effectors =[];
 
@@ -153,6 +79,54 @@ end
 type_effector_short(~ismember(type_effector_short,keys.conditions_to_plot))=[];
 u_types     =unique(type_effectors(:,1))';
 u_effectors =unique(type_effectors(:,2))';
+
+
+%% define conditions to look at
+all_trialz=[population.trial];
+per_trial.types       =[all_trialz.type];
+per_trial.effectors   =[all_trialz.effector];
+
+tr_con=ismember([all_trialz.completed],keys.cal.completed);
+[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
+
+condition_parameters  ={'reach_hand','choice','perturbation'};
+per_trial.types       =[all_trialz.type];
+per_trial.effectors   =[all_trialz.effector];
+per_trial.hands       =[all_trialz.reach_hand];
+per_trial.choice      =[all_trialz.choice];
+per_trial.perturbation=[all_trialz.perturbation];
+per_trial.hemifield   =[whatisthis.trial.hemifield];
+per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
+per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
+
+u_hemifields=unique(per_trial.hemifield); %[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
+
+u_hands     =unique(per_trial.hands);
+u_choice    =unique(per_trial.choice);
+u_perturbation    =unique(per_trial.perturbation);
+u_perturbation=u_perturbation(~isnan(u_perturbation));
+
+%% limit conditions key?
+if ~any(keys.tt.hands==0) % cause hands 0 is any hand
+    u_hands     =u_hands(ismember(u_hands,keys.tt.hands));
+end
+u_choice    =u_choice(ismember(u_choice,keys.tt.choices));
+
+% reduce trials to only valid
+unit_valid=true(size(population));
+for u=1:numel(population)
+    poptr=population(u).trial;
+    valid=ismember([poptr.effector],u_effectors) & ismember([poptr.type],u_types) & ismember([poptr.choice],u_choice) & ismember([poptr.reach_hand],u_hands);
+    population(u).trial=population(u).trial(valid);
+    if sum(valid)==0
+        unit_valid(u)=false;
+    end
+end
+population=population(unit_valid);
+complete_unit_list={population.unit_ID}';
+unit_valid=ismember(tuning_per_unit_table(:,idx_unitID),complete_unit_list);
+group_values=group_values(unit_valid);
+tuning_per_unit_table=tuning_per_unit_table(unit_valid,:);
 
 condition_matrix            = combvec(u_hands,u_choice, u_perturbation,u_hemifields)';
 conditions_out              = combvec(u_effectors,u_hands,u_choice, u_perturbation)';
@@ -186,300 +160,10 @@ end
 
 %% finding positions and fixations
 positions=unique(vertcat(whatisthis.trial.position),'rows');
+keys.normalization_field='PO';
+[~, condition,~,pref_valid]=ph_condition_normalization(population,keys);
 
-%adjust fixations... should be done inside ph_arrange_positions_and_plots
-%!?
-fixations_temp=unique(vertcat(whatisthis.trial.fixation),'rows');
-fix_temp_idx=true(size(fixations_temp,1),1);
-for x=1:size(fixations_temp,1)-1
-    if any(all(abs(bsxfun(@minus,fixations_temp(x+1:end,:),fixations_temp(x,:)))<4,2)) %% precision....
-        fix_temp_idx(x)=false;
-    end
-end
-fixations=fixations_temp(fix_temp_idx,:);
-clear whatisthis
-
-%% Convert to ipsi/contra, Baseline subtraction, normalization, re-ordering, and gaussian RFs
-for tye=1:size(type_effectors,1)
-    typ=type_effectors(tye,1);
-    eff=type_effectors(tye,2);
-    conditions_eff=conditions_out(conditions_out(:,1)==eff,2:end);
-    t=find(u_types==typ);
-    e=find(u_effectors==eff);
-    keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
-    
-    % find epochs... here is still a problem, especially next line
-    if ~isfield(keys.PO,'epoch_GB')
-        keys.PO.epoch_GB=[keys.ANOVAS_PER_TYPE(typ).epoch{strcmp(keys.ANOVAS_PER_TYPE(typ).epoch(:,2),keys.PO.epoch_RF),1}]; %% gaussian baseline depends on the epoch for resposne field
-    end
-    if isempty(keys.PO.epoch_GB); keys.PO.epoch_GB={''}; end
-    
-    pref_valid(t,:)=zeros(size(complete_unit_list,1),1);
-    norm_factor=NaN(size(complete_unit_list,1),size(condition_matrix,1));
-    for g=1:numel(unique_group_values)
-        unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
-        units=find(all(unitidx,2))';
-        for u=units
-            tr_con=ismember([population(u).trial.completed],keys.cal.completed) & [population(u).trial.accepted];
-            [pop]=ph_arrange_positions_and_plots(keys,population(u).trial(tr_con),population(u));
-            
-            [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{1})).perturbation]=deal(0);
-            [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{2})).perturbation]=deal(1);
-            pop=ph_LR_to_CI(keys,pop);
-            per_epoch=vertcat(pop.trial.epoch);
-            present_epochs={per_epoch(1,:).state};
-            
-            DN_epoch     =find(ismember(present_epochs,keys.PO.epoch_for_normalization));
-            RF_epoch   =find(ismember(present_epochs,keys.PO.epoch_RF));
-            BL_epoch          =find(ismember(present_epochs,keys.PO.epoch_BL));
-            PF_epoch        =find(ismember(present_epochs,keys.PO.epoch_PF));
-            gaussian_bl_epoch       =find(ismember(present_epochs,keys.PO.epoch_GB));
-            if keys.PO.FR_subtract_baseline
-                baseline=repmat(vertcat(per_epoch(:,BL_epoch).FR),1,size(condition_matrix,1));
-            else
-                baseline=zeros(numel(pop.trial),size(condition_matrix,1));
-            end
-            %% normalization factor
-            for n=1:size(condition_matrix,1)
-                clear trpar
-                switch keys.PO.normalization
-                    case 'by_condition'
-                        condition_parameters_tmp=[condition_parameters {'hemifield'}];
-                        for par=1:numel(condition_parameters_tmp)
-                            fn=condition_parameters_tmp{par};
-                            trpar(par,:)=[pop.trial.(fn)]==condition_matrix(n,par);
-                        end
-                        trpar(end+1,:)=[pop.trial.type]==typ & [pop.trial.effector]==eff;
-                    case 'by_perturbation'
-                        trpar=[pop.trial.type]==typ & [pop.trial.effector]==eff & [pop.trial.perturbation]==condition_matrix(n,strcmp(condition_parameters,'perturbation'));
-                    case 'by_hand'
-                        trpar=[pop.trial.type]==typ & [pop.trial.effector]==eff & [pop.trial.reach_hand]==condition_matrix(n,strcmp(condition_parameters,'reach_hand'));
-                    case 'by_effector'
-                        trpar=[pop.trial.type]==typ & [pop.trial.effector]==eff;
-                    case 'by_type'
-                        trpar=[pop.trial.type]==typ;
-                    case 'by_all_trials'
-                        trpar=true(size([pop.trial]));
-                    case 'none' %% really doesnt need an extra rule actually?? Not here at least..
-                        trpar=[pop.trial.type]==typ;
-                    case 'z_score' %% really doesnt need an extra rule actually?? Not here at least..
-                        trpar=[pop.trial.type]==typ & [pop.trial.effector]==eff;
-                    case 'percent_change' %% really doesnt need an extra rule actually?? Not here at least..
-                        trpar=[pop.trial.type]==typ & [pop.trial.effector]==eff;
-                end
-                tr_con=all(trpar,1);
-                if ~any(tr_con) %
-                    continue
-                end
-                per_epoch=vertcat(pop.trial(tr_con).epoch);
-                if keys.PO.FR_subtract_baseline && ~keys.PO.baseline_per_trial
-                    baseline(:,n)=deal(nanmean(vertcat(per_epoch(:,BL_epoch).FR)));
-                end
-                
-                %what to do if per_epoch is empty or
-                if strcmp(keys.PO.normalization,'none') || isempty(DN_epoch) %DN_epoch is empty? %% check if this works, for no multiplicative normalization
-                    norm_factor(u,n)= 1;
-%                 elseif isempty(per_epoch)
-%                     norm_factor(u,n)=NaN;
-                elseif strcmp(keys.PO.normalization,'percent_change')
-                    norm_factor(u,n)=deal(nanmean([per_epoch(:,BL_epoch).FR per_epoch(:,DN_epoch).FR NaN]))/100;
-                    baseline(:,n)=deal(nanmean([per_epoch(:,BL_epoch).FR per_epoch(:,DN_epoch).FR NaN]));
-                elseif ~isempty(DN_epoch)
-                    norm_factor(u,n)=nanmean([per_epoch(:,DN_epoch).FR NaN]);
-                end
-            end
-            
-            if all(isnan(norm_factor(u,:))) &&  all(all(isnan(baseline)))
-                continue
-            end
-            
-            %% z-scoring (way too complicated implementation)
-            if strcmp(keys.PO.normalization,'z_score')
-                u_blocks=unique([pop.trial.block]);
-                AT_tmp={};
-                prev_block_end=0;
-                trial_onset_times=zeros(size(pop.trial));
-                for b=1:numel(u_blocks)
-                    b_idx=[pop.trial.block]==u_blocks(b);
-                    AT_tmp=[AT_tmp arrayfun(@(x) single(x.arrival_times + x.trial_onset_time + prev_block_end),pop.trial(b_idx),'uniformoutput',false)];
-                    last_trial_idx=find(b_idx,1,'last');
-                    trial_onset_times(b_idx)=[pop.trial(b_idx).trial_onset_time]+prev_block_end;
-                    prev_block_end=prev_block_end+pop.trial(last_trial_idx).trial_onset_time+pop.trial(last_trial_idx).states_onset(pop.trial(last_trial_idx).states==98);
-                end
-                AT_tmp=unique(vertcat(AT_tmp{:}));
-                PSTH_ms =ceil(double(trial_onset_times(1))/keys.PSTH_binwidth)*keys.PSTH_binwidth:0.001:...
-                    floor(double(trial_onset_times(end)+pop.trial(end).states_onset(pop.trial(end).states==98))/keys.PSTH_binwidth)*keys.PSTH_binwidth;
-                SD_ms= conv(hist(AT_tmp,PSTH_ms),normpdf(-5*keys.gaussian_kernel:0.001:5*keys.gaussian_kernel,0,keys.gaussian_kernel),'same');
-                
-                t_idx=false(size(PSTH_ms));
-                for t_temp=find([pop.trial.type]==typ & [pop.trial.effector]==eff)
-                    min_temp=ceil(trial_onset_times(t_temp)/keys.PSTH_binwidth)*keys.PSTH_binwidth;
-                    max_temp=floor((trial_onset_times(t_temp)+double(pop.trial(t_temp).states_onset(pop.trial(t_temp).states==50)))/keys.PSTH_binwidth)*keys.PSTH_binwidth;
-                    t_idx(PSTH_ms+0.0002>=min_temp & PSTH_ms+0.0002<max_temp)=true;
-                end
-                SD=nanmean(reshape(SD_ms(t_idx),keys.PSTH_binwidth/0.001,sum(t_idx)/keys.PSTH_binwidth*0.001),1);
-                norm_factor(u,:)=deal(std(SD));
-                baseline(:)=deal(nanmean(SD));
-            end
-            
-            %% this line here, what to do with it?
-            
-            %norm_factor(u,:)=deal(max([norm_factor(u,:) 0])); % now we always normalize to maximum condition, 0 makes sure some value is there..
-            %% correct normalization factors if they are too low
-            if any(norm_factor(u,:)<1)
-                %baseline=baseline+1-nanmean(norm_factor(u,:)); %not sure what this was meant for?
-                norm_factor(u,:)=deal(1);
-            end
-            
-            
-            %% preferred and unpreferred location (taken from instructed trials only! (?) Not necessary though
-            tr_con=[pop.trial.type]==typ & [pop.trial.effector]==eff;
-            FR_for_pref=NaN(size(positions,1),1);
-            per_epoch=vertcat(pop.trial(tr_con).epoch);
-            for p=1:size(positions,1)
-                tr_hemi=all(abs(bsxfun(@minus,vertcat(pop.trial.position),positions(p,:)))<1.5,2) & [pop.trial.choice]'==0;
-                FR_for_pref(p)=nanmean([per_epoch((tr_hemi(tr_con)),PF_epoch).FR])-nanmean(baseline(tr_hemi & tr_con'));
-            end
-            if ischar(unique_group_values{g}) && strcmp(unique_group_values{g},'su') %very specific rule, be aware of this one!
-                [~,pref_idx]=min(FR_for_pref);
-            else
-                [~,pref_idx]=max(FR_for_pref);
-            end
-            [~,unpref_idx]=min(abs(nanmean([positions(:,1)+positions(pref_idx,1) positions(:,2)-positions(pref_idx,2)],2)));
-            pref_valid(t,u)=true;
-            for ch=u_choice
-                pref_valid(t,u)=pref_valid(t,u) && pref_idx~=unpref_idx && ...
-                    sum(all(abs(bsxfun(@minus,vertcat(pop.trial(tr_con).position),positions(pref_idx,:)))<1.5,2)   & [pop.trial(tr_con).choice]'==ch) >=keys.cal.min_trials_per_condition && ...
-                    sum(all(abs(bsxfun(@minus,vertcat(pop.trial(tr_con).position),positions(unpref_idx,:)))<1.5,2) & [pop.trial(tr_con).choice]'==ch) >=keys.cal.min_trials_per_condition;
-            end
-            
-            %% average PSTH per unit
-            for ce=1:size(conditions_eff,1)
-                %c=ce;
-                c=find(ismember(conditions_out,[eff conditions_eff(ce,:)],'rows')); %% c is conditions, n is including hemifields -1,0,1
-                clear trpar
-                
-                for par=1:numel(condition_parameters)
-                    fn=condition_parameters{par};
-                    trpar(par,:)=[pop.trial.(fn)]==conditions_eff(ce,par); %condition_matrix_wohf?
-                end
-                trpar(end+1,:)=[pop.trial.type]==typ & [pop.trial.effector]==eff;
-                tr_con=all(trpar,1);
-                per_epoch=vertcat(pop.trial(tr_con).epoch);
-                
-                for w=1:size(keys.PSTH_WINDOWS,1)
-                    for f=1:numel(u_hemifields) %hemifield
-                        tr_hemi=[pop.trial.hemifield]==u_hemifields(f); 
-                        ix = tr_con & tr_hemi;
-                        n=max([1,find(ismember(condition_matrix(:,1:3),conditions_eff(ce,:),'rows') & condition_matrix(:,end)==u_hemifields(f))]);
-                        condition(t,c).per_hemifield(f).window(w).unit(u).average_spike_density=...
-                            ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
-                        condition(t,c).per_hemifield(f).effector=eff;
-                        for x=1:size(fixations,1)
-                            tr_fix=all(abs(bsxfun(@minus,vertcat(pop.trial.fixation),fixations(x,:)))<4,2)'; %4 is precision --> add to keys?
-                            ix = tr_con & tr_hemi & tr_fix;
-                            condition(t,c).per_hf_fixation(f,x).window(w).unit(u).average_spike_density=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
-                            condition(t,c).per_hf_fixation(f,x).fixation=fixations(x,:);
-                            condition(t,c).per_hf_fixation(f,x).effector=eff;
-                            condition(t,c).per_hf_fixation(f,x).position=[u_hemifields(f) 0];
-                            condition(t,c).per_hf_fixation(f,x).sign.unit(u)=1;
-                        end
-                    end
-                    
-                    for p=1:size(positions,1)
-                        f=sign(positions(p,1)); %what happens if position is neither left nor right??
-                        n=max([1,find(ismember(condition_matrix(:,1:3),conditions_eff(ce,:),'rows') & condition_matrix(:,end)==f)]);
-                        tr_pos=all(abs(bsxfun(@minus,vertcat(pop.trial.position),positions(p,:)))<1.5,2)';
-                        ix = tr_con & tr_pos;
-                        
-                        condition(t,c).per_position(p).window(w).unit(u).average_spike_density= ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
-                        condition(t,c).per_position(p).position=positions(p,:);
-                        condition(t,c).per_position(p).fixation=1;
-                        condition(t,c).per_position(p).effector=eff;
-                        % problem here if tr_con is empty (which it can be,
-                        % because we are not requiring every condition to
-                        % be valid for all units
-                        ix = tr_pos(tr_con);
-                        if any(ix) && ttest([per_epoch(ix,PF_epoch).FR], [per_epoch(ix,BL_epoch).FR])==1
-                            condition(t,c).per_position(p).sign.unit(u)=sign(mean([per_epoch(ix,PF_epoch).FR]- [per_epoch(ix,BL_epoch).FR]));
-                        else
-                            condition(t,c).per_position(p).sign.unit(u)=0;
-                        end
-                        %% supposedly matches with target position precision...
-                        for x=1:size(fixations,1)
-                            tr_fix=all(abs(bsxfun(@minus,vertcat(pop.trial.fixation),fixations(x,:)))<4,2)';
-                            ix = tr_con & tr_pos & tr_fix;
-                            
-                            % within condition normalization here...
-                            % norm_fact=nanmean([per_epoch(trpos(tr_con) & trfix(tr_con),BL_epoch).FR per_epoch(trpos(tr_con) & trfix(tr_con),DN_epoch).FR NaN])/100;
-                            % base_line=nanmean([per_epoch(trpos(tr_con) & trfix(tr_con),BL_epoch).FR per_epoch(trpos(tr_con) & trfix(tr_con),DN_epoch).FR NaN]);
-                            % condition(t,c).per_position_fixation(p,x).window(w).unit(u).average_spike_density=...
-                            % ph_spike_density(pop.trial(tr_con & trpos & trfix),w,keys,base_line,norm_fact);
-                            
-                            condition(t,c).per_position_fixation(p,x).window(w).unit(u).average_spike_density=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
-                            condition(t,c).per_position_fixation(p,x).position=positions(p,:);
-                            condition(t,c).per_position_fixation(p,x).fixation=fixations(x,:);
-                            condition(t,c).per_position_fixation(p,x).effector=eff;
-                            condition(t,c).per_position_fixation(p,x).sign.unit(u)=0;
-                            % problem here if tr_con is empty (which it can be,
-                            % because we are not requiring every condition to
-                            % be valid for all units
-                            ix = tr_pos(tr_con) & tr_fix(tr_con);
-                            if any(ix) && ttest([per_epoch(ix,PF_epoch).FR], [per_epoch(ix,BL_epoch).FR])==1
-                                condition(t,c).per_position_fixation(p,x).sign.unit(u)=sign(mean([per_epoch(ix,PF_epoch).FR]- [per_epoch(ix,BL_epoch).FR]));
-                            end
-                        end
-                        ix = tr_con & tr_pos;
-                        if p==unpref_idx
-                            condition(t,c).per_preference(1).window(w).unit(u).average_spike_density=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
-                            condition(t,c).per_preference(1).effector=eff;
-                        end
-                        if p==pref_idx
-                            condition(t,c).per_preference(2).window(w).unit(u).average_spike_density=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
-                            condition(t,c).per_preference(2).effector=eff;
-                        end
-                    end
-                end
-                
-                %% gaussian response fields (needs cleanup)
-                if ~keys.PO.plot_RF
-                    continue;
-                end
-                
-                zin_per_pos=NaN(size(positions,1),1);
-                
-                gaussian_baseline=vertcat(per_epoch(:,gaussian_bl_epoch).FR);
-                if isempty(gaussian_baseline)
-                    gaussian_baseline=zeros(size(per_epoch,1),1);
-                end
-                %% supposedly matches with target position precision...
-                for p=1:size(positions,1) %for FR plot only
-                    tr=all(abs(bsxfun(@minus,vertcat(pop.trial(tr_con).position),positions(p,:)))<1.5,2);
-                    if sum(tr)==0; continue; end
-                    zin_per_pos(p)=nanmean(vertcat(per_epoch(tr,RF_epoch).FR)-gaussian_baseline(tr));
-                end
-                gaussian_positions=vertcat(pop.trial(tr_con).position);
-                zin=vertcat(per_epoch(:,RF_epoch).FR);
-                
-                %%double because single in Linus/Curius Pulvinar gaze ?
-                %nonanidx=~isnan(zin_per_pos);
-                %FR_tmp=struct('FR',num2cell(zin_per_pos(nonanidx)),'x',num2cell(positions(nonanidx,1)),'y',num2cell(positions(nonanidx,2)));
-                FR_tmp=struct('FR',num2cell(zin_per_pos),'x',num2cell(positions(:,1)),'y',num2cell(positions(:,2)));
-                RF_tmp=ph_fit_target_positions_2D(gaussian_positions(:,1),gaussian_positions(:,2),zin,gaussian_baseline,fitsettings);
-                
-                condition(t,c).fitting.unit(u).parameters=RF_tmp;
-                condition(t,c).fitting.unit(u).positions =FR_tmp;
-                
-            end
-        end
-    end
-end
-
-%% condition comparison
+%% condition comparison ???
 comparisons_per_effector(1).reach_hand{1}=0;
 comparisons_per_effector(1).reach_hand{2}=0;
 comparisons_per_effector(1).hemifield{1}=[-1];
@@ -525,11 +209,11 @@ end
 
 logscale_127=(1:127)'*255/127;
 logscale_255=(log(255)-log(255:-1:129)')*255/(log(255)-log(127));
-if ~isempty(gaussian_bl_epoch)
-    RF_colormap=[logscale_127 logscale_127 ones(127,1)*255; 255 255 255; ones(127,1)*255 flipud(logscale_127) flipud(logscale_127)]/256;
-else
-    RF_colormap=[255*ones(1,255);255:-1:1;255:-1:1]'/255;
-end
+% if ~isempty(gaussian_bl_epoch)
+RF_colormap=[logscale_127 logscale_127 ones(127,1)*255; 255 255 255; ones(127,1)*255 flipud(logscale_127) flipud(logscale_127)]/256;
+% else
+%     RF_colormap=[255*ones(1,255);255:-1:1;255:-1:1]'/255;
+% end
 
 for t=1:size(condition,1)
     typ=u_types(mod(t-1,numel(u_types))+1);
@@ -570,7 +254,7 @@ for t=1:size(condition,1)
             unique_group_values=unique_group_values_tmp(gt);
             
             
-            %% PSTH per position plot 
+            %% PSTH per position plot
             current=[condition(t,:).per_position];
             current=current(:);
             conditions_PSTH=conditions_out; %%???
@@ -581,45 +265,45 @@ for t=1:size(condition,1)
             plot_PSTH_no_empties
             
             if false
-            
-            %% PSTH per position plot (by initial fixation)
-            current=[condition(t,:).per_position_fixation];
-            current=current(:);
-            conditions_PSTH=conditions_pref; %%???
-            legend_labels={'-15', '0', '+15'};
-            plot_title_part=['=' unique_group_values{1} ' PSTHs per position F'];
-            units_valid=ones(size(complete_unit_list,1),1);
-            column_indexes=columns_pref;
-            plot_PSTH_no_empties
-            
-            %% PSTH per position plot
-            current=[condition(t,:).per_position_fixation];
-            current=current(:);
-            conditions_PSTH=conditions_pref; %%???
-            legend_labels={'-15', '0', '+15'};
-            plot_title_part=['=' unique_group_values{1} ' PSTHs per position F ensu'];
-            units_valid=ones(size(complete_unit_list,1),1);
-            column_indexes=columns_pref;
-            plot_PSTH_no_empties
-            
-            current=[condition(t,:).per_position];
-            current=current(:);
-            conditions_PSTH=conditions_pref; %%???
-            legend_labels={'-15', '0', '+15'};
-            plot_title_part=['=' unique_group_values{1} ' PSTHs per position ensu'];
-            units_valid=ones(size(complete_unit_list,1),1);
-            column_indexes=columns_pref;
-            plot_PSTH_no_empties
-            
-            current=[condition(t,:).per_hf_fixation];
-            current=current(:);
-            conditions_PSTH=conditions_pref; %%???
-            legend_labels={'-15', '0', '+15'};
-            plot_title_part=['=' unique_group_values{1} ' PSTHs per position hf'];
-            units_valid=ones(size(complete_unit_list,1),1);
-            column_indexes=columns_pref;
-            plot_PSTH_no_empties
-            
+                
+                %% PSTH per position plot (by initial fixation)
+                current=[condition(t,:).per_position_fixation];
+                current=current(:);
+                conditions_PSTH=conditions_pref; %%???
+                legend_labels={'-15', '0', '+15'};
+                plot_title_part=['=' unique_group_values{1} ' PSTHs per position F'];
+                units_valid=ones(size(complete_unit_list,1),1);
+                column_indexes=columns_pref;
+                plot_PSTH_no_empties
+                
+                %% PSTH per position plot
+                current=[condition(t,:).per_position_fixation];
+                current=current(:);
+                conditions_PSTH=conditions_pref; %%???
+                legend_labels={'-15', '0', '+15'};
+                plot_title_part=['=' unique_group_values{1} ' PSTHs per position F ensu'];
+                units_valid=ones(size(complete_unit_list,1),1);
+                column_indexes=columns_pref;
+                plot_PSTH_no_empties
+                
+                current=[condition(t,:).per_position];
+                current=current(:);
+                conditions_PSTH=conditions_pref; %%???
+                legend_labels={'-15', '0', '+15'};
+                plot_title_part=['=' unique_group_values{1} ' PSTHs per position ensu'];
+                units_valid=ones(size(complete_unit_list,1),1);
+                column_indexes=columns_pref;
+                plot_PSTH_no_empties
+                
+                current=[condition(t,:).per_hf_fixation];
+                current=current(:);
+                conditions_PSTH=conditions_pref; %%???
+                legend_labels={'-15', '0', '+15'};
+                plot_title_part=['=' unique_group_values{1} ' PSTHs per position hf'];
+                units_valid=ones(size(complete_unit_list,1),1);
+                column_indexes=columns_pref;
+                plot_PSTH_no_empties
+                
             end
         end
         unique_group_values=unique_group_values_tmp;
@@ -1139,8 +823,8 @@ end
         
         for spn=1:numel(sph)
             
-                    ef=spf(spn);
-                    set(0, 'CurrentFigure', PSTH_summary_handle(ef));
+            ef=spf(spn);
+            set(0, 'CurrentFigure', PSTH_summary_handle(ef));
             subplot(sph(spn));
             hold on
             
@@ -1161,7 +845,6 @@ end
         
         %% ensu summary figure
         if any(strfind(plot_title_part,'ensu'))
-            
             for eff=u_effectors
                 ef=find(u_effectors==eff);
                 [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
@@ -1229,14 +912,11 @@ end
                 end
                 ph_title_and_save(PSTH_summary_handle,  [filename plot_title_part ' summary, ' type_effector_short ],plot_title,keys)
             end
-            
         end
     end
-
 end
 
 function h=ph_compare_by_bin(in,c1,c2,units)
-
 % to compare only the same cells (!)
 c12=[c1(:);c2(:)];
 for cc=c12'
@@ -1258,241 +938,3 @@ else
     h=NaN; %% size = number of bins ?
 end
 end
-
-% 
-% function plot_PSTH
-% for eff=u_effectors %% one figure for ech effector
-%     keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
-%     [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
-%     plot_title              = [fig_title type_effector_short plot_title_part];
-%     PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
-%     for g=1:numel(unique_group_values)
-%         unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)) & tya_existing{t},idx_unitID));
-%         group_units=find(all(unitidx,2) & units_valid)';
-%         %%reducing to only units that have each condition
-%         current_window=vertcat(current.window);
-%         current_units=vertcat(current_window(:,1).unit);
-%         empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density),current_units);
-%         condition_empty=all(empty_conditions_and_units,2);
-%         % this is to make sure cells are present in all conditions...
-%         
-%         if any(strfind(plot_title_part,'per position'))
-%             
-%             
-%             [positions, ~,pos_sub_idx]=unique(vertcat(current.position),'rows');
-%             [~, ~,fix_sub_idx]=unique(vertcat(current.fixation),'rows');
-%             [subplot_pos, columns_to_loop, rows_to_loop]= DAG_dynamic_positions({positions});
-%             conditions_to_loop=find([current.effector]'==eff & ~condition_empty);
-%         else
-%             
-%             conditions_to_loop=find([current.effector]'==eff & ~condition_empty);
-%             %conditions_to_loop=find(conditions_PSTH(:,2)==eff & ~condition_empty);
-%             [~,columns_to_loop]=ismember(column_indexes,unique(column_indexes(conditions_to_loop)));
-%             group_units=intersect(group_units,find(all(~empty_conditions_and_units(~condition_empty,:),1)));
-%             
-%             
-%         end
-%         
-%         n_units=[];
-%         legend_label_indexes=[];
-%         legend_line_handles=[];
-%         for c=conditions_to_loop(:)'
-%             
-%             %% this seems rather complicated for retrieving color information
-%             if strcmp(plot_title_part,' PSTHs')
-%                 column=columns_to_loop(c);
-%                 spn=(g-1)*max(columns_to_loop)+column;
-%                 sph(spn)=subplot(numel(unique_group_values),max(columns_to_loop),spn);
-%                 col=(conditions_PSTH(c,1)+1)*6 + (conditions_PSTH(c,3))*2 + (conditions_PSTH(c,4)+1) + (conditions_PSTH(c,5)*18);
-%                 current_color=keys.line_colors(col,:);
-%             elseif any(strfind(plot_title_part,'pref'))
-%                 column=columns_to_loop(c);
-%                 spn=(g-1)*max(columns_to_loop)+column;
-%                 sph(spn)=subplot(numel(unique_group_values),max(columns_to_loop),spn);
-%                 col=(conditions_PSTH(c,1))*6 + (conditions_PSTH(c,3))*2 + (conditions_PSTH(c,4)+1) + (conditions_PSTH(c,5)*12);
-%                 current_color=keys.pref_colors(col,:);
-%             elseif any(strfind(plot_title_part,'per position'))
-%                 %% still need to fix colors if different conditions are present, AND fix overwriting of different groups....
-%                 column=c;
-%                 spn=subplot_pos(pos_sub_idx(c));
-%                 sph(spn)=subplot(rows_to_loop,max(columns_to_loop),spn);
-%                 col=fix_sub_idx(c);
-%                 current_color=keys.colors.fix_offset(col,:);
-%             end
-%             
-%             hold on
-%             legend_label_indexes=[legend_label_indexes col];
-%             
-%             units=intersect(group_units,find(arrayfun(@(x) ~isempty(x.average_spike_density),current(c).window(1).unit))) ; %why here again?
-%             n_units=[n_units numel(units)];
-%             if  numel(units)==0
-%                 continue;
-%             end
-%             state_shift=0;
-%             for w=1:size(keys.PSTH_WINDOWS,1)
-%                 t_before_state=keys.PSTH_WINDOWS{w,3};
-%                 t_after_state=keys.PSTH_WINDOWS{w,4};
-%                 bins=t_before_state:keys.PSTH_binwidth:t_after_state;
-%                 bins=bins+state_shift-t_before_state;
-%                 props={'color',current_color,'linewidth',1};
-%                 errorbarhandle=shadedErrorBar(bins,nanmean(vertcat(current(c).window(w).unit(units).average_spike_density),1),...
-%                     sterr(vertcat(current(c).window(w).unit(units).average_spike_density),1),props,1); %% STERR!!!!
-%                 state_shift=state_shift+t_after_state-t_before_state+0.1;
-%             end
-%             legend_line_handles=[legend_line_handles errorbarhandle.mainLine];
-%         end
-%         title(sprintf('%s = %s, N (NH/CH/IH) =%s ',keys.PO.group_parameter,unique_group_values{g},num2str(n_units)),'interpreter','none');
-%         y_lim(spn,:)=get(gca,'ylim');
-%     end
-%     
-%     if keys.plot.population_PSTH_legends
-%         legend(legend_line_handles,legend_labels(legend_label_indexes),'location','southwest');
-%     end
-% end
-% 
-% %% subplot appearance, and tuning lines
-% sph(sph==0)=[];
-% ylimmax=max(max(y_lim));
-% ylimmin=min(min(y_lim));
-% y_lim=[ylimmin ylimmax];
-% if ~isempty(keys.PO.y_lim)
-%     y_lim= keys.PO.y_lim;
-% end
-% for eff=u_effectors
-%     [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
-%     plot_title              = [fig_title type_effector_short plot_title_part];
-%     %                 unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)) & tya_existing{t},idx_unitID));
-%     %                 group_units=find(all(unitidx,2) & units_valid)';
-%     %                 %%reducing to only units that have each condition
-%     %                 current_window=vertcat(current.window);
-%     %                 current_units=vertcat(current_window(:,1).unit);
-%     %                 empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density),current_units);
-%     %                 condition_empty=all(empty_conditions_and_units,2);
-%     %                 conditions_to_loop=find(conditions_PSTH(:,2)==eff & ~condition_empty);
-%     %                 [~,columns_to_loop]=ismember(column_indexes,unique(column_indexes(conditions_to_loop)));
-%     for spn=1:numel(sph)
-%         
-%         subplot(sph(spn));
-%         hold on
-%         
-%         %% completed? choices? hands?
-%         tr=[all_trialz.type]==typ & [all_trialz.effector]==eff & ismember([all_trialz.completed],keys.cal.completed) &...
-%             ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],u_hands) & ismember([all_trialz.choice],u_choice);
-%         ph_PSTH_background(all_trialz(tr),y_lim,y_lim,y_lim,keys,1)
-%         
-%         %                 %% peak times
-%         %                                 Contra_handles=[];
-%         %                                 Contra_indexes=[];
-%         %                                 Ipsi_handles=[];
-%         %                                 Ipsi_indexes=[];
-%         %                                 for l=lines
-%         %                                     Contra=vertcat(conditions(c).case(a).group(g).contra.line(l).unit.per_state);
-%         %                                     Ipsi=vertcat(conditions(c).case(a).group(g).ipsi.line(l).unit.per_state);
-%         %                                     mean_c=(nanmean(vertcat(Contra(:,s).peak_bin),1)-1)*keys.PSTH_binwidth;
-%         %                                     mean_i=(nanmean(vertcat(Ipsi(:,s).peak_bin),1)-1)*keys.PSTH_binwidth;
-%         %                                     sterr_c=(sterr(vertcat(Contra(:,s).peak_bin),1))*keys.PSTH_binwidth;
-%         %                                     sterr_i=(sterr(vertcat(Ipsi(:,s).peak_bin),1))*keys.PSTH_binwidth;
-%         %                                     if ~isempty(mean_c)
-%         %                                     CL=line([mean_c mean_c]+state_shift,y_lim,'color',keys.hnd_choice_colors_C(l,:));
-%         %                                     line([mean_c+sterr_c mean_c+sterr_c]+state_shift,y_lim,'color',keys.hnd_choice_colors_C(l,:),'linestyle',':');
-%         %                                     line([mean_c-sterr_c mean_c-sterr_c]+state_shift,y_lim,'color',keys.hnd_choice_colors_C(l,:),'linestyle',':');
-%         %                                     Contra_handles=[Contra_handles CL];
-%         %                                     Contra_indexes=[Contra_indexes l];
-%         %                                     end
-%         %                                     if ~isempty(mean_i)
-%         %                                     IL=line([mean_i mean_i]+state_shift,y_lim,'color',keys.hnd_choice_colors_I(l,:));
-%         %                                     line([mean_i+sterr_i mean_i+sterr_i]+state_shift,y_lim,'color',keys.hnd_choice_colors_I(l,:),'linestyle',':');
-%         %                                     line([mean_i-sterr_i mean_i-sterr_i]+state_shift,y_lim,'color',keys.hnd_choice_colors_I(l,:),'linestyle',':');
-%         %                                     Ipsi_handles=[Ipsi_handles IL];
-%         %                                     Ipsi_indexes=[Ipsi_indexes l];
-%         %                                     end
-%         %                                 end
-%         
-%         
-%         
-%         %                     %% space tuning
-%         %                     for l=lines
-%         %                         l_height=y_lim(2)-diff(y_lim)*(l*0.01+0.1);
-%         %                         if ~isempty(conditions(c).case(a).group(g).space_tuning.line(l).per_state(s).h)
-%         %                             plot(bins,conditions(c).case(a).group(g).space_tuning.line(l).per_state(s).h*l_height,...
-%         %                                 'linewidth',2,'color',keys.hnd_choice_colors(l,:))
-%         %                         end
-%         %                     end
-%         %
-%         %                     %% hand tuning line
-%         %                     for ic=0:1
-%         %                         CH_idx=find(choices_hands(2,:)==1 & choices_hands(1,:)==ic );
-%         %                         IH_idx=find(choices_hands(2,:)==2 & choices_hands(1,:)==ic );
-%         %                         if ~ismember(CH_idx,lines) || ~ismember(IH_idx,lines)
-%         %                             continue
-%         %                         end
-%         %                         for side=1:2
-%         %                             l_height=y_lim(2)-diff(y_lim)*((2*side+ic+5)*0.01+0.1);
-%         %                             if ~isempty(conditions(c).case(a).group(g).hand_tuning(ic+1).(CIFN{side}).per_state(s).h)
-%         %                                 plot(bins,conditions(c).case(a).group(g).hand_tuning(ic+1).(CIFN{side}).per_state(s).h*l_height,...
-%         %                                     'linewidth',2,'color',keys.space_colors(side,:))
-%         %                             end
-%         %                         end
-%         %                     end
-%         %                     state_shift=state_shift+t_after_state-t_before_state+0.1;
-%     end
-%     ph_title_and_save(PSTH_summary_handle,  [filename plot_title_part],plot_title,keys)
-% end
-% end
-
-
-%                 %% peak times
-%                                 Contra_handles=[];
-%                                 Contra_indexes=[];
-%                                 Ipsi_handles=[];
-%                                 Ipsi_indexes=[];
-%                                 for l=lines
-%                                     Contra=vertcat(conditions(c).case(a).group(g).contra.line(l).unit.per_state);
-%                                     Ipsi=vertcat(conditions(c).case(a).group(g).ipsi.line(l).unit.per_state);
-%                                     mean_c=(nanmean(vertcat(Contra(:,s).peak_bin),1)-1)*keys.PSTH_binwidth;
-%                                     mean_i=(nanmean(vertcat(Ipsi(:,s).peak_bin),1)-1)*keys.PSTH_binwidth;
-%                                     sterr_c=(sterr(vertcat(Contra(:,s).peak_bin),1))*keys.PSTH_binwidth;
-%                                     sterr_i=(sterr(vertcat(Ipsi(:,s).peak_bin),1))*keys.PSTH_binwidth;
-%                                     if ~isempty(mean_c)
-%                                     CL=line([mean_c mean_c]+state_shift,y_lim,'color',keys.hnd_choice_colors_C(l,:));
-%                                     line([mean_c+sterr_c mean_c+sterr_c]+state_shift,y_lim,'color',keys.hnd_choice_colors_C(l,:),'linestyle',':');
-%                                     line([mean_c-sterr_c mean_c-sterr_c]+state_shift,y_lim,'color',keys.hnd_choice_colors_C(l,:),'linestyle',':');
-%                                     Contra_handles=[Contra_handles CL];
-%                                     Contra_indexes=[Contra_indexes l];
-%                                     end
-%                                     if ~isempty(mean_i)
-%                                     IL=line([mean_i mean_i]+state_shift,y_lim,'color',keys.hnd_choice_colors_I(l,:));
-%                                     line([mean_i+sterr_i mean_i+sterr_i]+state_shift,y_lim,'color',keys.hnd_choice_colors_I(l,:),'linestyle',':');
-%                                     line([mean_i-sterr_i mean_i-sterr_i]+state_shift,y_lim,'color',keys.hnd_choice_colors_I(l,:),'linestyle',':');
-%                                     Ipsi_handles=[Ipsi_handles IL];
-%                                     Ipsi_indexes=[Ipsi_indexes l];
-%                                     end
-%                                 end
-
-
-
-%                     %% space tuning
-%                     for l=lines
-%                         l_height=y_lim(2)-diff(y_lim)*(l*0.01+0.1);
-%                         if ~isempty(conditions(c).case(a).group(g).space_tuning.line(l).per_state(s).h)
-%                             plot(bins,conditions(c).case(a).group(g).space_tuning.line(l).per_state(s).h*l_height,...
-%                                 'linewidth',2,'color',keys.hnd_choice_colors(l,:))
-%                         end
-%                     end
-%
-%                     %% hand tuning line
-%                     for ic=0:1
-%                         CH_idx=find(choices_hands(2,:)==1 & choices_hands(1,:)==ic );
-%                         IH_idx=find(choices_hands(2,:)==2 & choices_hands(1,:)==ic );
-%                         if ~ismember(CH_idx,lines) || ~ismember(IH_idx,lines)
-%                             continue
-%                         end
-%                         for side=1:2
-%                             l_height=y_lim(2)-diff(y_lim)*((2*side+ic+5)*0.01+0.1);
-%                             if ~isempty(conditions(c).case(a).group(g).hand_tuning(ic+1).(CIFN{side}).per_state(s).h)
-%                                 plot(bins,conditions(c).case(a).group(g).hand_tuning(ic+1).(CIFN{side}).per_state(s).h*l_height,...
-%                                     'linewidth',2,'color',keys.space_colors(side,:))
-%                             end
-%                         end
-%                     end
-%                     state_shift=state_shift+t_after_state-t_before_state+0.1;

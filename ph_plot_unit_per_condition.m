@@ -161,7 +161,7 @@ for unit=1:numel(population)
                                 
                                 % PSTH
                                 state_seperator(lin)=state_shift + t_after_state + 0.1;
-                                [histo(lin,:) bins]=ph_spike_density(line_struct,w,keys,zeros(numel(line_struct),1),1);
+                                [histo(lin,:) bins]=ph_spike_density(line_struct,w,keys,zeros(numel(line_struct),1),ones(numel(line_struct),1));
                                 bins=bins+state_shift;
                                 line(bins,histo(lin,:),'color',PSTH_perpos_colors(col,:),'LineWidth',keys.width.PSTH_perpos);          %PSTH
                             end
@@ -338,7 +338,7 @@ for unit=1:numel(population)
                                     if sum(tr_index)==0
                                         continue;
                                     end
-                                    PSTH=ph_spike_density(o.trial(tr_index),w,keys,zeros(sum(tr_index),1),1);
+                                    PSTH=ph_spike_density(o.trial(tr_index),w,keys,zeros(sum(tr_index),1),ones(sum(tr_index),1));
                                     line(bins,PSTH,'color',o.PSTH_summary_colors(con_counter,:),'LineWidth',keys.width.PSTH_summary);
                                     hs_ylim=max(hs_ylim,max(PSTH));
                                 end

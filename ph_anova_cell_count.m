@@ -1,6 +1,4 @@
 function pie_data=ph_anova_cell_count(modified_keys)
-
-
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
@@ -169,7 +167,6 @@ keys.title_part='one_by_one';
 title_and_save(keys);
 
 function keys=get_legends(keys)
-
 keys.SxH_mod_index=0;
 cols=keys.colors;
 
@@ -298,13 +295,11 @@ switch keys.CC.plot_type
         factors{1}='visuomotor';
 end
 
-
 levels=1:numel(factors); % numel(legends)?
 switch keys.CC.plot_type %its really only one level (of complexity) here
     case {'per_epoch','per_task'}
         levels=1;
 end
-
 
 keys.all_titles=keys.CC.epochs;
 keys.factors=factors;
@@ -380,7 +375,6 @@ for l=levels
     end
 end
 
-
 keys.n1=numel(keys.legends{1});
 if size(factors)>1
 keys.n2=numel(keys.legends{2});
@@ -389,9 +383,7 @@ keys.n2=0;
 end
 
 function [multilevel_data matrix_data] = summary_anova_multilevel(keys)
-
 xlsx_table=keys.tuning_table;
-
 for i=1:size(keys.tuning_table,2)
     param(i) = keys.tuning_table(1,i);
     idx.(param{i})= DAG_find_column_index(xlsx_table,param{i});
@@ -959,7 +951,6 @@ for c=1:n_conditions
     end
 end
 
-
 function title_and_save(keys)
 criterions=[' criterions: S: ' keys.tt.space_criterion ' H: ' keys.tt.hands_criterion ' SxH: ' keys.tt.SXH_criterion ' E: ' keys.tt.epoch_criterion];
 mtit(gcf,[keys.monkey ' ' [keys.CC.tasktypes{:}] ' ' [keys.CC.plot_type] ' ' keys.CC.factor ' ' keys.CC.IC_to_plot ' ' keys.arrangement(1:3) ' ' keys.selection_title{:} ' N: ' num2str(size(keys.tuning_table,1)-1) ' ' keys.title_part  ' ' criterions], 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
@@ -981,18 +972,3 @@ end
 export_fig(gcf, [folder_to_save filesep keys.subfolder_to_save filesep keys.monkey ' ' [keys.CC.tasktypes{:}] ' '  keys.arrangement(1:3) ' ' keys.CC.IC_to_plot ...
     ' hnd ' num2str(keys.tt.hands) ' ch ' num2str(keys.tt.choices) ' ' keys.selection_title{:} ' ' [keys.CC.plot_type]  ' ' keys.CC.factor ', ' keys.title_part], '-pdf','-transparent') % pdf by run
 close(gcf);
-
-
-function pie=get_pie_two_levels(keys,pie,tuning1,tuning2)
-pie{1}=[];
-pie{2}=[];
-for n1=1:keys.n1
-    pie{1}(end+1)=sum(tuning1{1}==n1);
-    for n2=1:keys.n2
-        pie{2}(end+1)=sum(tuning1{1}(:)==n1 & tuning2{1}(:)==n2);
-    end
-end
-
-
-
-

@@ -1,7 +1,5 @@
 function tuning_per_unit_table=ph_ANOVAS(population,keys)
 tuning_per_unit_table=keys.tuning_per_unit_table;
-% global unit_to_export
-% unit_to_export=struct;
 for unit=1:numel(population)
     anova_struct_current_unit=struct();
     unit_ID=population(unit).unit_ID;
@@ -16,12 +14,11 @@ for unit=1:numel(population)
         tr_considered = tr_considered & [population(unit).trial.completed]==1;
     end
     if sum(tr_considered)>0
-        for a=1:numel(keys.position_and_plotting_arrangements)
+        for a=1:numel(keys.position_and_plotting_arrangements) % arrangement defines poaitions, therefore alsohemifield (which is part of conditions)
             keys.arrangement=keys.position_and_plotting_arrangements{a};
-            o=ph_arrange_positions_and_plots(keys,population(unit).trial(tr_considered));
-            
+            o=ph_arrange_positions_and_plots(keys,population(unit).trial(tr_considered)); % arrangement            
             keys.normalization_field='AN';
-            o=ph_condition_normalization(o,keys);
+            o=ph_condition_normalization(o,keys); %condition wise normalization (also reduces conditions!???)
 
             for type=unique(types)
                 %% check carefully multicomp epochs !!
@@ -35,7 +32,6 @@ for unit=1:numel(population)
                 for effector=unique(effectors)
                     keys=ph_get_epoch_keys(keys,type,effector,sum(type_effectors(:,1)==type)>1);
                     [~, condition_fieldname_part]=MPA_get_type_effector_name(type,effector);
-                    
                     tr_index= [o.trial.effector]==effector & [o.trial.type]==type ;% & ismember(hands,keys.cal.reach_hand);
                                        
                     if sum(tr_index)==0;
@@ -47,15 +43,12 @@ for unit=1:numel(population)
                     
                     trial_criterion=get_minimum_trials(keys,o_e,tr_index);
                     [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o_e,keys);
-                    
                     [anova_struct]=n_way_anova(keys,epochs,FR,idx,u_pos,u_fix,unit,unit_ID);
                     anova_struct_current_unit.([condition_fieldname_part '_'  keys.arrangement(1:3)])=anova_struct; clear anova_struct
                     FN_crit=fieldnames(trial_criterion);
                     for f=1:numel(FN_crit)
                         anova_struct_current_unit.([condition_fieldname_part '_'  keys.arrangement(1:3)]).(FN_crit{f})= trial_criterion.(FN_crit{f});
                     end
-                    
-                    
                 end
                 
                 %% effector comparison !
@@ -94,7 +87,6 @@ for unit=1:numel(population)
     
     clear unit_table;
     inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
-    %inital_fieldnames={'unit_ID','monkey','target','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating'};  % for microstim dataset, waveforms were not defined yet
     unit_table(1,1:numel(inital_fieldnames))=inital_fieldnames;
     for fn=1:numel(inital_fieldnames)
         unit_table{rows_to_update,fn}=population(unit).(inital_fieldnames{fn});
@@ -111,14 +103,9 @@ for unit=1:numel(population)
     end
     tuning_per_unit_table=DAG_update_mastertable_cell(tuning_per_unit_table,unit_table,rows_to_update);
 end
-
 end
 
 function anova_struct=n_way_anova(keys,epochs,FR,idx,Positions,Fixations,u,unit_ID)
-%global unit_to_export
-%Positions_normalized=Positions./abs(Positions);
-% INCHnamepart={'in','ch'};
-% LHRHnamepart={'NH','LH','RH'};
 INCHnamepart=keys.labels.choices([sum(idx.in)>0 sum(idx.ch)>0]);
 LHRHnamepart=keys.labels.handsLR;
 LSRSnamepart={'LS','RS'};
@@ -765,10 +752,7 @@ labelef=keys.labels.eff;
 labelIN={'IN','-','CH'};
 true_labels={'false','true'};
 
-
 conditions_to_compare={'LH_LS','LH_RS','RH_LS','RH_RS'};
-%% doesnt even belong here...
-%epochs_for_multicomparison=keys.epoch_for_multicomparison(ismember(keys.epoch_for_multicomparison,keys.EPOCHS(:,1)));
 
 idx_ep=ismember(keys.epoch_multicomp(:,1),keys.EPOCHS(:,1)) &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
 epoch_multicomp=keys.epoch_multicomp(idx_ep,:);
