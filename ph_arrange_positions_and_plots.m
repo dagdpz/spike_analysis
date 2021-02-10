@@ -251,6 +251,7 @@ switch keys.arrangement
      pop.line_labels        =   {'Diff','Easy','Tar'};
 
      position_indexes        = tar_idx;
+     val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
      val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
      sub_title               = 'tar position';   
      pop.PSTH_perpos_colors =   [1 0 0; 0 1 0; 0 1 0];
@@ -426,11 +427,19 @@ movement_direction  =NaN(size(trial'));
 fixation            =NaN(size(trial'));
 target              =NaN(size(trial'));
 cuepos              =NaN(size(trial'));
+%distractor          =NaN(size(trial'));
+
+% give the position for tar2, tar3 distractor position
+%trial.dis_pos
+
+%trial.tar2_pos = trial.all_tar_pos(1)
+%trial.tar3_pos = trial.all_tar_pos(1)
 
 s_a=unique_positions([trial.fix_pos],Precision);
 s_b=unique_positions([trial.tar_pos] - [trial.fix_pos],Precision);
 s_c=unique_positions([trial.tar_pos],Precision);
 s_d=unique_positions([trial.cue_pos],Precision);
+%s_e=unique_positions([trial.dis_pos],Precision);
 
 for t=1:numel(trial)
     for k=1:numel(s_a)
@@ -453,6 +462,12 @@ for t=1:numel(trial)
             cuepos(t)=s_d(k);
         end
     end
+    
+%     for k=1:numel(s_e)
+%         if abs(trial(t).dis_pos - s_e(k)) < Precision
+%             dispos(t)=s_d(k);
+%         end
+%     end
 end
 
 [~,~,unique_condition]      =unique([real(fixation),imag(fixation),real(target),imag(target)],'rows');
@@ -460,13 +475,14 @@ end
 [~,~,movement_direction]    =unique([real(movement_direction),imag(movement_direction)],'rows');
 [~,~,target_location]       =unique([real(target),imag(target)],'rows');
 [~,~,cue_location]          =unique([real(cuepos),imag(cuepos)],'rows');
+%[~,~,distractor_location]       =unique([real(distractor),imag(distractor)],'rows');
 
 fix_y=imag(nanmean(fixation));
 fixation=fixation-1i*fix_y;
 target=target-1i*fix_y;
 
 displacement_types=[real(fixation) imag(fixation) real(target) imag(target) real(cuepos) imag(cuepos), ...
-    unique_condition fixation_location movement_direction target_location, cue_location];
+    unique_condition fixation_location movement_direction target_location, cue_location]; % real(distractor) imag(distractor)
 
 if numel(trial)==0
     displacement_types=NaN(1,12);
