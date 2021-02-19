@@ -6,12 +6,14 @@ keys.labels.perturbations={'','_PT'};  %% AH!??
 keys.labels.choices={'in','ch'};
 
 keys.FR_subtract_baseline=0;
+keys.cal.divide_baseline_for_ANOVA=0;
 keys.contra_ipsi_relative_to='target';
 
 %% general settings (multi-summary PSTH)
 
 keys.PSTH_binwidth                      =0.01;                      % resolution of PSTH's (in seconds)
 keys.gaussian_kernel                    =0.02;                      % std for the convolution to derive spie density (in seconds)
+keys.kernel_type                        ='gaussian';
 keys.subtract_baseline_for_anovas       =0;                         % subtracting the FR in baseline period (see below) for anovas
 keys.FR_at_peak                         =0;                         % currently not used
 keys.position_and_plotting_arrangements ={'hands'};                 % defines position batching and which conditions go into different figures/lines
@@ -39,10 +41,21 @@ keys.cal.reach_hand                     =[0,1,2];                   % excluding 
 keys.cal.choice                         =[0,1];                     % excluding trials with non-matching chocie
 keys.cal.stablity                       =[0,1];                     % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the table
 keys.cal.single_rating                  =[1,2,3];                   % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl
+keys.cal.automatic_stablity             =0;                         % using automatic stability assessment
 keys.cal.SNR_rating                     =[1,2,3,4];                 % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl
 keys.cal.min_trials_per_condition       =5;                         % minimum trials per conditon (look at ph_arrange_positions to see how conditions are defined)
 keys.cal.min_spikes_per_unit            =50;                        % excluding units that have in total less spikes (workaround for sortcode assignment bug) - to be removed
 keys.cal.perturbation_groups            ={0,[2,3,4,5,6,7,8]};       % which perturbation values from excel table will be assigned to control and perturbation for comparisons and population analysis
+
+%% ANOVA normalization
+keys.AN.normalization='none';
+keys.AN.epoch_for_normalization='INI';
+keys.AN.epoch_RF='INI';
+keys.AN.epoch_BL='INI';
+keys.AN.epoch_PF='INI';
+keys.AN.epoch_GB='INI';
+keys.AN.baseline_per_trial=0;
+keys.AN.FR_subtract_baseline=0;
 
 %% folders and filenames
 keys.filelist_as_blocks     =0;
@@ -132,9 +145,9 @@ keys.colors.lhd_hor         =[0 0 1];
 % cell count colors
 keys.colors.NO_AN   =[255 255 255];
 keys.colors.NO_TU   =[128 128 128];
-keys.colors.EP_EN   =[239  65  54];
+keys.colors.EP_EN   =[255  65  0];
 keys.colors.EP_BI   =[106 189  69];
-keys.colors.EP_SU   =[0   174 239];
+keys.colors.EP_SU   =[0   65 255];
 keys.colors.CR      =[255   0   0];
 keys.colors.UC      =[127   0   0];
 
@@ -219,6 +232,9 @@ keys.tt.trial_criterion_in          ='per_position';
 keys.tt.trial_criterion_ch          ='per_hemifield';
 keys.tt.selection                   ={};
 keys.tt.unselect                    ={};
+
+keys.tt.selected_list                   ={};
+keys.tt.unselected_list                    ={};
     keys.tt.type_effectors={'Msac'};
 
 %% population

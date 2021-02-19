@@ -268,9 +268,12 @@ for b=1:size(o_t,2)
                     end
                     n_trial(unit_index_processed)                   =n_trial(unit_index_processed)+1;
                     o_t(b).trial(t).waveforms                       =o_t(b).trial(t).unit(c,u).waveforms;
+                    o_t(b).trial(t).stability_rating                =o_t(b).trial(t).unit(c,u).stability_rating;
                     o_t(b).trial(t).arrival_times                   =o_t(b).trial(t).unit(c,u).arrival_times;
                     o_t(b).trial(t).dataset                         =o_t(b).trial(t).unit(c,u).dataset;
                     o_t(b).trial(t).perturbation                    =o_t(b).trial(t).unit(c,u).perturbation;
+                    o_t(b).trial(t).FR_average                      =o_t(b).trial(t).unit(c,u).FR_average;
+                    %o_t(b).trial(t).stability_auto                =o_t(b).trial(t).unit(c,u).stability_auto;
                     
                     trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
                     tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
@@ -294,9 +297,12 @@ for b=1:size(o_t,2)
                     pop_resorted(unit_index).grid_y           =o_t(b).trial(t).unit(c,u).grid_y;
                     pop_resorted(unit_index).electrode_depth  =o_t(b).trial(t).unit(c,u).electrode_depth;
                     o_t(b).trial(t).waveforms                 =o_t(b).trial(t).unit(c,u).waveforms;
+                    o_t(b).trial(t).stability_rating          =o_t(b).trial(t).unit(c,u).stability_rating;
                     o_t(b).trial(t).arrival_times             =o_t(b).trial(t).unit(c,u).arrival_times;
                     o_t(b).trial(t).dataset                   =o_t(b).trial(t).unit(c,u).dataset;
                     o_t(b).trial(t).perturbation              =o_t(b).trial(t).unit(c,u).perturbation;
+                    o_t(b).trial(t).FR_average                =o_t(b).trial(t).unit(c,u).FR_average;
+                    %o_t(b).trial(t).stability_auto                =o_t(b).trial(t).unit(c,u).stability_auto;
                     
                     trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
                     tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
@@ -423,16 +429,13 @@ if ~isempty(temp_xlsx)
     keys.sorting_table_units = sorting_table;
     keys.sorting_table_sites = sorting_table;
     keys.sorting_table       = sorting_table;
-    stability_index=DAG_find_column_index(sorting_table,'Stability_rank');
-    single_index=DAG_find_column_index(sorting_table,'Single_rank');
-    SNR_index=DAG_find_column_index(sorting_table,'SNR_rank');
+%     stability_index=DAG_find_column_index(sorting_table,'Stability_rank');
+%     single_index=DAG_find_column_index(sorting_table,'Single_rank');
+%     SNR_index=DAG_find_column_index(sorting_table,'SNR_rank');
     usable_index=DAG_find_column_index(sorting_table,'Usable');
-    to_exclude_u=~ismember([sorting_table{2:end,stability_index}]',keys.cal.stablity) ...
-        | ~ismember([sorting_table{2:end,single_index}]',keys.cal.single_rating)...
-        | ~ismember([sorting_table{2:end,SNR_index}]',keys.cal.SNR_rating);
     to_exclude_s=~ismember([sorting_table{2:end,usable_index}]',1); % think about other site criterias and maybe we want an option to include not usable?
-    keys.sorting_table_units([false;to_exclude_u],:) = [];
-    keys.sorting_table_sites([false;to_exclude_s],:) = [];
+%     keys.sorting_table_units([false;to_exclude_u],:) = [];
+     keys.sorting_table_sites([false;to_exclude_s],:) = [];
 end
 xlswrite([keys.tuning_table_foldername filesep keys.sorted_neurons_filename],sorting_table);
 end
@@ -449,23 +452,38 @@ units=1:numel(o);
 for u=units
     subplot(n_columns_rows,n_columns_rows,u);
     hold on;
-    plot([o(u).trial.trial_onset_time]+[o(u).trial.run_onset_time]-o(u).trial(1).run_onset_time,[o(u).trial.FR_average]);
+        FR_smoothed=smooth([o(u).trial.FR_average],10);
+    plot([o(u).trial.trial_onset_time]+[o(u).trial.run_onset_time]-o(u).trial(1).run_onset_time,FR_smoothed);
     trial_blocks=[o(u).trial.block];
+    trial_accepted=[o(u).trial.accepted];
+    trial_stability=[o(u).trial.stability_rating];
     unique_blocks=unique(trial_blocks);
     for b=unique_blocks
-        tr_idx=trial_blocks==b;
-        FR_std=double(nanstd([o(u).trial(tr_idx).FR_average]));
-        FR_mean=double(nanmean([o(u).trial(tr_idx).FR_average]));
+        tr_idx=trial_blocks==b & trial_accepted;
+        if sum(tr_idx)<2; continue; end;            % it can happen that an entire block is not accepted if FR changed drastically
+        FR_std=double(nanstd(FR_smoothed(tr_idx)));
+        FR_mean=double(nanmean(FR_smoothed(tr_idx)));
         start_block=o(u).trial(find(tr_idx,1,'first')).run_onset_time-o(u).trial(1).run_onset_time;
         end_block=start_block+o(u).trial(find(tr_idx,1,'last')).trial_onset_time;
-        plot([start_block end_block],[FR_mean FR_mean],'k','linewidth',4)
-        plot([start_block start_block],[0 FR_mean],'k','linewidth',4)
-        plot([end_block end_block],[0 FR_mean],'k','linewidth',4)
+        automatic_stability=trial_stability(tr_idx);automatic_stability=automatic_stability(1);
+        if automatic_stability==1
+            col='g';
+        elseif automatic_stability==2
+            col='b';
+        else
+            col='r';
+        end
+        
+        
+        plot([start_block end_block],[FR_mean FR_mean],col,'linewidth',4)
+        plot([start_block start_block],[0 FR_mean],col,'linewidth',4)
+        plot([end_block end_block],[0 FR_mean],col,'linewidth',4)
         text(start_block, FR_mean/2,sprintf('B%d: %0.1f + %0.1f',b,FR_mean,FR_std))
         %plot()
     end
-    
-    title(o(u).unit_ID,'interpreter','none');
+    unit_title={sprintf('%s ',o(u).unit_ID),...
+        sprintf(['ch/De: %d/%.2f b&u: %s' ],o(u).channel,o(u).electrode_depth,[o(u).block_unit{:}])}; %MP add number of spikes
+    title(unit_title,'interpreter','none');
 end
 title_and_save(FR_summary_handle,fig_title,keys)
 end
@@ -495,11 +513,13 @@ for n_unit=1:numel(o)
         plot(all_spikes_wf(1:50:n_sel_spike_wf*50,:)');
     end
     plot(wf_per_block','-k','linewidth',2);
-    unit_title={sprintf('%s SN/Si/St: %d/%d/%d',o(n_unit).unit_ID,o(n_unit).SNR_rating,o(n_unit).Single_rating,o(n_unit).stability_rating)...
-        sprintf(['spk: %d ch/De: %d/%.2f b: ' num2str(unique([o(n_unit).trial.block]))],n_sel_spike_wf, o(n_unit).channel,o(n_unit).electrode_depth)}; %MP add number of spikes
+    unit_title={sprintf('%s SN/Si/St: %d/%d/%d',o(n_unit).unit_ID,round(o(n_unit).SNR_rating*10)/10,round(o(n_unit).Single_rating*10)/10,round(o(n_unit).stability_rating*10)/10),...
+        sprintf(['spk: %d ch/De: %d/%.2f b&u: %s'],n_sel_spike_wf, o(n_unit).channel,o(n_unit).electrode_depth,[o(n_unit).block_unit{:}])}; %MP add number of spikes
     title(unit_title,'interpreter','none','fontsize',6)
+    if  max(max(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) > min(min(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) % not sure what this bug is about... Lin 20160303 
     set(gca,'xtick',[],'xcolor',[1 1 1],'FontSize',6,'ytick',...
         [min(min(all_spikes_wf(1:50:n_sel_spike_wf*50,:)')) max(max(all_spikes_wf(1:50:n_sel_spike_wf*50,:)'))]);          %MP remove X-axis keep Y-axis to have scale and show max/min values on Y axis
+    end
 end
 title_and_save(WF_summary_handle,fig_title,keys)
 end

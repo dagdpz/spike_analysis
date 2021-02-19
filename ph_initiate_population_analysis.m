@@ -1,5 +1,5 @@
 function ph_initiate_population_analysis(varargin)
-%ph_run_population_analysis('PPC_pulv_eye_hand',{'LIP_dPul_inj_working'},{'pop','ons','sct','ccs'})
+%ph_initiate_population_analysis('PPC_pulv_eye_hand',{'LIP_dPul_inj_working'},{'pop','ons','sct','ccs'})
 population_analysis_to_perform={'pop','beh','ons','sct','ccs','gaz','ref','gfl','hst'}; 
 
 if nargin>2
@@ -28,6 +28,8 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     if keys.batching.combine_monkeys
         keys.batching.monkeys={''};
     end    
+    keys=ph_make_subfolder('version_log',keys);
+    save([keys.basepath_to_save keys.project_version filesep 'version_log' filesep datestr(clock,'YYYYmmDD-HHMM')],'keys');
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
         keys.anova_table_file=[keys.basepath_to_save keys.project_version filesep 'tuning_table_combined_CI.mat'];
@@ -58,9 +60,15 @@ for P=population_analysis_to_perform
     ana=P{:};
     AN=upper(ana(1:2));
     for cc=1:numel(keys_in.(ana))
-        keys=keys_in;
-        
+        keys=keys_in;        
         keys.(AN).position_and_plotting_arrangements=keys_in.position_and_plotting_arrangements;
+        
+        %% DEFAULTS
+        
+        %grouping keys
+        keys.(AN).group_parameter='ungrouped';
+        keys.(AN).group_excluded={'','-'}; 
+        
         % presets
         keys.(AN).logarithmic_scale=0;
         keys.(AN).absolutes=0;
@@ -71,37 +79,29 @@ for P=population_analysis_to_perform
         keys.(AN).epoch_PF='INI';
         keys.(AN).epoch_GB='INI';
         keys.(AN).epoch_for_normalization='INI'; %%%epoch_for_normalization ... divisive!
+        keys.(AN).epoch_DN='INI';
         keys.(AN).epoch_RF='INI';
         keys.(AN).fittypes={'sigmoidal','linear','gaussian1'}; %,'gaussian2' %,'linear'
-                
         keys.(AN).FR_subtract_baseline=0;
         keys.(AN).baseline_per_trial=0;
         keys.(AN).normalization='none'; 
+        
+        % plotting keys
         keys.(AN).plot_RF=0; 
-        keys.(AN).y_lim=[]; 
-        keys.(AN).group_parameter='ungrouped';
-        keys.(AN).group_excluded={'','-'}; 
-        
-        keys.(AN).IC_to_plot='in';
         keys.(AN).plot_per_position=0;
+        keys.(AN).plot_posneg=0;
+        keys.(AN).y_lim=[]; 
+        keys.(AN).link_y_lim=1; 
+        keys.(AN).IC_to_plot='in';
         keys.(AN).fontsize_factor=1.5;
-        
         keys.(AN).split_SUs={''};
         keys.(AN).RF_frame_colors                 	= {};
         keys.(AN).RF_frame_entries                 	= {};
         keys.(AN).RF_frame_parameter                = '';
         keys.(AN).RF_columns                        = [];
         keys.(AN).RF_rows                           = [];
-                
-        %% defaults
-        keys.tt.choices                         = 0;
-        keys.tt.perturbations                   = 0;
-        keys.tt.hands                           = 0;
-        keys.tt.IC_for_criterion                = 'in';
-        keys.tt.unselect                        = {};
-        keys.tt.combine_tuning_properties       = {};
         
-        % plot specific keys
+        %% key asignment
         FN=fieldnames(keys_in.(ana)(cc));
         FN=FN(~ismember(FN,'tt'));
         for fn=FN'
@@ -166,15 +166,15 @@ for P=population_analysis_to_perform
                         ph_scatter(keys);
                     case 'ccs'
                         temp_epochs=keys.(AN).epochs;
-                        keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{:});
-                        for pie=[0,1]
-                            for percent=[0,1]
-                                keys.CC.plot_as_pie=pie;
-                                keys.CC.percent=percent;
+                        keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{1});
+%                         for pie=[0,1]
+%                             for percent=[0,1]
+                                keys.CC.plot_as_pie=1;
+                                keys.CC.percent=0;
                                 %keys=ph_make_subfolder('scatter',keys);
                                 ph_anova_cell_count(keys);
-                            end
-                        end
+%                             end
+%                         end
                         keys.(AN).epochs=temp_epochs;
                     case 'gaz'
                         keys=ph_make_subfolder('gaze_analysis',keys);
@@ -189,12 +189,14 @@ for P=population_analysis_to_perform
                         keys=ph_make_subfolder('classification',keys);
                         ph_classification(population,keys); 
                     case 'hst'
-                        
                         keys=ph_make_subfolder('hand_space',keys);
                         temp_epochs=keys.(AN).epochs;
                         keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{:});
                         ph_hand_space_tuning_vector(population,keys); 
                         keys.(AN).epochs=temp_epochs;
+                    case 'cpy'
+                        keys=ph_make_subfolder(keys.CP.foldername,keys);
+                        ph_copy_single_units(keys); 
                 end
             end
         end

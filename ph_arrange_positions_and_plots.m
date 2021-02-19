@@ -24,7 +24,8 @@ pop=rmfield(pop_in,'trial');
 end
 
 %% DEFINITION OF CONDITION INDICES TO PLOT, CURRENTLY TARGET LOCATION, FIXATION LOCATION, MOVEMENT VECTORS, CHOICE, HANDS
-[~, displacement_types] = center_displacement_working(o);       
+Precision=2;
+[~, displacement_types] = center_displacement_working(o,Precision);       
 all_val=displacement_types(:,1:4);
 fix_val=displacement_types(:,1:2);
 tar_val=displacement_types(:,3:4);
@@ -222,6 +223,7 @@ switch keys.arrangement
         pop.PSTH_perpos_colors     = keys.hnd_eff_colors(color_idx,:);
         pop.PSTH_summary_colors    = [keys.hnd_eff_colors_L(color_idx,:); keys.hnd_eff_colors_R(color_idx,:)] ;
         pop.line_labels            = hand_eff_labels(ismember(hand_eff_color_combination,hnd_eff_values,'rows'));
+        %Precision=5;
         
     case 'fixation'
         con_for_row             = eff_idx;
@@ -297,8 +299,8 @@ pop.hemifield_combinations = [con_for_figure con_for_trial_crit hemifield_indexe
 
 end
 
-function [s_c, displacement_types] = center_displacement_working(trial)
-Precision=2;
+function [s_c, displacement_types] = center_displacement_working(trial,Precision)
+
 
 movement_direction  =NaN(size(trial'));
 fixation            =NaN(size(trial'));

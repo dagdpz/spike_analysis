@@ -12,7 +12,7 @@ for effector=keys.cal.effectors
         tasktypes_index=tasktypes_index+1;
     end
 end
-excel_table=format_excel_tuning_table(tuning_per_unit_table,tasktypes,keys.position_and_plotting_arrangements);
+excel_table=format_excel_tuning_table(tuning_per_unit_table,tasktypes,keys);
 xlswrite([keys.tuning_table_foldername filesep keys.tuning_table_filename],excel_table);
 end
 
@@ -142,7 +142,8 @@ for r=1:numel(Subregions)
 end
 end
 
-function completed_table=format_excel_tuning_table(tuning_per_unit_table,tasks,cases)
+function completed_table=format_excel_tuning_table(tuning_per_unit_table,tasks,keys)
+cases=keys.position_and_plotting_arrangements;
 N_columns_unchanged=12;
 in_or_ch={'in','ch'};
 hands={'AH','IH','CH'}; %%!!!
@@ -163,10 +164,16 @@ for t=1:numel(tasks)
     temp_table2=[temp_table vertcat({'task'},repmat({current_task},size(tuning_per_unit_table,1)-1,1))];
     for c=1:numel(cases)
         current_case=cases{c}(1:3);
-        idx_N_trials=~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),['_trials_per_condition_' current_task '_' current_case]));
+        idx_N_trials=~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),['_trials_' keys.tt.trial_criterion_in '_' current_task '_' current_case])) & ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'in_'));
         underscore_idx=cellfun(@(x) strfind(x,'_'),tuning_per_unit_table(1,idx_N_trials),'UniformOutput',false);
         N_trial_titles=cellfun(@(x,y) ['N_trials_' x(1:y(end-4)-1)],tuning_per_unit_table(1,idx_N_trials),underscore_idx,'UniformOutput',false);
-        temp_table3=[temp_table2 vertcat({'case'},repmat({current_case},size(tuning_per_unit_table,1)-1,1)) vertcat(N_trial_titles,tuning_per_unit_table(2:end,idx_N_trials))];
+        temp_table_IN=vertcat(N_trial_titles,tuning_per_unit_table(2:end,idx_N_trials));
+        idx_N_trials=~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),['_trials_' keys.tt.trial_criterion_ch '_' current_task '_' current_case])) & ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'ch_'));
+        underscore_idx=cellfun(@(x) strfind(x,'_'),tuning_per_unit_table(1,idx_N_trials),'UniformOutput',false);
+        N_trial_titles=cellfun(@(x,y) ['N_trials_' x(1:y(end-4)-1)],tuning_per_unit_table(1,idx_N_trials),underscore_idx,'UniformOutput',false);
+        temp_table_CH=vertcat(N_trial_titles,tuning_per_unit_table(2:end,idx_N_trials));
+        
+        temp_table3=[temp_table2 vertcat({'case'},repmat({current_case},size(tuning_per_unit_table,1)-1,1)) temp_table_IN temp_table_CH];
         
         unique_epoch_title_indxes=~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'in_'))    & ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_epoch_')) &...
             ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_AH_')) &...
