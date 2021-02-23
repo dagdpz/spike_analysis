@@ -9,6 +9,11 @@ end
 %% overlapping tasktypes_hands_choices
 tasktypes_hands_choices=combvec((1:numel(keys.tt.tasktypes)),keys.tt.hands,keys.tt.choices,keys.tt.perturbations); % what is going on here???
 cell_idx_tuning_table=true(size(tuning_per_unit_table,1)-1,1);
+if isfield(keys.tt,'trial_criterion_per_perturbation') % this if also belong to trial_criterion_per_perturbation implementation at lign 25
+    if keys.tt.trial_criterion_per_perturbation
+        cell_idx_tuning_table=false(size(tuning_per_unit_table,1)-1,1);
+    end
+end
 for t=1:size(tasktypes_hands_choices,2) %% crashes for not existing monkey
     tasktype=tasktypes_hands_choices(1,t);
     hand    =tasktypes_hands_choices(2,t)+1;
@@ -16,10 +21,30 @@ for t=1:size(tasktypes_hands_choices,2) %% crashes for not existing monkey
     perturbation  =tasktypes_hands_choices(4,t)+1;
     column_title=['existing_' keys.labels.choices{choice} '_' keys.labels.handsIC{hand} keys.labels.perturbations{perturbation} '_' keys.tt.tasktypes{tasktype}];
     column_index=DAG_find_column_index(tuning_per_unit_table,column_title);
-    if ~isempty(column_index)
-        cell_idx_tuning_table=cell_idx_tuning_table & cell2mat(tuning_per_unit_table(2:end,column_index));
-    else
-        disp('combination of tasktype,hands,and choices not existing')
+    % start of trial_criterion_per_perturbation implementation
+    if isfield(keys.tt,'trial_criterion_per_perturbation')
+        if keys.tt.trial_criterion_per_perturbation % to include units which are only present in 1 of 2 perturbation status
+            % ONLY WORKS FOR SACCADE TASK (WHEN size(tasktypes_hands_choices,2) = 2
+            
+            if ~isempty(column_index)
+                cell_idx_tuning_table=cell_idx_tuning_table | cell2mat(tuning_per_unit_table(2:end,column_index));
+            else
+                disp('combination of tasktype,hands,and choices not existing')
+            end
+        else
+            if ~isempty(column_index)
+                cell_idx_tuning_table=cell_idx_tuning_table & cell2mat(tuning_per_unit_table(2:end,column_index));
+            else
+                disp('combination of tasktype,hands,and choices not existing')
+            end
+        end
+    else % end of trial_criterion_per_perturbation implementation
+        
+        if ~isempty(column_index)
+            cell_idx_tuning_table=cell_idx_tuning_table & cell2mat(tuning_per_unit_table(2:end,column_index));
+        else
+            disp('combination of tasktype,hands,and choices not existing')
+        end
     end
 end
 tuning_per_unit_table=tuning_per_unit_table([true;cell_idx_tuning_table],:);

@@ -984,7 +984,8 @@ end
                 unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
                 current_window=vertcat(current.window);
                 current_units=vertcat(current_window(:,1).unit);
-                empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density),current_units); %nans not needed hopefully
+               
+                empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density),current_units); %nans not needed hopefully 
                 empty_conditions_and_units(:,end+1:numel(unitidx))=true;
                 condition_empty=all(empty_conditions_and_units,2);
                 
