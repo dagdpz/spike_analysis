@@ -66,7 +66,7 @@ if ~isempty(taskcaseexistingindex)
         taskcases = [taskcases, {tuning_per_unit_table{1,I}(end-7:end)}];
         end
         %this nasty line put 1 to all to existing column if at least 1 is
-        %equal to 1, for each unit separately
+        %equal to 1, for each unit 
         tuning_per_unit_table(2:end,end-(counter-1):end) = repmat(num2cell(any(cellfun(@(x) x == 1, tuning_per_unit_table(2:end,end-(counter-1):end)),2)),...
             1, size(tuning_per_unit_table(2:end,end-(counter-1):end),2)); 
         
