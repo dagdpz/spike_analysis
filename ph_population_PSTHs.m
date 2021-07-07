@@ -132,7 +132,7 @@ u_perturbation=u_perturbation(~isnan(u_perturbation));
 
 %% limit conditions key?
 if ~any(keys.tt.hands==0) % cause hands 0 is any hand
-u_hands     =u_hands(ismember(u_hands,keys.tt.hands));
+    u_hands     =u_hands(ismember(u_hands,keys.tt.hands));
 end
 u_choice    =u_choice(ismember(u_choice,keys.tt.choices));
 
@@ -274,8 +274,8 @@ for tye=1:size(type_effectors,1)
                 %what to do if per_epoch is empty or
                 if strcmp(keys.PO.normalization,'none') || isempty(DN_epoch) %DN_epoch is empty? %% check if this works, for no multiplicative normalization
                     norm_factor(u,n)= 1;
-%                 elseif isempty(per_epoch)
-%                     norm_factor(u,n)=NaN;
+                    %                 elseif isempty(per_epoch)
+                    %                     norm_factor(u,n)=NaN;
                 elseif strcmp(keys.PO.normalization,'percent_change')
                     norm_factor(u,n)=deal(nanmean([per_epoch(:,BL_epoch).FR per_epoch(:,DN_epoch).FR NaN]))/100;
                     baseline(:,n)=deal(nanmean([per_epoch(:,BL_epoch).FR per_epoch(:,DN_epoch).FR NaN]));
@@ -290,6 +290,7 @@ for tye=1:size(type_effectors,1)
             
             %% z-scoring (way too complicated implementation)
             if strcmp(keys.PO.normalization,'z_score')
+                %                 dbstop in ph_population_PSTHs at 292 if u==171
                 u_blocks=unique([pop.trial.block]);
                 AT_tmp={};
                 prev_block_end=0;
@@ -301,16 +302,21 @@ for tye=1:size(type_effectors,1)
                     trial_onset_times(b_idx)=[pop.trial(b_idx).trial_onset_time]+prev_block_end;
                     prev_block_end=prev_block_end+pop.trial(last_trial_idx).trial_onset_time+pop.trial(last_trial_idx).states_onset(pop.trial(last_trial_idx).states==98);
                 end
+                
                 AT_tmp=unique(vertcat(AT_tmp{:}));
                 PSTH_ms =ceil(double(trial_onset_times(1))/keys.PSTH_binwidth)*keys.PSTH_binwidth:0.001:...
                     floor(double(trial_onset_times(end)+pop.trial(end).states_onset(pop.trial(end).states==98))/keys.PSTH_binwidth)*keys.PSTH_binwidth;
-                SD_ms= conv(hist(AT_tmp,PSTH_ms),normpdf(-5*keys.gaussian_kernel:0.001:5*keys.gaussian_kernel,0,keys.gaussian_kernel),'same');
-                
+                %                 PSTH_ms =ceil(double(trial_onset_times(1))/keys.PSTH_binwidth)*keys.PSTH_binwidth:0.001:...
+                %                     floor(double(AT_tmp(end))/keys.PSTH_binwidth)*keys.PSTH_binwidth;
+                SD_ms= conv(hist(AT_tmp(AT_tmp>=PSTH_ms(1)),PSTH_ms),normpdf(-5*keys.gaussian_kernel:0.001:5*keys.gaussian_kernel,0,keys.gaussian_kernel),'same');
+                % cutting away non trial time (trial time is between state
+                % 2 and 50) and trials which do not match type and effector
                 t_idx=false(size(PSTH_ms));
                 for t_temp=find([pop.trial.type]==typ & [pop.trial.effector]==eff)
                     min_temp=ceil(trial_onset_times(t_temp)/keys.PSTH_binwidth)*keys.PSTH_binwidth;
                     max_temp=floor((trial_onset_times(t_temp)+double(pop.trial(t_temp).states_onset(pop.trial(t_temp).states==50)))/keys.PSTH_binwidth)*keys.PSTH_binwidth;
                     t_idx(PSTH_ms+0.0002>=min_temp & PSTH_ms+0.0002<max_temp)=true;
+                    %             t_idx(PSTH_ms>=min_temp & PSTH_ms<max_temp)=true;
                 end
                 SD=nanmean(reshape(SD_ms(t_idx),keys.PSTH_binwidth/0.001,sum(t_idx)/keys.PSTH_binwidth*0.001),1);
                 norm_factor(u,:)=deal(std(SD));
@@ -320,7 +326,7 @@ for tye=1:size(type_effectors,1)
             norm_factor(u,:)=deal(max([norm_factor(u,:) 0])); % now we always normalize to maximum condition, 0 makes sure some value is there..
             %% correct normalization factors if they are too low
             if any(norm_factor(u,:)<1)
-                baseline=baseline+1-nanmean(norm_factor(u,:));
+                 baseline=baseline+1-nanmean(norm_factor(u,:)); % 
                 norm_factor(u,:)=deal(1);
             end
             
@@ -362,7 +368,7 @@ for tye=1:size(type_effectors,1)
                 
                 for w=1:size(keys.PSTH_WINDOWS,1)
                     for f=1:numel(u_hemifields) %hemifield
-                        tr_hemi=[pop.trial.hemifield]==u_hemifields(f); 
+                        tr_hemi=[pop.trial.hemifield]==u_hemifields(f);
                         ix = tr_con & tr_hemi;
                         n=max([1,find(ismember(condition_matrix(:,1:3),conditions_eff(ce,:),'rows') & condition_matrix(:,end)==u_hemifields(f))]);
                         condition(t,c).per_hemifield(f).window(w).unit(u).average_spike_density=...
@@ -425,7 +431,7 @@ for tye=1:size(type_effectors,1)
                             end
                         end
                         ix = tr_con & tr_pos;
-                        if p==pref_idx                            
+                        if p==pref_idx
                             condition(t,c).per_preference(1).window(w).unit(u).average_spike_density=...
                                 ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
                             condition(t,c).per_preference(1).effector=eff;
@@ -992,8 +998,8 @@ end
                 unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
                 current_window=vertcat(current.window);
                 current_units=vertcat(current_window(:,1).unit);
-               
-                empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density) || all(isnan( x.average_spike_density)),current_units) ; %nans not needed hopefully 
+                
+                empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density) || all(isnan( x.average_spike_density)),current_units) ; %nans not needed hopefully
                 empty_conditions_and_units(:,end+1:numel(unitidx))=true; % from the last valid to the end
                 condition_empty=all(empty_conditions_and_units,2);
                 
@@ -1103,8 +1109,8 @@ end
         
         for spn=1:numel(sph)
             
-                    ef=spf(spn);
-                    set(0, 'CurrentFigure', PSTH_summary_handle(ef));
+            ef=spf(spn);
+            set(0, 'CurrentFigure', PSTH_summary_handle(ef));
             subplot(sph(spn));
             hold on
             
@@ -1223,7 +1229,7 @@ else
 end
 end
 
-% 
+%
 % function plot_PSTH
 % for eff=u_effectors %% one figure for ech effector
 %     keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
@@ -1239,29 +1245,29 @@ end
 %         empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density),current_units);
 %         condition_empty=all(empty_conditions_and_units,2);
 %         % this is to make sure cells are present in all conditions...
-%         
+%
 %         if any(strfind(plot_title_part,'per position'))
-%             
-%             
+%
+%
 %             [positions, ~,pos_sub_idx]=unique(vertcat(current.position),'rows');
 %             [~, ~,fix_sub_idx]=unique(vertcat(current.fixation),'rows');
 %             [subplot_pos, columns_to_loop, rows_to_loop]= DAG_dynamic_positions({positions});
 %             conditions_to_loop=find([current.effector]'==eff & ~condition_empty);
 %         else
-%             
+%
 %             conditions_to_loop=find([current.effector]'==eff & ~condition_empty);
 %             %conditions_to_loop=find(conditions_PSTH(:,2)==eff & ~condition_empty);
 %             [~,columns_to_loop]=ismember(column_indexes,unique(column_indexes(conditions_to_loop)));
 %             group_units=intersect(group_units,find(all(~empty_conditions_and_units(~condition_empty,:),1)));
-%             
-%             
+%
+%
 %         end
-%         
+%
 %         n_units=[];
 %         legend_label_indexes=[];
 %         legend_line_handles=[];
 %         for c=conditions_to_loop(:)'
-%             
+%
 %             %% this seems rather complicated for retrieving color information
 %             if strcmp(plot_title_part,' PSTHs')
 %                 column=columns_to_loop(c);
@@ -1283,10 +1289,10 @@ end
 %                 col=fix_sub_idx(c);
 %                 current_color=keys.colors.fix_offset(col,:);
 %             end
-%             
+%
 %             hold on
 %             legend_label_indexes=[legend_label_indexes col];
-%             
+%
 %             units=intersect(group_units,find(arrayfun(@(x) ~isempty(x.average_spike_density),current(c).window(1).unit))) ; %why here again?
 %             n_units=[n_units numel(units)];
 %             if  numel(units)==0
@@ -1308,12 +1314,12 @@ end
 %         title(sprintf('%s = %s, N (NH/CH/IH) =%s ',keys.PO.group_parameter,unique_group_values{g},num2str(n_units)),'interpreter','none');
 %         y_lim(spn,:)=get(gca,'ylim');
 %     end
-%     
+%
 %     if keys.plot.population_PSTH_legends
 %         legend(legend_line_handles,legend_labels(legend_label_indexes),'location','southwest');
 %     end
 % end
-% 
+%
 % %% subplot appearance, and tuning lines
 % sph(sph==0)=[];
 % ylimmax=max(max(y_lim));
@@ -1335,15 +1341,15 @@ end
 %     %                 conditions_to_loop=find(conditions_PSTH(:,2)==eff & ~condition_empty);
 %     %                 [~,columns_to_loop]=ismember(column_indexes,unique(column_indexes(conditions_to_loop)));
 %     for spn=1:numel(sph)
-%         
+%
 %         subplot(sph(spn));
 %         hold on
-%         
+%
 %         %% completed? choices? hands?
 %         tr=[all_trialz.type]==typ & [all_trialz.effector]==eff & ismember([all_trialz.completed],keys.cal.completed) &...
 %             ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],u_hands) & ismember([all_trialz.choice],u_choice);
 %         ph_PSTH_background(all_trialz(tr),y_lim,y_lim,y_lim,keys,1)
-%         
+%
 %         %                 %% peak times
 %         %                                 Contra_handles=[];
 %         %                                 Contra_indexes=[];
@@ -1371,9 +1377,9 @@ end
 %         %                                     Ipsi_indexes=[Ipsi_indexes l];
 %         %                                     end
 %         %                                 end
-%         
-%         
-%         
+%
+%
+%
 %         %                     %% space tuning
 %         %                     for l=lines
 %         %                         l_height=y_lim(2)-diff(y_lim)*(l*0.01+0.1);
