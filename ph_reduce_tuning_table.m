@@ -19,7 +19,10 @@ for t=1:size(tasktypes_hands_choices,2) %% crashes for not existing monkey
     if ~isempty(column_index)
         row_index=row_index & cell2mat(TT(2:end,column_index));
     else
-        disp('combination of tasktype,hands,and choices not existing')
+        disp(['combination of tasktype ' keys.tt.tasktypes{tasktype} ',hands ' keys.labels.handsIC{hand} 'and choices ' keys.labels.choices{choice} 'not existing'])
+        if ~strfind(tasktype,'_')
+            disp('tasktype needs to contain arrangement as well to work properly, f.e.: Ddre_han')
+        end
     end
 end
 TT=TT([true;row_index],:);

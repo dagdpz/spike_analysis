@@ -88,7 +88,7 @@ for unit=1:numel(population)
                     %% Per position PSTH figure
                     plot_1_title            = [fig_title  ' PSTHs'];
                     %PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',[plot_1_title fig_title_part]);
-                    PSTH_summary_handle     = figure('outerposition',[0 0 1900 1200],'name',[plot_1_title fig_title_part]);
+                    PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[plot_1_title fig_title_part]);
                     subplot_indizes=unique([o.trial(of_index & [o.trial.effector]==effector).subplot_pos]);
                     PSTH_perpos_colors=o.PSTH_perpos_colors;
                     y_max =1;
@@ -161,9 +161,12 @@ for unit=1:numel(population)
                                 
                                 % PSTH
                                 state_seperator(lin)=state_shift + t_after_state + 0.1;
-                                [histo(lin,:) bins]=ph_spike_density(line_struct,w,keys,zeros(numel(line_struct),1),ones(numel(line_struct),1));
+                                [histo(lin,:) bins  SEM]=ph_spike_density(line_struct,w,keys,zeros(numel(line_struct),1),ones(numel(line_struct),1));
                                 bins=bins+state_shift;
-                                line(bins,histo(lin,:),'color',PSTH_perpos_colors(col,:),'LineWidth',keys.width.PSTH_perpos);          %PSTH
+                                
+                                lineProps={'color',PSTH_perpos_colors(col,:),'linewidth',keys.width.PSTH_perpos};
+                                shadedErrorBar(bins,histo(lin,:),SEM,lineProps,1);
+                                %line(bins,histo(lin,:),'color',PSTH_perpos_colors(col,:),'LineWidth',keys.width.PSTH_perpos);          %PSTH
                             end
                             if keys.plot.average_PSTH_line
                                 line(bins,nanmean(histo(lines_for_average,:),1),'color','k','LineWidth',keys.width.PSTH_perpos);          %PSTH
@@ -183,7 +186,7 @@ for unit=1:numel(population)
                     
                     %% FR figure
                     plot_title        =[fig_title ' FR'];
-                    FR_summary_handle   =figure('units','normalized','outerposition',[0 0 1 1],'name',[plot_title fig_title_part]);
+                    FR_summary_handle   =figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[plot_title fig_title_part]);
                     tr_index=of_index & [o.trial.effector]==effector & [o.trial.accepted]==1;
                     if sum(tr_index)==0 % might be the case if all trials are excluded cause of no spikes
                         continue;
@@ -238,7 +241,7 @@ for unit=1:numel(population)
                     if keys.plot.polars_on_extra_figure
                         title_and_save(FR_summary_handle,plot_title,[plot_title fig_title_part],keys);
                         plot_title        =[fig_title ' polars'];
-                        FR_summary_handle   =figure('units','normalized','outerposition',[0 0 1 1],'name',[plot_title fig_title_part]);
+                        FR_summary_handle   =figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[plot_title fig_title_part]);
                     end
                     clear FR_means FR_sterr;
                     polar_struct=o.trial(tr_index);
@@ -293,7 +296,7 @@ for unit=1:numel(population)
                 %% Summary plot
                 fig_title=sprintf('%s, %s, %s type, %s %s %s' ,keys.unit_ID, keys.target, type_string, keys.arrangement, title_part, title_value);
                 plot_title        =[fig_title ' effector summary'];
-                FR_summary_handle   =figure('units','normalized','outerposition',[0 0 1 1],'name',[plot_title fig_title_part]);   
+                FR_summary_handle   =figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[plot_title fig_title_part]);   
                 hemifields=[o.trial.hemifield];
                 unique_hemifields=unique(hemifields);
                 unique_columns=unique([o.trial.column]);
@@ -338,8 +341,12 @@ for unit=1:numel(population)
                                     if sum(tr_index)==0
                                         continue;
                                     end
-                                    PSTH=ph_spike_density(o.trial(tr_index),w,keys,zeros(sum(tr_index),1),ones(sum(tr_index),1));
-                                    line(bins,PSTH,'color',o.PSTH_summary_colors(con_counter,:),'LineWidth',keys.width.PSTH_summary);
+                                    [PSTH,~,SEM]=ph_spike_density(o.trial(tr_index),w,keys,zeros(sum(tr_index),1),ones(sum(tr_index),1));
+                                    
+                                    
+                                    lineProps={'color',o.PSTH_summary_colors(con_counter,:),'linewidth',keys.width.PSTH_summary};
+                                    shadedErrorBar(bins,PSTH,SEM,lineProps,1);
+                                    %line(bins,PSTH,'color',o.PSTH_summary_colors(con_counter,:),'LineWidth',keys.width.PSTH_summary);
                                     hs_ylim=max(hs_ylim,max(PSTH));
                                 end
                             end
@@ -523,7 +530,7 @@ for unit=1:numel(population)
                     PSTH_perpos_colors=om.PSTH_perpos_colors;
                     
                     plot_4_title            = [fig_title  ' movement PSTHs '];
-                    PSTH_movement_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',[plot_4_title]);
+                    PSTH_movement_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[plot_4_title]);
                     fig_title_part=[type_effector_short];
                     clear sp
                     for sub= unique([om.movement(~isnan([om.movement.subplot_pos])).subplot_pos])
@@ -569,7 +576,7 @@ for unit=1:numel(population)
                     
                     plot_5_title            = [fig_title  ' movement polar '];
                     fig_title_part=[type_effector_short];
-                    polar_movement_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',[plot_5_title]);
+                    polar_movement_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[plot_5_title]);
                     keys.movement_plot_types={'pre','peri','post'};
                     row_fields={'no_target_revealed','target_revealed'};
                     n_columns=numel(keys.movement_plot_types);

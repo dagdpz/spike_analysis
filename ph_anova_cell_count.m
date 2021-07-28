@@ -41,7 +41,7 @@ else
     keys.subfolder_to_save=[keys.subfolder_to_save '_absolute'];
 end
 
-figure('units','normalized','outerposition',[0 0 1 1])
+figure('units','normalized','outerposition',[0 0 1 1],'color','w')
 set(0, 'DefaultFigureRenderer', 'painters');
 hold on
 N_columns_rows=ceil(sqrt(size(pie_data,1)));
@@ -86,7 +86,7 @@ for sub= 1:size(pie_data,1)
             x_dummie=repmat(level:(size(pie_data,2)+1),numel(x),1)';
             if strcmp(keys.CC.plot_type,'per_epoch')  %|| strcmp(keys.CC.plot_type,'gaze')
                 close(gcf)
-                figure('units','normalized','outerposition',[0 0 1 1])
+                figure('units','normalized','outerposition',[0 0 1 1],'color','w')
                 set(0, 'DefaultFigureRenderer', 'painters');
                 colormap(current_colors);
                 if keys.CC.percent
@@ -139,7 +139,7 @@ title_and_save(keys);
 if ~(strcmp(keys.CC.plot_type,'per_epoch') || strcmp(keys.CC.plot_type,'per_task'))
     return;
 end
-figure('units','normalized','outerposition',[0 0 1 1])
+figure('units','normalized','outerposition',[0 0 1 1],'color','w')
 fields_to_plot= {'same','diff','none'};
 for to_plot=1:numel(fields_to_plot)
     FN=fields_to_plot{to_plot};
@@ -178,8 +178,12 @@ epochall_colors=[cols.EP_EN; cols.EP_SU; cols.NO_TU; cols.NO_AN]/255;
 choice_legend={'IN','CH','No tuning','No anova'};
 choice_colors=[cols.IS_CH; cols.IS_IN;  cols.NO_TU; cols.NO_AN;]/255;
 space_and_hand_legend={'IS','IHIS','IH','IHCS','CS','CHCS','CH','CHIS','incongruent','None'};
-space_and_hand_colors=[cols.IS_IN; cols.IH_IS_IN; cols.IH_IN; cols.IH_CS_IN;...
-    cols.CS_IN; cols.CH_CS_IN; cols.CH_IN; cols.CH_IS_IN; cols.NO_TU; cols.NO_AN]/255;
+% space_and_hand_colors=[cols.IS_IN; cols.IH_IS_IN; cols.IH_IN; cols.IH_CS_IN;...
+%     cols.CS_IN; cols.CH_CS_IN; cols.CH_IN; cols.CH_IS_IN; cols.NO_TU; cols.NO_AN]/255;
+
+
+space_and_hand_colors=[cols.IS_IN; cols.IH_IN; cols.IH_IN; cols.IH_IN;...
+    cols.CS_IN; cols.CH_IN; cols.CH_IN; cols.CH_IN; cols.NO_TU; cols.NO_AN]/255;
 
 SH_as_enhancement_legend={'IS','IHIS','IH','IHCS','CS','CHCS','CH','CHIS','IHISsu','IHCSsu','CHCSsu','CHISsu','CR','UC','en','su','none','no anova'};
 SH_as_enhancement_colors=[cols.IS_IN; cols.IH_IS_IN; cols.IH_IN; cols.IH_CS_IN;...

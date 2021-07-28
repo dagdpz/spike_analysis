@@ -6,6 +6,19 @@ for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
 
+%% gaussian fit settings
+fitsettings.sd_max_x=12;
+fitsettings.sd_x_min_ratio=0.125;%0.125;
+fitsettings.sd_max_y=fitsettings.sd_max_x;
+fitsettings.sd_xy_min_ratio=0.25;
+fitsettings.sd_xy_max_ratio=1;
+fitsettings.sd_y_min_ratio=fitsettings.sd_x_min_ratio;
+fitsettings.xout=[-30:30]; % range for gaussian fit
+fitsettings.yout=[-15:15];
+fitsettings.range_factor=1;
+fitsettings.fittypes=keys.PO.fittypes;
+keys.PO.fitsettings=fitsettings;
+
 legend_labels_hf={'NH IS IN' 'NH IS CH' 'IH IS IN' 'IH IS CH' 'CH IS IN' 'CH IS CH' ...
     'NH VS IN' 'NH VS CH' 'IH VS IN' 'IH VS CH' 'CH VS IN' 'CH VS CH' ...
     'NH CS IN' 'NH CS CH' 'IH CS IN' 'IH CS CH' 'CH CS IN' 'CH CS CH' ...
@@ -228,6 +241,10 @@ for t=1:size(condition,1)
             keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(keys.tt.hands),mat2str(double(keys.tt.choices)),[Sel_for_title{:}],keys.PO.normalization,keys.PO.epoch_for_normalization,keys.PO.group_parameter);
     end
     
+    %save metadata
+    unit_IDs=complete_unit_list;
+    save([keys.basepath_to_save, keys.project_version, filesep, 'population_meta_data', filesep, 'population_analysis', filesep, filename], 'keys','tuning_per_unit_table','unit_IDs');
+    
     %% PSTH plot
     current=[condition(t,:).per_hemifield];
     conditions_PSTH=conditions_hf_complete;
@@ -253,7 +270,6 @@ for t=1:size(condition,1)
         for gt=1:numel(unique_group_values_tmp)
             unique_group_values=unique_group_values_tmp(gt);
             
-            
             %% PSTH per position plot
             current=[condition(t,:).per_position];
             current=current(:);
@@ -265,7 +281,6 @@ for t=1:size(condition,1)
             plot_PSTH_no_empties
             
             if false
-                
                 %% PSTH per position plot (by initial fixation)
                 current=[condition(t,:).per_position_fixation];
                 current=current(:);
@@ -303,6 +318,92 @@ for t=1:size(condition,1)
                 units_valid=ones(size(complete_unit_list,1),1);
                 column_indexes=columns_pref;
                 plot_PSTH_no_empties
+                
+            end
+            
+            unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values_tmp(1)),idx_unitID));
+            group_units=find(all(unitidx,2))';
+            for c=1:size(condition,2)
+                                
+                %typ we know already
+                eff=conditions_out(c,1);
+                hnd=conditions_out(c,2);
+                cho=conditions_out(c,3);
+                ptb=conditions_out(c,3);
+                
+                
+                %normalize firing rates?
+                
+                per_unit=[condition(t,c).fitting.unit(group_units)];
+                pos=[per_unit.positions];
+                
+                %%
+                present_epochs={'dwopke'};%% this needs to be fixed!
+                %%
+                
+                gaussian_bl_epoch       =find(ismember(present_epochs,keys.PO.epoch_GB));
+                for u=1:size(pos,2)
+                    FR=[pos(:,u).FR];
+                    if ~isempty(gaussian_bl_epoch) || keys.PO.FR_subtract_baseline
+                        [FRmax(u), maxposition(u)]=max([FR(FR>0) 0]);
+                        FRmin=min([FR(FR<0) 0]);
+                        FRmax(u)=max([abs(FRmax(u)) abs(FRmin)]);
+                        
+                        FR255=num2cell(round((FR+FRmax(u))/2/FRmax(u)*254)+1);
+                    else
+                        [FRmax(u), maxposition(u)]=max(FR);
+                        FR255=num2cell(round(FR/FRmax(u)*254)+1);
+                    end
+                    [pos(:,u).FR255_GAU]=deal(FR255{:});
+                    [pos(:,u).FR255]=deal(FR255{:});
+                end
+                conditiontitle=['T' num2str(typ) 'E' num2str(eff) 'H' num2str(hnd) 'C' num2str(cho) 'P' num2str(ptb)];
+                
+                %% FR summary plot
+                plot_title_part        = ['=' unique_group_values_tmp{1} ' ' conditiontitle  ' FR in ' keys.PO.epoch_RF ' average' ];
+                f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[fig_title plot_title_part]);
+                hold on;
+                colormap(RF_colormap);
+                caxis([1 255]);
+                for p=1:size(pos,1)
+                    FRmean(p)=nanmean([pos(p,:).FR]);
+                end
+                for p=1:size(pos,1)
+                    if ~isempty(gaussian_bl_epoch) || keys.PO.FR_subtract_baseline
+                        FRmeancolidx=round(FRmean(p)/mean(FRmax)/2*254 + 127)+1;
+                    else
+                        FRmeancolidx=round(FRmean(p)/mean(FRmax)*254)+1;
+                    end
+                    if ~isnan(FRmean(p))
+                        plot(pos(p,1).x,pos(p,1).y,'o','markerfacecolor',RF_colormap(FRmeancolidx,:),'markeredgecolor','none','markersize',5);
+                        text(pos(p,1).x,pos(p,1).y,num2str(round(FRmean(p)*100)/100));
+                    end
+                end
+                axis equal
+                colorbar;
+                set(gca,'Xtick',[],'Ytick',[],'xlim',[min(fitsettings.xout) max(fitsettings.xout)],'ylim',[min(fitsettings.yout) max(fitsettings.yout)]);
+                ph_title_and_save(f_handle,  [filename plot_title_part],[fig_title plot_title_part],keys);
+                
+                %% FR peak histogram plot
+                plot_title_part        = ['=' unique_group_values_tmp{1} ' ' conditiontitle ' FR in ' keys.PO.epoch_RF ' histogram' ];
+                f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[fig_title plot_title_part]);
+                hold on;
+                colormap(RF_colormap);
+                caxis([1 255]);
+                for p=1:size(pos,1)
+                    N_per_pos(p)=sum(maxposition==p);
+                end
+                for p=1:size(pos,1)
+                    FRmean=round(N_per_pos(p)/max(N_per_pos)*254)+1;
+                    if ~isnan(FRmean)
+                        plot(pos(p,1).x,pos(p,1).y,'o','markerfacecolor',RF_colormap(FRmean,:),'markeredgecolor','none','markersize',5);
+                        text(pos(p,1).x,pos(p,1).y,num2str(N_per_pos(p)))
+                    end
+                end
+                axis equal
+                colorbar;
+                set(gca,'Xtick',[],'Ytick',[],'xlim',[min(fitsettings.xout) max(fitsettings.xout)],'ylim',[min(fitsettings.yout) max(fitsettings.yout)]);
+                ph_title_and_save(f_handle,  [filename plot_title_part],[fig_title plot_title_part],keys);
                 
             end
         end
@@ -408,7 +509,7 @@ for t=1:size(condition,1)
             
             %% RF plot
             plot_title_part        = ['=' unique_group_values{g} ' con' num2str(c) ' RF in ' keys.PO.epoch_RF ' BL ' keys.PO.epoch_GB];
-            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'name',[fig_title plot_title_part]);
+            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[fig_title plot_title_part]);
             colormap(RF_colormap);
             
             
@@ -470,7 +571,7 @@ for t=1:size(condition,1)
             
             %% fittype R2 values histogram
             plot_title_part       = ['=' unique_group_values{g} ' con' num2str(c) ' RF R2 ' 'in ' keys.PO.epoch_RF];
-            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'name',[fig_title plot_title_part]);
+            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[fig_title plot_title_part]);
             R2adjusted=[];
             for f=1:numel(fittypes)
                 fittype=fittypes{f};
@@ -485,7 +586,7 @@ for t=1:size(condition,1)
             
             %% fittype R2 values histogram
             plot_title_part       = ['=' unique_group_values{g} ' con' num2str(c) ' RF R2 adjusted ' 'in ' keys.PO.epoch_RF];
-            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'name',[fig_title plot_title_part]);
+            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[fig_title plot_title_part]);
             bins=-1:0.05:1;
             R2adjusted=[];
             for f=1:numel(fittypes)
@@ -502,7 +603,7 @@ for t=1:size(condition,1)
             
             %% fittype R2 values histogram
             plot_title_part       = ['=' unique_group_values{g} ' con' num2str(c) ' RF R2 adjusted win ' 'in ' keys.PO.epoch_RF];
-            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'name',[fig_title plot_title_part]);
+            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[fig_title plot_title_part]);
             bins=-0.05:0.05:2;
             cols=colormap(jet(numel(fittypes)));
             for f=1:numel(fittypes)
@@ -544,7 +645,7 @@ for t=1:size(condition,1)
             
             %% FR plot
             plot_title_part       = ['=' unique_group_values{g} ' con' num2str(c) ' FR ' 'in ' keys.PO.epoch_RF];
-            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'name',[fig_title plot_title_part]);
+            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[fig_title plot_title_part]);
             colormap(RF_colormap);
             for u=1:numel(group_units)
                 n=RF_sort_index(u);
@@ -562,56 +663,9 @@ for t=1:size(condition,1)
             colorbar
             ph_title_and_save(f_handle,  [filename plot_title_part],[fig_title plot_title_part],keys);
             
-            %% FR peak histogram plot
-            plot_title_part        = ['=' unique_group_values{g} ' con' num2str(c) ' FR in ' keys.PO.epoch_RF ' histogram' ];
-            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'name',[fig_title plot_title_part]);
-            hold on;
-            colormap(RF_colormap);
-            caxis([1 255]);
-            for p=1:size(pos,1)
-                N_per_pos(p)=sum(maxposition==p);
-            end
-            for p=1:size(pos,1)
-                FRmean=round(N_per_pos(p)/max(N_per_pos)*254)+1;
-                if ~isnan(FRmean)
-                    plot(pos(p,1).x,pos(p,1).y,'o','markerfacecolor',RF_colormap(FRmean,:),'markeredgecolor','none','markersize',5);
-                    text(pos(p,1).x,pos(p,1).y,num2str(N_per_pos(p)))
-                end
-            end
-            axis equal
-            colorbar;
-            set(gca,'Xtick',[],'Ytick',[],'xlim',[min(fitsettings.xout) max(fitsettings.xout)],'ylim',[min(fitsettings.yout) max(fitsettings.yout)]);
-            ph_title_and_save(f_handle,  [filename plot_title_part],[fig_title plot_title_part],keys);
-            
-            
-            %% FR summary plot
-            plot_title_part        = ['=' unique_group_values{g} ' con' num2str(c) ' FR in ' keys.PO.epoch_RF ' average' ];
-            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'name',[fig_title plot_title_part]);
-            hold on;
-            colormap(RF_colormap);
-            caxis([1 255]);
-            for p=1:size(pos,1)
-                FRmean(p)=nanmean([pos(p,:).FR]);
-            end
-            for p=1:size(pos,1)
-                if ~isempty(gaussian_bl_epoch)
-                    FRmeancolidx=round(FRmean(p)/FRmax(u)/2*254 + 127)+1;
-                else
-                    FRmeancolidx=round(FRmean(p)/FRmax(u)*254)+1;
-                end
-                if ~isnan(FRmean(p))
-                    plot(pos(p,1).x,pos(p,1).y,'o','markerfacecolor',RF_colormap(FRmeancolidx,:),'markeredgecolor','none','markersize',5);
-                    text(pos(p,1).x,pos(p,1).y,num2str(round(FRmean(p)*100)/100));
-                end
-            end
-            axis equal
-            colorbar;
-            set(gca,'Xtick',[],'Ytick',[],'xlim',[min(fitsettings.xout) max(fitsettings.xout)],'ylim',[min(fitsettings.yout) max(fitsettings.yout)]);
-            ph_title_and_save(f_handle,  [filename plot_title_part],[fig_title plot_title_part],keys);
-            
             %% RF centers
             plot_title_part        = ['=' unique_group_values{g} ' con' num2str(c) ' RF  in ' keys.PO.epoch_RF  ' summary'];
-            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'name',[fig_title plot_title_part]);
+            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[fig_title plot_title_part]);
             %sorting by RF size (to plot small ones on top of large ones)
             for u=group_units(sort_by_size_index)
                 if RFsizes(group_units==u)==0
@@ -671,7 +725,7 @@ for t=1:size(condition,1)
             
             %% RF sizes
             plot_title_part         = ['=' unique_group_values{g} ' con' num2str(c) ' gaussian RF  sizes in ' keys.PO.epoch_RF];
-            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'name',[fig_title plot_title_part]);
+            f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[fig_title plot_title_part]);
             %sorting by RF size (to plot small ones on top of large ones)
             RFsizes_valid=RFsizes(RFsizes~=0);
             minsiz=floor(min(RFsizes_valid));
@@ -695,7 +749,7 @@ end
             keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
             [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
             plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
-            PSTH_summary_handle(ef)     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
+            PSTH_summary_handle(ef)     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_title);
             for g=1:numel(unique_group_values)
                 %%reducing to only units that have at least one condition
                 unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
@@ -849,7 +903,7 @@ end
                 ef=find(u_effectors==eff);
                 [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
                 plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
-                PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
+                PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_title);
                 for g=1:numel(unique_group_values)
                     unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
                     group_units=find(all(unitidx,2) & units_valid)';

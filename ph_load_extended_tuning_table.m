@@ -5,6 +5,14 @@ function tuning_per_unit_table=ph_load_extended_tuning_table(keys)
 tuning_per_unit_table={};
 load(keys.anova_table_file);
 
+% fix blanks in column titles
+for k=1:size(tuning_per_unit_table,2)
+    blanks=strfind(tuning_per_unit_table{1,k},' ');
+    if any(blanks)
+       tuning_per_unit_table{1,k}(blanks) ='_';
+    end
+end
+
 tuning_per_unit_table(:,end+1)=num2cell(repmat('Y',size(tuning_per_unit_table,1),1));
 tuning_per_unit_table(1,end)={'ungrouped'};
 taskcaseexistingindex=find(~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_trials_per_condition')));
@@ -86,7 +94,7 @@ end
 
 %% create space OR interaction column
 taskcases=unique(taskcases);
-epochs={'Fhol','Cue','Cue2','EDel','Del','MemE','MemL','PreS','PreR','PeriS','Pre2','Peri2','PreG','CueG','TIhol','THol'};
+epochs={'Fhol','Cue','Cue2','EDel','Del','MemE','MemL','PreS','PreR','PeriS','PeriR','Pre2','Peri2','PreG','CueG','TIhol','THol'};
 for t=1:numel(taskcases)
     taskcase=taskcases{t};
     idx.space   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_spaceLR_main_'   taskcase] );
@@ -558,7 +566,6 @@ end
 idx.preS_spaceperhand=DAG_find_column_index(tuning_per_unit_table,'in_PreS_space_perhand_Ddsa_han');
 idx.preR_spaceperhand=DAG_find_column_index(tuning_per_unit_table,'in_PreR_space_perhand_Ddre_han');
 if any(idx.preS_spaceperhand) && any(idx.preR_spaceperhand)
-    
     R_CS=strcmp(tuning_per_unit_table(:,idx.preR_spaceperhand),'CS');
     R_IS=strcmp(tuning_per_unit_table(:,idx.preR_spaceperhand),'IS');
     S_CS=strcmp(tuning_per_unit_table(:,idx.preS_spaceperhand),'CS');
@@ -566,8 +573,6 @@ if any(idx.preS_spaceperhand) && any(idx.preR_spaceperhand)
     incongruent_space=  (R_CS & S_IS) | (R_IS & S_CS);
     CS= (R_CS | S_CS) & ~incongruent_space;
     IS= (R_IS | S_IS) & ~incongruent_space;
-    
-    
     n_column=n_column+1;
     tuning_per_unit_table(CS | IS,n_column)={'tuned'};
     %tuning_per_unit_table(IS,n_column)={'IS'};
@@ -578,17 +583,14 @@ end
 
 idx.preS_handperspace=DAG_find_column_index(tuning_per_unit_table,'in_PreS_hands_perspace_Ddsa_han');
 idx.preR_handperspace=DAG_find_column_index(tuning_per_unit_table,'in_PreR_hands_perspace_Ddre_han');
-if any(idx.preS_handperspace) && any(idx.preR_handperspace)
-    
+if any(idx.preS_handperspace) && any(idx.preR_handperspace)    
     R_CH=strcmp(tuning_per_unit_table(:,idx.preR_handperspace),'CH');
     R_IH=strcmp(tuning_per_unit_table(:,idx.preR_handperspace),'IH');
     S_CH=strcmp(tuning_per_unit_table(:,idx.preS_handperspace),'CH');
     S_IH=strcmp(tuning_per_unit_table(:,idx.preS_handperspace),'IH');
     incongruent_space=  (R_CH & S_IH) | (R_IH & S_CH);
     CH= (R_CH | S_CH) & ~incongruent_space;
-    IH= (R_IH | S_IH) & ~incongruent_space;
-    
-    
+    IH= (R_IH | S_IH) & ~incongruent_space;   
     n_column=n_column+1;
     tuning_per_unit_table(CH | IH,n_column)={'tuned'};
     %tuning_per_unit_table(IS,n_column)={'IS'};
@@ -599,8 +601,7 @@ end
 
 idx.CueS_spaceperhand=DAG_find_column_index(tuning_per_unit_table,'in_Cue_space_perhand_Ddsa_han');
 idx.CueR_spaceperhand=DAG_find_column_index(tuning_per_unit_table,'in_Cue_space_perhand_Ddre_han');
-if any(idx.preS_spaceperhand) && any(idx.preR_spaceperhand)
-    
+if any(idx.preS_spaceperhand) && any(idx.preR_spaceperhand)    
     R_CS=strcmp(tuning_per_unit_table(:,idx.CueR_spaceperhand),'CS');
     R_IS=strcmp(tuning_per_unit_table(:,idx.CueR_spaceperhand),'IS');
     S_CS=strcmp(tuning_per_unit_table(:,idx.CueS_spaceperhand),'CS');
@@ -608,8 +609,6 @@ if any(idx.preS_spaceperhand) && any(idx.preR_spaceperhand)
     incongruent_space=  (R_CS & S_IS) | (R_IS & S_CS);
     CS= (R_CS | S_CS) & ~incongruent_space;
     IS= (R_IS | S_IS) & ~incongruent_space;
-    
-    
     n_column=n_column+1;
     tuning_per_unit_table(CS | IS,n_column)={'tuned'};
     %tuning_per_unit_table(IS,n_column)={'IS'};

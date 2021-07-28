@@ -1,6 +1,6 @@
 function ph_population_response_timing(population,modified_keys)
 %load('W:\Projects\Pulv_microstim_behavior\ephys\ephys_analysis_v5_July2016_coordinates\monkeys_Combined_mem.mat')
-keys.n_consecutive_bins_significant=5;
+keys.n_consecutive_bins_significant=1; %%!
 warning('off','MATLAB:catenate:DimensionMismatch');
 
 %%% !!!!!!!! make sure epochs (baseline, cue, .... make sense for all effectors)
@@ -11,8 +11,11 @@ Right_hemisphere_targets={'dPulv_r','MIP_R'};
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
+keys.PSTH_binwidth=keys.ON.PSTH_binwidth;
+keys.gaussian_kernel=keys.ON.gaussian_kernel;
 
-keys.kernel_type                        ='box'; % we take box kernel here!!
+
+keys.kernel_type                        ='gaussian'; %'box'; % we take box kernel here!!
 %legend_labels={'NH IS IN' 'NH IS CH' 'IH IS IN' 'IH IS CH' 'CH IS IN' 'CH IS CH' 'NH CS IN' 'NH CS CH' 'IH CS IN' 'IH CS CH' 'CH CS IN' 'CH CS CH' };
 cols=keys.colors;
 keys.line_colors=[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;
@@ -160,9 +163,11 @@ for g=1:numel(unique_group_values)
             
             for u=1:numel(units)
                 %% baseline definition (for epoch tuning so far... CHECK dimensions of epoch_averages!!)
-                epoch_averages=vertcat(current_unit(unique([c1; c2]),units(u)).epoch_averages);
-                baseline=nanmean(epoch_averages(:,ismember(keys.EPOCHS(:,1),comparisons(comp).baseline_epoch)));
+                %epoch_averages=vertcat(current_unit(unique([c1; c2]),units(u)).epoch_averages);
+                %baseline=nanmean(epoch_averages(:,ismember(keys.EPOCHS(:,1),comparisons(comp).baseline_epoch)));
                 
+                epoch_averages=vertcat(current_unit(unique([c1; c2]),units(u)).epoch_FRs);
+                baseline=epoch_averages(:,ismember(keys.EPOCHS(:,1),comparisons(comp).baseline_epoch));
                 onset_found=0;
                 for wn=1:numel(current(1).window)
                     temp_sigbins=ph_compare_by_bin_by_trial(current_window(:,wn),c1,c2,baseline,units(u),keys);
@@ -216,6 +221,7 @@ for g=1:numel(unique_group_values)
     end
 end
 
+
 %% plots
 for t=1:numel(sigbins)
     typ=u_types(mod(t-1,numel(u_types))+1);
@@ -228,10 +234,15 @@ for t=1:numel(sigbins)
         filename=sprintf('%s %s %s = %s %s %s hnd %s ch %s',...
             [Sel_for_title{:}],keys.monkey,keys.ON.group_parameter,unique_group_values{g},[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)));
         
+        %% save metadata
+        unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
+        unit_IDs=complete_unit_list(all(unitidx,2));
+        comparison=current.comparison;
+        save([keys.basepath_to_save, keys.project_version, filesep, 'population_meta_data', filesep, 'response timing', filesep, keys.ON.comparisons_title ' ' filename], 'keys','tuning_per_unit_table','unit_IDs','comparison');
         plot_1_title            = [keys.ON.comparisons_title ' ' fig_title  ' per bin'];
         
         %% tuning per bin plot
-        PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_1_title);
+        PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_1_title);
         column=1;
         keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
         n=1;
@@ -291,11 +302,11 @@ for t=1:numel(sigbins)
         
         %% n tuned cells plot
         plot_3_title            = [keys.ON.comparisons_title ' ' fig_title  ' n tuned cells'];
-        PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_3_title);
+        PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_3_title);
         column=1;
         keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
         n=1;
-        clear x_lim sp
+        clear x_lim y_lim sp
         for comp=1:numel(comparisons)
             subplot(numel(comparisons),1,(comp-1)+column)
             hold on
@@ -352,7 +363,7 @@ for t=1:numel(sigbins)
         
         %% tuning onset plot
         plot_2_title            = [keys.ON.comparisons_title ' ' fig_title  ' tuning onset'];
-        PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_2_title);
+        PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_2_title);
         column=1;
         keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
         
@@ -437,7 +448,7 @@ for cc=c1(:)'
     C1=[C1;vertcat(in(cc).unit(u).average_spike_density)];
 end
 if all(c1==c2) %% epoch comparison (only possibly desired comparison if conditions are exactly identical)
-    C2=ones(1,size(C1,2))*baseline;
+    C2=baseline*ones(1,size(C1,2));
     ho=do_stats(C1,C2,keys,1);
 else
     for cc=c2(:)'
@@ -470,20 +481,56 @@ end
 function h=do_stats(Amat,Bmat,keys,paired)
 %h = ttest2(A,B);
 %ho=ttest2(A,B,0.05,'both','equal',1);
-for k=1:size(Amat,2)
-    A=Amat(:,k);
-    B=Bmat(:,k);
+% with baseline per trial we can always do paired stats!
+
+if keys.ON.permutation_tests
+    confidence_criterion=0.95;
+    
+    
+    Dav=abs(nanmean(Amat)-nanmean(Bmat));
+    P_all=[Amat;Bmat];
+    
+    na=size(Amat,1);
+    nb=size(Bmat,1);    
+    N=na+nb;
+    n_permutations=1000;
+    n_for_sig=n_permutations*confidence_criterion;
+    
     if paired
-        if any(~isnan(A)&~isnan(B))
-            [~, h(k)] = signrank(A,B);
-        else
-            h(k)=0;
+        for p=1:n_permutations
+            to_switch=randi([0 1], na,1)==1;
+            Ap=Amat;
+            Bp=Bmat;
+            Ap(to_switch,:)=Bmat(to_switch,:);
+            Bp(to_switch,:)=Amat(to_switch,:);
+            Pav=abs(nanmean(Ap)-nanmean(Bp));
+            Pwrong(p,:)=Dav>Pav;
         end
+        h=sum(Pwrong)>=n_for_sig;
     else
-        if any(~isnan(A)) && any (~isnan(B))
-            [~, h(k)] = ranksum(A,B);
+        for p=1:n_permutations
+            p_idx=randsample(1:N,N);
+            Pav=abs(nanmean(P_all(p_idx(1:na),:))-nanmean(P_all(p_idx(na+1:N),:)));
+            Pwrong(p,:)=Dav>Pav;
+        end
+        h=sum(Pwrong)>=n_for_sig;
+    end
+else
+    for k=1:size(Amat,2)
+        A=Amat(:,k);
+        B=Bmat(:,k);
+        if paired
+            if any(~isnan(A)&~isnan(B))
+                [~, h(k)] = signrank(A,B);
+            else
+                h(k)=0;
+            end
         else
-            h(k)=0;
+            if any(~isnan(A)) && any (~isnan(B))
+                [~, h(k)] = ranksum(A,B);
+            else
+                h(k)=0;
+            end
         end
     end
 end

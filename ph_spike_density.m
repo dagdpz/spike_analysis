@@ -1,4 +1,4 @@
-function [SD  bins]=ph_spike_density(trial,wn,keys,baseline,norm_factor)
+function [SD  bins SD_SEM]=ph_spike_density(trial,wn,keys,baseline,norm_factor)
 sta=keys.PSTH_WINDOWS{wn,2};
 t_before_state=keys.PSTH_WINDOWS{wn,3};
 t_after_state=keys.PSTH_WINDOWS{wn,4};
@@ -16,7 +16,7 @@ switch keys.kernel_type
         Kernel=normpdf(-5*keys.gaussian_kernel:0.001:5*keys.gaussian_kernel,0,keys.gaussian_kernel);
     case 'box'
         n_bins=round(2*keys.gaussian_kernel/0.001);
-        Kernel=ones(1,n_bins)/n_bins;
+        Kernel=ones(1,n_bins)/n_bins*1000; %%*1000 cause a one full spike in one 1ms bin means 1000sp/s locally
 end
 
 for t=1:numel(trial)
@@ -30,8 +30,11 @@ end
 
 if n_trials==0
     SD=NaN(1,sum(t_idx)/keys.PSTH_binwidth*0.001);
+    SD_SEM=NaN(1,sum(t_idx)/keys.PSTH_binwidth*0.001);
 else
     SD=sum(SD_ms,1)/n_trials;
+    SD_SEM=sterr(SD_ms,1);
+    SD_SEM=nanmean(reshape(SD_SEM(t_idx),keys.PSTH_binwidth/0.001,sum(t_idx)/keys.PSTH_binwidth*0.001),1);
     SD=nanmean(reshape(SD(t_idx),keys.PSTH_binwidth/0.001,sum(t_idx)/keys.PSTH_binwidth*0.001),1);
 end
 end

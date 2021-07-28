@@ -130,9 +130,7 @@ for current_date = sessions(:)'
         
         % plot the cells not meeting criteria
         idx_Neuron_ID=DAG_find_column_index(keys.sorting_table,'Neuron_ID');
-        idx_Site_ID=DAG_find_column_index(keys.sorting_table,'Site_ID');
         all_unit_IDs=keys.sorting_table_units(:,idx_Neuron_ID);
-        all_site_IDs=keys.sorting_table_sites(:,idx_Site_ID);
         if keys.plot.waveforms && any(~ismember({pop_resorted.unit_ID},all_unit_IDs))
             plot_sorted_waveforms(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria');
             plot_FR_across_time(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria FR over time');
@@ -168,6 +166,10 @@ for current_date = sessions(:)'
         
     end
     if keys.cal.process_sites
+        idx_Site_ID=DAG_find_column_index(keys.sorting_table,'Site_ID');
+        all_site_IDs=keys.sorting_table_sites(:,idx_Site_ID);
+        
+        
         % Excluding sites that dont match criterions... i.e. sites.unit_ID wont be assigned
         if keys.cal.units_from_sorting_table
             sites(~ismember({sites.site_ID},all_site_IDs))=[];

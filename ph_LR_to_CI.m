@@ -5,9 +5,6 @@ function pop=ph_LR_to_CI(keys,pop)
 % for right recording sites LR->CI  (hemifield & positions...?)
 % positive space and hand==2 become contra
 
-% Left_hemisphere_targets={'dPulv_l','pdSTS_L','FST_L','pTPO_L','LIP_L','MIP_L','unknown'};
-% Right_hemisphere_targets={'dPulv_r','PUL_r','PUL_R','MIP_R','LIP_R'};
-% keys.contra_ipsi_relative_to
 target=pop.(keys.contra_ipsi_relative_to);
 if strcmpi(target(end-1:end),'_R') || strcmpi(target(end-1:end),'_r')
     poptr=num2cell([pop.trial.hemifield]*-1);

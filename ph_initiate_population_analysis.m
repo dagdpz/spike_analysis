@@ -29,11 +29,12 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         keys.batching.monkeys={''};
     end    
     keys=ph_make_subfolder('version_log',keys);
+    keys=ph_make_subfolder('population_meta_data',keys);
     save([keys.basepath_to_save keys.project_version filesep 'version_log' filesep datestr(clock,'YYYYmmDD-HHMM')],'keys');
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
         keys.anova_table_file=[keys.basepath_to_save keys.project_version filesep 'tuning_table_combined_CI.mat'];
-        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','hst'}))
+        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','hst','reg','rtc','prf'}))
             population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
             population=ph_assign_perturbation_group(keys,population);
             population=ph_epochs(population,keys);
@@ -65,6 +66,11 @@ for P=population_analysis_to_perform
         
         %% DEFAULTS
         
+        %% PSTH keys and binsize
+
+        keys.(AN).PSTH_binwidth=keys.PSTH_binwidth;
+        keys.(AN).gaussian_kernel=keys.gaussian_kernel;
+        
         %grouping keys
         keys.(AN).group_parameter='ungrouped';
         keys.(AN).group_excluded={'','-'}; 
@@ -85,6 +91,9 @@ for P=population_analysis_to_perform
         keys.(AN).FR_subtract_baseline=0;
         keys.(AN).baseline_per_trial=0;
         keys.(AN).normalization='none'; 
+        keys.(AN).permutation_tests=1; 
+        keys.(AN).plot_as_pie=1;
+        keys.(AN).percent=0;
         
         % plotting keys
         keys.(AN).plot_RF=0; 
@@ -152,43 +161,57 @@ for P=population_analysis_to_perform
                     save(seed_filename,'seed');
                 end
                 switch ana
-                    case 'ons'
+                    case 'rtc'                        
+                        keys=ph_make_subfolder('reaction_time_correlation',keys);
+                        ph_RT_correlation(population,keys);
+                    case 'reg'                        
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'regression'],keys);
+                        keys=ph_make_subfolder('regression',keys);
+                        ph_linear_regression(population,keys);
+                    case 'ons'                        
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'response timing'],keys);
                         keys=ph_make_subfolder('response timing',keys);
                         ph_population_response_timing(population,keys);
                     case 'beh'
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'behavior'],keys);
                         keys=ph_make_subfolder('behavior',keys);
                         ph_ephys_behavior(keys);
                     case 'pop'
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'population_analysis'],keys);
                         keys=ph_make_subfolder('population_analysis',keys);
                         ph_population_PSTHs(population,keys);
                     case 'sct'
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'scatter'],keys);
                         keys=ph_make_subfolder('scatter',keys);
                         ph_scatter(keys);
                     case 'ccs'
                         temp_epochs=keys.(AN).epochs;
                         keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{1});
-%                         for pie=[0,1]
-%                             for percent=[0,1]
-                                keys.CC.plot_as_pie=1;
-                                keys.CC.percent=0;
-                                %keys=ph_make_subfolder('scatter',keys);
-                                ph_anova_cell_count(keys);
-%                             end
-%                         end
+                        %% missing storing stuff
+                        ph_anova_cell_count(keys);
                         keys.(AN).epochs=temp_epochs;
                     case 'gaz'
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'gaze_analysis'],keys);
                         keys=ph_make_subfolder('gaze_analysis',keys);
                         ph_gaze(population,keys);
                     case 'ref'
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'scatter'],keys);
                         keys=ph_make_subfolder('scatter',keys);
                         ph_reference_frame(population,keys); 
+                    case 'prf'
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'target_preference'],keys);
+                        keys=ph_make_subfolder('target_preference',keys);
+                        ph_target_preference(population,keys); 
                     case 'gfl'
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'tuning_curves'],keys);
                         keys=ph_make_subfolder('tuning_curves',keys);
                         ph_gainfields(population,keys); 
                     case 'clf'
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'classification'],keys);
                         keys=ph_make_subfolder('classification',keys);
                         ph_classification(population,keys); 
                     case 'hst'
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'hand_space'],keys);
                         keys=ph_make_subfolder('hand_space',keys);
                         temp_epochs=keys.(AN).epochs;
                         keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{:});
