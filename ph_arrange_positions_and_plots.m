@@ -264,26 +264,26 @@ switch keys.arrangement
     
     
             case 'StimulusType_Difficulty_Position'
-             difficulty =  difficulty+3*success';
-             idx_difficulty = find(difficulty <3);
-             difficulty(idx_difficulty)     =[];
-             stm_idx(idx_difficulty)        =[];
-             Styp_idx(idx_difficulty)       =[];
+%              difficulty =  difficulty+3*success';
+%              idx_difficulty = find(difficulty <3);
+%              difficulty(idx_difficulty)     =[];
+%              stm_idx(idx_difficulty)        =[];
+%              Styp_idx(idx_difficulty)       =[];
             [diff_values,~,diff_idx]        =unique(difficulty);
 
      fig_title               = 'SglStimuli_Difficulty_Position';
      con_for_figure          = Styp_idx';
      val_for_figure          = num2cell(Styp_values);
 
-     con_for_line            = diff_idx;
+     con_for_line            = diff_idx';  %%% there was no ' !?
      pop.line_labels        =   {'Diff','Easy','Tar'};
 
      position_indexes        = stm_idx;
      val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
      val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
      sub_title               = 'stimulus position';   
-     pop.PSTH_perpos_colors =   [autumn(5);winter(5)] ;
-     pop.PSTH_summary_colors=   [autumn(5);winter(5)] ;
+     pop.PSTH_perpos_colors =   [autumn(6);winter(6)] ;
+     pop.PSTH_summary_colors=   [autumn(6);winter(6)] ;
     hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
      con_for_trial_crit      = con_for_line;
 
