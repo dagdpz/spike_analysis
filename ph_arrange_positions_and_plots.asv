@@ -66,13 +66,11 @@ num_distr_per_trial = cellfun(@(x) sum(~ismember(x,Settings.TaskParameter.fixati
 StimulusType = sum([num_targets_per_trial; num_distr_per_trial] );
 
 for i = 1 : length(StimulusType)
-    if num_targets_per_trial(i) == 0 && num_distr_per_trial(i) == 1 ||  num_targets_per_trial(i) == 1 && num_distr_per_trial(i) == 0
-        StimulusType(i) = 1;
-    elseif num_targets_per_trial(i) == 2 || num_distr_per_trial(i) == 2
-        StimulusType(i) = 2;
-    elseif num_targets_per_trial(i) == 1 && num_distr_per_trial(i) == 1
-        StimulusType(i) = 3;
-    end
+if num_targets_per_trial(i) == 0 & num_distr_per_trial(i) == 1  num_targets_per_trial(i) == 0 & num_distr_per_trial(i) == 1
+    StimulusType(i) == 1
+elseif num_targets_per_trial(i) == 1 & num_distr_per_trial(i) == 1
+    StimulusType(i) == 1
+end
 end
 
 
@@ -139,10 +137,10 @@ AllDifficulties(i_diff +1, sum(AllDifficulties,1 ) == 0) = i_diff +1;
 difficulty = sum(AllDifficulties, 1); 
 
 disp(['Nb of sglstimuli ', num2str(numel(difficulty(StimulusType == 1)))])
-%disp(['Nb of dblstimuli ', num2str(numel(difficulty(StimulusType == 2)))])
+disp(['Nb of dblstimuli ', num2str(numel(difficulty(StimulusType == 2)))])
 
-disp(['Nb of dbl same stimuli ', num2str(numel(difficulty(StimulusType == 2)))])
-disp(['Nb of dbl diff stimuli ', num2str(numel(difficulty(StimulusType == 3)))])
+%disp(['Nb of dbl same stimuli ', num2str(numel(difficulty(StimulusType == 2)))])
+%disp(['Nb of dbl diff stimuli ', num2str(numel(difficulty(StimulusType == 2)))])
 
 
 % red_targets_per_trial = cellfun(@(x) find(ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
@@ -160,7 +158,7 @@ disp(['Nb of dbl diff stimuli ', num2str(numel(difficulty(StimulusType == 3)))])
 % red_targ_or_distr_per_trial = red_targets_per_trial; %sgl stimuli
 % red_targ_or_distr_per_trial(red_targets_per_trial_empty) = distr_per_trial(red_targets_per_trial_empty);
 % non_fix_stimuli_per_trial = red_targ_or_distr_per_trial; % also includes targ_targ and distr_distr trials
-% red_targ_or_distr_per_trial(two_repd_targets_per_trial) = {[]};
+% red_targ_or_distr_per_trial(two_red_targets_per_trial) = {[]};
 % red_targ_or_distr_per_trial(two_distr_per_trial) = {[]}; % contains indices of the target (if present and only if it is a single target or a target-distractor trial)
 %             
 target_selected      =[o.target_selected]'; %Which target selected
