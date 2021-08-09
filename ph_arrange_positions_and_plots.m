@@ -269,7 +269,8 @@ switch keys.arrangement
     
     
             case 'StimulusType_Difficulty_Position'
-              difficulty =  difficulty+3*success';
+%              difficulty =  difficulty+3*success';
+%              difficulty =  difficulty(success ==1)';
 %              idx_difficulty = find(difficulty <3);
 %              difficulty(idx_difficulty)     =[];
 %              stm_idx(idx_difficulty)        =[];
@@ -293,6 +294,44 @@ switch keys.arrangement
     
    % (real([o.cue_pos]' - [o.tar_pos]')>0)+1;
     
+    disp(['Nb of sgl stimuli - Diff R ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
+    disp(['Nb of sgl stimuli - Diff L ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
+
+    disp(['Nb of sgl stimuli - Diff R ', num2str(sum(sum([difficulty == 2 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
+    disp(['Nb of sgl stimuli - Diff L ', num2str(sum(sum([difficulty == 2 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
+
+    disp(['Nb of sgl stimuli - target R ', num2str(sum(sum([difficulty == 3 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
+    disp(['Nb of sgl stimuli - target L ', num2str(sum(sum([difficulty == 3 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
+
+     con_for_trial_crit      = con_for_line;
+
+     
+                case 'StimulusType_Difficulty_Position_Successful'
+              difficulty =  difficulty(success ==1);
+              stm_idx  =  stm_idx(success ==1);
+              Styp_idx =  Styp_idx(success ==1);
+              stm_val  =  stm_val(success ==1,:);
+              [~,u_stm_idx_idx]=unique(stm_idx);
+
+            [diff_values,~,diff_idx]        =unique(difficulty);
+
+     fig_title               = 'StimulusType_Difficulty_Position';
+     con_for_figure          = Styp_idx';
+     val_for_figure          = num2cell(Styp_values);
+
+     con_for_line            = diff_idx';  %%% there was no ' !?
+     pop.line_labels        =   {'Diff','Easy','Tar'};
+     position_indexes        = stm_idx;
+     val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+     val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+     sub_title               = 'stimulus position';   
+     pop.PSTH_perpos_colors =   [autumn(3);winter(3)] ;
+     pop.PSTH_summary_colors=   [autumn(3);winter(3)] ;
+    hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+    
+   % (real([o.cue_pos]' - [o.tar_pos]')>0)+1;
+                  StimulusType  =  StimulusType(success ==1);
+
     disp(['Nb of sgl stimuli - Diff R ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
     disp(['Nb of sgl stimuli - Diff L ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
 
@@ -358,7 +397,7 @@ switch keys.arrangement
            case 'StimulusType_Difficulty_Position_ErrorVsCorrect_lastVers'
    [diff_values,~,diff_idx]      =unique(difficulty+3*success');
 
-     fig_title               = 'StimulusType';
+     fig_title               = 'StimulusType_Difficulty_Position';
      con_for_figure          = Styp_idx';
      val_for_figure          = num2cell(Styp_values);
 
@@ -373,7 +412,6 @@ switch keys.arrangement
      pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
     hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
      con_for_trial_crit      = con_for_line; 
-    % con_for_figure          = suc_idx;
 
 
     case 'success_in_cue'
