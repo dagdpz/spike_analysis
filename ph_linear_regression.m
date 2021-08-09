@@ -157,7 +157,7 @@ end
 positions=unique(vertcat(whatisthis.trial.position),'rows');
 keys.normalization_field='RE';
 keys.WINDOWS_PER_TYPE=keys.RE.WINDOWS_PER_TYPE;
-if true
+if false
 [~, condition,~,pref_valid]=ph_condition_normalization(population,keys);
 
 save([keys.path_to_save, filesep, 'bootstrapped_normalized'],'keys','condition','complete_unit_list');
@@ -229,31 +229,31 @@ for u=1:numel(condition_per_hf(c).window(wM).unit)
                 if max_shift>0
                     condition_per_hf(c).window(wM).unit(u).average_spike_density = condition_per_hf(c).window(wM).unit(u).average_spike_density(shift+1:end-max_shift_in_bin+shift);
 %                     condition_per_hf(c).window(w).unit(u).SD_for_corr           = condition_per_hf(c).window(wS).unit(u).average_spike_density(shift+1:end-max_shift_in_bin+shift);
-%                     condition_per_hf(c).window(w).unit(u).bootstrapped          = condition_per_hf(c).window(wS).unit(u).bootstrapped(:,shift+1:end-max_shift_in_bin+shift);
+                     condition_per_hf(c).window(wM).unit(u).bootstrapped          = condition_per_hf(c).window(wM).unit(u).bootstrapped(:,shift+1:end-max_shift_in_bin+shift);
                 elseif max_shift<0
                     condition_per_hf(c).window(wM).unit(u).average_spike_density = condition_per_hf(c).window(wM).unit(u).average_spike_density(max_shift_in_bin+shift+1:end+shift);
 %                     condition_per_hf(c).window(w).unit(u).SD_for_corr           = condition_per_hf(c).window(wS).unit(u).average_spike_density(max_shift_in_bin+shift+1:end+shift);
-%                     condition_per_hf(c).window(w).unit(u).bootstrapped          = condition_per_hf(c).window(wS).unit(u).bootstrapped(:,max_shift_in_bin+shift+1:end+shift); %% this is assuming shift is negative for this condition/unit as well
+                     condition_per_hf(c).window(wM).unit(u).bootstrapped          = condition_per_hf(c).window(wM).unit(u).bootstrapped(:,max_shift_in_bin+shift+1:end+shift); %% this is assuming shift is negative for this condition/unit as well
                 end
             elseif ismember(c,con_rea)
                 if max_shift>0
                     condition_per_hf(c).window(wM).unit(u).average_spike_density = condition_per_hf(c).window(wM).unit(u).average_spike_density(1:end-max_shift_in_bin);
 %                     condition_per_hf(c).window(w).unit(u).SD_for_corr           = condition_per_hf(c).window(wR).unit(u).average_spike_density(1:end-max_shift_in_bin);
-%                     condition_per_hf(c).window(w).unit(u).bootstrapped          = condition_per_hf(c).window(wR).unit(u).bootstrapped(:,1:end-max_shift_in_bin);
+                     condition_per_hf(c).window(wM).unit(u).bootstrapped          = condition_per_hf(c).window(wM).unit(u).bootstrapped(:,1:end-max_shift_in_bin);
                 elseif max_shift<0
                     condition_per_hf(c).window(wM).unit(u).average_spike_density = condition_per_hf(c).window(wM).unit(u).average_spike_density(max_shift_in_bin+1:end);
 %                     condition_per_hf(c).window(w).unit(u).SD_for_corr           = condition_per_hf(c).window(wR).unit(u).average_spike_density(max_shift_in_bin+1:end);
-%                     condition_per_hf(c).window(w).unit(u).bootstrapped          = condition_per_hf(c).window(wR).unit(u).bootstrapped(:,max_shift_in_bin+1:end);
+                     condition_per_hf(c).window(wM).unit(u).bootstrapped          = condition_per_hf(c).window(wM).unit(u).bootstrapped(:,max_shift_in_bin+1:end);
                 end
             else 
                 if max_shift>0
                     condition_per_hf(c).window(wM).unit(u).average_spike_density = condition_per_hf(c).window(wM).unit(u).average_spike_density(1:end-max_shift_in_bin);
 %                     condition_per_hf(c).window(w).unit(u).SD_for_corr           = condition_per_hf(c).window(w).unit(u).average_spike_density(1:end-max_shift_in_bin);
-%                     condition_per_hf(c).window(w).unit(u).bootstrapped          = condition_per_hf(c).window(w).unit(u).bootstrapped(:,1:end-max_shift_in_bin);
+                     condition_per_hf(c).window(wM).unit(u).bootstrapped          = condition_per_hf(c).window(wM).unit(u).bootstrapped(:,1:end-max_shift_in_bin);
                 elseif max_shift<0
                     condition_per_hf(c).window(wM).unit(u).average_spike_density = condition_per_hf(c).window(wM).unit(u).average_spike_density(max_shift_in_bin+1:end);
 %                     condition_per_hf(c).window(w).unit(u).SD_for_corr           = condition_per_hf(c).window(w).unit(u).average_spike_density(max_shift_in_bin+1:end);
-%                     condition_per_hf(c).window(w).unit(u).bootstrapped          = condition_per_hf(c).window(w).unit(u).bootstrapped(:,max_shift_in_bin+1:end);
+                     condition_per_hf(c).window(wM).unit(u).bootstrapped          = condition_per_hf(c).window(wM).unit(u).bootstrapped(:,max_shift_in_bin+1:end);
                 end
             end
         end
@@ -274,7 +274,7 @@ end
 %% do the actual regression - some mismatch here??
 for u=1:numel(PSTHs_per_unit)
     for w=1:numel(PSTHs_per_unit(u).window)
-        clear reg4fit reg4fitSEM reg_perbinSEM reg_tmp sol_tmp reg_perbin reg_bootstrapped sol_bootstrapped corrR1_bt betas
+        clear reg4fit reg4fitSEM reg_perbinSEM reg_tmp sol_tmp reg_perbin reg_bootstrapped sol_bootstrapped corrR1_bt betas sig_diff_per_bin reg4fit_BT betas
         for r=1:numel(regressors)
             if w==wM && all(ismember(find(con4reg(:,r)),con_sac))
                 reg_tmp(:,r)= [PSTHs_per_unit(u).window(wS).condition(con4reg(:,r)).average_spike_density]';
@@ -287,10 +287,11 @@ for u=1:numel(PSTHs_per_unit)
                 reg_bootstrapped{r}= [PSTHs_per_unit(u).window(w).condition(con4reg(:,r)).bootstrapped]';
             end
             
+            reg4fit_BT{r}= [PSTHs_per_unit(u).window(w).condition(con4reg(:,r)).bootstrapped]';
             reg4fit(:,r)= [PSTHs_per_unit(u).window(w).condition(con4reg(:,r)).average_spike_density]';
-            reg4fitSEM(:,r)= [PSTHs_per_unit(u).window(w).condition(con4reg(:,r)).SEM_spike_density]';
+            reg4fitSEM(:,r)= [PSTHs_per_unit(u).window(w).condition(con4reg(:,r)).VAR_spike_density]';
             reg_perbin{r}= vertcat(PSTHs_per_unit(u).window(w).condition(con4reg(:,r)).average_spike_density);
-            reg_perbinSEM{r}= vertcat(PSTHs_per_unit(u).window(w).condition(con4reg(:,r)).SEM_spike_density);
+            reg_perbinSEM{r}= vertcat(PSTHs_per_unit(u).window(w).condition(con4reg(:,r)).VAR_spike_density);
         end
         if w==wM && all(ismember(find(con4reg(:,1)),con_sac))
             sol_bootstrapped{1}=[PSTHs_per_unit(u).window(wS).condition(con4reg(:,end)).bootstrapped]';
@@ -322,13 +323,16 @@ for u=1:numel(PSTHs_per_unit)
         per_window(w).corr2(u)=corrR2(1,2);
         per_window(w).corr3(u)=corrR3(1,2);
         for bt=1:size(sol_bootstrapped{1},2)
+            corrR_tmp=corr([reg_bootstrapped{1}(:,bt) reg_bootstrapped{2}(:,bt)]);
             corrR1_tmp=corr([reg_bootstrapped{1}(:,bt) sol_bootstrapped{1}(:,bt)]);
             corrR2_tmp=corr([reg_bootstrapped{2}(:,bt) sol_bootstrapped{2}(:,bt)]);
             corrR3_tmp=corr([reg_bootstrapped{1}(:,bt)+reg_bootstrapped{2}(:,bt) sol_bootstrapped{2}(:,bt)]); %% what to do for movement window here??
+            corrR_bt(bt)=corrR_tmp(1,2);
             corrR1_bt(bt)=corrR1_tmp(1,2);
             corrR2_bt(bt)=corrR2_tmp(1,2);
             corrR3_bt(bt)=corrR3_tmp(1,2);
         end
+        per_window(w).corrCI(u,:) =prctile(corrR_bt,[2.5 97.5]);
         per_window(w).corrCI1(u,:)=prctile(corrR1_bt,[2.5 97.5]);
         per_window(w).corrCI2(u,:)=prctile(corrR2_bt,[2.5 97.5]);
         per_window(w).corrCI3(u,:)=prctile(corrR3_bt,[2.5 97.5]);
@@ -367,29 +371,29 @@ for u=1:numel(PSTHs_per_unit)
         for b=1:size(sol_perbin,2)
             if all(~isnan(reg_perbin{1}(:,b))) && all(~isnan(reg_perbin{2}(:,b)))
                 [betas,~,~,in] = stepwisefit([reg_perbin{1}(:,b) reg_perbin{2}(:,b)] ,sol_perbin(:,b),'display','off');
-%                 
-%                 %bl=min(reg_perbin{1}(:,b),reg_perbin{2}(:,b));
-%                 bl=(reg_perbin{1}(:,b)+reg_perbin{2}(:,b))/2;
-%                 x=reg_perbin{1}(:,b)-bl;
-%                 y=reg_perbin{2}(:,b)-bl;
-%                 z=sol_perbin(:,b)-bl;
-% %                 
-% %                 %  %b1       %b2    % intercept
-% %                 LB=[0         0     -inf];
-% %                 X0=[0         0        0];
-% %                 UB=[inf       inf    inf];          
-%                 %  %b1       %b2    % intercept
-%                 LB=[0         0        0];
-%                 X0=[1         1        0];
-%                 UB=[2         2      inf];           
-%                 fitT=fittype('ph_fit_linear(x,y,b1,b2,IC)','dependent',{'z'},'independent',{'x','y'},'coefficients',{'b1','b2','IC'});
-%                 fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB,'Upper',UB,'StartPoint',X0); % 'Weights' !
-%                 
-%                 [fitobj, Goodness] =fit([x,y],z,fitT,fitopts);
-%                 ci = confint(fitobj);
-%                 in=all(ci>0);
-%                 betas(1)=fitobj.b1;
-%                 betas(2)=fitobj.b2;
+                %
+                %                 %bl=min(reg_perbin{1}(:,b),reg_perbin{2}(:,b));
+                %                 bl=(reg_perbin{1}(:,b)+reg_perbin{2}(:,b))/2;
+                %                 x=reg_perbin{1}(:,b)-bl;
+                %                 y=reg_perbin{2}(:,b)-bl;
+                %                 z=sol_perbin(:,b)-bl;
+                % %
+                % %                 %  %b1       %b2    % intercept
+                % %                 LB=[0         0     -inf];
+                % %                 X0=[0         0        0];
+                % %                 UB=[inf       inf    inf];
+                %                 %  %b1       %b2    % intercept
+                %                 LB=[0         0        0];
+                %                 X0=[1         1        0];
+                %                 UB=[2         2      inf];
+                %                 fitT=fittype('ph_fit_linear(x,y,b1,b2,IC)','dependent',{'z'},'independent',{'x','y'},'coefficients',{'b1','b2','IC'});
+                %                 fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB,'Upper',UB,'StartPoint',X0); % 'Weights' !
+                %
+                %                 [fitobj, Goodness] =fit([x,y],z,fitT,fitopts);
+                %                 ci = confint(fitobj);
+                %                 in=all(ci>0);
+                %                 betas(1)=fitobj.b1;
+                %                 betas(2)=fitobj.b2;
                 %[~,~,~,in] = stepwisefit([betas(1)*x betas(2)*y] ,z,'display','off','maxiter',1);
                 per_window(w).betas1(u,b)=betas(1);
                 per_window(w).betas2(u,b)=betas(2);
@@ -406,70 +410,184 @@ for u=1:numel(PSTHs_per_unit)
         per_unit(u).window(w).name= keys.WINDOWS_PER_TYPE{typ}(w,1);
         
         
-            similarity_criterion=1/10;
-idx=abs(diff(reg4fit,1,2))>similarity_criterion*mean(mean(reg4fit)); %% works only for 2 regressors so far     
+        %         similarity_criterion=1;
+        %         %idx=abs(diff(reg4fit,1,2))>similarity_criterion*mean(var(reg4fit,0,1)); %% works only for 2 regressors so far
+        %         var_per_bin=var(reg4fit_BT{1},0,2)+var(reg4fit_BT{2},0,2);
+        %         idx=abs(diff(reg4fit,1,2))>similarity_criterion*var_per_bin;
+        %
+        idx=true(size(reg4fit,1),1);
+        
+%         [hhh ppp]=DAG_movcorr(reg4fit(:,1),reg4fit(:,2),10);
+%         idx(ppp<0.05)=false;
+        
+%         for x=1:size(reg4fit_BT{1},1)
+%             idx_tmp=ttest2(reg4fit_BT{1}(x,:),reg4fit_BT{2}(x,:));
+%             if isnan(idx_tmp)
+%                 idx(x)=false;
+%             else
+%                 idx(x)=idx_tmp;
+%             end
+%         end
+        
+        
         
         if any(any(isnan(reg4fit))) || any(isnan(sol4fit)) || sum(idx)<10
-            per_unit(u).window(w).betas=zeros(size(regressors)+1)';
+            per_unit(u).window(w).betas=zeros(size(regressors))';
             per_unit(u).window(w).intercept=0;
-            per_unit(u).window(w).pval=ones(size(regressors)+1)';
-            per_unit(u).window(w).in=[false false false];
-            per_unit(u).window(w).SS=NaN;
-            per_unit(u).window(w).SSres=NaN;
+            %             per_unit(u).window(w).pval=ones(size(regressors)+1)';
+            per_unit(u).window(w).in=[false;false;false];
+            %             per_unit(u).window(w).SS=NaN;
+            %             per_unit(u).window(w).SSres=NaN;
             per_unit(u).window(w).corrR=corrR;
             per_unit(u).window(w).corrP=corrP;
         else
             
-       
-            [per_unit(u).window(w).betas,SE,PVAL,in,stats,nextstep,history] = stepwisefit([reg4fit(idx,:) reg4fit(idx,1).*reg4fit(idx,2)],sol4fit(idx),'display','off');
             
+            %[per_unit(u).window(w).betas,SE,PVAL,in,stats,nextstep,history] = stepwisefit([reg4fit(idx,:) reg4fit(idx,1).*reg4fit(idx,2)],sol4fit(idx),'display','off');
             
-            
-            
+            %[per_unit(u).window(w).betas,SE,PVAL,in,stats,nextstep,history] = stepwisefit(reg4fit(idx,:),sol4fit(idx),'display','off');
+%             [betas,SE,PVAL,in,stats,nextstep,history] = stepwisefit(reg4fit(idx,:),sol4fit(idx),'display','off');
 %             
-%                 bl=(reg4fit(:,1)+reg4fit(:,2))/2;
-%                 x=[reg4fit(:,1)-bl]';
-%                 y=[reg4fit(:,2)-bl]';
-%                 z=[sol4fit-bl]';
-% %                 
-% %                 %  %b1       %b2    % intercept
-% %                 LB=[0         0     -inf];
-% %                 X0=[0         0        0];
-% %                 UB=[inf       inf    inf];           
-% 
-%                 
-%                 %  %b1       %b2    % intercept
-%                 LB=[0         0        0];
-%                 X0=[1         1        0];
-%                 UB=[2         2      inf];     
-%                 fitT=fittype('ph_fit_linear(x,y,b1,b2,IC)','dependent',{'z'},'independent',{'x','y'},'coefficients',{'b1','b2','IC'});
-%                 fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB,'Upper',UB,'StartPoint',X0);
-%                 
-%                 [fitobj, Goodness] =fit([x',y'],z',fitT,fitopts);
-%                 ci = confint(fitobj);
-%                 in=all(ci>0);
-%                 
+            x=reg4fit(idx,1)';
+            y=reg4fit(idx,2)';
+            z=sol4fit(idx)';
+            
+            weights=reg4fitSEM(idx,:)';
+%             
+%             x = smooth(reg4fit(idx,1))';
+%             y = smooth(reg4fit(idx,2))';
+%             z = smooth(sol4fit(idx))';
+            
+%             weights=[smooth(reg4fitSEM(idx,1))'; smooth(reg4fitSEM(idx,1))'];
+            weights(weights==0)=min(weights(weights~=0));
+%             
+            %  %b1       %b2    % intercept
+            LB=[0         0      -inf];
+            X0=[0.5       0.5      0]; %SmoothingSpline   NonlinearLeastSquares
+            UB=[1         1      inf];
+            
+%             fitT=fittype('ph_fit_linear(x,y,b1,b2,IC)','dependent',{'z'},'independent',{'x','y'},'coefficients',{'b1','b2','IC'});
+%             fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB,'Upper',UB,'StartPoint',X0,'Weights',1./mean(weights,1));
+%             [fitobj, Goodness] =fit([x',y'],z',fitT,fitopts);
+%             
+            fitT=fittype('ph_fit_linear_1(x,b1,IC)','dependent',{'z'},'independent',{'x'},'coefficients',{'b1','IC'});
+            fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB([1,3]),'Upper',UB([1,3]),'StartPoint',X0([1,3]),'Weights',1./weights(1,:));
+            [fitobjx, Goodnessx] =fit(x',z',fitT,fitopts);
+            
+            fitT=fittype('ph_fit_linear_1(y,b2,IC)','dependent',{'z'},'independent',{'y'},'coefficients',{'b2','IC'});
+            fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB([1,3]),'Upper',UB([1,3]),'StartPoint',X0([1,3]),'Weights',1./weights(2,:));
+            [fitobjy, Goodnessy] =fit(y',z',fitT,fitopts);
+            
+            
+            fitT=fittype('ph_fit_linear_1(s,b3,IC)','dependent',{'z'},'independent',{'s'},'coefficients',{'b3','IC'});
+            fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB([1,3]),'Upper',UB([1,3]),'StartPoint',X0([1,3]),'Weights',1./mean(weights,1));
+            [fitobjs, Goodnesss] =fit([x+y]',z',fitT,fitopts);
+            
+            
+            fitT=fittype('ph_fit_linear_1(m,b4,IC)','dependent',{'z'},'independent',{'m'},'coefficients',{'b4','IC'});
+            fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB([1,3]),'Upper',UB([1,3]),'StartPoint',X0([1,3]),'Weights',1./mean(weights,1));
+            [fitobjm, Goodnessm] =fit([x.*y]',z',fitT,fitopts);
+            
+            betas(1)=fitobjx.b1;
+            betas(2)=fitobjy.b2;
+            betas(3)=fitobjs.b3;
+            betas(4)=fitobjm.b4;
+            [~, bestfit]=  max([Goodnessx.adjrsquare Goodnessy.adjrsquare Goodnesss.adjrsquare Goodnessm.adjrsquare]);   
+            switch bestfit
+                case 1 % only X
+                    IC=fitobjx.IC;
+                    in=[true;false;false];
+                case 2 % only Y
+                    IC=fitobjy.IC;
+                    in=[false;true;false];
+                    
+                case 3 % sum
+                    IC=fitobjs.IC;
+                    in=[true;true;false];
+                                        
+                case 4 % multiplication
+                    IC=fitobjm.IC;
+                    in=[true;true;true];
+            end
+            
+            
+%             if  ~any(in)
+%                 in=in';
+%                 betas=betas;
+%                 IC=stats.intercept;
+%             elseif Goodness.adjrsquare - 0.1>Goodnessx.adjrsquare && Goodness.adjrsquare - 0.1>Goodnessy.adjrsquare  %% criterion for combined fit better than a single one...!
 %                 betas(1)=fitobj.b1;
 %                 betas(2)=fitobj.b2;
+%                 IC=fitobj.IC;
+%                 in=[true;true];
+%             elseif Goodnessx.adjrsquare>Goodnessy.adjrsquare
+%                 betas(1)=fitobjx.b1;
+%                 betas(2)=fitobjy.b2;
+%                 IC=fitobj.IC;
+%                 in=[true;false];
+%             elseif Goodnessy.adjrsquare>Goodnessx.adjrsquare
+%                 betas(1)=fitobjx.b1;
+%                 betas(2)=fitobjy.b2;
+%                 IC=fitobj.IC;
+%                 in=[false;true];
+%             end
 %             
-%                 [~,SE,PVAL,~,stats,nextstep,history] = stepwisefit([betas(1)*x betas(2)*y] ,z,'display','off','maxiter',1);
+%             
+%            [bb,dev,stats] = glmfit([x',y'],z','normal','weights',1./mean(weights,1));
+%             IC=bb(1);
+%             betas=bb(2:3);
+%             in=stats.p(2:3)<0.05;            
+%             per_unit(u).window(w).pval=stats.p(2:3);        %% needs to change
+            
+            
+%             
+%             if  ~any(in)
+%                 in=in';
+%                 betas=betas;
+%                 IC=stats.intercept;
+%             elseif Goodness.adjrsquare - 0.1>Goodnessx.adjrsquare && Goodness.adjrsquare - 0.1>Goodnessy.adjrsquare  %% criterion for combined fit better than a single one...!
+%                 betas(1)=fitobj.b1;
+%                 betas(2)=fitobj.b2;
+%                 IC=fitobj.IC;
+%                 in=[true;true];
+%             elseif Goodnessx.adjrsquare>Goodnessy.adjrsquare
+%                 betas(1)=fitobjx.b1;
+%                 betas(2)=fitobjy.b2;
+%                 IC=fitobj.IC;
+%                 in=[true;false];
+%             elseif Goodnessy.adjrsquare>Goodnessx.adjrsquare
+%                 betas(1)=fitobjx.b1;
+%                 betas(2)=fitobjy.b2;
+%                 IC=fitobj.IC;
+%                 in=[false;true];
+%             end
+            
+%             
+%            [bb,dev,stats] = glmfit([x',y'],z','normal','weights',1./mean(weights,1));
+%             IC=bb(1);
+%             betas=bb(2:3);
+%             in=stats.p(2:3)<0.05;            
+%             per_unit(u).window(w).pval=stats.p(2:3);        %% needs to change
+            
+            %[~,SE,PVAL,~,stats,nextstep,history] = stepwisefit([betas(1)*x betas(2)*y] ,z,'display','off','maxiter',1);
             
             per_unit(u).window(w).betas=betas;
-            per_unit(u).window(w).pval=PVAL;        %% needs to change
+            per_unit(u).window(w).intercept=IC;
+            %per_unit(u).window(w).pval=PVAL;        %% needs to change
             per_unit(u).window(w).in=in;
-            per_unit(u).window(w).SS=stats.SStotal;
-            per_unit(u).window(w).SSres=stats.SSresid;  %% not sure if this is the right thing, needed??
+            %             per_unit(u).window(w).SS=stats.SStotal;
+            %             per_unit(u).window(w).SSres=stats.SSresid;  %% not sure if this is the right thing, needed??
             per_unit(u).window(w).corrR=corrR;
             per_unit(u).window(w).corrP=corrP;
             
-%             
-%             per_unit(u).window(w).intercept=stats.intercept;
-%             per_unit(u).window(w).pval=PVAL;
-%             per_unit(u).window(w).in=in;
-%             per_unit(u).window(w).SS=stats.SStotal;
-%             per_unit(u).window(w).SSres=stats.SSresid;
-%             per_unit(u).window(w).corrR=corrR;
-%             per_unit(u).window(w).corrP=corrP;
+            %
+            %             per_unit(u).window(w).intercept=stats.intercept;
+            %             per_unit(u).window(w).pval=PVAL;
+            %             per_unit(u).window(w).in=in;
+            %             per_unit(u).window(w).SS=stats.SStotal;
+            %             per_unit(u).window(w).SSres=stats.SSresid;
+            %             per_unit(u).window(w).corrR=corrR;
+            %             per_unit(u).window(w).corrP=corrP;
         end
     end
 end
@@ -499,6 +617,7 @@ n_windows=numel(per_unit(u).window);
 
 %% plot per bin summary
 figure
+clear sph
 sph(1)=subplot(2,1,1);
 hold on
 state_shift=0;
@@ -551,34 +670,46 @@ plot_title              = ['regression per bin summary'];
 ph_title_and_save(gcf,  plot_title,plot_title,keys)
 
 %% summary with beta values
-figure;
-clear corrP
+figure
 all_windows=vertcat(per_unit.window);
 for w=1:n_windows
     subplot(ceil(sqrt(n_windows)),ceil(sqrt(n_windows)),w)
     hold on
     current_win=all_windows(:,w);
-    PVAL=[current_win.pval];    
+    %PVAL=[current_win.pval];    
+    IN=[current_win.in];    
     betas=[current_win.betas];
     for k=1:numel(current_win)
-    corrP(k)=current_win(k).corrP(1,2)<0.05;        
+    %corrP(k)=current_win(k).corrP(1,2)<0.05;    
+    %corrP(k)=current_win(k).corrP(1,2)<0.05;   
+    %corrP(k)=per_window(w).corrCI(1)>0;
     end
-   
-    sig1=PVAL(1,:)<0.05;
-    sig2=PVAL(2,:)<0.05;
+    corrP=[per_window(w).corrCI]'>0;
+    corrP=corrP(1,:);
+    
+    
+    corrP=false(size(corrP));
+%   corrP=[per_window(w).corrCIsig]==3;
+%     sig1=PVAL(1,:)<0.05;
+%     sig2=PVAL(2,:)<0.05;
+%     
+    
+    sig1=IN(1,:);
+    sig2=IN(2,:);
     scatter(betas(1,(sig1|sig2)&corrP),betas(2,(sig1|sig2)&corrP),15,'b');
-    scatter(betas(1,~sig1&~sig2&corrP),betas(2,~sig1&~sig2&corrP),15,[0.5 0.5 0.5]);
-    scatter(betas(1,~sig1&~sig2&~corrP),betas(2,~sig1&~sig2&~corrP),15,'k');
-    scatter(betas(1,sig1&~sig2& ~corrP),betas(2,sig1&~sig2& ~corrP),20,regressors(1).color,'<','filled');
-    scatter(betas(1,~sig1&sig2& ~corrP),betas(2,~sig1&sig2& ~corrP),20,regressors(2).color,'^','filled');
+    scatter(betas(1,~sig1&~sig2),betas(2,~sig1&~sig2),15,[0.5 0.5 0.5]);
+    scatter(betas(1,sig1&~sig2& ~corrP),betas(2,sig1&~sig2& ~corrP),15,regressors(1).color,'filled');
+    scatter(betas(1,~sig1&sig2& ~corrP),betas(2,~sig1&sig2& ~corrP),15,regressors(2).color,'filled');
     scatter(betas(1,sig1&sig2& ~corrP),betas(2,sig1&sig2& ~corrP),15,'k','filled');
     tr=[' \color[rgb]{0 0 0} ' num2str(sum(sig1&sig2&~corrP)) ' \color[rgb]{' num2str(regressors(1).color) '} ' num2str(sum(sig1&~sig2&~corrP)) ...
-        ' \color[rgb]{' num2str(regressors(2).color) '} ' num2str(sum(~sig1&sig2&~corrP)) ' \color[rgb]{0.7 0.7 0.7} ' num2str(sum(~sig1&~sig2&~corrP))...
-        ' \color[rgb]{0.4 0.4 0.4} ' num2str(sum(~sig1&~sig2&corrP)) ' \color[rgb]{0 0 1} ' num2str(sum((sig1|sig2)&corrP))];
+        ' \color[rgb]{' num2str(regressors(2).color) '} ' num2str(sum(~sig1&sig2&~corrP)) ...
+        ' \color[rgb]{0.5 0.5 0.5} ' num2str(sum(~sig1&~sig2)) ' \color[rgb]{0 0 1} ' num2str(sum((sig1|sig2)&corrP))];
     title([keys.PSTH_WINDOWS{w,1} ': ' tr],'interpreter','tex'); %%
     %title (keys.PSTH_keys.PSTH_WINDOWS{w,1})
     axis square
     axis equal
+    xlabel('beta saccades');
+    ylabel('beta reaches');
 end
 plot_title              = ['Beta values summary '];
 ph_title_and_save(gcf,  [plot_title ', linear regresion'],plot_title,keys)
@@ -629,6 +760,9 @@ for w=1:n_windows
     xlim([-1.001 1.001]);
     ylim([-1.001 1.001]);
     axis square
+
+    xlabel('corr S <-> C');
+    ylabel('corr R <-> C');
 end
 ph_title_and_save(figure_handle,plot_title,plot_title,keys)
 
@@ -677,6 +811,8 @@ for w=1:n_windows
     xlim([-1.001 1.001]);
     ylim([-1.001 1.001]);
     axis square
+    xlabel('corr S <-> C');
+    ylabel('corr R+s <-> C');
 end
 ph_title_and_save(figure_handle,plot_title,plot_title,keys)
 
@@ -725,6 +861,8 @@ for w=1:n_windows
     xlim([-1.001 1.001]);
     ylim([-1.001 1.001]);
     axis square
+    xlabel('corr S+R <-> C');
+    ylabel('corr R <-> C');
 end
 ph_title_and_save(figure_handle,plot_title,plot_title,keys)
 
@@ -782,13 +920,14 @@ for u=1:numel(per_unit)
     %         end
     %
     for spn=1:numel(sph)
-        
         %ef=spf(spn);
         %set(0, 'CurrentFigure', PSTH_summary_handle(ef));
         subplot(sph(spn));
         hold on
         
         %% completed? choices? hands?
+    
+    all_trialz=[population(u).trial];
         tr=[all_trialz.type]==typ & ismember([all_trialz.completed],keys.cal.completed) &...
             ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],u_con.reach_hand) & ismember([all_trialz.choice],u_con.choice);
         ph_PSTH_background(all_trialz(tr),y_lim,y_lim,y_lim,keys,keys.RE.fontsize_factor)

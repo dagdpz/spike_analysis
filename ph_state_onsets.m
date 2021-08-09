@@ -10,7 +10,6 @@ unique_states=unique([trial.states]);
 epoch_states=[keys.EPOCHS{:,2}];
 relative_epochs=[];
 epoch_names={};
-
 tr_matrix=true(numel(trial),numel(unique_states)); %this line is still like 1/3 of the plotting time (down from 86%) ...
 for t=1:numel(trial)
     if any(trial(t).states==relative_state)

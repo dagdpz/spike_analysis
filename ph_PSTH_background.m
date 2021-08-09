@@ -13,6 +13,16 @@ if diff(y_limPSTH)==0
 end
 state_seperator         =0;
 state_seperator_max     =0;
+
+
+unique_states=unique([trial.states]);
+trial_onsets=NaN(numel(trial),numel(unique_states));
+for t=1:numel(trial)
+    [~,si]=ismember(unique_states,trial(t).states);
+    si=si(si~=0);
+    trial_onsets(t,si)=trial(t).states_onset;
+end
+
 for w=1:size(keys.PSTH_WINDOWS,1)
     sta             =keys.PSTH_WINDOWS{w,2};
     t_before_state  =keys.PSTH_WINDOWS{w,3};
@@ -21,7 +31,9 @@ for w=1:size(keys.PSTH_WINDOWS,1)
     state_shift     =state_seperator-t_before_state;
     
     %% background
-    [state_names,absolute_state_onsets,relative_state_onset,relative_epochs,epoch_names,states]=ph_state_onsets(trial,sta,keys);
+    [state_names,absolute_state_onsets,relative_state_onset,relative_epochs,epoch_names,states]=ph_state_onsets_2(trial,trial_onsets,sta,keys);
+    %[state_names,absolute_state_onsets,relative_state_onset,relative_epochs,epoch_names,states]=ph_state_onsets(trial,sta,keys);
+    
     states_in_window=relative_state_onset>=t_before_state & relative_state_onset<=t_after_state;
     epochs_in_window=relative_epochs(:,1)>=t_before_state & relative_epochs(:,2)<=t_after_state ;
     epochs_in_window(~ismember(epoch_names,keys.ANOVAS.main))=false;
@@ -65,9 +77,10 @@ for w=1:size(keys.PSTH_WINDOWS,1)
     state_seperator_max=max([state_seperator_max;state_seperator]);
 end
 line([0 0],y_limframe,'linewidth',1,'color','k');
-set(gca,'ylim',y_lim,'xlim',[0 state_seperator_max-0.1]);
+set(gca,'ylim',single(y_lim),'xlim',[0 state_seperator_max-0.1]);
 y_tick      =get(gca,'ytick');
 y_tick      =y_tick(y_tick>=y_limPSTH(1));
+y_tick(abs(y_tick)<5*eps)=0;
 for k=1:numel(y_tick)
     text(-(state_seperator_max-0.1)/400, y_tick(k),num2str(y_tick(k)),'fontsize',8*fontsize_factor,'horizontalalignment','right');
     line([0 (state_seperator_max-0.1)/400],[y_tick(k) y_tick(k)],'color','k');

@@ -174,7 +174,9 @@ end
 %% finding positions and fixations
 positions=unique(vertcat(whatisthis.trial.position),'rows');
 keys.normalization_field='PO';
+tic
 [~, condition,~,pref_valid]=ph_condition_normalization(population,keys);
+    toc
 
 %% condition comparison ???
 comparisons_per_effector(1).reach_hand{1}=0;
@@ -230,16 +232,27 @@ RF_colormap=[logscale_127 logscale_127 ones(127,1)*255; 255 255 255; ones(127,1)
 
 for t=1:size(condition,1)
     typ=u_types(mod(t-1,numel(u_types))+1);
-    
-    fig_title=sprintf('%s %s %s hnd %s ch %s %s normalized %s in %s grouped by %s ',...
-        keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement,     mat2str(keys.tt.hands),mat2str(double(keys.tt.choices)),[Sel_for_title{:}],keys.PO.normalization,keys.PO.epoch_for_normalization,keys.PO.group_parameter);
-    if strcmp(keys.PO.normalization,'percent_change')
-        filename=sprintf('%s %s %s hnd %s ch %s %s N_prct %s to %s %s ',...
-            keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(keys.tt.hands),mat2str(double(keys.tt.choices)),[Sel_for_title{:}],keys.PO.epoch_BL,keys.PO.epoch_for_normalization,keys.PO.group_parameter);
-    else
-        filename=sprintf('%s %s %s hnd %s ch %s %s N_%s %s %s ',...
-            keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(keys.tt.hands),mat2str(double(keys.tt.choices)),[Sel_for_title{:}],keys.PO.normalization,keys.PO.epoch_for_normalization,keys.PO.group_parameter);
+        
+     
+    if ~keys.PO.FR_subtract_baseline            
+        normalization_label=sprintf('N_%s in %s',keys.PO.normalization,keys.PO.epoch_for_normalization);
+    elseif keys.PO.baseline_per_trial
+        normalization_label=sprintf('N_%s in %s, - %s per trial',keys.PO.normalization,keys.PO.epoch_for_normalization,keys.PO.epoch_BL);
+    elseif strcmp(keys.PO.normalization,'percent_change')
+        normalization_label=sprintf('N_prct %s to %s',keys.PO.epoch_BL,keys.PO.epoch_for_normalization);
+    else        
+        normalization_label=sprintf('N_%s (X-%s)by%s',keys.PO.normalization,keys.PO.epoch_for_normalization,keys.PO.epoch_BL);
     end
+    
+    fig_title=sprintf('%s %s %s hnd %s ch %s %s %s grouped by %s ',...
+        keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement,     mat2str(keys.tt.hands),mat2str(double(keys.tt.choices)),[Sel_for_title{:}],normalization_label,keys.PO.group_parameter);
+%     if strcmp(keys.PO.normalization,'percent_change')
+        filename=sprintf('%s %s %s hnd %s ch %s %s %s %s ',...
+            keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(keys.tt.hands),mat2str(double(keys.tt.choices)),[Sel_for_title{:}],normalization_label,keys.PO.group_parameter);
+%     else
+%         filename=sprintf('%s %s %s hnd %s ch %s %s N_%s %s %s ',...
+%             keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(keys.tt.hands),mat2str(double(keys.tt.choices)),[Sel_for_title{:}],keys.PO.normalization,keys.PO.epoch_for_normalization,keys.PO.group_parameter);
+%     end
     
     %save metadata
     unit_IDs=complete_unit_list;
@@ -878,8 +891,7 @@ end
         for spn=1:numel(sph)
             
             ef=spf(spn);
-            set(0, 'CurrentFigure', PSTH_summary_handle(ef));
-            subplot(sph(spn));
+            axes(sph(spn));
             hold on
             
             %% completed? choices? hands?
@@ -892,6 +904,8 @@ end
         end
         for eff=u_effectors
             ef=find(u_effectors==eff);
+            set(0, 'CurrentFigure', PSTH_summary_handle(ef));
+            axes(sph(find(spf==ef,1)));
             [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
             plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
             ph_title_and_save(PSTH_summary_handle(ef),  [filename plot_title_part ', ' type_effector_short],plot_title,keys)

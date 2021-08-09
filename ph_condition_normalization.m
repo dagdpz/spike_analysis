@@ -277,9 +277,14 @@ for u=1:numel(population)
                         case {'PO','RE'}
                             ix = tr_con & tr_hemi;
                             %n=max([1,find(ismember(CM(:,1:4),conditions_out(c,:),'rows') & CM(:,end)==u_hemifields(f))]);
+                                if strcmp(keys.normalization_field,'RE')
                             [condition(t,c).per_hemifield(f).window(w).unit(u).average_spike_density,~,...
-                             condition(t,c).per_hemifield(f).window(w).unit(u).SEM_spike_density]=...
+                             condition(t,c).per_hemifield(f).window(w).unit(u).VAR_spike_density]=...
                                 ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+                                else
+                            [condition(t,c).per_hemifield(f).window(w).unit(u).average_spike_density]=...
+                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+                                end
                             condition(t,c).per_hemifield(f).effector=eff;
                             condition(t,c).per_hemifield(f).window(w).unit(u).sac_lat=nanmean([pop.trial(ix).sac_lat]); %%??? this work?
                             condition(t,c).per_hemifield(f).window(w).unit(u).rea_lat=nanmean([pop.trial(ix).rea_lat]); %%??? this work?
@@ -288,9 +293,13 @@ for u=1:numel(population)
                             for x=1:size(fixations,1)
                                 tr_fix=all(abs(bsxfun(@minus,vertcat(pop.trial.fixation),fixations(x,:)))<4,2)'; %4 is precision --> add to keys?
                                 ix = tr_con & tr_hemi & tr_fix;
-                                [condition(t,c).per_hf_fixation(f,x).window(w).unit(u).average_spike_density, ~,...                                    
-                                condition(t,c).per_hf_fixation(f,x).window(w).unit(u).SEM_spike_density]=...
-                                    ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+                                if strcmp(keys.normalization_field,'RE')
+                                    [condition(t,c).per_hf_fixation(f,x).window(w).unit(u).average_spike_density]=...
+                                        ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+                                else
+                                    [condition(t,c).per_hf_fixation(f,x).window(w).unit(u).average_spike_density]=...
+                                        ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+                                end
                                 condition(t,c).per_hf_fixation(f,x).fixation=fixations(x,:);
                                 condition(t,c).per_hf_fixation(f,x).effector=eff;
                                 condition(t,c).per_hf_fixation(f,x).position=[u_hemifields(f) 0];
@@ -331,9 +340,11 @@ for u=1:numel(population)
                         for it=1:n_iterations
                             ix = find(tr_con & tr_hemi);                            
                             ix=randsample(ix,round(numel(ix)/10*8));
-                            [condition(t,c).per_hemifield(f).window(w).unit(u).bootstrapped(it,:), ~,... 
-                            condition(t,c).per_hemifield(f).window(w).unit(u).bootstrapped_SEM(it,:)]=...
+                            [condition(t,c).per_hemifield(f).window(w).unit(u).bootstrapped(it,:)]=...
                                 ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+%                             [condition(t,c).per_hemifield(f).window(w).unit(u).bootstrapped(it,:), ~,... 
+%                             condition(t,c).per_hemifield(f).window(w).unit(u).bootstrapped_SEM(it,:)]=...
+%                                 ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
                         end
                     end
                 end
