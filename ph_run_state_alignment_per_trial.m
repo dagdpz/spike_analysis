@@ -56,6 +56,7 @@ for t=1:n_trials
     trial(t).type          = MA_out.task(t).type;
     trial(t).effector      = MA_out.task(t).effector;
     trial(t).reach_hand    = MA_out.task(t).reach_hand;
+    trial(t).correct_targets    = MA_out.task(t).correct_targets;
     if isnan(trial(t).reach_hand); trial(t).reach_hand=0; end;
     trial(t).choice        = MA_out.binary(t).choice;
     trial(t).success       = MA_out.binary(t).success;
