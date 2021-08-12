@@ -100,6 +100,12 @@ for t=1:n_trials
     trial(t).col_dim            = Movement.col_dim;
     trial(t).col_bri            = Movement.col_bri;
     trial(t).target_selected    = Movement.target_selected;
+
+    correct_pos=trial(t).all_tar_pos(trial(t).correct_targets);
+    if correct_pos == trial(t).fix_pos(1) %% distractor only or double_distractor
+        correct_pos=trial(t).all_tar_pos(trial(t).all_tar_pos~=0);
+    end
+    trial(t).stm_pos=correct_pos(1);
     
     MPA_get_expected_states(trial(t).type,trial(t).effector,0);    %% set to 1 to allow later processing
     movement_states       = [MA_STATES.SAC_INI MA_STATES.SAC_END MA_STATES.REA_INI MA_STATES.REA_END MA_STATES.MOV_INI MA_STATES.MOV_END MA_STATES.TRI_END];

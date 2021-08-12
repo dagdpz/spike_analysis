@@ -1,5 +1,5 @@
 function [pop]=ph_arrange_positions_and_plots(keys,o,pop_in)
-% this nasty piece of code defines positions, single cell plotting appearence (batching in figures/subplots/lines and color), as well as minimum number of trials per condition, 
+% this nasty piece of code defines positions, single cell plotting appearence (batching in figures/subplots/lines and color), as well as minimum number of trials per condition,
 % all in one defined by keys.arrangement
 % con_for_figure:           which trials to place on the same figure
 % con_for_column:           which trials to place in the same subplot column
@@ -7,8 +7,8 @@ function [pop]=ph_arrange_positions_and_plots(keys,o,pop_in)
 % con_for_line:             which trials to batch for one PSTH line
 % con_for_trial_crit:       which batching to use for calculating minimum trials per condition (apart from positions and conditions which are already split in figures (con_for_figure)
 % fig_title:                part of the figure name indicating by which parameter they are different
-% val_for_figure:           The values for those parameters (particularly relevant to create unique PDF names) 
-% sub_title:                subplot title name for per position plots indicating by what (position) parameter subplots are selected   
+% val_for_figure:           The values for those parameters (particularly relevant to create unique PDF names)
+% sub_title:                subplot title name for per position plots indicating by what (position) parameter subplots are selected
 % val_for_sub_assignment:   The values of this (position) parameter per subplot
 % position_indexes:         Unique position indexes used for further analysis (very important to solve precision issues for small changes in position, batching close postiions together)
 % val_for_pos_assignment:   The position values associated to the respective indexes
@@ -17,15 +17,15 @@ function [pop]=ph_arrange_positions_and_plots(keys,o,pop_in)
 % out_analysis.PSTH_perpos_colors:  colors used in per position plots
 % out_analysis.PSTH_summary_colors: colors used in type summary plots
 % out_analysis.line_labels: lables for the different lines in the summary plot legend
-%         
+%
 %% taking over per unit informaiton from original pop if applicable
 if nargin>2
-pop=rmfield(pop_in,'trial');
+    pop=rmfield(pop_in,'trial');
 end
 
 %% DEFINITION OF CONDITION INDICES TO PLOT, CURRENTLY TARGET LOCATION, FIXATION LOCATION, MOVEMENT VECTORS, CHOICE, HANDS
 Precision=2;
-[~, displacement_types] = center_displacement_working(o,Precision);       
+[~, displacement_types] = center_displacement_working(o,Precision);
 all_val=displacement_types(:,1:4);
 fix_val=displacement_types(:,1:2);
 tar_val=displacement_types(:,3:4);
@@ -81,62 +81,62 @@ trial_cond.single_targ = find(num_targets_per_trial == 1 & num_distr_per_trial =
 trial_cond.single_distr = find(num_targets_per_trial == 0 & num_distr_per_trial == 1 ); % distr only trials
 
 %trial_cond.targ_targ_2HF = find(num_targets_per_trial == 2 & x_pos1HF_stimuli' == 3); % target-target trials
-          
+
 % distractor_color
 distr_color_per_trial = cellfun(@(x) x(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows'),:),{o.col_dim},'UniformOutput',0);
 
-        
-            if isequal(Settings.TaskParameter.analyze_distr_colors,'any')
-                num_distr_colors2ana = 5; %Color of distractors is hard coded
-            else
-                num_distr_colors2ana = size(Settings.analyze_distr_colors,1);
-            end
-            distr_colors_all = [NaN,NaN,NaN];
-            idx = 1;
-            distr_ID = 0;
-            distractors = nan(num_distr_colors2ana, size([o.n],2));
-            for trial_no = 1:size([o.n],2)
-                curr_distr_colors = distr_color_per_trial{trial_no};
-                if size(distr_color_per_trial{trial_no},1) > 1
-                    if ~isequal(curr_distr_colors(1,:),curr_distr_colors(2,:));
-                        warning(char(strcat(sprintf('There were two distractors with different colors in trial %d in',trial_no),{' '},file_to_load,{'. The one with index 1 was used for analysis!'})));
-                    end
-                    curr_distr_colors = curr_distr_colors(1,:);
-                end
-                % This will overwrite logicals in "distractors" with the
-                % last distractor color per trial in "distr_color_per_trial"
-                
-                if ~ismember(curr_distr_colors,distr_colors_all,'rows') % "distr_colors_all" is the sequence of appearance of the distractor colors in one run
-                    distr_colors_all(idx,:) = curr_distr_colors;
-                    idx = idx + 1;
-                    distr_ID = distr_ID + 1;
-                    distractors(distr_ID,trial_no) = trial_no; % "distractors": rows represent distractor colors in order of appearance as in "distr_colors_all"
-                else
-                    [~,distr_ID_member] = ismember(curr_distr_colors,distr_colors_all,'rows');
-                    distractors(distr_ID_member,trial_no) = trial_no;
-                end
-            end;
-            distr_colors2ana = distr_colors_all;
-            num_distr_colors2ana = size(distr_colors2ana,1);
-            
-            % calculate G/R ratio of RGB values
-            G_R_ratio = nan(num_distr_colors2ana,1);
-            for col = 1:num_distr_colors2ana
-                G_R_ratio(col,1) = distr_colors2ana(col,2) / distr_colors2ana(col,1);
-            end
-            
-            % sort data according to G/R ratio: from yellow (small ratio) to red (high ratio)
-            [G_R_ratio_sorted,ind]     = sort(G_R_ratio);
-            distr_colors2ana_sorted    = distr_colors2ana(ind,:);
-            distractor_color           = distractors(ind,:); % indices for each distractor color(rows) in each trial (columns)
 
-            
+if isequal(Settings.TaskParameter.analyze_distr_colors,'any')
+    num_distr_colors2ana = 5; %Color of distractors is hard coded
+else
+    num_distr_colors2ana = size(Settings.analyze_distr_colors,1);
+end
+distr_colors_all = [NaN,NaN,NaN];
+idx = 1;
+distr_ID = 0;
+distractors = nan(num_distr_colors2ana, size([o.n],2));
+for trial_no = 1:size([o.n],2)
+    curr_distr_colors = distr_color_per_trial{trial_no};
+    if size(distr_color_per_trial{trial_no},1) > 1
+        if ~isequal(curr_distr_colors(1,:),curr_distr_colors(2,:));
+            warning(char(strcat(sprintf('There were two distractors with different colors in trial %d in',trial_no),{' '},file_to_load,{'. The one with index 1 was used for analysis!'})));
+        end
+        curr_distr_colors = curr_distr_colors(1,:);
+    end
+    % This will overwrite logicals in "distractors" with the
+    % last distractor color per trial in "distr_color_per_trial"
+    
+    if ~ismember(curr_distr_colors,distr_colors_all,'rows') % "distr_colors_all" is the sequence of appearance of the distractor colors in one run
+        distr_colors_all(idx,:) = curr_distr_colors;
+        idx = idx + 1;
+        distr_ID = distr_ID + 1;
+        distractors(distr_ID,trial_no) = trial_no; % "distractors": rows represent distractor colors in order of appearance as in "distr_colors_all"
+    else
+        [~,distr_ID_member] = ismember(curr_distr_colors,distr_colors_all,'rows');
+        distractors(distr_ID_member,trial_no) = trial_no;
+    end
+end;
+distr_colors2ana = distr_colors_all;
+num_distr_colors2ana = size(distr_colors2ana,1);
+
+% calculate G/R ratio of RGB values
+G_R_ratio = nan(num_distr_colors2ana,1);
+for col = 1:num_distr_colors2ana
+    G_R_ratio(col,1) = distr_colors2ana(col,2) / distr_colors2ana(col,1);
+end
+
+% sort data according to G/R ratio: from yellow (small ratio) to red (high ratio)
+[G_R_ratio_sorted,ind]     = sort(G_R_ratio);
+distr_colors2ana_sorted    = distr_colors2ana(ind,:);
+distractor_color           = distractors(ind,:); % indices for each distractor color(rows) in each trial (columns)
+
+
 %% Each row contains one Difficulty level (3 = only target, 1 = Diff to 2 = Easy)
-            AllDifficulties= distractor_color;difficulty= [];
-           
+AllDifficulties= distractor_color;difficulty= [];
+
 for i_diff = 1: length(ind)
-AllDifficulties(i_diff, ~isnan(distractor_color( i_diff ,:))) = i_diff ; 
-AllDifficulties(i_diff, isnan(distractor_color( i_diff ,:))) = 0;  % distr only trials
+    AllDifficulties(i_diff, ~isnan(distractor_color( i_diff ,:))) = i_diff ;
+    AllDifficulties(i_diff, isnan(distractor_color( i_diff ,:))) = 0;  % distr only trials
 end
 AllDifficulties(i_diff +1, sum(AllDifficulties,1 ) == 0) = i_diff +1; %all only target trials
 
@@ -146,11 +146,11 @@ AllDifficulties(i_diff +1, sum(AllDifficulties,1 ) == 0) = i_diff +1; %all only 
 % AllDifficulties(3,:) = AllDifficulties(4,:);
 % AllDifficulties(4,:)= [];
 % end
-difficulty = sum(AllDifficulties, 1); 
+difficulty = sum(AllDifficulties, 1);
 
 target_selected      =[o.target_selected]'; %Which target selected
 
- 
+
 disp(['Nb of sgl stimuli ', num2str(numel(difficulty(StimulusType == 1)))])
 disp(['Nb of sgl stimuli - target ', num2str(sum(sum([difficulty == 3 ;  StimulusType == 1])== 2))])
 disp(['Nb of sgl stimuli easy distr', num2str(sum(sum([difficulty == 2 ;  StimulusType == 1])== 2))])
@@ -174,21 +174,21 @@ disp(['Nb of dbl diff stimuli ', num2str(numel(difficulty(StimulusType == 3)))])
 % red_targets_per_trial = cellfun(@(x) find(ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
 % distr_per_trial = cellfun(@(x) find(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
 % fix_per_trial = cellfun(@(x) find(ismember(x,Settings.TaskParameter.fixation_color_dim,'rows')),{o.col_dim},'UniformOutput',0);
-% 
-% 
-% red_targets_per_trial_empty = cellfun(@(x) isempty(x),red_targets_per_trial,'UniformOutput',1);            
+%
+%
+% red_targets_per_trial_empty = cellfun(@(x) isempty(x),red_targets_per_trial,'UniformOutput',1);
 % two_red_targets_per_trial = cellfun(@(x) isequal(size(x,1),2),red_targets_per_trial,'UniformOutput',1);
 % two_distr_per_trial = cellfun(@(x) isequal(size(x,1),2),distr_per_trial,'UniformOutput',1);
-% 
+%
 % correct_target_per_trial = red_targets_per_trial;
 % correct_target_per_trial(red_targets_per_trial_empty) = fix_per_trial(red_targets_per_trial_empty);
-%             
+%
 % red_targ_or_distr_per_trial = red_targets_per_trial; %sgl stimuli
 % red_targ_or_distr_per_trial(red_targets_per_trial_empty) = distr_per_trial(red_targets_per_trial_empty);
 % non_fix_stimuli_per_trial = red_targ_or_distr_per_trial; % also includes targ_targ and distr_distr trials
 % red_targ_or_distr_per_trial(two_repd_targets_per_trial) = {[]};
 % red_targ_or_distr_per_trial(two_distr_per_trial) = {[]}; % contains indices of the target (if present and only if it is a single target or a target-distractor trial)
-%             
+%
 
 
 
@@ -242,7 +242,7 @@ hand_eff_labels     =cellstr([repmat('NH ',numel(eff_values),1) num2str(eff_valu
 fix_labels          =num2cell(num2str(unique(fix_idx)))';
 cue_shape_labels ={};
 for n_shp=1:numel(shp_values)
-cue_shape_labels{n_shp}=sprintf('%.1f',shp_values(n_shp));
+    cue_shape_labels{n_shp}=sprintf('%.1f',shp_values(n_shp));
 end
 
 %% color assignment
@@ -288,185 +288,185 @@ fixation_per_trial      = fix_val;
 %% Position for the spatial distractor task
 
 %% specifics
-switch keys.arrangement 
+switch keys.arrangement
     
     
-            case 'StimulusType_Difficulty_Position'
-              difficulty =  difficulty+3*success';
-%              difficulty =  difficulty(success ==1)';
-%              idx_difficulty = find(difficulty <3);
-%              difficulty(idx_difficulty)     =[];
-%              stm_idx(idx_difficulty)        =[];
-%              Styp_idx(idx_difficulty)       =[];
-
-% if length(G_R_ratio_sorted) > 2
-%     difficulty(difficulty == 0) = []; 
-% end
-     [diff_values,~,diff_idx]        = unique(difficulty);
-
-           
-
-     fig_title               = 'StimulusType_Difficulty_Position';
-     con_for_figure          = Styp_idx;
-     val_for_figure          = num2cell(Styp_values);
-
-     con_for_line            = diff_idx';  %%% there was no ' !?
-     if length(diff_values) == 3
-     pop.line_labels        =   {'Diff', 'Easy','Tar'};
-
-     else
-     pop.line_labels        =   {'Diff','Diff2', 'Easy','Tar'};
-     end
-
-     position_indexes        = stm_idx;
-     val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-     val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-     sub_title               = 'stimulus position';   
-          if length(diff_values) == 3
-              col_left = autumn(3); 
-              col_right = winter(3); 
-     pop.PSTH_perpos_colors =   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(2,:);col_right(3,:);col_right(1,:)]] ;
-     pop.PSTH_summary_colors=   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(2,:);col_right(3,:);col_right(1,:)]] ;
-          else
-     pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
-     pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
-          end
-    hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-    
-    
-%     disp(['Nb of sgl stimuli - Diff R ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
-%     disp(['Nb of sgl stimuli - Diff L ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
-% 
-%     disp(['Nb of sgl stimuli - Diff R ', num2str(sum(sum([difficulty == 2 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
-%     disp(['Nb of sgl stimuli - Diff L ', num2str(sum(sum([difficulty == 2 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
-% 
-%     disp(['Nb of sgl stimuli - target R ', num2str(sum(sum([difficulty == 3 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
-%     disp(['Nb of sgl stimuli - target L ', num2str(sum(sum([difficulty == 3 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
-
-     con_for_trial_crit      = con_for_line;
-
-     
-                case 'StimulusType_Difficulty_Position_Successful'
-              difficulty =  difficulty(success ==1);
-              stm_idx  =  stm_idx(success ==1);
-              Styp_idx =  Styp_idx(success ==1);
-              stm_val  =  stm_val(success ==1,:);
-              [~,u_stm_idx_idx]=unique(stm_idx);
-
-            [diff_values,~,diff_idx]        =unique(difficulty);
-
-     fig_title               = 'StimulusType_Difficulty_Position_Successful';
-     con_for_figure          = Styp_idx;
-     val_for_figure          = num2cell(Styp_values);
-
-     con_for_line            = diff_idx';  %%% there was no ' !?
-     pop.line_labels        =   {'Diff','Easy','Tar'};
-     position_indexes        = stm_idx;
-     val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-     val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-     sub_title               = 'stimulus position';   
-     pop.PSTH_perpos_colors =   [autumn(3);winter(3)] ;
-     pop.PSTH_summary_colors=   [autumn(3);winter(3)] ;
-    hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-    
-   % (real([o.cue_pos]' - [o.tar_pos]')>0)+1;
-     StimulusType  =  StimulusType(success ==1);
-
-    disp(['Nb of sgl stimuli - Diff R ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
-    disp(['Nb of sgl stimuli - Diff L ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
-
-    disp(['Nb of sgl stimuli - Diff R ', num2str(sum(sum([difficulty == 2 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
-    disp(['Nb of sgl stimuli - Diff L ', num2str(sum(sum([difficulty == 2 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
-
-    disp(['Nb of sgl stimuli - target R ', num2str(sum(sum([difficulty == 3 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
-    disp(['Nb of sgl stimuli - target L ', num2str(sum(sum([difficulty == 3 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
-
-     con_for_trial_crit      = con_for_line;
-
-               case 'DoubleSameTargets_Position'
-   [diff_values,~,diff_idx]      =unique(difficulty+3*success');
-
-     fig_title               = 'StimulusType';
-     con_for_figure          = Styp_idx;
-     val_for_figure          = num2cell(Styp_values);
-
-     con_for_line            = diff_idx';
-     pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
-
-     position_indexes        = stm_idx;
-     val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-     val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-     sub_title               = 'stimulus position';   
-     pop.PSTH_perpos_colors =   [summer(6);winter(6)] ;
-     pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
-    hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-     con_for_trial_crit      = con_for_line; 
-    % con_for_figure          = suc_idx;
-
-        case 'StimulusType_Difficulty_Position_ErrorVsCorrect'
-                difficulty =  difficulty+3*success';
-%              difficulty =  difficulty(success ==1)';
-%              idx_difficulty = find(difficulty <3);
-%              difficulty(idx_difficulty)     =[];
-%              stm_idx(idx_difficulty)        =[];
-%              Styp_idx(idx_difficulty)       =[];
-
-     [diff_values,~,diff_idx]        = unique(difficulty);
-     fig_title               = 'StimulusType_Difficulty_Position_ErrorVsCorrect';
-     con_for_figure          = Styp_idx;
-     val_for_figure          = num2cell(Styp_values);
-
-     con_for_line            = diff_idx';  %%% there was no ' !?
-     pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
-
-     position_indexes        = stm_idx;
-     val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-     val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-     sub_title               = 'stimulus position';   
-
-     pop.PSTH_perpos_colors =   [summer(6);winter(6)] ;
-     pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
-    hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-     con_for_trial_crit      = con_for_line;
-   
-        case 'SglStimuli_Difficulty_Position_ErrorVsCorrect'     
-     val_for_figure          = {Styp_values};
-     con_for_line            = diff_idx';
-     position_indexes        = stm_idx;
-     val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-     val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-     sub_title               = 'stimulus position';   
-     pop.PSTH_perpos_colors =   [autumn(5);winter(5)] ;
-     pop.PSTH_summary_colors=   [autumn(5);winter(5)] ;
-    hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-     con_for_trial_crit      = con_for_line;
-     
-           case 'StimulusType_Difficulty_Position_ErrorVsCorrect_lastVers'
-   [diff_values,~,diff_idx]      =unique(difficulty+3*success');
-
-     fig_title               = 'StimulusType_Difficulty_Position';
-     con_for_figure          = Styp_idx';
-     val_for_figure          = num2cell(Styp_values);
-
-     con_for_line            = diff_idx';
-     pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
-
-     position_indexes        = stm_idx;
-     val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-     val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-     sub_title               = 'stimulus position';   
-     pop.PSTH_perpos_colors =   [summer(6);winter(6)] ;
-     pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
-    hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-     con_for_trial_crit      = con_for_line; 
-
-
+    case 'StimulusType_Difficulty_Position'
+        difficulty =  difficulty+3*success';
+        %              difficulty =  difficulty(success ==1)';
+        %              idx_difficulty = find(difficulty <3);
+        %              difficulty(idx_difficulty)     =[];
+        %              stm_idx(idx_difficulty)        =[];
+        %              Styp_idx(idx_difficulty)       =[];
+        
+        % if length(G_R_ratio_sorted) > 2
+        %     difficulty(difficulty == 0) = [];
+        % end
+        [diff_values,~,diff_idx]        = unique(difficulty);
+        
+        
+        
+        fig_title               = 'StimulusType_Difficulty_Position';
+        con_for_figure          = Styp_idx;
+        val_for_figure          = num2cell(Styp_values);
+        
+        con_for_line            = diff_idx';  %%% there was no ' !?
+        if length(diff_values) == 3
+            pop.line_labels        =   {'Diff', 'Easy','Tar'};
+            
+        else
+            pop.line_labels        =   {'Diff','Diff2', 'Easy','Tar'};
+        end
+        
+        position_indexes        = stm_idx;
+        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+        sub_title               = 'stimulus position';
+        if length(diff_values) == 3
+            col_left = autumn(3);
+            col_right = winter(3);
+            pop.PSTH_perpos_colors =   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(2,:);col_right(3,:);col_right(1,:)]] ;
+            pop.PSTH_summary_colors=   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(2,:);col_right(3,:);col_right(1,:)]] ;
+        else
+            pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
+            pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
+        end
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        
+        
+        %     disp(['Nb of sgl stimuli - Diff R ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
+        %     disp(['Nb of sgl stimuli - Diff L ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
+        %
+        %     disp(['Nb of sgl stimuli - Diff R ', num2str(sum(sum([difficulty == 2 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
+        %     disp(['Nb of sgl stimuli - Diff L ', num2str(sum(sum([difficulty == 2 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
+        %
+        %     disp(['Nb of sgl stimuli - target R ', num2str(sum(sum([difficulty == 3 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
+        %     disp(['Nb of sgl stimuli - target L ', num2str(sum(sum([difficulty == 3 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
+        
+        con_for_trial_crit      = con_for_line;
+        
+        
+    case 'StimulusType_Difficulty_Position_Successful'
+        difficulty =  difficulty(success ==1);
+        stm_idx  =  stm_idx(success ==1);
+        Styp_idx =  Styp_idx(success ==1);
+        stm_val  =  stm_val(success ==1,:);
+        [~,u_stm_idx_idx]=unique(stm_idx);
+        
+        [diff_values,~,diff_idx]        =unique(difficulty);
+        
+        fig_title               = 'StimulusType_Difficulty_Position_Successful';
+        con_for_figure          = Styp_idx;
+        val_for_figure          = num2cell(Styp_values);
+        
+        con_for_line            = diff_idx';  %%% there was no ' !?
+        pop.line_labels        =   {'Diff','Easy','Tar'};
+        position_indexes        = stm_idx;
+        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+        sub_title               = 'stimulus position';
+        pop.PSTH_perpos_colors =   [autumn(3);winter(3)] ;
+        pop.PSTH_summary_colors=   [autumn(3);winter(3)] ;
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        
+        % (real([o.cue_pos]' - [o.tar_pos]')>0)+1;
+        StimulusType  =  StimulusType(success ==1);
+        
+        disp(['Nb of sgl stimuli - Diff R ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
+        disp(['Nb of sgl stimuli - Diff L ', num2str(sum(sum([difficulty == 1 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
+        
+        disp(['Nb of sgl stimuli - Diff R ', num2str(sum(sum([difficulty == 2 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
+        disp(['Nb of sgl stimuli - Diff L ', num2str(sum(sum([difficulty == 2 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
+        
+        disp(['Nb of sgl stimuli - target R ', num2str(sum(sum([difficulty == 3 ;  StimulusType == 1 ;  hemifield_indexes' == 1])== 3))])
+        disp(['Nb of sgl stimuli - target L ', num2str(sum(sum([difficulty == 3 ;  StimulusType == 1 ;  hemifield_indexes' == 2])== 3))])
+        
+        con_for_trial_crit      = con_for_line;
+        
+    case 'DoubleSameTargets_Position'
+        [diff_values,~,diff_idx]      =unique(difficulty+3*success');
+        
+        fig_title               = 'StimulusType';
+        con_for_figure          = Styp_idx;
+        val_for_figure          = num2cell(Styp_values);
+        
+        con_for_line            = diff_idx';
+        pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
+        
+        position_indexes        = stm_idx;
+        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+        sub_title               = 'stimulus position';
+        pop.PSTH_perpos_colors =   [summer(6);winter(6)] ;
+        pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        con_for_trial_crit      = con_for_line;
+        % con_for_figure          = suc_idx;
+        
+    case 'StimulusType_Difficulty_Position_ErrorVsCorrect'
+        difficulty =  difficulty+3*success';
+        %              difficulty =  difficulty(success ==1)';
+        %              idx_difficulty = find(difficulty <3);
+        %              difficulty(idx_difficulty)     =[];
+        %              stm_idx(idx_difficulty)        =[];
+        %              Styp_idx(idx_difficulty)       =[];
+        
+        [diff_values,~,diff_idx]        = unique(difficulty);
+        fig_title               = 'StimulusType_Difficulty_Position_ErrorVsCorrect';
+        con_for_figure          = Styp_idx;
+        val_for_figure          = num2cell(Styp_values);
+        
+        con_for_line            = diff_idx';  %%% there was no ' !?
+        pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
+        
+        position_indexes        = stm_idx;
+        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+        sub_title               = 'stimulus position';
+        
+        pop.PSTH_perpos_colors =   [summer(6);winter(6)] ;
+        pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        con_for_trial_crit      = con_for_line;
+        
+    case 'SglStimuli_Difficulty_Position_ErrorVsCorrect'
+        val_for_figure          = {Styp_values};
+        con_for_line            = diff_idx';
+        position_indexes        = stm_idx;
+        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+        sub_title               = 'stimulus position';
+        pop.PSTH_perpos_colors =   [autumn(5);winter(5)] ;
+        pop.PSTH_summary_colors=   [autumn(5);winter(5)] ;
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        con_for_trial_crit      = con_for_line;
+        
+    case 'StimulusType_Difficulty_Position_ErrorVsCorrect_lastVers'
+        [diff_values,~,diff_idx]      =unique(difficulty+3*success');
+        
+        fig_title               = 'StimulusType_Difficulty_Position';
+        con_for_figure          = Styp_idx';
+        val_for_figure          = num2cell(Styp_values);
+        
+        con_for_line            = diff_idx';
+        pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
+        
+        position_indexes        = stm_idx;
+        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+        sub_title               = 'stimulus position';
+        pop.PSTH_perpos_colors =   [summer(6);winter(6)] ;
+        pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        con_for_trial_crit      = con_for_line;
+        
+        
     case 'success_in_cue'
         con_for_line            = suc_idx;
         con_for_trial_crit      = con_for_line;
         fig_title               = '';
         val_for_figure          = {shp_values};
-        sub_title               = 'cue position';   
+        sub_title               = 'cue position';
         val_for_sub_assignment  = cue_val(u_cue_idx_idx,:);
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
         position_indexes        = cue_idx;
@@ -480,7 +480,7 @@ switch keys.arrangement
         con_for_line            = shp_idx;
         con_for_trial_crit      = con_for_line;
         fig_title               = 'success ';
-        sub_title               = 'cue position';   
+        sub_title               = 'cue position';
         val_for_figure          = num2cell(suc_values);
         val_for_sub_assignment  = cue_val(u_cue_idx_idx,:);
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
@@ -541,10 +541,10 @@ switch keys.arrangement
         con_for_line            = hef_idx;
         con_for_trial_crit      = con_for_line;
         fig_title               = 'choice ';
-        sub_title               = 'movement vector ';   
+        sub_title               = 'movement vector ';
         val_for_figure          = num2cell(cho_values);
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
-        color_idx=ismember(hand_eff_color_combination(:,1),hnd_values) & ismember(hand_eff_color_combination(:,2),eff_values);     
+        color_idx=ismember(hand_eff_color_combination(:,1),hnd_values) & ismember(hand_eff_color_combination(:,2),eff_values);
         pop.PSTH_perpos_colors     = keys.hnd_eff_colors(color_idx,:);
         pop.PSTH_summary_colors    = [keys.hnd_eff_colors_L(color_idx,:); keys.hnd_eff_colors_R(color_idx,:)] ;
         pop.line_labels            = hand_eff_labels(ismember(hand_eff_color_combination,hnd_eff_values,'rows'));
@@ -554,7 +554,7 @@ switch keys.arrangement
         con_for_row             = eff_idx;
         con_for_line            = non_idx;
         con_for_trial_crit      = con_for_line;
-        sub_title               = 'fixation at ';    
+        sub_title               = 'fixation at ';
         val_for_sub_assignment  = fix_val(u_fix_idx_idx,:);
         val_for_pos_assignment  = fix_val(u_fix_idx_idx,:);
         position_indexes        = fix_idx;
@@ -564,11 +564,11 @@ switch keys.arrangement
         pop.PSTH_perpos_colors     = keys.colors.fix_offset;
         pop.PSTH_summary_colors    = [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
         pop.line_labels            = {''};
-       
+        
     case 'movement vectors'
         con_for_line            = fix_idx;
         con_for_trial_crit      = con_for_line;
-        sub_title               = 'movement vector ';   
+        sub_title               = 'movement vector ';
         color_idx               = ismember(choice_color_combination,cho_values,'rows');
         n_unique_lines=numel(unique(con_for_line));
         color_factors=linspace(0.3,1,n_unique_lines);
@@ -579,7 +579,7 @@ switch keys.arrangement
     case 'target location by origin'
         con_for_line            = fix_idx;
         con_for_trial_crit      = con_for_line;
-        sub_title               = 'target position '; 
+        sub_title               = 'target position ';
         val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
         val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
         position_indexes        = tar_idx;
@@ -625,25 +625,22 @@ pop.hemifield_combinations = [con_for_figure con_for_trial_crit hemifield_indexe
 end
 
 function [s_c, displacement_types] = center_displacement_working(trial,Precision)
-
-
 movement_direction  =NaN(size(trial'));
 fixation            =NaN(size(trial'));
 target              =NaN(size(trial'));
 cuepos              =NaN(size(trial'));
 stmpos              =NaN(size(trial'));
 
-
-for t=1:numel(trial)
-    allpos=trial(t).all_tar_pos;
-    correct_tar=trial(t).correct_targets;
-    correct_pos=allpos(correct_tar);
-    fix_pos = [trial.fix_pos];
-    if correct_pos == fix_pos(1) %% distractor only or double_distractor
-        correct_pos=allpos(allpos~=0);
-    end
-    trial(t).stm_pos=correct_pos(1);
-end
+% for t=1:numel(trial)
+%     allpos=trial(t).all_tar_pos;
+%     correct_tar=trial(t).correct_targets;
+%     correct_pos=allpos(correct_tar);
+%     fix_pos = [trial.fix_pos];
+%     if correct_pos == fix_pos(1) %% distractor only or double_distractor
+%         correct_pos=allpos(allpos~=0);
+%     end
+%     trial(t).stm_pos=correct_pos(1);
+% end
 
 s_a=unique_positions([trial.fix_pos],Precision);
 s_b=unique_positions([trial.tar_pos] - [trial.fix_pos],Precision);
@@ -666,12 +663,12 @@ for t=1:numel(trial)
         if abs(trial(t).tar_pos - s_c(k)) < Precision
             target(t)=s_c(k);
         end
-    end    
+    end
     for k=1:numel(s_d)
         if abs(trial(t).cue_pos - s_d(k)) < Precision
             cuepos(t)=s_d(k);
         end
-    end    
+    end
     for k=1:numel(s_e)
         if abs(trial(t).stm_pos - s_e(k)) < Precision
             stmpos(t)=s_e(k);
@@ -691,7 +688,7 @@ fixation=fixation-1i*fix_y;
 target=target-1i*fix_y;
 
 displacement_types=[real(fixation) imag(fixation) real(target) imag(target) real(cuepos) imag(cuepos), real(stmpos) imag(stmpos),...
-    unique_condition fixation_location movement_direction target_location, cue_location, stimulus_location]; % 
+    unique_condition fixation_location movement_direction target_location, cue_location, stimulus_location]; %
 
 if numel(trial)==0
     displacement_types=NaN(1,14);

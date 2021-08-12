@@ -1,4 +1,4 @@
-function [SD  bins SD_VAR]=ph_spike_density(trial,wn,keys,baseline,norm_factor)
+function [SD  bins SD_VAR SD_SEM]=ph_spike_density(trial,wn,keys,baseline,norm_factor)
 sta=keys.PSTH_WINDOWS{wn,2};
 t_before_state=keys.PSTH_WINDOWS{wn,3};
 t_after_state=keys.PSTH_WINDOWS{wn,4};
@@ -103,12 +103,14 @@ if nargout>2 || (numel(baseline>=2) && (any(diff(baseline)) || any(diff(norm_fac
     if n_trials==0
         SD=NaN(1,sum(t_idx)/keys.PSTH_binwidth*0.001);
         SD_VAR=NaN(1,sum(t_idx)/keys.PSTH_binwidth*0.001);
+        SD_SEM=NaN(1,sum(t_idx)/keys.PSTH_binwidth*0.001);
     else
         SD=sum(SD_ms,1)/n_trials;
-        %SD_SEM=sterr(SD_ms,1);
+        SD_SEM=sterr(SD_ms,1);
         SD_VAR=var(SD_ms,0,1);
-        SD_VAR=nanmean(reshape(SD_VAR(t_idx),keys.PSTH_binwidth/0.001,sum(t_idx)/keys.PSTH_binwidth*0.001),1);
         SD=nanmean(reshape(SD(t_idx),keys.PSTH_binwidth/0.001,sum(t_idx)/keys.PSTH_binwidth*0.001),1);
+        SD_SEM=nanmean(reshape(SD_SEM(t_idx),keys.PSTH_binwidth/0.001,sum(t_idx)/keys.PSTH_binwidth*0.001),1);
+        SD_VAR=nanmean(reshape(SD_VAR(t_idx),keys.PSTH_binwidth/0.001,sum(t_idx)/keys.PSTH_binwidth*0.001),1);
     end
 else
     arrival_times=[];
