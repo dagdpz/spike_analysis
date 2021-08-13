@@ -56,97 +56,109 @@ effectors               =[o.effector]';
 perturbations_orig      =[o.perturbation]';
 
 
-%% KK distractor task - define new index
-%1. Nb of stimuli -> 2 or 3
-Settings.TaskParameter.target_color_dim                    = [128,0,0];
-Settings.TaskParameter.fixation_color_dim                  = [60,60,60];
-Settings.TaskParameter.analyze_distr_colors                = 'any';
-
-num_targets_per_trial   = cellfun(@(x) sum(ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',1);
-num_distr_per_trial     = cellfun(@(x) sum(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',1);
-StimulusType            = sum([num_targets_per_trial; num_distr_per_trial] );
-
-for i = 1 : length(StimulusType)
-    if num_targets_per_trial(i) == 0 && num_distr_per_trial(i) == 1 ||  num_targets_per_trial(i) == 1 && num_distr_per_trial(i) == 0
-        StimulusType(i) = 1;
-    elseif num_targets_per_trial(i) == 2 || num_distr_per_trial(i) == 2
-        StimulusType(i) = 2;
-    elseif num_targets_per_trial(i) == 1 && num_distr_per_trial(i) == 1
-        StimulusType(i) = 3;
-    end
-end
-
-
-trial_cond.single_targ = find(num_targets_per_trial == 1 & num_distr_per_trial == 0); % target only trials
-trial_cond.single_distr = find(num_targets_per_trial == 0 & num_distr_per_trial == 1 ); % distr only trials
-
-%trial_cond.targ_targ_2HF = find(num_targets_per_trial == 2 & x_pos1HF_stimuli' == 3); % target-target trials
-
-% distractor_color
-distr_color_per_trial = cellfun(@(x) x(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows'),:),{o.col_dim},'UniformOutput',0);
-
-
-if isequal(Settings.TaskParameter.analyze_distr_colors,'any')
-    num_distr_colors2ana = 5; %Color of distractors is hard coded
-else
-    num_distr_colors2ana = size(Settings.analyze_distr_colors,1);
-end
-distr_colors_all = [NaN,NaN,NaN];
-idx = 1;
-distr_ID = 0;
-distractors = nan(num_distr_colors2ana, size([o.n],2));
-for trial_no = 1:size([o.n],2)
-    curr_distr_colors = distr_color_per_trial{trial_no};
-    if size(distr_color_per_trial{trial_no},1) > 1
-        if ~isequal(curr_distr_colors(1,:),curr_distr_colors(2,:));
-            warning(char(strcat(sprintf('There were two distractors with different colors in trial %d in',trial_no),{' '},file_to_load,{'. The one with index 1 was used for analysis!'})));
-        end
-        curr_distr_colors = curr_distr_colors(1,:);
-    end
-    % This will overwrite logicals in "distractors" with the
-    % last distractor color per trial in "distr_color_per_trial"
-    
-    if ~ismember(curr_distr_colors,distr_colors_all,'rows') % "distr_colors_all" is the sequence of appearance of the distractor colors in one run
-        distr_colors_all(idx,:) = curr_distr_colors;
-        idx = idx + 1;
-        distr_ID = distr_ID + 1;
-        distractors(distr_ID,trial_no) = trial_no; % "distractors": rows represent distractor colors in order of appearance as in "distr_colors_all"
-    else
-        [~,distr_ID_member] = ismember(curr_distr_colors,distr_colors_all,'rows');
-        distractors(distr_ID_member,trial_no) = trial_no;
-    end
-end;
-distr_colors2ana = distr_colors_all;
-num_distr_colors2ana = size(distr_colors2ana,1);
-
-% calculate G/R ratio of RGB values
-G_R_ratio = nan(num_distr_colors2ana,1);
-for col = 1:num_distr_colors2ana
-    G_R_ratio(col,1) = distr_colors2ana(col,2) / distr_colors2ana(col,1);
-end
-
-% sort data according to G/R ratio: from yellow (small ratio) to red (high ratio)
-[G_R_ratio_sorted,ind]     = sort(G_R_ratio);
-distr_colors2ana_sorted    = distr_colors2ana(ind,:);
-distractor_color           = distractors(ind,:); % indices for each distractor color(rows) in each trial (columns)
-
-
-%% Each row contains one Difficulty level (3 = only target, 1 = Diff to 2 = Easy)
-AllDifficulties= distractor_color;difficulty= [];
-
-for i_diff = 1: length(ind)
-    AllDifficulties(i_diff, ~isnan(distractor_color( i_diff ,:))) = i_diff ;
-    AllDifficulties(i_diff, isnan(distractor_color( i_diff ,:))) = 0;  % distr only trials
-end
-AllDifficulties(i_diff +1, sum(AllDifficulties,1 ) == 0) = i_diff +1; %all only target trials
-
-% if length(G_R_ratio_sorted) > 2
-% AllDifficulties(4,(AllDifficulties(4,:) == 4)) = 3;
-% AllDifficulties(3,:) = 0;
-% AllDifficulties(3,:) = AllDifficulties(4,:);
-% AllDifficulties(4,:)= [];
+% %% KK distractor task - define new index
+% %1. Nb of stimuli -> 2 or 3
+% Settings.TaskParameter.target_color_dim                    = [128,0,0];
+% Settings.TaskParameter.fixation_color_dim                  = [60,60,60];
+% Settings.TaskParameter.analyze_distr_colors                = 'any';
+% 
+% num_targets_per_trial   = cellfun(@(x) sum(ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',1);
+% num_distr_per_trial     = cellfun(@(x) sum(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows')),{o.col_dim},'UniformOutput',1);
+% StimulusType            = sum([num_targets_per_trial; num_distr_per_trial] );
+% 
+% for i = 1 : length(StimulusType)
+%     if num_targets_per_trial(i) == 0 && num_distr_per_trial(i) == 1 ||  num_targets_per_trial(i) == 1 && num_distr_per_trial(i) == 0
+%         StimulusType(i) = 1;
+%     elseif num_targets_per_trial(i) == 2 || num_distr_per_trial(i) == 2
+%         StimulusType(i) = 2;
+%     elseif num_targets_per_trial(i) == 1 && num_distr_per_trial(i) == 1
+%         StimulusType(i) = 3;
+%     end
 % end
-difficulty = sum(AllDifficulties, 1);
+% 
+% 
+% trial_cond.single_targ = find(num_targets_per_trial == 1 & num_distr_per_trial == 0); % target only trials
+% trial_cond.single_distr = find(num_targets_per_trial == 0 & num_distr_per_trial == 1 ); % distr only trials
+% 
+% %trial_cond.targ_targ_2HF = find(num_targets_per_trial == 2 & x_pos1HF_stimuli' == 3); % target-target trials
+% 
+% % distractor_color
+% distr_color_per_trial = cellfun(@(x) x(~ismember(x,Settings.TaskParameter.fixation_color_dim,'rows') & ~ismember(x,Settings.TaskParameter.target_color_dim,'rows'),:),{o.col_dim},'UniformOutput',0);
+% 
+% 
+% if isequal(Settings.TaskParameter.analyze_distr_colors,'any')
+%     num_distr_colors2ana = 5; %Color of distractors is hard coded
+% else
+%     num_distr_colors2ana = size(Settings.analyze_distr_colors,1);
+% end
+% distr_colors_all = [NaN,NaN,NaN];
+% idx = 1;
+% distr_ID = 0;
+% distractors = nan(num_distr_colors2ana, size([o.n],2));
+% for trial_no = 1:size([o.n],2)
+%     curr_distr_colors = distr_color_per_trial{trial_no};
+%     if size(distr_color_per_trial{trial_no},1) > 1
+%         if ~isequal(curr_distr_colors(1,:),curr_distr_colors(2,:));
+%             warning(char(strcat(sprintf('There were two distractors with different colors in trial %d in',trial_no),{' '},file_to_load,{'. The one with index 1 was used for analysis!'})));
+%         end
+%         curr_distr_colors = curr_distr_colors(1,:);
+%     end
+%     % This will overwrite logicals in "distractors" with the
+%     % last distractor color per trial in "distr_color_per_trial"
+%     
+%     if ~ismember(curr_distr_colors,distr_colors_all,'rows') % "distr_colors_all" is the sequence of appearance of the distractor colors in one run
+%         distr_colors_all(idx,:) = curr_distr_colors;
+%         idx = idx + 1;
+%         distr_ID = distr_ID + 1;
+%         distractors(distr_ID,trial_no) = trial_no; % "distractors": rows represent distractor colors in order of appearance as in "distr_colors_all"
+%     else
+%         [~,distr_ID_member] = ismember(curr_distr_colors,distr_colors_all,'rows');
+%         distractors(distr_ID_member,trial_no) = trial_no;
+%     end
+% end;
+% distr_colors2ana = distr_colors_all;
+% num_distr_colors2ana = size(distr_colors2ana,1);
+% 
+% % calculate G/R ratio of RGB values
+% G_R_ratio = nan(num_distr_colors2ana,1);
+% for col = 1:num_distr_colors2ana
+%     G_R_ratio(col,1) = distr_colors2ana(col,2) / distr_colors2ana(col,1);
+% end
+% 
+% % sort data according to G/R ratio: from yellow (small ratio) to red (high ratio)
+% [G_R_ratio_sorted,ind]     = sort(G_R_ratio);
+% distr_colors2ana_sorted    = distr_colors2ana(ind,:);
+% distractor_color           = distractors(ind,:); % indices for each distractor color(rows) in each trial (columns)
+% 
+% 
+% %% Each row contains one Difficulty level (3 = only target, 1 = Diff to 2 = Easy)
+% AllDifficulties= distractor_color;difficulty= [];
+% 
+% for i_diff = 1: length(ind)
+%     AllDifficulties(i_diff, ~isnan(distractor_color( i_diff ,:))) = i_diff ;
+%     AllDifficulties(i_diff, isnan(distractor_color( i_diff ,:))) = 0;  % distr only trials
+% end
+% AllDifficulties(i_diff +1, sum(AllDifficulties,1 ) == 0) = i_diff +1; %all only target trials
+% 
+% % if length(G_R_ratio_sorted) > 2
+% % AllDifficulties(4,(AllDifficulties(4,:) == 4)) = 3;
+% % AllDifficulties(3,:) = 0;
+% % AllDifficulties(3,:) = AllDifficulties(4,:);
+% % AllDifficulties(4,:)= [];
+% % end
+% difficulty = sum(AllDifficulties, 1);
+
+
+for i = 1 : numel(o)
+    if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
+        StimulusType(i) = 1; %% single stimulus
+    elseif o(i).n_nondistractors == 2 || o(i).n_distractors == 3
+        StimulusType(i) = 2; %% TT / DD
+    elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2
+        StimulusType(i) = 3; %% target distractor
+    end
+end
+difficulty = [o.difficulty];
 
 target_selected      =[o.target_selected]'; %Which target selected
 
@@ -303,7 +315,7 @@ switch keys.arrangement
 
      con_for_line            = diff_idx';  %%% there was no ' !?
      if length(diff_values) == 3
-     pop.line_labels        =   {'Diff', 'Easy','Tar'};
+     pop.line_labels        =   {'Tar', 'Easy','Diff'}; %{'Diff', 'Easy','Tar'};
 
      else
      pop.line_labels        =   {'Diff','Diff2', 'Easy','Tar'};

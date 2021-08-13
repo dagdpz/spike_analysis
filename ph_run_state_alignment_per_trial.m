@@ -57,6 +57,13 @@ for t=1:n_trials
     trial(t).effector      = MA_out.task(t).effector;
     trial(t).reach_hand    = MA_out.task(t).reach_hand;
     trial(t).correct_targets    = MA_out.task(t).correct_targets;
+    
+    trial(t).n_nondistractors          = MA_out.task(t).n_nondistractors;
+    trial(t).n_distractors             = MA_out.task(t).n_distractors;
+    trial(t).difficulty                = MA_out.task(t).difficulty;
+    trial(t).stimuli_in_2hemifields    = MA_out.task(t).stimuli_in_2hemifields;
+    
+    
     if isnan(trial(t).reach_hand); trial(t).reach_hand=0; end;
     trial(t).choice        = MA_out.binary(t).choice;
     trial(t).success       = MA_out.binary(t).success;
