@@ -63,6 +63,7 @@ n_distractors = [o.n_distractors];
 n_nondistractors = [o.n_nondistractors]; 
 
 
+[n_distractors == 2 && n_nondistractors == 1])
 for i = 1 : numel(o)
     if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
         StimulusType(i) = 1; %% single stimulus
@@ -252,11 +253,11 @@ switch keys.arrangement
                  val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
                  val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
             
-            pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
-            pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
-            val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
-            val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
-            position_indexes        = tar_idx;
+%             pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
+%             pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
+% %             val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
+% %             val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
+% %             position_indexes        = tar_idx;
             
         else
             pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
