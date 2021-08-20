@@ -253,6 +253,8 @@ switch keys.arrangement
 %             
 
         if length(diff_values) == 3
+                    fig_title               = 'StimTyp_Diff_Pos_Suc';
+
             col_left      = autumn(6);
             col_right     = winter(3);
             tar_purple    = [0.5    0.2510    0.3922];
@@ -278,22 +280,45 @@ switch keys.arrangement
         hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
         con_for_trial_crit      = con_for_line;
         
-    case 'SpatialCompetition_Targets'
-        [diff_values,~,diff_idx]      =unique(difficulty+3*success');
-        
-        
+    case 'SpatialCompetition_Targets'      
         con_for_line           = Styp_idx;
-        pop.line_labels        =   {'SglT','DblT','ETar','CDiff','CEasy','CTar'};
+        pop.line_labels        =   {'SglT','DblT-2Hf','DblT-1HF'};
+        pop.line_labels        =   {'SglT','DblT-2Hf','DblT-1HF'};       
         
-        position_indexes        = stm_idx;
-        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
         sub_title               = 'stimulus position';
-        pop.PSTH_perpos_colors =   [summer(6);winter(6)] ;
-        pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
+        pop.PSTH_perpos_colors =   [spring(3);winter(3)] ;
+        pop.PSTH_summary_colors=   [spring(3);winter(3)] ;
+        
         hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
         con_for_trial_crit      = con_for_line;
-        % con_for_figure          = suc_idx;
+           
+        val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
+        val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
+        position_indexes        = tar_idx;
+        unique(stm_val(find(StimulusType == 4),:), 'rows' )
+        unique(stm_val(find(StimulusType == 2),:), 'rows' )
+
+     case 'SpatialCompetition_Distractor'  
+      [diff_values,~,diff_idx]        = unique(difficulty);
+ 
+        fig_title               = 'DifficultyLevel';
+        con_for_figure          = diff_idx';
+        val_for_figure          = num2cell(diff_values);
+        
+        con_for_line           = Styp_idx;
+        pop.line_labels        =   {'SglD','DblD-2Hf','DblD-1HF'};
+        
+        sub_title               = 'stimulus position';
+        pop.PSTH_perpos_colors =   [spring(3);winter(3)] ;
+        pop.PSTH_summary_colors=   [spring(3);winter(3)] ;
+        
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        con_for_trial_crit      = con_for_line;
+           
+                 position_indexes        = stm_idx;
+                 val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+                 val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+        %unique(stm_val(find(StimulusType == 4),:), 'rows' )       
         
     case 'StimType_Diff_Pos_ErVsCor'
         difficulty =  difficulty+3*success';
