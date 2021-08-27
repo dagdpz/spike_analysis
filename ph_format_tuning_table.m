@@ -144,7 +144,7 @@ end
 
 function completed_table=format_excel_tuning_table(tuning_per_unit_table,tasks,keys)
 cases=keys.position_and_plotting_arrangements;
-N_columns_unchanged=12;
+N_columns_unchanged=12; %% 
 in_or_ch={'in','ch'};
 hands={'AH','IH','CH'}; %%!!!
 sides={'IS','CS'}; %%!!!
