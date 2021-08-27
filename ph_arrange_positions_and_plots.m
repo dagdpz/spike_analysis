@@ -33,11 +33,11 @@ cue_val=displacement_types(:,5:6);
 mov_val=displacement_types(:,3:4) - displacement_types(:,1:2);
 stm_val=displacement_types(:,7:8);
 
-all_idx=displacement_types(:,8);
-fix_idx=displacement_types(:,9);
-mov_idx=displacement_types(:,10);
-tar_idx=displacement_types(:,11);
-cue_idx=displacement_types(:,12);
+all_idx=displacement_types(:,9);
+fix_idx=displacement_types(:,10);
+mov_idx=displacement_types(:,11);
+tar_idx=displacement_types(:,12);
+cue_idx=displacement_types(:,13);
 stm_idx=displacement_types(:,14);
 non_idx=ones(size(displacement_types,1),1);
 

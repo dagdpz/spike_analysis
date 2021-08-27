@@ -175,7 +175,10 @@ for t=1:numel(tasks)
         
         temp_table3=[temp_table2 vertcat({'case'},repmat({current_case},size(tuning_per_unit_table,1)-1,1)) temp_table_IN temp_table_CH];
         
-        unique_epoch_title_indxes=~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'in_'))    & ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_epoch_')) &...
+        
+        
+        unique_epoch_title_indxes=(~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'in_')) | ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'ch_'))) &...
+            ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_epoch_')) &...
             ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_AH_')) &...
             cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_main_')) & ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),tasks{t})) &...
             cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_DF_'))   & cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_IX_')) &...
@@ -183,8 +186,9 @@ for t=1:numel(tasks)
             cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_CS_'))   & cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_IS_')) &...
             cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_bilateral')) &...
             ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),current_case));
-        epochs_tmp=tuning_per_unit_table(1,unique_epoch_title_indxes);
-        epoch_string_end=cell2mat(strfind(epochs_tmp,'_epoch_'))-1;
+        epochs=tuning_per_unit_table(1,unique_epoch_title_indxes);
+        epochs=cellfun(@(x) x(7:strfind(x,'_epoch_')-1),epochs,'UniformOutput',false);
+        %epoch_string_end=cell2mat(strfind(epochs_tmp,'_epoch_'))-1;
         
         for ic=1:numel(in_or_ch)
             current_INORCH=in_or_ch{ic};
@@ -216,9 +220,9 @@ for t=1:numel(tasks)
                 end
             end
             
-            for e=1:numel(epochs_tmp)
+            for e=1:numel(epochs)
                 n_table=n_table+1;
-                epoch=epochs_tmp{e}(7:epoch_string_end(e));
+                epoch=epochs{e};
                 temp_table7=[temp_table6 vertcat({'epoch'},repmat({epoch},size(tuning_per_unit_table,1)-1,1))];
                 for f=1:numel(factors)
                     current_factor=factors{f};
