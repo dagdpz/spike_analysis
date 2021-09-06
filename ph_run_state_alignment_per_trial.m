@@ -108,7 +108,13 @@ for t=1:n_trials
     trial(t).col_bri            = Movement.col_bri;
     trial(t).target_selected    = Movement.target_selected;
 
+    if  numel(trial(t).all_tar_pos) == 1 %% KK NOTLÖSUNG
+    correct_pos = trial(t).all_tar_pos; 
+    else
     correct_pos=trial(t).all_tar_pos(trial(t).correct_targets);
+    end
+    
+    
     if correct_pos == trial(t).fix_pos(1) %% distractor only or double_distractor
         correct_pos=trial(t).all_tar_pos(trial(t).all_tar_pos~=0);
     end
@@ -268,7 +274,8 @@ end
 invalid_trials=sort([trials_wo_phys trials_wo_cond]); % important change: differentiation between phys not present and condition mismatches
 trial(invalid_trials)=[];
 
-%% automatic stibility (dependent on fano factor of Frs per trial   
+%% automatic stibility (dependent on fano factor of Frs per trial  
+if ~isempty(trial)
 units_cat=cat(3,trial.unit);
 for c=1:n_chans_u,
     for u=1:n_units
@@ -307,7 +314,7 @@ for c=1:n_chans_u,
 end
 
 
-
+end
 o.trial=trial;
 o.block=keys.block;
 end

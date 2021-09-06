@@ -62,7 +62,7 @@ stimuli_in_2hemifields = [o.stimuli_in_2hemifields];
 n_distractors = [o.n_distractors]; 
 n_nondistractors = [o.n_nondistractors]; 
 
-
+StimulusType = []; 
 for i = 1 : numel(o)
     if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
         StimulusType(i) = 1; %% single stimulus
@@ -112,7 +112,7 @@ end
 [cho_ptb_values,~,chp_idx]  =unique([choices perturbations],'rows');
 
 
-%[diff_values,~,diff_idx]      =unique(difficulty+3*success');
+
 [Styp_values,~,Styp_idx]      =unique(StimulusType');
 
 
@@ -172,54 +172,7 @@ fixation_per_trial      = fix_val;
 
 %% specifics
 switch keys.arrangement
-    
-    
-    case 'StimulusType_Difficulty_Position'
-        
-        [diff_values,~,diff_idx]        = unique(difficulty);
-        
-        fig_title               = 'StimulusType_Difficulty_Position';
-        con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);
-        con_for_line            = diff_idx';  %%% there was no ' !?
-        if length(diff_values) == 3
-            pop.line_labels        =   {'Tar', 'Easy','Diff'}; %{'Diff', 'Easy','Tar'};
-        else
-            pop.line_labels        =   {'Tar', 'Easy','Diff','Diff2',};
-        end
-        
-        
-        
-        %      position_indexes = mov_idx;
-        %      val_for_sub_assignment  = tar_val(u_mov_idx_idx,:);
-        %      val_for_pos_assignment  = mov_val(u_mov_idx_idx,:);
-        
-        
-        sub_title               = 'stimulus position';
-        if length(diff_values) == 3
-            col_left      = autumn(6);
-            col_right     = winter(3);
-            tar_purple    = [0.5    0.2510    0.3922];
-            col_fix       = gray(6);
-            
-            pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
-            pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
-            position_indexes        = stm_idx;
-            val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-            val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-            
-            pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
-            pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
-            val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
-            val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
-            position_indexes        = tar_idx;
-        else
-            pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
-            pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
-        end
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
-        
+
     case 'StimTyp_Diff_Pos_Suc'
         [diff_values,~,diff_idx]        = unique(difficulty);
         
@@ -279,24 +232,57 @@ switch keys.arrangement
         
         hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
         con_for_trial_crit      = con_for_line;
-        
-    case 'SpatialCompetition_Targets'      
-        con_for_line           = Styp_idx;
-        pop.line_labels        =   {'SglT','DblT-2Hf','DblT-1HF'};
-        pop.line_labels        =   {'SglT','DblT-2Hf','DblT-1HF'};       
+    case 'DisTar_Diff_Pos_Suc'  
+        [diff_values,~,diff_idx]        = unique(difficulty);
+
+        con_for_line           = diff_idx';
+        pop.line_labels        =   {'T-Deasy', 'T-Ddiff'};
+        pop.line_labels        =   {'T-Deasy', 'T-Ddiff'};
         
         sub_title               = 'stimulus position';
-        pop.PSTH_perpos_colors =   [spring(3);winter(3)] ;
-        pop.PSTH_summary_colors=   [spring(3);winter(3)] ;
         
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        col_left      = autumn(6);
+        col_right     = winter(3);
+
+        
+        pop.PSTH_perpos_colors =   [[col_left(6,:);col_left(3,:)];[col_right(2,:);col_right(1,:)]] ;
+        pop.PSTH_summary_colors=   [[col_left(6,:);col_left(3,:)];[col_right(2,:);col_right(1,:)]] ;
+        
+        %hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        hemifield_indexes       = (real(tar_val(stm_idx))>0)+1;
+
         con_for_trial_crit      = con_for_line;
-           
+        
         val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
         val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
         position_indexes        = tar_idx;
-        unique(stm_val(find(StimulusType == 4),:), 'rows' )
-        unique(stm_val(find(StimulusType == 2),:), 'rows' )
+        
+        
+    case 'SpatialCompetition_Targets'   
+        % left vs Right is defined where the saccade was made to
+        con_for_line           = Styp_idx;
+        pop.line_labels        =   {'SglT','DblT-2Hf','DblT-1HF'};
+        pop.line_labels        =   {'SglT','DblT-2Hf','DblT-1HF'};
+        
+        sub_title               = 'stimulus position';
+        
+        col_left      = autumn(6);
+        col_right     = winter(3);
+        tar_purple    = [0.5    0.2510    0.3922];
+        col_fix       = gray(6);
+        
+        % 
+        pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(3,:);[0.6350, 0.0780, 0.1840] 	];    [tar_purple; col_right(2,:);col_right(1,:)]] ;
+        pop.PSTH_summary_colors=   [[col_left(1,:);col_left(3,:);[0.6350, 0.0780, 0.1840] 	];    [tar_purple ; col_right(2,:);col_right(1,:) ]] ;
+               
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        con_for_trial_crit      = con_for_line;
+        
+        val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
+        val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
+        position_indexes        = tar_idx;
+        %unique(stm_val(find(StimulusType == 4),:), 'rows' )
+        %unique(stm_val(find(StimulusType == 2),:), 'rows' )
 
      case 'SpatialCompetition_Distractor'  
       [diff_values,~,diff_idx]        = unique(difficulty);
@@ -318,7 +304,6 @@ switch keys.arrangement
                  position_indexes        = stm_idx;
                  val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
                  val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        %unique(stm_val(find(StimulusType == 4),:), 'rows' )       
         
     case 'StimType_Diff_Pos_ErVsCor'
         difficulty =  difficulty+3*success';
