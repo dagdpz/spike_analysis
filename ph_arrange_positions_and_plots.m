@@ -56,20 +56,16 @@ effectors               =[o.effector]';
 perturbations_orig      =[o.perturbation]';
 target_selected         =[o.target_selected]'; %Which target selected
 
-<<<<<<< HEAD
 %% KK STUFF
 %% spatial distractor task
-=======
 %% spatial distractor task
 difficulty = [o.difficulty];
 stimuli_in_2hemifields = [o.stimuli_in_2hemifields];
 n_distractors = [o.n_distractors]; 
 n_nondistractors = [o.n_nondistractors]; 
->>>>>>> Merge_SpatialDistractorTask_082021
 
 StimulusType = []; 
 for i = 1 : numel(o)
-<<<<<<< HEAD
     if isfield(o,'n_nondistractors')
         if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
             StimulusType(i) = 1; %% single stimulus
@@ -87,25 +83,20 @@ if isfield(o,'difficulty')
 else
     difficulty = success;
 end
-
-
-=======
-    if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
-        StimulusType(i) = 1; %% single stimulus
-    elseif o(i).n_nondistractors == 2 && o(i).stimuli_in_2hemifields == 1 || o(i).n_distractors == 3 && o(i).stimuli_in_2hemifields == 1
-        StimulusType(i) = 2; %% TT / DD
-    elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2 && o(i).stimuli_in_2hemifields == 1
-        StimulusType(i) = 3; %% target distractor
-    elseif o(i).n_nondistractors == 2 && o(i).stimuli_in_2hemifields == 0 || o(i).n_distractors == 3 && o(i).stimuli_in_2hemifields == 0
-        StimulusType(i) = 4; %% TT / DD
-    elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2 && o(i).stimuli_in_2hemifields == 0
-        StimulusType(i) = 5; %% target distractor
-    end
+if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
+    StimulusType(i) = 1; %% single stimulus
+elseif o(i).n_nondistractors == 2 && o(i).stimuli_in_2hemifields == 1 || o(i).n_distractors == 3 && o(i).stimuli_in_2hemifields == 1
+    StimulusType(i) = 2; %% TT / DD
+elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2 && o(i).stimuli_in_2hemifields == 1
+    StimulusType(i) = 3; %% target distractor
+elseif o(i).n_nondistractors == 2 && o(i).stimuli_in_2hemifields == 0 || o(i).n_distractors == 3 && o(i).stimuli_in_2hemifields == 0
+    StimulusType(i) = 4; %% TT / DD
+elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2 && o(i).stimuli_in_2hemifields == 0
+    StimulusType(i) = 5; %% target distractor
 end
 
 % Ma = unique([n_distractors' , n_nondistractors' , difficulty',stimuli_in_2hemifields'],'rows'); 
 %size(Ma)
->>>>>>> Merge_SpatialDistractorTask_082021
 
 %% perturbation (painful, because its either in groups - for analysis, or by block (actuallz original perturbation value from table) - for single cell plotting
 perturbations=zeros(size(perturbations_orig));
@@ -137,14 +128,9 @@ end
 [hnd_blo_values,~,hbl_idx]  =unique([hands blocks],'rows');
 [hnd_eff_values,~,hef_idx]  =unique([hands effectors],'rows');
 [cho_ptb_values,~,chp_idx]  =unique([choices perturbations],'rows');
-<<<<<<< HEAD
 [diff_values,~,diff_idx]        = unique(difficulty);
 %[diff_values,~,diff_idx]      =unique(difficulty+3*success');
-=======
 
-
-
->>>>>>> Merge_SpatialDistractorTask_082021
 [Styp_values,~,Styp_idx]      =unique(StimulusType');
 
 
@@ -204,7 +190,6 @@ fixation_per_trial      = fix_val;
 
 %% specifics
 switch keys.arrangement
-<<<<<<< HEAD
     
     case 'StimulusType_Difficulty_Position'
         fig_title               = 'StimulusType_Difficulty_Position';
@@ -446,7 +431,6 @@ switch keys.arrangement
         %              difficulty(idx_difficulty)     =[];
         %              stm_idx(idx_difficulty)        =[];
         %              Styp_idx(idx_difficulty)       =[];
-=======
 
     case 'StimTyp_Diff_Pos_Suc'
         [diff_values,~,diff_idx]        = unique(difficulty);
@@ -582,7 +566,6 @@ switch keys.arrangement
         
     case 'StimType_Diff_Pos_ErVsCor'
         difficulty =  difficulty+3*success';
->>>>>>> Merge_SpatialDistractorTask_082021
         
         [diff_values,~,diff_idx]        = unique(difficulty);
         fig_title               = 'StimType_Diff_Pos_ErVsCor';
@@ -590,11 +573,8 @@ switch keys.arrangement
         val_for_figure          = num2cell(Styp_values);
         
         con_for_line            = diff_idx';
-<<<<<<< HEAD
         pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
-=======
         pop.line_labels        =   {'ETar','EEasy','EDiff','CTar','CEasy','CDiff'};
->>>>>>> Merge_SpatialDistractorTask_082021
         
         position_indexes        = stm_idx;
         val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
@@ -609,14 +589,10 @@ switch keys.arrangement
         Diff_R_easy = [0.2000    1.0000    0.8000 ];
         Diff_L_easy = [0.6000    0.8000    1.0000 ];
         
-        
-<<<<<<< HEAD
         pop.PSTH_perpos_colors =   [[col_left(4,:);col_left(7,:);col_left(2,:)  ;col_left(5,:); col_left(10,:)  ;col_left(1,:)];    [col_right(1,:);Diff_L_easy;tar_pink; col_right(4,:);Diff_R_easy;tar_purple]] ;
         pop.PSTH_summary_colors=   [[col_left(4,:);col_left(7,:);col_left(2,:)  ;col_left(5,:); col_left(10,:)  ;col_left(1,:)];    [col_right(1,:);Diff_L_easy;tar_pink; col_right(4,:);Diff_R_easy;tar_purple]] ;
-=======
         pop.PSTH_perpos_colors =   [[col_left(2,:);col_left(7,:);col_left(4,:)  ;col_left(1,:); col_left(10,:)  ;col_left(5,:)];    [tar_pink; Diff_L_easy; col_right(1,:);tar_purple; Diff_R_easy; col_right(4,:)]] ;
         pop.PSTH_summary_colors=   [[col_left(2,:);col_left(7,:);col_left(4,:)  ;col_left(1,:); col_left(10,:)  ;col_left(5,:)];    [tar_pink; Diff_L_easy; col_right(1,:);tar_purple; Diff_R_easy; col_right(4,:)]] ;
->>>>>>> Merge_SpatialDistractorTask_082021
         % uisetcolor([0.6 0.8 1])
         % pop.PSTH_perpos_colors =   [autumn(6);winter(6)] ;
         % pop.PSTH_summary_colors=   [autumn(6);winter(6)] ;
