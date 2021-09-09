@@ -56,9 +56,14 @@ effectors               =[o.effector]';
 perturbations_orig      =[o.perturbation]';
 target_selected         =[o.target_selected]'; %Which target selected
 
+<<<<<<< HEAD
 %% KK STUFF
 %% spatial distractor task
+=======
+%% spatial distractor task
+difficulty = [o.difficulty];
 stimuli_in_2hemifields = [o.stimuli_in_2hemifields];
+n_distractors = [o.n_distractors]; 
 n_nondistractors = [o.n_nondistractors]; 
 >>>>>>> Merge_SpatialDistractorTask_082021
 
