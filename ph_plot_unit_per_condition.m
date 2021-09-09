@@ -305,11 +305,11 @@ for unit=1:numel(population)
                 if keys.plot.average_heat_maps
                     unique_lines(end)=[];
                 end
-                if any(unique_hemifields==0) %&& fig==unique_figures(1)% vertical targets, KK uncomment, why figure? 
+                if any(unique_hemifields==0) %&& fig==unique_figures(1)% vertical targets, KK uncomment, why figure and whz colors? 
                     side_labels={'L','V','R'};
-                    n_colors=size(o.PSTH_summary_colors,1)/2;
-                    V_col=linspace(0,0.5,n_colors)'*[1 1 1];
-                    o.PSTH_summary_colors=[o.PSTH_summary_colors(1:n_colors,:);V_col;o.PSTH_summary_colors(n_colors+1:end,:)];
+                   % n_colors=size(o.PSTH_summary_colors,1)%/2;
+                   % V_col=linspace(0,0.5,n_colors)'*[1 1 1];
+                   % o.PSTH_summary_colors=[o.PSTH_summary_colors(1:n_colors,:);V_col;o.PSTH_summary_colors(n_colors+1:end,:)];
                 end
                 
                 hs_ylim=0;

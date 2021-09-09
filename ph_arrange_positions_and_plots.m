@@ -56,8 +56,9 @@ effectors               =[o.effector]';
 perturbations_orig      =[o.perturbation]';
 target_selected         =[o.target_selected]'; %Which target selected
 
-
 %% KK STUFF
+%% spatial distractor task
+
 for i = 1 : numel(o)
     if isfield(o,'n_nondistractors')
         if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
@@ -241,6 +242,147 @@ switch keys.arrangement
         
         pop.PSTH_perpos_colors =   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(1,:);col_right(2,:);tar_purple]] ;
         pop.PSTH_summary_colors=   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(1,:);col_right(2,:);tar_purple]] ;
+        
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        con_for_trial_crit      = con_for_line;
+        
+    case 'DoubleSameTargets_Position'
+        [diff_values,~,diff_idx]      =unique(difficulty+3*success');
+        
+        fig_title               = 'StimulusType';
+        con_for_figure          = Styp_idx;
+        val_for_figure          = num2cell(Styp_values);
+        
+        con_for_line            = diff_idx';
+        pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
+        
+        position_indexes        = stm_idx;
+        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+        sub_title               = 'stimulus position';
+        pop.PSTH_perpos_colors =   [summer(6);winter(6)] ;
+        pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        con_for_trial_crit      = con_for_line;
+        % con_for_figure          = suc_idx;
+        
+    case 'StimType_Diff_Pos_ErVsCor'
+        difficulty =  difficulty+3*success';
+        %              difficulty =  difficulty(success ==1)';
+        %              idx_difficulty = find(difficulty <3);
+        %              difficulty(idx_difficulty)     =[];
+        %              stm_idx(idx_difficulty)        =[];
+        %              Styp_idx(idx_difficulty)       =[];
+        
+        [diff_values,~,diff_idx]        = unique(difficulty);
+        fig_title               = 'StimType_Diff_Pos_ErVsCor';
+        con_for_figure          = Styp_idx;
+        val_for_figure          = num2cell(Styp_values);
+        
+        con_for_line            = diff_idx';
+        pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
+        
+        position_indexes        = stm_idx;
+        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+        sub_title               = 'stimulus position';
+        
+        
+        col_left = autumn(10);
+        col_right = winter(6);
+        tar_pink   = [0.4235    0.2510    0.3922];
+        tar_purple = [1 0 1 ];
+        Diff_R_easy = [0.2000    1.0000    0.8000 ];
+        Diff_L_easy = [0.6000    0.8000    1.0000 ];
+        
+        
+        pop.PSTH_perpos_colors =   [[col_left(4,:);col_left(7,:);col_left(2,:)  ;col_left(5,:); col_left(10,:)  ;col_left(1,:)];    [col_right(1,:);Diff_L_easy;tar_pink; col_right(4,:);Diff_R_easy;tar_purple]] ;
+        pop.PSTH_summary_colors=   [[col_left(4,:);col_left(7,:);col_left(2,:)  ;col_left(5,:); col_left(10,:)  ;col_left(1,:)];    [col_right(1,:);Diff_L_easy;tar_pink; col_right(4,:);Diff_R_easy;tar_purple]] ;
+        % uisetcolor([0.6 0.8 1])
+        % pop.PSTH_perpos_colors =   [autumn(6);winter(6)] ;
+        % pop.PSTH_summary_colors=   [autumn(6);winter(6)] ;
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        con_for_trial_crit      = con_for_line;
+        
+        [diff_values,~,diff_idx]        = unique(difficulty);
+        
+        fig_title               = 'StimulusType_Difficulty_Position';
+        con_for_figure          = Styp_idx;
+        val_for_figure          = num2cell(Styp_values);
+        con_for_line            = diff_idx';  %%% there was no ' !?
+        if length(diff_values) == 3
+            pop.line_labels        =   {'Tar', 'Easy','Diff'}; %{'Diff', 'Easy','Tar'};
+        else
+            pop.line_labels        =   {'Tar', 'Easy','Diff','Diff2',};
+        end
+        
+        %position_indexes        = stm_idx;
+        %val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+        %val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+        
+        %      position_indexes = mov_idx;
+        %      val_for_sub_assignment  = tar_val(u_mov_idx_idx,:);
+        %      val_for_pos_assignment  = mov_val(u_mov_idx_idx,:);
+        
+        val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
+        val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
+        position_indexes        = tar_idx;
+        
+        sub_title               = 'stimulus position';
+        if length(diff_values) == 3
+            col_left      = autumn(6);
+            col_right     = winter(3);
+            tar_purple    = [0.5    0.2510    0.3922];
+            col_fix       = gray(6);
+            
+            pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
+            pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
+            
+            pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
+            pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
+        else
+            pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
+            pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
+        end
+        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
+        con_for_trial_crit      = con_for_line;
+        
+    case 'StimulusType_Difficulty_Position_Successful'
+        [diff_values,~,diff_idx]        = unique(difficulty);
+        
+        
+        
+        fig_title               = 'StimuType_Diff_Pos_Suc';
+        con_for_figure          = Styp_idx;
+        val_for_figure          = num2cell(Styp_values);
+        
+        con_for_line            = diff_idx';  %%% there was no ' !?
+        if length(diff_values) == 3
+            pop.line_labels        =   {'Tar', 'Easy','Diff'}; %{'Diff', 'Easy','Tar'};
+        else
+            pop.line_labels        =   {'Tar', 'Easy','Diff','Diff2',};
+        end
+        
+        position_indexes        = stm_idx;
+        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
+        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
+        sub_title               = 'stimulus position';
+        
+        if length(diff_values) == 3
+            col_left      = autumn(6);
+            col_right     = winter(3);
+            tar_purple    = [0.5    0.2510    0.3922];
+            col_fix       = gray(6);
+            
+            pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
+            pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
+            
+            %pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
+            %pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
+        else
+            pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
+            pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
+        end
         
         hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
         con_for_trial_crit      = con_for_line;
