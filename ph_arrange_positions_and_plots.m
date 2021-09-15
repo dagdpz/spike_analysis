@@ -54,46 +54,46 @@ cueshape                =[o.cue_shape]';
 success                 =[o.success]';
 effectors               =[o.effector]';
 perturbations_orig      =[o.perturbation]';
-target_selected         =[o.target_selected]'; %Which target selected
-
-%% KK STUFF
-%% spatial distractor task
-%% spatial distractor task
-difficulty = [o.difficulty];
-stimuli_in_2hemifields = [o.stimuli_in_2hemifields];
-n_distractors = [o.n_distractors]; 
-n_nondistractors = [o.n_nondistractors]; 
-
-StimulusType = []; 
-for i = 1 : numel(o)
-    if isfield(o,'n_nondistractors')
-        if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
-            StimulusType(i) = 1; %% single stimulus
-        elseif o(i).n_nondistractors == 2 || o(i).n_distractors == 3
-            StimulusType(i) = 2; %% TT / DD
-        elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2
-            StimulusType(i) = 3; %% target distractor
-        end
-    else
-        StimulusType(i) = 1; %% target distractor
-    end
-end
-if isfield(o,'difficulty')
-    difficulty = [o.difficulty];
-else
-    difficulty = success;
-end
-if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
-    StimulusType(i) = 1; %% single stimulus
-elseif o(i).n_nondistractors == 2 && o(i).stimuli_in_2hemifields == 1 || o(i).n_distractors == 3 && o(i).stimuli_in_2hemifields == 1
-    StimulusType(i) = 2; %% TT / DD
-elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2 && o(i).stimuli_in_2hemifields == 1
-    StimulusType(i) = 3; %% target distractor
-elseif o(i).n_nondistractors == 2 && o(i).stimuli_in_2hemifields == 0 || o(i).n_distractors == 3 && o(i).stimuli_in_2hemifields == 0
-    StimulusType(i) = 4; %% TT / DD
-elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2 && o(i).stimuli_in_2hemifields == 0
-    StimulusType(i) = 5; %% target distractor
-end
+% target_selected         =[o.target_selected]'; %Which target selected
+% 
+% %% KK STUFF
+% %% spatial distractor task
+% %% spatial distractor task
+% difficulty = [o.difficulty];
+% stimuli_in_2hemifields = [o.stimuli_in_2hemifields];
+% n_distractors = [o.n_distractors]; 
+% n_nondistractors = [o.n_nondistractors]; 
+% 
+% StimulusType = []; 
+% for i = 1 : numel(o)
+%     if isfield(o,'n_nondistractors')
+%         if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
+%             StimulusType(i) = 1; %% single stimulus
+%         elseif o(i).n_nondistractors == 2 || o(i).n_distractors == 3
+%             StimulusType(i) = 2; %% TT / DD
+%         elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2
+%             StimulusType(i) = 3; %% target distractor
+%         end
+%     else
+%         StimulusType(i) = 1; %% target distractor
+%     end
+% end
+% if isfield(o,'difficulty')
+%     difficulty = [o.difficulty];
+% else
+%     difficulty = success;
+% end
+% if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
+%     StimulusType(i) = 1; %% single stimulus
+% elseif o(i).n_nondistractors == 2 && o(i).stimuli_in_2hemifields == 1 || o(i).n_distractors == 3 && o(i).stimuli_in_2hemifields == 1
+%     StimulusType(i) = 2; %% TT / DD
+% elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2 && o(i).stimuli_in_2hemifields == 1
+%     StimulusType(i) = 3; %% target distractor
+% elseif o(i).n_nondistractors == 2 && o(i).stimuli_in_2hemifields == 0 || o(i).n_distractors == 3 && o(i).stimuli_in_2hemifields == 0
+%     StimulusType(i) = 4; %% TT / DD
+% elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2 && o(i).stimuli_in_2hemifields == 0
+%     StimulusType(i) = 5; %% target distractor
+% end
 
 % Ma = unique([n_distractors' , n_nondistractors' , difficulty',stimuli_in_2hemifields'],'rows'); 
 %size(Ma)
@@ -128,10 +128,10 @@ end
 [hnd_blo_values,~,hbl_idx]  =unique([hands blocks],'rows');
 [hnd_eff_values,~,hef_idx]  =unique([hands effectors],'rows');
 [cho_ptb_values,~,chp_idx]  =unique([choices perturbations],'rows');
-[diff_values,~,diff_idx]        = unique(difficulty);
+%[diff_values,~,diff_idx]        = unique(difficulty);
 %[diff_values,~,diff_idx]      =unique(difficulty+3*success');
 
-[Styp_values,~,Styp_idx]      =unique(StimulusType');
+%[Styp_values,~,Styp_idx]      =unique(StimulusType');
 
 
 

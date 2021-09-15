@@ -86,7 +86,8 @@ for unit=1:numel(population)
     end
     
     clear unit_table;
-    inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
+    %inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
+    inital_fieldnames={'unit_ID','monkey','target','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
     unit_table(1,1:numel(inital_fieldnames))=inital_fieldnames;
     for fn=1:numel(inital_fieldnames)
         unit_table{rows_to_update,fn}=population(unit).(inital_fieldnames{fn});
@@ -443,7 +444,7 @@ for ch=1:numel(INCHnamepart)
                     end
                     % preference (highest or lowest) defined by over all
                     % increase or decrease in this epoch
-                    if anova_struct.(['in_' LHRHnamepart{hn} '_' s{:} '_epoch_DF']) <0
+                    if false % anova_struct.(['in_' LHRHnamepart{hn} '_' s{:} '_epoch_DF']) <0
                         invertsign=-1;
                         takemin=1;
                     else
@@ -451,15 +452,21 @@ for ch=1:numel(INCHnamepart)
                         takemin=0;
                     end
                     
+                    %% preference based on instructed trials
+                    RF_IN_RS_IDX=idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.RS;
+                    RF_IN_LS_IDX=idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.LS;
+                    RF_IN_RS_IDX(randsample(find(RF_IN_RS_IDX),round(sum(RF_IN_RS_IDX)/2)))=false;  % taking only 50% of trials for preference estimation
+                    RF_IN_LS_IDX(randsample(find(RF_IN_LS_IDX),round(sum(RF_IN_LS_IDX)/2)))=false;
+                    RF_TEST=~RF_IN_RS_IDX & ~RF_IN_LS_IDX;
+                    RF_in_hemifield_index_IN =invertsign*sign(nanmean(FR(RF_IN_RS_IDX)) - nanmean(FR(RF_IN_LS_IDX))) +2;
+                    RF_out_hemifield_index_IN=invertsign*sign(nanmean(FR(RF_IN_RS_IDX)) - nanmean(FR(RF_IN_LS_IDX)))*-1 +2;
                     
-                    RF_in_hemifield_index_IN =invertsign*sign(nanmean(FR(idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.RS)) -...
-                        nanmean(FR(idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.LS))) +2;
-                    RF_out_hemifield_index_IN=invertsign*sign(nanmean(FR(idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.RS)) -...
-                        nanmean(FR(idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.LS)))*-1 +2;
-                    RF_in_hemifield_index_CH =invertsign*sign(nanmean(FR(idx.ch & idx.hands(:,hn) & ismember(epochs,s) & idx.RS)) -...
-                        nanmean(FR(idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.LS))) +2;
-                    RF_out_hemifield_index_CH=invertsign*sign(nanmean(FR(idx.ch & idx.hands(:,hn) & ismember(epochs,s) & idx.RS)) -...
-                        nanmean(FR(idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.LS)))*-1 +2;
+                     %% preference based on choice trials (??)
+                    RF_CH_RS_IDX=idx.ch & idx.hands(:,hn) & ismember(epochs,s) & idx.RS;
+                    RF_CH_LS_IDX=idx.ch & idx.hands(:,hn) & ismember(epochs,s) & idx.LS;            % here was a bug i believe, taking instructed trials for left space???
+                    RF_in_hemifield_index_CH =invertsign*sign(nanmean(FR(RF_CH_RS_IDX)) - nanmean(FR(RF_CH_LS_IDX))) +2;
+                    RF_out_hemifield_index_CH=invertsign*sign(nanmean(FR(RF_CH_RS_IDX)) - nanmean(FR(RF_CH_LS_IDX)))*-1 +2;
+                    
                     RF_in_hemifield_index_IN(isnan(RF_in_hemifield_index_IN))=2;
                     RF_out_hemifield_index_IN(isnan(RF_out_hemifield_index_IN))=2;
                     RF_in_hemifield_index_CH(isnan(RF_in_hemifield_index_CH))=2;
@@ -472,18 +479,18 @@ for ch=1:numel(INCHnamepart)
                         [~,RF_position_index_CH]=max(Average_FR_per_position_CH);
                     end
                     
-                    % full hemifield
-                    idx_IN_prefHI_in  =idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_in_hemifield_index_IN);
-                    idx_IN_prefHO_in  =idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_out_hemifield_index_IN);
-                    idx_CH_prefHI_in  =idx.ch & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_in_hemifield_index_IN);
-                    idx_CH_prefHO_in  =idx.ch & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_out_hemifield_index_IN);
+                    %% full hemifield
+                    idx_IN_prefHI_in  =idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_in_hemifield_index_IN)  & RF_TEST;
+                    idx_IN_prefHO_in  =idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_out_hemifield_index_IN) & RF_TEST;
+                    idx_CH_prefHI_in  =idx.ch & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_in_hemifield_index_IN)  & RF_TEST;
+                    idx_CH_prefHO_in  =idx.ch & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_out_hemifield_index_IN) & RF_TEST;
                     
                     idx_IN_prefHI_ch  =idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_in_hemifield_index_CH);
                     idx_IN_prefHO_ch  =idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_out_hemifield_index_CH);
                     idx_CH_prefHI_ch  =idx.ch & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_in_hemifield_index_CH);
                     idx_CH_prefHO_ch  =idx.ch & idx.hands(:,hn) & ismember(epochs,s) & idx.LR(:,RF_out_hemifield_index_CH);
                     
-                    
+                    %% baselines per hemifield???
                     idxb_IN_prefHI_in  =idx.in & idx.hands(:,hn) & ismember(epochs,b) & idx.LR(:,RF_in_hemifield_index_IN);
                     idxb_IN_prefHO_in  =idx.in & idx.hands(:,hn) & ismember(epochs,b) & idx.LR(:,RF_out_hemifield_index_IN);
                     idxb_CH_prefHI_in  =idx.ch & idx.hands(:,hn) & ismember(epochs,b) & idx.LR(:,RF_in_hemifield_index_IN);
@@ -502,6 +509,10 @@ for ch=1:numel(INCHnamepart)
                         anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH'])       =labelIN{labelindex};
                         anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_FR'])    =nanmean(FR(idx_IN_prefHI_in));
                         anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_FR'])    =nanmean(FR(idx_CH_prefHI_in));
+                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_DF'])    =nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idx_IN_prefHO_in));
+                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_DF'])    =nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_CH_prefHO_in));
+                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_IX'])    =(nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idx_IN_prefHO_in)))/nanmean(FR(idx_IN_prefHI_in | idx_IN_prefHO_in));
+                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_IX'])    =(nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_CH_prefHO_in)))/nanmean(FR(idx_CH_prefHI_in | idx_CH_prefHO_in));
                     end
                     if sum(idx_CH_prefHI_in)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefHO_in)>=keys.cal.min_trials_per_condition
                         anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefHI_FR'])   =nanmean(FR(idx_CH_prefHI_in));

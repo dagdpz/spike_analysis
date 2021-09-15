@@ -505,7 +505,7 @@ for t=1:size(condition,1)
             %normalize firing rates?
             for u=1:size(pos,2)
                 FR=[pos(:,u).FR];
-                if ~isempty(gaussian_bl_epoch)
+                if exist('gaussian_bl_epoch') && ~isempty(gaussian_bl_epoch) %% checking if this works
                     [FRmax(u), maxposition(u)]=max([FR(FR>0) 0]);
                     FRmin=min([FR(FR<0) 0]);
                     FRmax(u)=max([abs(FRmax(u)) abs(FRmin)]);
@@ -532,7 +532,7 @@ for t=1:size(condition,1)
                 %title(population(group_units(u)).unit_ID,'interpreter','none');
                 RF=RFparameters(u);
                 %
-                if ~isempty(gaussian_bl_epoch)
+                if exist('gaussian_bl_epoch') && ~isempty(gaussian_bl_epoch)
                     Zout=round(RF.Zout/FRmax(u)/2*254 + 127)+1;
                 else
                     Zout=round(RF.Zout/FRmax(u)*254)+1;

@@ -196,15 +196,15 @@ for u=1:numel(population)
         end
         
         clear per_epoch_FR
-        tr=trtyp;
-        per_epoch=vertcat(pop.trial(tr).epoch)';
+        per_epoch=vertcat(pop.trial(trtyp).epoch)';
         for e=1:size(per_epoch,1) %% looping may not be elegant, but at least confusions are avoided
-            per_epoch_FR(e,:)=([per_epoch(e,:).FR]-baseline(tr))./norm_factor(tr); %not sure if dimension is correct here!!!!!!!!!!!!
+            per_epoch_FR(e,:)=([per_epoch(e,:).FR]-baseline(trtyp))./norm_factor(trtyp); %not sure if dimension is correct here!!!!!!!!!!!!
         end
         per_epoch_FR=num2cell(per_epoch_FR);
         [per_epoch.FR]=per_epoch_FR{:};
-        for trl=find(tr)
-            [pop_out(u).trial(trl).epoch.FR]=per_epoch_FR{:,trl};
+        tr_typ=find(trtyp);
+        for trl=1:numel(tr_typ) 
+            [pop_out(u).trial(tr_typ(trl)).epoch.FR]=per_epoch_FR{:,trl};
         end
     end
     

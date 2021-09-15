@@ -14,13 +14,14 @@ end
 state_seperator         =0;
 state_seperator_max     =0;
 
-
+%% this part here is so annoying: All we want is state onsets for each 
 unique_states=unique([trial.states]);
 trial_onsets=NaN(numel(trial),numel(unique_states));
 for t=1:numel(trial)
     [~,si]=ismember(unique_states,trial(t).states);
     si=si(si~=0);
-    trial_onsets(t,si)=trial(t).states_onset;
+    [~,ssi]=sort(si);
+    trial_onsets(t,ssi)=trial(t).states_onset;
 end
 
 for w=1:size(keys.PSTH_WINDOWS,1)
