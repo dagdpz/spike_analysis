@@ -236,17 +236,17 @@ switch keys.arrangement
         [diff_values,~,diff_idx]        = unique(difficulty);
 
         con_for_line           = diff_idx';
-        pop.line_labels        =   {'T-Deasy', 'T-Ddiff'};
-        pop.line_labels        =   {'T-Deasy', 'T-Ddiff'};
+        pop.line_labels        =   {'T-D easy', 'T-D diff'};
+        pop.line_labels        =   {'T-D easy', 'T-D diff'};
         
         sub_title               = 'stimulus position';
         
-        col_left      = autumn(6);
-        col_right     = winter(3);
+        col_left      = summer(20);
+        col_right     = gray(6);
 
         
-        pop.PSTH_perpos_colors =   [[col_left(6,:);col_left(3,:)];[col_right(2,:);col_right(1,:)]] ;
-        pop.PSTH_summary_colors=   [[col_left(6,:);col_left(3,:)];[col_right(2,:);col_right(1,:)]] ;
+        pop.PSTH_perpos_colors =   [[col_left(13,:);col_left(3,:)];[col_right(5,:);col_right(3,:)]] ;
+        pop.PSTH_summary_colors=   [[col_left(13,:);col_left(3,:)];[col_right(5,:);col_right(3,:)]] ;
         
         %hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
         hemifield_indexes       = (real(tar_val(stm_idx))>0)+1;
@@ -269,11 +269,12 @@ switch keys.arrangement
         col_left      = autumn(6);
         col_right     = winter(3);
         tar_purple    = [0.5    0.2510    0.3922];
-        col_fix       = gray(6);
+        col_fix       = hot(10);
+        col_3  = hsv(30); 
         
         % 
-        pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(3,:);[0.6350, 0.0780, 0.1840] 	];    [tar_purple; col_right(2,:);col_right(1,:)]] ;
-        pop.PSTH_summary_colors=   [[col_left(1,:);col_left(3,:);[0.6350, 0.0780, 0.1840] 	];    [tar_purple ; col_right(2,:);col_right(1,:) ]] ;
+        pop.PSTH_perpos_colors =   [[col_left(1,:);col_fix(2,:);col_fix(4,:) 	];    [col_3(26,:);tar_purple;col_3(24,:)]] ;
+        pop.PSTH_summary_colors=   [[col_left(1,:);col_fix(2,:);col_fix(4,:) 	];    [col_3(26,:) ;tar_purple;col_3(24,:) ]] ;
                
         hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
         con_for_trial_crit      = con_for_line;

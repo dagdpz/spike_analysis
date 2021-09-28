@@ -256,28 +256,6 @@ for ch=1:numel(INCHnamepart)
         end
     end
     
-        %%  Difficulty per space
-        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); %keys.anova_varnames{k}
-        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
-        label={'1T','-','1D'}; %higher FR for T , higher FR for D
-  
-        idx1= idx.tr_Diff0; 
-        idx2= idx.tr_Diff1;
-
-          %t-test
-        for sideindex=1:2 %left * right
-        for s=multicomp_epochs(:)'
-            idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
-            h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
-            DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
-            labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-            anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' ])=label{labelindex};
-            anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' '_DF'])=DF;
-            anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
-        end
-             end
-    %
-    
     %% space x hand anovas
     if ismember('spaceLR',keys.anova_varnames) && ismember('hands',keys.anova_varnames)
         k=6;

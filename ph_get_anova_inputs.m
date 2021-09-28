@@ -12,6 +12,12 @@ function [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o,keys)
             n_trials=size(trial_pos,1);
             n_epochs=numel(per_epoch)/n_trials;
             
+            
+            idx.Diff0 =        repmat([o.trial.difficulty]'==0,n_epochs,1);
+            idx.Diff1 =        repmat([o.trial.difficulty]'==1,n_epochs,1);
+            idx.Diff2 =        repmat([o.trial.difficulty]'==2,n_epochs,1);
+
+            
             idx.LS =        repmat(trial_pos(:,1)<0,n_epochs,1); %% the limit here was set to 1!!???
             idx.RS =        repmat(trial_pos(:,1)>0,n_epochs,1);
             idx.NH =        repmat([o.trial.hand]'==0,n_epochs,1);
