@@ -55,7 +55,7 @@ type_effectors  = combvec(u_types,u_effectors)';
 u_types         = unique(type_effectors(:,1))';
 u_effectors     = unique(type_effectors(:,2))';
 
-CP_out  ={'effector','reach_hand','choice','perturbation'};
+CP_out                      = {'effector','reach_hand','choice','perturbation'};
 conditions_out              = combvec(u_effectors,u_hands,u_choice, u_perturbation)';
 
 clear whatisthis per_trial %% freee memory
@@ -201,7 +201,7 @@ for u=1:numel(population)
             per_epoch_FR(e,:)=([per_epoch(e,:).FR]-baseline(trtyp))./norm_factor(trtyp); %not sure if dimension is correct here!!!!!!!!!!!!
         end
         per_epoch_FR=num2cell(per_epoch_FR);
-        [per_epoch.FR]=per_epoch_FR{:};
+%         [per_epoch.FR]=per_epoch_FR{:};
         tr_typ=find(trtyp);
         for trl=1:numel(tr_typ) 
             [pop_out(u).trial(tr_typ(trl)).epoch.FR]=per_epoch_FR{:,trl};

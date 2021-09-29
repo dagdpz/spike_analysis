@@ -96,6 +96,8 @@ u_effectors =unique(type_effectors(:,2))';
 
 %% define conditions to look at
 all_trialz=[population.trial];
+[UC, CM]=ph_get_condition_matrix(trials,all_trialz);
+
 per_trial.types       =[all_trialz.type];
 per_trial.effectors   =[all_trialz.effector];
 
@@ -174,9 +176,7 @@ end
 %% finding positions and fixations
 positions=unique(vertcat(whatisthis.trial.position),'rows');
 keys.normalization_field='PO';
-tic
 [~, condition,~,pref_valid]=ph_condition_normalization(population,keys);
-    toc
 
 %% condition comparison ???
 comparisons_per_effector(1).reach_hand{1}=0;

@@ -701,7 +701,8 @@ switch keys.arrangement
         fig_title               = 'choice ';
         sub_title               = 'movement vector ';
         val_for_figure          = num2cell(cho_values);
-        [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
+        con_for_column          = eff_idx;        
+        %[~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
         color_idx=ismember(hand_eff_color_combination(:,1),hnd_values) & ismember(hand_eff_color_combination(:,2),eff_values);
         pop.PSTH_perpos_colors     = keys.hnd_eff_colors(color_idx,:);
         pop.PSTH_summary_colors    = [keys.hnd_eff_colors_L(color_idx,:); keys.hnd_eff_colors_R(color_idx,:)] ;

@@ -14,7 +14,8 @@ end
 state_seperator         =0;
 state_seperator_max     =0;
 
-%% this part here is so annoying: All we want is state onsets for each 
+%% this part here is quite annoying, but speeds up calculation of event lines later: 
+% trial_onsets will be a [number of trials] x [number of states] matrix, 
 unique_states=unique([trial.states]);
 trial_onsets=NaN(numel(trial),numel(unique_states));
 for t=1:numel(trial)
@@ -52,7 +53,7 @@ for w=1:size(keys.PSTH_WINDOWS,1)
         temp_state_onsets=temp_state_onsets(state_positions_idx);
         for p=1:numel(state_positions)
             text(double(state_positions(p)),diff(y_limframe)*-0.07+y_limframe(1),num2str(round(temp_state_onsets(p)*1000)),...
-                'rotation',45,'fontsize',8*fontsize_factor,'horizontalalignment','center'); %this is a trick: becuase they are plotted in different colors, they will be diffrent elements in adobe
+                'rotation',45,'fontsize',8*fontsize_factor,'horizontalalignment','center'); %this is a trick: becuase they are plotted in different colors, they will be different elements in adobe
             if p>1 && state_positions(p)-state_positions(p-1)<diff(x_limframe)/100
                 current_y=prev_y-diff(y_limframe)*0.15;                
             else
@@ -62,8 +63,6 @@ for w=1:size(keys.PSTH_WINDOWS,1)
                 'fontsize',6*fontsize_factor,'interpreter','none','rotation',90,'verticalalignment','top');  %label for state
             prev_y=current_y;
         end
-%         text(double(state_positions'),ones(size(state_positions'))*(y_limframe(2)-diff(y_limframe)*0.15),state_names(states_in_window),...
-%             'fontsize',6*fontsize_factor,'interpreter','none','rotation',90,'verticalalignment','top');  %label for state
         line([state_shift state_shift],y_limframe,'color','k','linewidth',2.5);
     end
     text(state_seperator+(t_after_state-t_before_state)/2,y_limPSTH(2)-diff(y_limPSTH)*0.05,window_label,...

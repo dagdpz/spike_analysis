@@ -13,7 +13,11 @@ epoch_names={};
 for s=1:numel(unique_states)
     sta=unique_states(s);
     rel_idx=unique_states==relative_state;
-    relative_state_onsets(s)=nanmean([trial_onsets(:,s)-trial_onsets(:,rel_idx); NaN]);
+    if any(rel_idx)
+        relative_state_onsets(s)=nanmean([trial_onsets(:,s)-trial_onsets(:,rel_idx); NaN]);
+    else
+        relative_state_onsets(s)=NaN;
+    end
     absolute_state_onsets(s)=nanmean([trial_onsets(:,s); NaN]);
     state_names(s)=NAMES(find(VALUES==sta,1,'first'));
     states(s)=sta;

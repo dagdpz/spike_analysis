@@ -86,8 +86,8 @@ for unit=1:numel(population)
     end
     
     clear unit_table;
-    %inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
-    inital_fieldnames={'unit_ID','monkey','target','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
+    inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
+    %inital_fieldnames={'unit_ID','monkey','target','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
     unit_table(1,1:numel(inital_fieldnames))=inital_fieldnames;
     for fn=1:numel(inital_fieldnames)
         unit_table{rows_to_update,fn}=population(unit).(inital_fieldnames{fn});
@@ -906,6 +906,20 @@ end
 
 function h=do_stats(A,B,keys,paired)
 %h = ttest2(A,B);
+% if paired
+%     if any(~isnan(A)&~isnan(B))
+%         h = ttest(A,B);
+%     else
+%         h=0;
+%     end
+% else
+%     if any(~isnan(A)) && any (~isnan(B))
+%         h = ttest2(A,B);
+%     else
+%         h=0;
+%     end
+% end
+
 if paired
     if any(~isnan(A)&~isnan(B))
         [~, h] = signrank(A,B);
