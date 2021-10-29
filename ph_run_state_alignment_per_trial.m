@@ -63,7 +63,16 @@ for t=1:n_trials
     trial(t).difficulty                = MA_out.task(t).difficulty;
     trial(t).stimuli_in_2hemifields    = MA_out.task(t).stimuli_in_2hemifields;
     
-    
+    if trial(t).n_nondistractors == 0 && trial(t).n_distractors == 2 ||  trial(t).n_nondistractors == 1 && trial(t).n_distractors == 1
+        trial(t).stimulustype = 1; %% single stimulus
+    elseif trial(t).n_nondistractors == 2 || trial(t).n_distractors == 3
+        trial(t).stimulustype = 2; %% TT / DD
+    elseif trial(t).n_nondistractors == 1 && trial(t).n_distractors == 2
+        trial(t).stimulustype = 3; %% target distractor
+    else
+        trial(t).stimulustype = 1;
+    end
+        
     if isnan(trial(t).reach_hand); trial(t).reach_hand=0; end;
     trial(t).choice        = MA_out.binary(t).choice;
     trial(t).success       = MA_out.binary(t).success;
@@ -217,7 +226,7 @@ for t=1:n_trials
     end
     %trial(t).streams_tStart=tr_in(t).streams_tStart;
     
-    %% unspecific excel table data %% does this mean there are
+    %% unspecific excel table data 
     for c=1:n_chans_s,
         trial(t).channel(c).grid_x               =from_excel_per_channel(c).x{1} ;
         trial(t).channel(c).grid_y               =from_excel_per_channel(c).y{1} ;
@@ -274,7 +283,7 @@ end
 invalid_trials=sort([trials_wo_phys trials_wo_cond]); % important change: differentiation between phys not present and condition mismatches
 trial(invalid_trials)=[];
 
-%% automatic stibility (dependent on fano factor of Frs per trial  
+%% automatic stability (dependent on fano factor of Frs per trial  
 if ~isempty(trial)
 units_cat=cat(3,trial.unit);
 for c=1:n_chans_u,

@@ -54,49 +54,14 @@ cueshape                =[o.cue_shape]';
 success                 =[o.success]';
 effectors               =[o.effector]';
 perturbations_orig      =[o.perturbation]';
-% target_selected         =[o.target_selected]'; %Which target selected
 % 
-% %% KK STUFF
-% %% spatial distractor task
-% %% spatial distractor task
-% difficulty = [o.difficulty];
-% stimuli_in_2hemifields = [o.stimuli_in_2hemifields];
-% n_distractors = [o.n_distractors]; 
-% n_nondistractors = [o.n_nondistractors]; 
-% 
-% StimulusType = []; 
-% for i = 1 : numel(o)
-%     if isfield(o,'n_nondistractors')
-%         if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
-%             StimulusType(i) = 1; %% single stimulus
-%         elseif o(i).n_nondistractors == 2 || o(i).n_distractors == 3
-%             StimulusType(i) = 2; %% TT / DD
-%         elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2
-%             StimulusType(i) = 3; %% target distractor
-%         end
-%     else
-%         StimulusType(i) = 1; %% target distractor
-%     end
-% end
-% if isfield(o,'difficulty')
-%     difficulty = [o.difficulty];
-% else
-%     difficulty = success;
-% end
-% if o(i).n_nondistractors == 0 && o(i).n_distractors == 2 ||  o(i).n_nondistractors == 1 && o(i).n_distractors == 1
-%     StimulusType(i) = 1; %% single stimulus
-% elseif o(i).n_nondistractors == 2 && o(i).stimuli_in_2hemifields == 1 || o(i).n_distractors == 3 && o(i).stimuli_in_2hemifields == 1
-%     StimulusType(i) = 2; %% TT / DD
-% elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2 && o(i).stimuli_in_2hemifields == 1
-%     StimulusType(i) = 3; %% target distractor
-% elseif o(i).n_nondistractors == 2 && o(i).stimuli_in_2hemifields == 0 || o(i).n_distractors == 3 && o(i).stimuli_in_2hemifields == 0
-%     StimulusType(i) = 4; %% TT / DD
-% elseif o(i).n_nondistractors == 1 && o(i).n_distractors == 2 && o(i).stimuli_in_2hemifields == 0
-%     StimulusType(i) = 5; %% target distractor
-% end
-
-% Ma = unique([n_distractors' , n_nondistractors' , difficulty',stimuli_in_2hemifields'],'rows'); 
-%size(Ma)
+%% KK STUFF
+%% spatial distractor task
+difficulty = [o.difficulty];
+stimuli_in_2hemifields = [o.stimuli_in_2hemifields];
+n_distractors = [o.n_distractors]; 
+n_nondistractors = [o.n_nondistractors]; 
+StimulusType = [o.stimulustype]; 
 
 %% perturbation (painful, because its either in groups - for analysis, or by block (actuallz original perturbation value from table) - for single cell plotting
 perturbations=zeros(size(perturbations_orig));
@@ -128,51 +93,52 @@ end
 [hnd_blo_values,~,hbl_idx]  =unique([hands blocks],'rows');
 [hnd_eff_values,~,hef_idx]  =unique([hands effectors],'rows');
 [cho_ptb_values,~,chp_idx]  =unique([choices perturbations],'rows');
-%[diff_values,~,diff_idx]        = unique(difficulty);
-%[diff_values,~,diff_idx]      =unique(difficulty+3*success');
 
-%[Styp_values,~,Styp_idx]      =unique(StimulusType');
+%% KK stuff
+[diff_values,~,diff_idx]        = unique(difficulty);
+[diff_values,~,diff_idx]      =unique(difficulty+3*success');
+[Styp_values,~,Styp_idx]      =unique(StimulusType');
 
 
+% 
+% 
+% %% labels
+% hand_labels         ={'NH','NH CH','LH','LH CH','RH','RH CH'};
+% choice_labels       ={'IN','CH','','','',''};
+% hand_choice_labels  ={'NH IN','NH CH','LH IN','LH CH','RH IN','RH CH'};
+% hand_ptb_labels     =cellstr([repmat('NH ',numel(blo_values_o),1) num2str(blo_values_o); repmat('LH ',numel(blo_values_o),1) num2str(blo_values_o); repmat('RH ',numel(blo_values_o),1) num2str(blo_values_o)])';
+% hand_eff_labels     =cellstr([repmat('NH ',numel(eff_values),1) num2str(eff_values); repmat('LH ',numel(eff_values),1) num2str(eff_values); repmat('RH ',numel(eff_values),1) num2str(eff_values)])';
+% fix_labels          =num2cell(num2str(unique(fix_idx)))';
+% cue_shape_labels ={};
+% for n_shp=1:numel(shp_values)
+%     cue_shape_labels{n_shp}=sprintf('%.1f',shp_values(n_shp));
+% end
 
-
-%% labels
-hand_labels         ={'NH','NH CH','LH','LH CH','RH','RH CH'};
-choice_labels       ={'IN','CH','','','',''};
-hand_choice_labels  ={'NH IN','NH CH','LH IN','LH CH','RH IN','RH CH'};
-hand_ptb_labels     =cellstr([repmat('NH ',numel(blo_values_o),1) num2str(blo_values_o); repmat('LH ',numel(blo_values_o),1) num2str(blo_values_o); repmat('RH ',numel(blo_values_o),1) num2str(blo_values_o)])';
-hand_eff_labels     =cellstr([repmat('NH ',numel(eff_values),1) num2str(eff_values); repmat('LH ',numel(eff_values),1) num2str(eff_values); repmat('RH ',numel(eff_values),1) num2str(eff_values)])';
-fix_labels          =num2cell(num2str(unique(fix_idx)))';
-cue_shape_labels ={};
-for n_shp=1:numel(shp_values)
-    cue_shape_labels{n_shp}=sprintf('%.1f',shp_values(n_shp));
-end
-
-%% color assignment
-cols=keys.colors;
-keys.hnd_choice_colors_L=[cols.NH_LS_IN;cols.NH_LS_CH;cols.LH_LS_IN;cols.LH_LS_CH;cols.RH_LS_IN;cols.RH_LS_CH]/255;
-keys.hnd_choice_colors_R=[cols.NH_RS_IN;cols.NH_RS_CH;cols.LH_RS_IN;cols.LH_RS_CH;cols.RH_RS_IN;cols.RH_RS_CH]/255;
-keys.hnd_choice_colors  =[cols.NH_IN;cols.NH_CH;cols.LH_IN;cols.LH_CH;cols.RH_IN;cols.RH_CH]/255;
-b_pt=(max(blo_values):-1*max(blo_values)/2/(numel(blo_values)-1):max(blo_values)/2)'/max(blo_values);
-b_pt(isnan(b_pt))=1; %% for the case of onlý one block... -.-
-keys.hnd_ptb_colors_L=[b_pt*cols.NH_LS_IN;b_pt*cols.LH_LS_IN;b_pt*cols.RH_LS_IN]/255;
-keys.hnd_ptb_colors_R=[b_pt*cols.NH_RS_IN;b_pt*cols.LH_RS_IN;b_pt*cols.RH_RS_IN]/255;
-keys.hnd_ptb_colors  =[b_pt*cols.NH_IN   ;b_pt*cols.LH_IN   ;b_pt*cols.RH_IN   ]/255;
-
-% hnd_set_values(hnd_set_values(:,2)==min(hnd_set_values(:,2)),2)=1;
-% hnd_set_values(hnd_set_values(:,2)==max(hnd_set_values(:,2)),2)=2;
-hand_choice_color_combination=[0 0; 0 1; 1 0; 1 1; 2 0; 2 1];
-hand_blo_color_combination   =fliplr(combvec(unique(blocks)',[0 1 2])');
-hand_eff_color_combination   =fliplr(combvec(unique(effectors)',[0 1 2])');
-%hand_pt_color_combination   =[0 1; 0 2; 0 3;1 1; 1 2; 1 3; 2 1; 2 2; 2 3];
-hand_color_combination=[0; NaN; 1; NaN; 2; NaN];
-choice_color_combination=[0; 1; NaN; NaN; NaN; NaN];
-
-b_ef=(numel(eff_values):-1*numel(eff_values)/2/(numel(eff_values)-1):numel(eff_values)/2)'/numel(eff_values);
-b_ef(isnan(b_ef))=1; %% for the case of onlý one block... -.-
-keys.hnd_eff_colors_L=[b_ef*cols.NH_LS_IN;b_ef*cols.LH_LS_IN;b_ef*cols.RH_LS_IN]/255;
-keys.hnd_eff_colors_R=[b_ef*cols.NH_RS_IN;b_ef*cols.LH_RS_IN;b_ef*cols.RH_RS_IN]/255;
-keys.hnd_eff_colors  =[b_ef*cols.NH_IN   ;b_ef*cols.LH_IN   ;b_ef*cols.RH_IN   ]/255;
+% %% color assignment
+% cols=keys.colors;
+% keys.hnd_choice_colors_L=[cols.NH_LS_IN;cols.NH_LS_CH;cols.LH_LS_IN;cols.LH_LS_CH;cols.RH_LS_IN;cols.RH_LS_CH]/255;
+% keys.hnd_choice_colors_R=[cols.NH_RS_IN;cols.NH_RS_CH;cols.LH_RS_IN;cols.LH_RS_CH;cols.RH_RS_IN;cols.RH_RS_CH]/255;
+% keys.hnd_choice_colors  =[cols.NH_IN;cols.NH_CH;cols.LH_IN;cols.LH_CH;cols.RH_IN;cols.RH_CH]/255;
+% b_pt=(max(blo_values):-1*max(blo_values)/2/(numel(blo_values)-1):max(blo_values)/2)'/max(blo_values);
+% b_pt(isnan(b_pt))=1; %% for the case of onlý one block... -.-
+% keys.hnd_ptb_colors_L=[b_pt*cols.NH_LS_IN;b_pt*cols.LH_LS_IN;b_pt*cols.RH_LS_IN]/255;
+% keys.hnd_ptb_colors_R=[b_pt*cols.NH_RS_IN;b_pt*cols.LH_RS_IN;b_pt*cols.RH_RS_IN]/255;
+% keys.hnd_ptb_colors  =[b_pt*cols.NH_IN   ;b_pt*cols.LH_IN   ;b_pt*cols.RH_IN   ]/255;
+% 
+% % hnd_set_values(hnd_set_values(:,2)==min(hnd_set_values(:,2)),2)=1;
+% % hnd_set_values(hnd_set_values(:,2)==max(hnd_set_values(:,2)),2)=2;
+% hand_choice_color_combination=[0 0; 0 1; 1 0; 1 1; 2 0; 2 1];
+% hand_blo_color_combination   =fliplr(combvec(unique(blocks)',[0 1 2])');
+% hand_eff_color_combination   =fliplr(combvec(unique(effectors)',[0 1 2])');
+% %hand_pt_color_combination   =[0 1; 0 2; 0 3;1 1; 1 2; 1 3; 2 1; 2 2; 2 3];
+% hand_color_combination=[0; NaN; 1; NaN; 2; NaN];
+% choice_color_combination=[0; 1; NaN; NaN; NaN; NaN];
+% 
+% b_ef=(numel(eff_values):-1*numel(eff_values)/2/(numel(eff_values)-1):numel(eff_values)/2)'/numel(eff_values);
+% b_ef(isnan(b_ef))=1; %% for the case of onlý one block... -.-
+% keys.hnd_eff_colors_L=[b_ef*cols.NH_LS_IN;b_ef*cols.LH_LS_IN;b_ef*cols.RH_LS_IN]/255;
+% keys.hnd_eff_colors_R=[b_ef*cols.NH_RS_IN;b_ef*cols.LH_RS_IN;b_ef*cols.RH_RS_IN]/255;
+% keys.hnd_eff_colors  =[b_ef*cols.NH_IN   ;b_ef*cols.LH_IN   ;b_ef*cols.RH_IN   ]/255;
 
 %% defaults
 con_for_figure          = non_idx;
@@ -192,17 +158,17 @@ fixation_per_trial      = fix_val;
 switch keys.arrangement
     
     case 'StimulusType_Difficulty_Position'
-        fig_title               = 'StimulusType_Difficulty_Position';
+        fig_title               = 'StimType';
         con_for_figure          = Styp_idx;
         val_for_figure          = num2cell(Styp_values);
         
         con_for_line            = diff_idx';  %%% there was no ' !?
-        if length(diff_values) == 3
-            pop.line_labels        =   {'Tar', 'Easy','Diff'}; %{'Diff', 'Easy','Tar'};
-            
-        else
-            pop.line_labels        =   {'Diff','Diff2', 'Easy','Tar'};
-        end
+%         if length(diff_values) == 3
+%             pop.line_labels        =   {'Tar', 'Easy','Diff'}; %{'Diff', 'Easy','Tar'};
+%             
+%         else
+%             pop.line_labels        =   {'Diff','Diff2', 'Easy','Tar'};
+%         end
         
         %position_indexes        = stm_idx;
         %val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
@@ -217,17 +183,21 @@ switch keys.arrangement
         position_indexes        = tar_idx;
         
         sub_title               = 'stimulus position';
-        if length(diff_values) == 3
-            col_left = autumn(3);
-            col_right = winter(3);
-            tar_purple = [1 0 1 ];
-            
-            pop.PSTH_perpos_colors =   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(1,:);col_right(2,:);tar_purple]] ;
-            pop.PSTH_summary_colors=   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(1,:);col_right(2,:);tar_purple]] ;
-        else
-            pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
-            pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
-        end
+%         if length(diff_values) == 3
+%             col_left = autumn(3);
+%             col_right = winter(3);
+%             tar_purple = [1 0 1 ];
+% %             
+% %             pop.PSTH_perpos_colors =   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(1,:);col_right(2,:);tar_purple]] ;
+% %             pop.PSTH_summary_colors=   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(1,:);col_right(2,:);tar_purple]] ;
+%             pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
+%             pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
+%         else
+%             pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
+%             pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
+%         end
+%             pop.PSTH_perpos_colors =   [autumn(6);winter(6)] ;
+%             pop.PSTH_summary_colors=   [autumn(6);winter(6)] ;
         hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
         con_for_trial_crit      = con_for_line;
         
@@ -629,9 +599,9 @@ switch keys.arrangement
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
         position_indexes        = cue_idx;
         hemifield_indexes       = (real([o.cue_pos]' - [o.fix_pos]')>0)+1;
-        pop.PSTH_perpos_colors =   [1 0 0; 0 1 0];
-        pop.PSTH_summary_colors=   [1 0 0; 1 1 0; 0 1 0; 0 1 1];
-        pop.line_labels        =   {'err','suc'};
+%         pop.PSTH_perpos_colors =   [1 0 0; 0 1 0];
+%         pop.PSTH_summary_colors=   [1 0 0; 1 1 0; 0 1 0; 0 1 1];
+%         pop.line_labels        =   {'err','suc'};
         
     case 'cue_position'
         con_for_figure          = suc_idx;
@@ -644,19 +614,19 @@ switch keys.arrangement
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
         position_indexes        = cue_idx;
         hemifield_indexes       = (real([o.cue_pos]' - [o.fix_pos]')>0)+1;
-        pop.PSTH_perpos_colors =   jet(numel(shp_values));
-        pop.PSTH_summary_colors=   [autumn(numel(shp_values));winter(numel(shp_values))] ;
-        pop.line_labels        =   cue_shape_labels;
+%         pop.PSTH_perpos_colors =   jet(numel(shp_values));
+%         pop.PSTH_summary_colors=   [autumn(numel(shp_values));winter(numel(shp_values))] ;
+%         pop.line_labels        =   cue_shape_labels;
         
     case 'hand_choices'
         con_for_line            = hch_idx;
         con_for_trial_crit      = con_for_line;
         fig_title               = '';
         val_for_figure          = {hnd_cho_values};
-        color_idx=ismember(hand_choice_color_combination(:,1),hnd_values) & ismember(hand_choice_color_combination(:,2),cho_values);
-        pop.PSTH_perpos_colors     =   keys.hnd_choice_colors(ismember(hand_choice_color_combination,hnd_cho_values,'rows'),:);
-        pop.PSTH_summary_colors    =   [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
-        pop.line_labels            =   hand_choice_labels(ismember(hand_choice_color_combination,hnd_cho_values,'rows'));
+%         color_idx=ismember(hand_choice_color_combination(:,1),hnd_values) & ismember(hand_choice_color_combination(:,2),cho_values);
+%         pop.PSTH_perpos_colors     =   keys.hnd_choice_colors(ismember(hand_choice_color_combination,hnd_cho_values,'rows'),:);
+%         pop.PSTH_summary_colors    =   [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
+%         pop.line_labels            =   hand_choice_labels(ismember(hand_choice_color_combination,hnd_cho_values,'rows'));
         
     case 'options'
         con_for_figure          = hnd_idx;
@@ -664,11 +634,11 @@ switch keys.arrangement
         con_for_trial_crit      = con_for_line;
         fig_title               = 'hand ';
         val_for_figure          = num2cell(hnd_values);
-        color_idx=ismember(choice_color_combination,cho_values,'rows');
-        pop.PSTH_perpos_colors     =   keys.hnd_choice_colors(color_idx,:);
-        pop.PSTH_summary_colors    =   [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
-        pop.line_labels            =   choice_labels(ismember(choice_color_combination,cho_values));
-        
+%         color_idx=ismember(choice_color_combination,cho_values,'rows');
+%         pop.PSTH_perpos_colors     =   keys.hnd_choice_colors(color_idx,:);
+%         pop.PSTH_summary_colors    =   [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
+%         pop.line_labels            =   choice_labels(ismember(choice_color_combination,cho_values));
+%         
     case 'hands_inactivation'
         con_for_figure          = cho_idx;
         con_for_line            = hpt_idx;
@@ -676,10 +646,10 @@ switch keys.arrangement
         fig_title               = 'choice ';
         val_for_figure          = num2cell(cho_values);
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
-        color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
-        pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
-        pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
-        pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
+%         color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
+%         pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
+%         pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
+%         pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
         
     case 'hands_inactivation_in_ch'
         con_for_figure          = eff_idx;
@@ -688,10 +658,10 @@ switch keys.arrangement
         fig_title               = 'choice_instructed_comp ';
         val_for_figure          = num2cell(eff_values);
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
-        color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
-        pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
-        pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
-        pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
+%         color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
+%         pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
+%         pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
+%         pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
         
     case 'hands'
         con_for_figure          = cho_idx;
@@ -703,10 +673,10 @@ switch keys.arrangement
         val_for_figure          = num2cell(cho_values);
         con_for_column          = eff_idx;        
         %[~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
-        color_idx=ismember(hand_eff_color_combination(:,1),hnd_values) & ismember(hand_eff_color_combination(:,2),eff_values);
-        pop.PSTH_perpos_colors     = keys.hnd_eff_colors(color_idx,:);
-        pop.PSTH_summary_colors    = [keys.hnd_eff_colors_L(color_idx,:); keys.hnd_eff_colors_R(color_idx,:)] ;
-        pop.line_labels            = hand_eff_labels(ismember(hand_eff_color_combination,hnd_eff_values,'rows'));
+%         color_idx=ismember(hand_eff_color_combination(:,1),hnd_values) & ismember(hand_eff_color_combination(:,2),eff_values);
+%         pop.PSTH_perpos_colors     = keys.hnd_eff_colors(color_idx,:);
+%         pop.PSTH_summary_colors    = [keys.hnd_eff_colors_L(color_idx,:); keys.hnd_eff_colors_R(color_idx,:)] ;
+%         pop.line_labels            = hand_eff_labels(ismember(hand_eff_color_combination,hnd_eff_values,'rows'));
         %Precision=5;
         
     case 'fixation'
@@ -718,22 +688,22 @@ switch keys.arrangement
         val_for_pos_assignment  = fix_val(u_fix_idx_idx,:);
         position_indexes        = fix_idx;
         hemifield_indexes       = (real([o.fix_pos])'>0)+1;
-        fixation_per_trial      = zeros(size(fix_val)); %% since we treat fixation as positions, there is no actual fixation needed any more!
-        color_idx=ismember(choice_color_combination,cho_values,'rows');
-        pop.PSTH_perpos_colors     = keys.colors.fix_offset;
-        pop.PSTH_summary_colors    = [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
-        pop.line_labels            = {''};
+%         fixation_per_trial      = zeros(size(fix_val)); %% since we treat fixation as positions, there is no actual fixation needed any more!
+%         color_idx=ismember(choice_color_combination,cho_values,'rows');
+%         pop.PSTH_perpos_colors     = keys.colors.fix_offset;
+%         pop.PSTH_summary_colors    = [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
+%         pop.line_labels            = {''};
         
     case 'movement vectors'
         con_for_line            = fix_idx;
         con_for_trial_crit      = con_for_line;
         sub_title               = 'movement vector ';
-        color_idx               = ismember(choice_color_combination,cho_values,'rows');
-        n_unique_lines=numel(unique(con_for_line));
-        color_factors=linspace(0.3,1,n_unique_lines);
-        pop.PSTH_perpos_colors     =   keys.colors.fix_offset;
-        pop.PSTH_summary_colors    =   [(keys.hnd_choice_colors_L(color_idx,:)'*color_factors)'; (keys.hnd_choice_colors_R(color_idx,:)'*color_factors)'] ;
-        pop.line_labels            =   fix_labels;
+%        color_idx               = ismember(choice_color_combination,cho_values,'rows');
+%         n_unique_lines=numel(unique(con_for_line));
+%         color_factors=linspace(0.3,1,n_unique_lines);
+%         pop.PSTH_perpos_colors     =   keys.colors.fix_offset;
+%         pop.PSTH_summary_colors    =   [(keys.hnd_choice_colors_L(color_idx,:)'*color_factors)'; (keys.hnd_choice_colors_R(color_idx,:)'*color_factors)'] ;
+%         pop.line_labels            =   fix_labels;
         
     case 'target location by origin'
         con_for_line            = fix_idx;
@@ -743,12 +713,12 @@ switch keys.arrangement
         val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
         position_indexes        = tar_idx;
         hemifield_indexes       = (real([o.tar_pos]')>0)+1;
-        color_idx=ismember(choice_color_combination,cho_values,'rows');
-        n_unique_lines=numel(unique(con_for_line));
-        color_factors=linspace(0.3,1,n_unique_lines);
-        pop.PSTH_perpos_colors     = keys.colors.fix_offset;
-        pop.PSTH_summary_colors    = [(keys.hnd_choice_colors_L(color_idx,:)'*color_factors)'; (keys.hnd_choice_colors_R(color_idx,:)'*color_factors)'] ;
-        pop.line_labels            = fix_labels;
+%         color_idx=ismember(choice_color_combination,cho_values,'rows');
+%         n_unique_lines=numel(unique(con_for_line));
+%         color_factors=linspace(0.3,1,n_unique_lines);
+%         pop.PSTH_perpos_colors     = keys.colors.fix_offset;
+%         pop.PSTH_summary_colors    = [(keys.hnd_choice_colors_L(color_idx,:)'*color_factors)'; (keys.hnd_choice_colors_R(color_idx,:)'*color_factors)'] ;
+%         pop.line_labels            = fix_labels;
 end
 
 %% subplot positions
@@ -764,15 +734,16 @@ end
 %% Assigning each trial
 pop.trial=o;
 for t=1:numel(o)
-    pop.trial(t).line           =con_for_line(t);
+    %pop.trial(t).line           =con_for_line(t);
     pop.trial(t).figure         =con_for_figure(t);
     pop.trial(t).column         =con_for_column(t);
     pop.trial(t).row            =con_for_row(t);
-    pop.trial(t).hand           =hands(t);
-    pop.trial(t).choice         =choices(t);
+%     pop.trial(t).hand           =hands(t);
+%     pop.trial(t).choice         =choices(t);
     pop.trial(t).fixation       =fixation_per_trial(t,:);
     pop.trial(t).title_part     =sub_title;
     pop.trial(t).subplot_pos    =subplot_pos(position_indexes(t));
+    pop.trial(t).pos_index      =position_indexes(t);
     pop.trial(t).position       =val_for_pos_assignment(position_indexes(t),:);
     pop.trial(t).hemifield      =-1*(pop.trial(t).position(1)<0)+1*(pop.trial(t).position(1)>0);
 end

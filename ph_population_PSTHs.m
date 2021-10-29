@@ -1,6 +1,5 @@
 function ph_population_PSTHs(population,modified_keys)
-warning('off','MATLAB:catenate:DimensionMismatch');%
-% %%% !!!!!!!! make sure epochs (baseline, cue, .... make sense for all effectors)
+warning('off','MATLAB:catenate:DimensionMismatch');
 
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
@@ -18,37 +17,6 @@ fitsettings.yout=[-15:15];
 fitsettings.range_factor=1;
 fitsettings.fittypes=keys.PO.fittypes;
 keys.PO.fitsettings=fitsettings;
-
-legend_labels_hf={'NH IS IN' 'NH IS CH' 'IH IS IN' 'IH IS CH' 'CH IS IN' 'CH IS CH' ...
-    'NH VS IN' 'NH VS CH' 'IH VS IN' 'IH VS CH' 'CH VS IN' 'CH VS CH' ...
-    'NH CS IN' 'NH CS CH' 'IH CS IN' 'IH CS CH' 'CH CS IN' 'CH CS CH' ...
-    'NH IS IN P' 'NH IS CH P' 'IH IS IN P' 'IH IS CH P' 'CH IS IN P' 'CH IS CH P'...
-    'NH VS IN P' 'NH VS CH P' 'IH VS IN P' 'IH VS CH P' 'CH VS IN P' 'CH VS CH P'...
-    'NH CS IN P' 'NH CS CH P' 'IH CS IN P' 'IH CS CH P' 'CH CS IN P' 'CH CS CH P'};
-legend_labels_pref={
-    'NH NP IN' 'NH NP CH' 'IH NP IN' 'IH NP CH' 'CH NP IN' 'CH NP CH' ...
-    'NH PF IN' 'NH PF CH' 'IH PF IN' 'IH PF CH' 'CH PF IN' 'CH PF CH' ...
-    'NH NP IN P' 'NH NP CH P' 'IH NP IN P' 'IH NP CH P' 'CH NP IN P' 'CH NP CH P'...
-    'NH PF IN P' 'NH PF CH P' 'IH PF IN P' 'IH PF CH P' 'CH PF IN P' 'CH PF CH P'};
-legend_labels_pos={
-    'NH IN' 'NH CH' 'IH IN' 'IH CH' 'CH IN' 'CH CH' ...
-    'NH IN P' 'NH CH P' 'IH IN P' 'IH CH P' 'CH IN P' 'CH CH P'};
-
-cols=keys.colors;
-
-%% there are just too many colors once we include vertical targets, so for now we just keep use the same ones again...
-keys.line_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
-    cols.NH_VS_IN;cols.NH_VS_CH;cols.IH_VS_IN;cols.IH_VS_CH;cols.CH_VS_IN;cols.CH_VS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;...
-    [cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
-    cols.NH_VS_IN;cols.NH_VS_CH;cols.IH_VS_IN;cols.IH_VS_CH;cols.CH_VS_IN;cols.CH_VS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/510]; %%temporary for inactivation
-keys.pref_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;...
-    [cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/510]; %%temporary for inactivation
-keys.pos_colors=[[cols.NH_IN;cols.NH_CH;cols.IH_IN;cols.IH_CH;cols.CH_IN;cols.CH_CH]/255;...
-    [cols.NH_IN;cols.NH_CH;cols.IH_IN;cols.IH_CH;cols.CH_IN;cols.CH_CH]/510]; %%temporary for inactivation
 
 %% tuning table preparation and grouping
 [tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
@@ -68,70 +36,33 @@ tuning_per_unit_table=tuning_per_unit_table(cell_in_any_group,:);
 group_values=group_values(cell_in_any_group);
 complete_unit_list={population.unit_ID}';
 population=population(ismember(complete_unit_list,tuning_per_unit_table(:,idx_unitID)));
-%complete_unit_list={population.unit_ID}';
-
 
 all_trialz=[population.trial];
-per_trial.types       =[all_trialz.type];
-per_trial.effectors   =[all_trialz.effector];
-u_types     =unique(per_trial.types);
-u_effectors =unique(per_trial.effectors);
-all_type_effectors      = combvec(u_types,u_effectors)';
-type_effectors =[];
+[UC, CM, labels]=ph_get_condition_matrix(all_trialz,keys);
 
-% redifine type_effectors to include only relevant
-for t=1:size(all_type_effectors,1)
-    typ=all_type_effectors(t,1);
-    eff=all_type_effectors(t,2);
-    [~, type_effector_short{t}]=MPA_get_type_effector_name(typ,eff);
-    if ~ismember(type_effector_short{t},keys.conditions_to_plot) %|| sum(tr_con)<1
-        continue;
-    end
-    type_effectors=[type_effectors; all_type_effectors(t,:)];
+%% fix labels --> and with labels colors!
+legend_labels_hem={};
+legend_labels_prf={};
+legend_labels_pos={};
+for h=UC.hemifield % append hemifield labels, careful with the order!
+    legend_labels_hem=[legend_labels_hem; strcat(labels,['_' keys.labels.hemifield{h+2}])];
 end
-type_effector_short(~ismember(type_effector_short,keys.conditions_to_plot))=[];
-u_types     =unique(type_effectors(:,1))';
-u_effectors =unique(type_effectors(:,2))';
-
-
-%% define conditions to look at
-all_trialz=[population.trial];
-[UC, CM]=ph_get_condition_matrix(trials,all_trialz);
-
-per_trial.types       =[all_trialz.type];
-per_trial.effectors   =[all_trialz.effector];
-
-tr_con=ismember([all_trialz.completed],keys.cal.completed);
-[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
-
-condition_parameters  ={'reach_hand','choice','perturbation'};
-per_trial.types       =[all_trialz.type];
-per_trial.effectors   =[all_trialz.effector];
-per_trial.hands       =[all_trialz.reach_hand];
-per_trial.choice      =[all_trialz.choice];
-per_trial.perturbation=[all_trialz.perturbation];
-per_trial.hemifield   =[whatisthis.trial.hemifield];
-per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
-per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
-
-u_hemifields=unique(per_trial.hemifield); %[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
-
-u_hands     =unique(per_trial.hands);
-u_choice    =unique(per_trial.choice);
-u_perturbation    =unique(per_trial.perturbation);
-u_perturbation=u_perturbation(~isnan(u_perturbation));
-
-%% limit conditions key?
-if ~any(keys.tt.hands==0) % cause hands 0 is any hand
-    u_hands     =u_hands(ismember(u_hands,keys.tt.hands));
+for h=1:2          % append preference labels, careful with the order!
+    legend_labels_prf=[legend_labels_prf; strcat(labels,['_' keys.labels.preferred{h}])];
 end
-u_choice    =u_choice(ismember(u_choice,keys.tt.choices));
+for p=1:size(UC.position,1)
+    legend_labels_pos=[legend_labels_pos; labels];
+end
+% repeat for all effectors
+legend_labels_hem=repmat(reshape(legend_labels_hem,numel(legend_labels_hem),1),numel(UC.effector),1);
+legend_labels_prf=repmat(reshape(legend_labels_prf,numel(legend_labels_prf),1),numel(UC.effector),1);
+legend_labels_pos=repmat(reshape(legend_labels_pos,numel(legend_labels_pos),1),numel(UC.effector),1);
 
-% reduce trials to only valid
+% reduce trials to only valid .... this is somewhat redundant (?)
 unit_valid=true(size(population));
 for u=1:numel(population)
     poptr=population(u).trial;
-    valid=ismember([poptr.effector],u_effectors) & ismember([poptr.type],u_types) & ismember([poptr.choice],u_choice) & ismember([poptr.reach_hand],u_hands);
+    valid=ismember([poptr.effector],UC.effector) & ismember([poptr.type],UC.type) & ismember([poptr.choice],UC.choice) & ismember([poptr.reach_hand],UC.reach_hand);
     population(u).trial=population(u).trial(valid);
     if sum(valid)==0
         unit_valid(u)=false;
@@ -143,13 +74,13 @@ unit_valid=ismember(tuning_per_unit_table(:,idx_unitID),complete_unit_list);
 group_values=group_values(unit_valid);
 tuning_per_unit_table=tuning_per_unit_table(unit_valid,:);
 
-condition_matrix            = combvec(u_hands,u_choice, u_perturbation,u_hemifields)';
-conditions_out              = combvec(u_effectors,u_hands,u_choice, u_perturbation)';
-conditions_hf               = combvec(u_hemifields,conditions_out')';
-conditions_hf_complete      = combvec(u_hemifields,conditions_out')';
+conditions_out              = combvec(UC.effector,CM')';
+conditions_hf               = combvec(UC.hemifield,conditions_out')';
 conditions_pref             = combvec([0 1],conditions_out')';
 
-if any(u_hands~=0) && any(u_perturbation==1) %splitting to all 4 hand space conditions if hands are involved
+
+
+if any(UC.reach_hand~=0) && any(UC.perturbation==1) %splitting to all 4 hand space conditions if hands are involved
     [~,~,columns_hf] = unique(conditions_hf(:,[1,3]),'rows');
     [~,~,columns_pref] = unique(conditions_pref(:,[1,3]),'rows');
 else
@@ -157,7 +88,7 @@ else
     columns_pref        = ones(size(conditions_pref,1),1);
 end
 %
-% if any(u_perturbation==1) % temporary, better solution
+% if any(UC.perturbation==1) % temporary, better solution
 %     if strcmp(keys.arrangement,'hands_inactivation_in_ch')
 %         [~,~,columns_hf] = unique(conditions_hf(:,[1,3]),'rows');
 %     end
@@ -170,15 +101,11 @@ end
 %     columns_pref        = ones(size(conditions_pref,1),1);
 % end
 
-
-
-
-%% finding positions and fixations
-positions=unique(vertcat(whatisthis.trial.position),'rows');
+%% normalization
 keys.normalization_field='PO';
-[~, condition,~,pref_valid]=ph_condition_normalization(population,keys);
+[~, condition,~,pref_valid]=ph_condition_normalization2(population,keys,UC,CM);
 
-%% condition comparison ???
+%% condition comparison (kinda there to be used, but not used currently ???)
 comparisons_per_effector(1).reach_hand{1}=0;
 comparisons_per_effector(1).reach_hand{2}=0;
 comparisons_per_effector(1).hemifield{1}=[-1];
@@ -186,7 +113,7 @@ comparisons_per_effector(1).hemifield{2}=[1];
 comparisons_per_effector(1).choice{1}=0;
 comparisons_per_effector(1).choice{2}=0;
 comparisons_per_effector(1).color=[1 0 0];
-condition_parameters_comparissons = [{'hemifield'} {'effector'} condition_parameters];
+condition_parameters_comparissons = [{'hemifield'} {'effector'} keys.condition_parameters];
 
 % effector comparison only possible if several_effectors
 for t=1:size(condition,1)
@@ -207,7 +134,7 @@ for t=1:size(condition,1)
                     end
                 end
                 n=0;
-                for eff=u_effectors
+                for eff=UC.effector
                     n=n+1;
                     cM1(conditions_hf(:,2)~=eff,2)=false;
                     cM2(conditions_hf(:,2)~=eff,2)=false;
@@ -223,36 +150,29 @@ end
 %% plots
 
 logscale_127=(1:127)'*255/127;
-logscale_255=(log(255)-log(255:-1:129)')*255/(log(255)-log(127));
-% if ~isempty(gaussian_bl_epoch)
-RF_colormap=[logscale_127 logscale_127 ones(127,1)*255; 255 255 255; ones(127,1)*255 flipud(logscale_127) flipud(logscale_127)]/256;
-% else
-%     RF_colormap=[255*ones(1,255);255:-1:1;255:-1:1]'/255;
-% end
+if keys.PO.FR_subtract_baseline
+    RF_colormap=[logscale_127 logscale_127 ones(127,1)*255; 255 255 255; ones(127,1)*255 flipud(logscale_127) flipud(logscale_127)]/256;
+else
+%logscale_255=(log(255)-log(255:-1:129)')*255/(log(255)-log(127));
+    RF_colormap=[255*ones(1,255);255:-1:1;255:-1:1]'/255;
+end
 
 for t=1:size(condition,1)
-    typ=u_types(mod(t-1,numel(u_types))+1);
-        
-     
-    if ~keys.PO.FR_subtract_baseline            
+    typ=UC.type(mod(t-1,numel(UC.type))+1);
+    if ~keys.PO.FR_subtract_baseline
         normalization_label=sprintf('N_%s in %s',keys.PO.normalization,keys.PO.epoch_for_normalization);
     elseif keys.PO.baseline_per_trial
         normalization_label=sprintf('N_%s in %s, - %s per trial',keys.PO.normalization,keys.PO.epoch_for_normalization,keys.PO.epoch_BL);
     elseif strcmp(keys.PO.normalization,'percent_change')
         normalization_label=sprintf('N_prct %s to %s',keys.PO.epoch_BL,keys.PO.epoch_for_normalization);
-    else        
-        normalization_label=sprintf('N_%s (X-%s)by%s',keys.PO.normalization,keys.PO.epoch_for_normalization,keys.PO.epoch_BL);
+    else
+        normalization_label=sprintf('N_%s (X-%s)by%s',keys.PO.normalization,keys.PO.epoch_BL,keys.PO.epoch_for_normalization);
     end
     
     fig_title=sprintf('%s %s %s hnd %s ch %s %s %s grouped by %s ',...
         keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement,     mat2str(keys.tt.hands),mat2str(double(keys.tt.choices)),[Sel_for_title{:}],normalization_label,keys.PO.group_parameter);
-%     if strcmp(keys.PO.normalization,'percent_change')
-        filename=sprintf('%s %s %s hnd %s ch %s %s %s %s ',...
-            keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(keys.tt.hands),mat2str(double(keys.tt.choices)),[Sel_for_title{:}],normalization_label,keys.PO.group_parameter);
-%     else
-%         filename=sprintf('%s %s %s hnd %s ch %s %s N_%s %s %s ',...
-%             keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(keys.tt.hands),mat2str(double(keys.tt.choices)),[Sel_for_title{:}],keys.PO.normalization,keys.PO.epoch_for_normalization,keys.PO.group_parameter);
-%     end
+    filename=sprintf('%s %s %s hnd %s ch %s %s %s %s ',...
+        keys.monkey,[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(keys.tt.hands),mat2str(double(keys.tt.choices)),[Sel_for_title{:}],normalization_label,keys.PO.group_parameter);
     
     %save metadata
     unit_IDs=complete_unit_list;
@@ -260,22 +180,20 @@ for t=1:size(condition,1)
     
     %% PSTH plot
     current=[condition(t,:).per_hemifield];
-    conditions_PSTH=conditions_hf_complete;
-    legend_labels=legend_labels_hf;
+    legend_labels=legend_labels_hem;
     plot_title_part=' PSTHs';
     units_valid=ones(size(complete_unit_list,1),1);
     column_indexes=columns_hf;
-    plot_PSTH_no_empties
+    plot_PSTH
     
     %% PSTH preferred and unpreferred plot
     current=[condition(t,:).per_preference];
-    conditions_PSTH=conditions_pref;
-    legend_labels=legend_labels_pref;
+    legend_labels=legend_labels_prf;
     plot_title_part=[' pref in ' keys.PO.epoch_PF ' PSTHs'];
     units_valid=pref_valid(t,:)';
     column_indexes=columns_pref;
-    if ~any(u_perturbation==1)
-        plot_PSTH_no_empties
+    if ~any(UC.perturbation==1)
+        plot_PSTH
     end
     
     if   keys.PO.plot_per_position
@@ -284,84 +202,60 @@ for t=1:size(condition,1)
             unique_group_values=unique_group_values_tmp(gt);
             
             %% PSTH per position plot
-            current=[condition(t,:).per_position];
-            current=current(:);
-            conditions_PSTH=conditions_out; %%???
+            current=[condition(t,:).per_position]; current=current(:);
             legend_labels=legend_labels_pos;
             plot_title_part=['=' unique_group_values{1} ' PSTHs per position'];
             units_valid=ones(size(complete_unit_list,1),1);
             column_indexes=columns_pref;
-            plot_PSTH_no_empties
+            plot_PSTH
             
+            %% PSTH per position plot (by initial fixation - these here need to be fixed!)
             if false
-                %% PSTH per position plot (by initial fixation)
-                current=[condition(t,:).per_position_fixation];
-                current=current(:);
-                conditions_PSTH=conditions_pref; %%???
+                current=[condition(t,:).per_position_fixation]; current=current(:);
                 legend_labels={'-15', '0', '+15'};
                 plot_title_part=['=' unique_group_values{1} ' PSTHs per position F'];
                 units_valid=ones(size(complete_unit_list,1),1);
                 column_indexes=columns_pref;
-                plot_PSTH_no_empties
+                plot_PSTH
                 
-                %% PSTH per position plot
-                current=[condition(t,:).per_position_fixation];
-                current=current(:);
-                conditions_PSTH=conditions_pref; %%???
+                current=[condition(t,:).per_position_fixation]; current=current(:);
                 legend_labels={'-15', '0', '+15'};
                 plot_title_part=['=' unique_group_values{1} ' PSTHs per position F ensu'];
                 units_valid=ones(size(complete_unit_list,1),1);
                 column_indexes=columns_pref;
-                plot_PSTH_no_empties
+                plot_PSTH
                 
-                current=[condition(t,:).per_position];
-                current=current(:);
-                conditions_PSTH=conditions_pref; %%???
+                current=[condition(t,:).per_position]; current=current(:);
                 legend_labels={'-15', '0', '+15'};
                 plot_title_part=['=' unique_group_values{1} ' PSTHs per position ensu'];
                 units_valid=ones(size(complete_unit_list,1),1);
                 column_indexes=columns_pref;
-                plot_PSTH_no_empties
+                plot_PSTH
                 
-                current=[condition(t,:).per_hf_fixation];
-                current=current(:);
-                conditions_PSTH=conditions_pref; %%???
+                current=[condition(t,:).per_hf_fixation]; current=current(:);
                 legend_labels={'-15', '0', '+15'};
                 plot_title_part=['=' unique_group_values{1} ' PSTHs per position hf'];
                 units_valid=ones(size(complete_unit_list,1),1);
                 column_indexes=columns_pref;
-                plot_PSTH_no_empties
+                plot_PSTH
                 
             end
             
             unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values_tmp(1)),idx_unitID));
             group_units=find(all(unitidx,2))';
             for c=1:size(condition,2)
-                                
-                %typ we know already
+                %% typ we know already, this is only for naming!
                 eff=conditions_out(c,1);
-                hnd=conditions_out(c,2);
-                cho=conditions_out(c,3);
-                ptb=conditions_out(c,3);
-                
-                
-                %normalize firing rates?
                 
                 per_unit=[condition(t,c).fitting.unit(group_units)];
                 pos=[per_unit.positions];
                 
-                %%
-                present_epochs={'dwopke'};%% this needs to be fixed!
-                %%
-                
-                gaussian_bl_epoch       =find(ismember(present_epochs,keys.PO.epoch_GB));
                 for u=1:size(pos,2)
                     FR=[pos(:,u).FR];
-                    if ~isempty(gaussian_bl_epoch) || keys.PO.FR_subtract_baseline
+                    if ~keys.PO.FR_subtract_baseline
                         [FRmax(u), maxposition(u)]=max([FR(FR>0) 0]);
                         FRmin=min([FR(FR<0) 0]);
                         FRmax(u)=max([abs(FRmax(u)) abs(FRmin)]);
-                        
                         FR255=num2cell(round((FR+FRmax(u))/2/FRmax(u)*254)+1);
                     else
                         [FRmax(u), maxposition(u)]=max(FR);
@@ -370,7 +264,7 @@ for t=1:size(condition,1)
                     [pos(:,u).FR255_GAU]=deal(FR255{:});
                     [pos(:,u).FR255]=deal(FR255{:});
                 end
-                conditiontitle=['T' num2str(typ) 'E' num2str(eff) 'H' num2str(hnd) 'C' num2str(cho) 'P' num2str(ptb)];
+                conditiontitle=['T' num2str(typ) 'E' num2str(eff) labels{mod(c,size(conditions_out,1)/numel(UC.effector))}];
                 
                 %% FR summary plot
                 plot_title_part        = ['=' unique_group_values_tmp{1} ' ' conditiontitle  ' FR in ' keys.PO.epoch_RF ' average' ];
@@ -382,7 +276,7 @@ for t=1:size(condition,1)
                     FRmean(p)=nanmean([pos(p,:).FR]);
                 end
                 for p=1:size(pos,1)
-                    if ~isempty(gaussian_bl_epoch) || keys.PO.FR_subtract_baseline
+                    if ~keys.PO.FR_subtract_baseline
                         FRmeancolidx=round(FRmean(p)/mean(FRmax)/2*254 + 127)+1;
                     else
                         FRmeancolidx=round(FRmean(p)/mean(FRmax)*254)+1;
@@ -417,7 +311,6 @@ for t=1:size(condition,1)
                 colorbar;
                 set(gca,'Xtick',[],'Ytick',[],'xlim',[min(fitsettings.xout) max(fitsettings.xout)],'ylim',[min(fitsettings.yout) max(fitsettings.yout)]);
                 ph_title_and_save(f_handle,  [filename plot_title_part],[fig_title plot_title_part],keys);
-                
             end
         end
         unique_group_values=unique_group_values_tmp;
@@ -491,10 +384,8 @@ for t=1:size(condition,1)
                         case {'gaussian1'}
                             SC=SC+1000*([Parameters_temp.zmax]'>0);
                     end
-                    
                 end
                 idx_within_fittype(fitidx.(fittype))=SC;
-                
             end
             [~, sort_by_size_index] =sort(RFsizes);
             sort_by_size_index      =fliplr(sort_by_size_index);
@@ -505,11 +396,10 @@ for t=1:size(condition,1)
             %normalize firing rates?
             for u=1:size(pos,2)
                 FR=[pos(:,u).FR];
-                if exist('gaussian_bl_epoch') && ~isempty(gaussian_bl_epoch) %% checking if this works
+                if keys.PO.FR_subtract_baseline 
                     [FRmax(u), maxposition(u)]=max([FR(FR>0) 0]);
                     FRmin=min([FR(FR<0) 0]);
                     FRmax(u)=max([abs(FRmax(u)) abs(FRmin)]);
-                    
                     FR255=num2cell(round((FR+FRmax(u))/2/FRmax(u)*254)+1);
                 else
                     [FRmax(u), maxposition(u)]=max(FR);
@@ -519,30 +409,23 @@ for t=1:size(condition,1)
                 [pos(:,u).FR255]=deal(FR255{:});
             end
             
-            
             %% RF plot
             plot_title_part        = ['=' unique_group_values{g} ' con' num2str(c) ' RF in ' keys.PO.epoch_RF ' BL ' keys.PO.epoch_GB];
             f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[fig_title plot_title_part]);
             colormap(RF_colormap);
             
-            
             for u=1:numel(group_units)
                 n=RF_sort_index(u);
                 subplot(RF_rows,RF_columns,n);
-                %title(population(group_units(u)).unit_ID,'interpreter','none');
                 RF=RFparameters(u);
-                %
-                if exist('gaussian_bl_epoch') && ~isempty(gaussian_bl_epoch)
+                if keys.PO.FR_subtract_baseline 
                     Zout=round(RF.Zout/FRmax(u)/2*254 + 127)+1;
                 else
                     Zout=round(RF.Zout/FRmax(u)*254)+1;
                 end
                 Zout(Zout>255)=255;
                 Zout(Zout<1)=1;
-                
-                
-                kk=cat(3,Zout);
-                image(fitsettings.xout,-fitsettings.yout,rot90(nanmean(kk,3)))
+                image(fitsettings.xout,-fitsettings.yout,rot90(nanmean(cat(3,Zout),3)))
                 caxis([1 255]);
                 
                 %% two ellipses
@@ -581,7 +464,6 @@ for t=1:size(condition,1)
             colorbar;
             ph_title_and_save(f_handle,  [filename plot_title_part],[fig_title plot_title_part],keys);
             
-            
             %% fittype R2 values histogram
             plot_title_part       = ['=' unique_group_values{g} ' con' num2str(c) ' RF R2 ' 'in ' keys.PO.epoch_RF];
             f_handle              = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[fig_title plot_title_part]);
@@ -591,7 +473,6 @@ for t=1:size(condition,1)
                 fittemp=[RFparameters.(fittype)];
                 R2adjusted_temp=hist([fittemp.R2],bins);
                 R2adjusted=[R2adjusted;R2adjusted_temp];
-                
             end
             bar(bins,R2adjusted','stacked');
             legend(fittypes);
@@ -607,7 +488,6 @@ for t=1:size(condition,1)
                 fittemp=[RFparameters.(fittype)];
                 R2adjusted_temp=hist([fittemp.R2_adjusted],bins);
                 R2adjusted=[R2adjusted;R2adjusted_temp];
-                
             end
             bar(bins,R2adjusted','stacked');
             legend(fittypes);
@@ -730,11 +610,9 @@ for t=1:size(condition,1)
                     end
                 end
             end
-            
             axis equal
             set(gca,'Ydir','normal','xlim',[min(fitsettings.xout) max(fitsettings.xout)],'ylim',[min(fitsettings.yout) max(fitsettings.yout)]);
             ph_title_and_save(f_handle,  [filename plot_title_part],[fig_title plot_title_part],keys);
-            
             
             %% RF sizes
             plot_title_part         = ['=' unique_group_values{g} ' con' num2str(c) ' gaussian RF  sizes in ' keys.PO.epoch_RF];
@@ -751,15 +629,21 @@ for t=1:size(condition,1)
                 text(sizebins(2), max(FRhist)-max(FRhist/10),['u=' num2str(nanmean(RFsizes_valid)) ', med=' num2str(nanmedian(RFsizes_valid)) ', std=' num2str(nanstd(RFsizes_valid))]);
             end
             ph_title_and_save(f_handle,  [filename plot_title_part],[fig_title plot_title_part],keys);
+            
+            %% these two vary from condition to condition and should be saved independently for each condition
+            
+            [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
+            ph_append_to_anova_table(keys,'RFs',complete_unit_list(group_units),RFparameters,type_effector_short,labels{c});
+
             save([keys.path_to_save filename plot_title_part '.mat'],'RFsizes','RFparameters');
         end
     end
 end
 
-    function plot_PSTH_no_empties
-        for eff=u_effectors %% one figure for ech effector, somehting probably does not work here, because (!!) suplots in each figure
-            ef=find(u_effectors==eff);
-            keys=ph_get_epoch_keys(keys,typ,eff,sum(type_effectors(:,1)==typ)>1);
+    function plot_PSTH
+        for eff=UC.effector %% one figure for each effector, somehting probably does not work here, because (!!) suplots in each figure
+            ef=find(UC.effector==eff);
+            keys=ph_get_epoch_keys(keys,typ,eff,sum(UC.type_effector(:,1)==typ)>1);
             [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
             plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
             PSTH_summary_handle(ef)     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_title);
@@ -783,8 +667,8 @@ end
                     [~,columns_to_loop]=ismember(column_indexes,unique(column_indexes(conditions_to_loop)));
                     sp_per_effector=max(columns_to_loop)*numel(unique_group_values);
                 end
-                n_units_title_part=repmat({''},sp_per_effector*numel(u_effectors),1);
-                spl=zeros(sp_per_effector*numel(u_effectors),1);
+                n_units_title_part=repmat({''},sp_per_effector*numel(UC.effector),1);
+                spl=zeros(sp_per_effector*numel(UC.effector),1);
                 
                 legend_label_indexes=[];
                 legend_line_handles=[];
@@ -792,43 +676,26 @@ end
                 ensu_units{ef,1}=[];ensu_units{ef,2}=[];ensu_units{ef,3}=[];
                 for c=conditions_to_loop(:)'
                     group_condition_units=find(all(unitidx,2) & units_valid & ~empty_conditions_and_units(c,:)')';
+                    current_color=keys.colors.(legend_labels{c})/255;
+                    column=c; %irrelevant ?
                     
-                    %% this seems rather complicated for retrieving color information, but i
-                    if strcmp(plot_title_part,' PSTHs')
-                        column=columns_to_loop(c);
-                        spn=(g-1)*max(columns_to_loop)+column+(ef-1)*sp_per_effector;
-                        sph(spn)=subplot(numel(unique_group_values),max(columns_to_loop),spn-(ef-1)*sp_per_effector);
-                        col=(conditions_PSTH(c,1)+1)*6 + (conditions_PSTH(c,3))*2 + (conditions_PSTH(c,4)+1) + (conditions_PSTH(c,5)*18);
-                        current_color=keys.line_colors(col,:);
-                        spl(spn)=spl(spn)+1;
-                    elseif any(strfind(plot_title_part,'pref'))
-                        column=columns_to_loop(c);
-                        spn=(g-1)*max(columns_to_loop)+column+(ef-1)*sp_per_effector;
-                        sph(spn)=subplot(numel(unique_group_values),max(columns_to_loop),spn-(ef-1)*sp_per_effector);
-                        col=(conditions_PSTH(c,1))*6 + (conditions_PSTH(c,3))*2 + (conditions_PSTH(c,4)+1) + (conditions_PSTH(c,5)*12);
-                        current_color=keys.pref_colors(col,:);
-                        spl(spn)=spl(spn)+1;
-                    elseif any(strfind(plot_title_part,'per position F'))
-                        %% still need to fix colors if different conditions are present, AND fix overwriting of different groups.... (how about legends?)
-                        column=c; %irrelevant
+                    if any(strfind(plot_title_part,'per position'))%% still need to fix colors if different conditions are present, AND fix overwriting of different groups.... (how about legends?)
                         spn=subplot_pos(pos_sub_idx(c))+(ef-1)*sp_per_effector;
                         sph(spn)=subplot(rows_to_loop,max(columns_to_loop),spn-(ef-1)*sp_per_effector);
+                        signs=[current(c).sign.unit];
+                    elseif any(strfind(plot_title_part,'PSTHs'))
+                        column=columns_to_loop(c);
+                        spn=(g-1)*max(columns_to_loop)+column+(ef-1)*sp_per_effector;
+                        sph(spn)=subplot(numel(unique_group_values),max(columns_to_loop),spn-(ef-1)*sp_per_effector);
+                    end
+                    spl(spn)=spl(spn)+1;
+                    
+                    if any(strfind(plot_title_part,'per position F'))
                         col=fix_sub_idx(c);
                         current_color=keys.colors.fix_offset(col,:);
-                        signs=[current(c).sign.unit];
-                        spl(spn)=spl(spn)+1;
-                    elseif any(strfind(plot_title_part,'per position'))
-                        %% still need to fix colors if different conditions are present, AND fix overwriting of different groups.... (how about legends?)
-                        column=c; %irrelevant
-                        spn=subplot_pos(pos_sub_idx(c))+(ef-1)*sp_per_effector;
-                        sph(spn)=subplot(rows_to_loop,max(columns_to_loop),spn-(ef-1)*sp_per_effector);
-                        ctemp=sum(find(pos_sub_idx==pos_sub_idx(c))<=c);
-                        col=(conditions_PSTH(ctemp,2))*2 + (conditions_PSTH(ctemp,3)+1) + (conditions_PSTH(ctemp,4)*6);
-                        current_color=keys.pos_colors(col,:);
-                        signs=[current(c).sign.unit];
-                        spl(spn)=spl(spn)+1;
                     end
                     spf(spn)=ef;
+                    
                     %specific additional loop for enhancement and suppression
                     ensu_loops=1;
                     if any(strfind(plot_title_part,'ensu'))
@@ -848,12 +715,11 @@ end
                             units=group_condition_units;
                         end
                         hold on
-                        legend_label_indexes=[legend_label_indexes col];
-                        n_units_title_part{spn}=[n_units_title_part{spn} '\color[rgb]{' num2str(current_color) '}' num2str(numel(units)) ' '];
                         if  numel(units)==0
                             continue;
                         end
                         state_shift=0;
+                        nonnans_present=0;
                         for w=1:size(keys.PSTH_WINDOWS,1)
                             t_before_state=keys.PSTH_WINDOWS{w,3};
                             t_after_state=keys.PSTH_WINDOWS{w,4};
@@ -863,8 +729,13 @@ end
                             errorbarhandle=shadedErrorBar(bins,nanmean(vertcat(current(c).window(w).unit(units).average_spike_density),1),...
                                 sterr(vertcat(current(c).window(w).unit(units).average_spike_density),1),props,1); %% STERR!!!!
                             state_shift=state_shift+t_after_state-t_before_state+0.1;
+                            nonnans_present=nonnans_present | any(any(~isnan(vertcat(current(c).window(w).unit(units).average_spike_density))));
                         end
-                        legend_line_handles=[legend_line_handles errorbarhandle.mainLine];
+                        if nonnans_present
+                            legend_label_indexes=[legend_label_indexes c];
+                            n_units_title_part{spn}=[n_units_title_part{spn} '\color[rgb]{' num2str(current_color) '}' num2str(numel(units)) ' '];
+                            legend_line_handles=[legend_line_handles errorbarhandle.mainLine];
+                        end
                         group_para=keys.PO.group_parameter; group_para(strfind(group_para,'_'))='-';
                         group_val=unique_group_values{g}; group_val(strfind(group_val,'_'))='-';
                         title(sprintf('%s = %s, N =%s ',group_para,unique_group_values{g},n_units_title_part{spn}),'interpreter','tex'); %%
@@ -874,7 +745,10 @@ end
             end
             
             if keys.plot.population_PSTH_legends
-                legend(legend_line_handles,legend_labels(legend_label_indexes),'location','southwest');
+                LL_to_plot=cellfun(@(x) strrep(x,'_',' '),legend_labels,'uniformoutput',false);
+                LL_to_plot=LL_to_plot(legend_label_indexes);
+                [~,uix]=unique(LL_to_plot);
+                legend(legend_line_handles(uix),LL_to_plot(uix),'location','southwest');
             end
         end
         
@@ -889,21 +763,16 @@ end
         end
         
         for spn=1:numel(sph)
-            
             ef=spf(spn);
             axes(sph(spn));
             hold on
             
-            %% completed? choices? hands?
-            %                 tr=[all_trialz.type]==typ & [all_trialz.effector]==eff & ismember([all_trialz.completed],keys.cal.completed) &...
-            %                     ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],keys.tt.hands) & ismember([all_trialz.choice],u_choice);
-            tr=[all_trialz.type]==typ & ismember([all_trialz.completed],keys.cal.completed) &...
-                ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],u_hands) & ismember([all_trialz.choice],u_choice);
+            %% type? completed? choices? hands? (effector doesnt matter???)
+            tr=[all_trialz.type]==typ & ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],UC.reach_hand) & ismember([all_trialz.choice],UC.choice);
             ph_PSTH_background(all_trialz(tr),y_lim,y_lim,y_lim,keys,keys.PO.fontsize_factor)
-            
         end
-        for eff=u_effectors
-            ef=find(u_effectors==eff);
+        for eff=UC.effector
+            ef=find(UC.effector==eff);
             set(0, 'CurrentFigure', PSTH_summary_handle(ef));
             axes(sph(find(spf==ef,1)));
             [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
@@ -913,8 +782,8 @@ end
         
         %% ensu summary figure
         if any(strfind(plot_title_part,'ensu'))
-            for eff=u_effectors
-                ef=find(u_effectors==eff);
+            for eff=UC.effector
+                ef=find(UC.effector==eff);
                 [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
                 plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
                 PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_title);
@@ -975,7 +844,7 @@ end
                     %% this part should eventually go in extra loop for same dimensions in each subplot
                     y_lim=get(gca,'ylim');
                     tr=[all_trialz.type]==typ & [all_trialz.effector]==eff & ismember([all_trialz.completed],keys.cal.completed) &...
-                        ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],u_hands) & ismember([all_trialz.choice],u_choice);
+                        ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],UC.reach_hand) & ismember([all_trialz.choice],UC.choice);
                     ph_PSTH_background(all_trialz(tr),y_lim,y_lim,y_lim,keys,1)
                 end
                 ph_title_and_save(PSTH_summary_handle,  [filename plot_title_part ' summary, ' type_effector_short ],plot_title,keys)

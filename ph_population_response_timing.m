@@ -1,25 +1,18 @@
 function ph_population_response_timing(population,modified_keys)
-%load('W:\Projects\Pulv_microstim_behavior\ephys\ephys_analysis_v5_July2016_coordinates\monkeys_Combined_mem.mat')
-keys.n_consecutive_bins_significant=1; %%!
 warning('off','MATLAB:catenate:DimensionMismatch');
-
 %%% !!!!!!!! make sure epochs (baseline, cue, .... make sense for all effectors)
-
-Left_hemisphere_targets={'dPulv_l','pdSTS_L','FST_L','pTPO_L','MIP','MIP_L','unknown'};
-Right_hemisphere_targets={'dPulv_r','MIP_R'};
 
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
+keys.n_consecutive_bins_significant=1; %%!
 keys.PSTH_binwidth=keys.ON.PSTH_binwidth;
 keys.gaussian_kernel=keys.ON.gaussian_kernel;
-
-
 keys.kernel_type                        ='gaussian'; %'box'; % we take box kernel here!!
-%legend_labels={'NH IS IN' 'NH IS CH' 'IH IS IN' 'IH IS CH' 'CH IS IN' 'CH IS CH' 'NH CS IN' 'NH CS CH' 'IH CS IN' 'IH CS CH' 'CH CS IN' 'CH CS CH' };
-cols=keys.colors;
-keys.line_colors=[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;
+
+% cols=keys.colors;
+% keys.line_colors=[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;
+%     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;
 
 %% tuning table preparation and grouping
 
@@ -28,7 +21,7 @@ keys.normalization_field='ON';
 [tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
 idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.ON.group_parameter);
 idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
-idx_RF_frame=DAG_find_column_index(tuning_per_unit_table,keys.ON.RF_frame_parameter);
+%idx_RF_frame=DAG_find_column_index(tuning_per_unit_table,keys.ON.RF_frame_parameter);
 group_values=tuning_per_unit_table(:,idx_group_parameter);
 group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
 cell_in_any_group=[false; ~ismember(group_values(2:end),keys.ON.group_excluded)];
@@ -44,65 +37,15 @@ population=population(ismember(complete_unit_list,tuning_per_unit_table(:,idx_un
 
 
 all_trialz=[population.trial];
-per_trial.types       =[all_trialz.type];
-per_trial.effectors   =[all_trialz.effector];
-u_types     =unique(per_trial.types);
-u_effectors =unique(per_trial.effectors);
-all_type_effectors      = combvec(u_types,u_effectors)';
-type_effectors =[];
-
-% redefine type_effectors to include only relevant
-for t=1:size(all_type_effectors,1)
-    typ=all_type_effectors(t,1);
-    eff=all_type_effectors(t,2);
-    [~, type_effector_short{t}]=MPA_get_type_effector_name(typ,eff);
-    if ~ismember(type_effector_short{t},keys.conditions_to_plot) %|| sum(tr_con)<1
-        continue;
-    end
-    type_effectors=[type_effectors; all_type_effectors(t,:)];
-end
-type_effector_short(~ismember(type_effector_short,keys.conditions_to_plot))=[];
-u_types     =unique(type_effectors(:,1))';
-u_effectors =unique(type_effectors(:,2))';
-
-
-%% define conditions to look at
-all_trialz=[population.trial];
-per_trial.types       =[all_trialz.type];
-per_trial.effectors   =[all_trialz.effector];
-
-tr_con=ismember([all_trialz.completed],keys.cal.completed);
-[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
-
 condition_parameters  ={'reach_hand','choice','perturbation'};
-per_trial.types       =[all_trialz.type];
-per_trial.effectors   =[all_trialz.effector];
-per_trial.hands       =[all_trialz.reach_hand];
-per_trial.choice      =[all_trialz.choice];
-per_trial.perturbation=[all_trialz.perturbation];
-per_trial.hemifield   =[whatisthis.trial.hemifield];
-per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
-per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
-
-u_hemifields=unique(per_trial.hemifield);
-% u_types     =unique(per_trial.types);
-% u_effectors =unique(per_trial.effectors);
-u_hands     =unique(per_trial.hands);
-u_choice    =unique(per_trial.choice);
-u_perturbation    =unique(per_trial.perturbation);
-u_perturbation=u_perturbation(~isnan(u_perturbation));
-
-%% limit conditions?
-if ~any(keys.tt.hands==0) % cause hands 0 is any hand
-    u_hands     =u_hands(ismember(u_hands,keys.tt.hands));
-end
-u_choice    =u_choice(ismember(u_choice,keys.tt.choices));
+keys.condition_parameters  =condition_parameters;
+[UC, CM]=ph_get_condition_matrix(all_trialz,keys);
 
 % reduce trials to only valid
 unit_valid=true(size(population));
 for u=1:numel(population)
     poptr=population(u).trial;
-    valid=ismember([poptr.effector],u_effectors) & ismember([poptr.type],u_types) & ismember([poptr.choice],u_choice) & ismember([poptr.reach_hand],u_hands);
+    valid=ismember([poptr.effector],UC.effector) & ismember([poptr.type],UC.type) & ismember([poptr.choice],UC.choice) & ismember([poptr.reach_hand],UC.reach_hand);
     population(u).trial=population(u).trial(valid);
     if sum(valid)==0
         unit_valid(u)=false;
@@ -114,18 +57,15 @@ unit_valid=ismember(tuning_per_unit_table(:,idx_unitID),complete_unit_list);
 group_values=group_values(unit_valid);
 tuning_per_unit_table=tuning_per_unit_table(unit_valid,:);
 
-[~, condition2, condition]=ph_condition_normalization(population,keys);
-
-condition_matrix    = combvec(u_hands,u_choice, u_perturbation,u_hemifields)';
-conditions_out      = combvec(u_effectors,u_hands,u_choice, u_perturbation)';
-conditions_hf       = combvec(u_hemifields,conditions_out')';
+%[~, condition2, condition]=ph_condition_normalization(population,keys);
 
 %% Convert to ipsi/contra, Baseline subtraction, normalization, re-ordering, and gaussian RFs
-tr_con=ismember([all_trialz.completed],keys.cal.completed);
-[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
-positions=unique(vertcat(whatisthis.trial.position),'rows');
-clear whatisthis
+%[~, condition2, condition]=ph_condition_normalization2(population,keys,UC,CM);
+[~, ~, condition]=ph_condition_normalization2(population,keys,UC,CM);
 
+%condition_matrix            = combvec(CM',UC.hemifield)';
+conditions_out              = combvec(UC.effector,CM')';
+conditions_hf               = combvec(UC.hemifield,conditions_out')';
 
 %% condition comparison
 comparisons=keys.ON.comparisons_per_effector;
@@ -134,7 +74,7 @@ condition_parameters_comparissons = [{'hemifield'} {'effector'} condition_parame
 % comparisons_per_effector is misleading, because effector comparison is possible as well
 for g=1:numel(unique_group_values)
     for t=1:size(condition,1)
-        typ=u_types(t); %u_types(mod(t-1,numel(u_types))+1);
+        typ=UC.type(t); %UC.type(mod(t-1,numel(UC.type))+1);
         current=[condition(t,:).per_hemifield];
         current_unit=vertcat(current.unit);
         current_window=vertcat(current.window);
@@ -158,14 +98,11 @@ for g=1:numel(unique_group_values)
             c1=find(all(cM1,2));
             c2=find(all(cM2,2));
             
-            keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+            keys=ph_get_epoch_keys(keys,typ,UC.effector,sum(UC.type_effector(:,1)==typ)>1);%% does it make sense to distinguish by effector?
             wo=find(ismember(keys.PSTH_WINDOWS(:,1),comparisons(comp).order_onset{1})):size(keys.PSTH_WINDOWS,1);
             
             for u=1:numel(units)
-                %% baseline definition (for epoch tuning so far... CHECK dimensions of epoch_averages!!)
-                %epoch_averages=vertcat(current_unit(unique([c1; c2]),units(u)).epoch_averages);
-                %baseline=nanmean(epoch_averages(:,ismember(keys.EPOCHS(:,1),comparisons(comp).baseline_epoch)));
-                
+                %% baseline definition (for epoch tuning so far...)
                 epoch_averages=vertcat(current_unit(unique([c1; c2]),units(u)).epoch_FRs);
                 baseline=epoch_averages(:,ismember(keys.EPOCHS(:,1),comparisons(comp).baseline_epoch));
                 onset_found=0;
@@ -173,22 +110,19 @@ for g=1:numel(unique_group_values)
                     temp_sigbins=ph_compare_by_bin_by_trial(current_window(:,wn),c1,c2,baseline,units(u),keys);
                     sigbins(t).per_group(g).comparison(comp).window(wn).bins(u,:)=temp_sigbins(keys.n_consecutive_bins_significant+1:end-keys.n_consecutive_bins_significant); % return to original window size
                     
-                    %% tuning_onset (once per unit, (certain time before/after), until whenever)
-                    %% defines also order onset
+                    %% tuning_onset (once per unit, (certain time before/after), until whenever), also defines order onset
                     if wn >= wo(1)  %% could be better...
                         direction=temp_sigbins(1:end-keys.n_consecutive_bins_significant); % keep the first few bins (consecutive)
                         if wn==wo(1)
                             n_bins_disregarded_beginning    =keys.n_consecutive_bins_significant+round((comparisons(comp).order_onset{2}-keys.PSTH_WINDOWS{wo(1),3})/keys.PSTH_binwidth);
-                            %onset_correction=round(comparisons_per_effector(comp).order_onset{2}/keys.PSTH_binwidth);
                         else
                             n_bins_disregarded_beginning=keys.n_consecutive_bins_significant;
-                            %onset_correction=round(keys.PSTH_WINDOWS{wo(1),3}/keys.PSTH_binwidth);
                         end
                         onset=find(~isnan(direction(n_bins_disregarded_beginning+1:end)),1);
-                        if ~isempty(onset) && onset==1 && n_bins_disregarded_beginning>0%% if tuning was already there in the first bin, go backwards !!
+                        if ~isempty(onset) && onset==1 && n_bins_disregarded_beginning>0 % if tuning was already there in the first bin, go backwards !!
                             onset=find(isnan([direction(n_bins_disregarded_beginning:-1:1) NaN]),1)*-1+2;
                         end
-                        if isempty(onset) || onset_found
+                        if isempty(onset) || onset_found % only 1 onset per unit, assuming earlier windows come earlier in time!!
                             sigbins(t).per_group(g).comparison(comp).window(wn).tuning_onset(u)=NaN;
                             sigbins(t).per_group(g).comparison(comp).window(wn).tuning_direction(u)=NaN;
                         else
@@ -198,7 +132,6 @@ for g=1:numel(unique_group_values)
                             sigbins(t).per_group(g).comparison(comp).window(wn).tuning_onset(u)=onset;
                             onset_found=1;
                         end
-                        
                     end
                 end
             end
@@ -214,7 +147,7 @@ for g=1:numel(unique_group_values)
             tuning_onset=tuning_onset_all_windows(1,:);
             for ww=numel(wo):-1:1
                 to_replace=~isnan(tuning_onset_all_windows(ww,:));
-                tuning_onset(to_replace)=tuning_onset_all_windows(ww,to_replace)+ww*1000; %% assuming no window has more than 100 bins
+                tuning_onset(to_replace)=tuning_onset_all_windows(ww,to_replace)+ww*1000; %% assuming no window has more than 1000 bins
             end
             [~, sigbins(t).per_group(g).comparison(comp).unit_order]=sort(tuning_onset);
         end
@@ -224,15 +157,15 @@ end
 
 %% plots
 for t=1:numel(sigbins)
-    typ=u_types(mod(t-1,numel(u_types))+1);
+    typ=UC.type(mod(t-1,numel(UC.type))+1);
     for g=1:numel(unique_group_values)
         N_total=sum(ismember(group_values,unique_group_values{g}));
         current=[sigbins(t).per_group(g)];
         
         fig_title=sprintf('Selection: %s %s %s hnd %s ch %s %s, %s = %s N=%s ',...
-            [Sel_for_title{:}],keys.monkey,[keys.conditions_to_plot{:}],mat2str(u_hands),mat2str(double(u_choice)),keys.arrangement,keys.ON.group_parameter,unique_group_values{g},mat2str(double(N_total)));
+            [Sel_for_title{:}],keys.monkey,[keys.conditions_to_plot{:}],mat2str(UC.reach_hand),mat2str(double(UC.choice)),keys.arrangement,keys.ON.group_parameter,unique_group_values{g},mat2str(double(N_total)));
         filename=sprintf('%s %s %s = %s %s %s hnd %s ch %s',...
-            [Sel_for_title{:}],keys.monkey,keys.ON.group_parameter,unique_group_values{g},[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(u_hands),mat2str(double(u_choice)));
+            [Sel_for_title{:}],keys.monkey,keys.ON.group_parameter,unique_group_values{g},[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(UC.reach_hand),mat2str(double(UC.choice)));
         
         %% save metadata
         unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
@@ -244,7 +177,7 @@ for t=1:numel(sigbins)
         %% tuning per bin plot
         PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_1_title);
         column=1;
-        keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+        keys=ph_get_epoch_keys(keys,typ,UC.effector,sum(UC.type_effector(:,1)==typ)>1);%% does it make sense to distinguish by effector?
         n=1;
         for comp=1:numel(comparisons)
             wo=find(ismember(keys.PSTH_WINDOWS(:,1),comparisons(comp).order_onset{1}));
@@ -292,7 +225,7 @@ for t=1:numel(sigbins)
             subplot(numel(comparisons),1,(comp-1)+column)
             
             %% choices? hands? errm here its only relevant for event and epoch onsets
-            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],u_effectors) & [all_trialz.completed]==1;
+            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],UC.effector) & [all_trialz.completed]==1;
             ph_PSTH_background(all_trialz(tr),y_lim,y_lim,y_lim,keys,1)
             % set ydata
             uistack(onset_handle(comp), 'top');
@@ -304,7 +237,7 @@ for t=1:numel(sigbins)
         plot_3_title            = [keys.ON.comparisons_title ' ' fig_title  ' n tuned cells'];
         PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_3_title);
         column=1;
-        keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+        keys=ph_get_epoch_keys(keys,typ,UC.effector,sum(UC.type_effector(:,1)==typ)>1);%% does it make sense to distinguish by effector?
         n=1;
         clear x_lim y_lim sp
         for comp=1:numel(comparisons)
@@ -354,7 +287,7 @@ for t=1:numel(sigbins)
             subplot(numel(comparisons),1,(comp-1)+column)
             lims=[0 y_lim(comp)];
             %% choices? hands? errm here its only relevant for event and epoch onsets
-            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],u_effectors) & [all_trialz.completed]==1;
+            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],UC.effector) & [all_trialz.completed]==1;
             ph_PSTH_background(all_trialz(tr),lims,lims,lims,keys,1)
         end
         
@@ -365,9 +298,9 @@ for t=1:numel(sigbins)
         plot_2_title            = [keys.ON.comparisons_title ' ' fig_title  ' tuning onset'];
         PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_2_title);
         column=1;
-        keys=ph_get_epoch_keys(keys,typ,u_effectors,sum(type_effectors(:,1)==typ)>1);%% does it make sense to distinguish by effector?
+        keys=ph_get_epoch_keys(keys,typ,UC.effector,sum(UC.type_effector(:,1)==typ)>1);%% does it make sense to distinguish by effector?
         
-        n=1;% find(u_effectors==eff);
+        n=1;% find(UC.effector==eff);
         clear x_lim sp
         for comp=1:numel(comparisons)
             
@@ -430,7 +363,7 @@ for t=1:numel(sigbins)
             subplot(numel(comparisons),1,(comp-1)+column)
             lims=[0 y_lim(comp)];
             %% choices? hands? errm here its only relevant for event and epoch onsets
-            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],u_effectors) & [all_trialz.completed]==1;
+            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],UC.effector) & [all_trialz.completed]==1;
             % set ydata
             ph_PSTH_background(all_trialz(tr),lims,lims,lims,keys,1)
             uistack(onset_handle(comp), 'top');
@@ -521,17 +454,31 @@ else
         B=Bmat(:,k);
         if paired
             if any(~isnan(A)&~isnan(B))
-                [~, h(k)] = signrank(A,B);
+                h(k) = ttest(A,B);
             else
                 h(k)=0;
             end
         else
             if any(~isnan(A)) && any (~isnan(B))
-                [~, h(k)] = ranksum(A,B);
+                h(k) = ttest2(A,B);
             else
                 h(k)=0;
             end
         end
+        
+%         if paired
+%             if any(~isnan(A)&~isnan(B))
+%                 [~, h(k)] = signrank(A,B);
+%             else
+%                 h(k)=0;
+%             end
+%         else
+%             if any(~isnan(A)) && any (~isnan(B))
+%                 [~, h(k)] = ranksum(A,B);
+%             else
+%                 h(k)=0;
+%             end
+%         end
     end
 end
 end

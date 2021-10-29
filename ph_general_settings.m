@@ -4,9 +4,6 @@ keys.labels.handsLR={'AH','LH','RH'};
 keys.labels.handsIC={'AH','IH','CH'};  %% AH!??
 keys.labels.perturbations={'','_PT'};  %% AH!??
 keys.labels.choices={'in','ch'};
-
-keys.FR_subtract_baseline=0;
-keys.cal.divide_baseline_for_ANOVA=0;
 keys.contra_ipsi_relative_to='target';
 
 %% general settings (multi-summary PSTH)
@@ -14,9 +11,9 @@ keys.contra_ipsi_relative_to='target';
 keys.PSTH_binwidth                      =0.01;                      % resolution of PSTH's (in seconds)
 keys.gaussian_kernel                    =0.02;                      % std for the convolution to derive spie density (in seconds)
 keys.kernel_type                        ='gaussian';
-keys.subtract_baseline_for_anovas       =0;                         % subtracting the FR in baseline period (see below) for anovas
 keys.FR_at_peak                         =0;                         % currently not used
 keys.position_and_plotting_arrangements ={'hands'};                 % defines position batching and which conditions go into different figures/lines
+keys.condition_parameters  ={'reach_hand','choice','perturbation'};
 
 %% Batching per figure ! subregion keys..?
 keys.batching.monkeys                    ={'Curius','Linus'};       % monkeys on the project
@@ -56,6 +53,7 @@ keys.AN.epoch_PF='INI';
 keys.AN.epoch_GB='INI';
 keys.AN.baseline_per_trial=0;
 keys.AN.FR_subtract_baseline=0;
+keys.AN.test_types='parametric'; %% as opposed to 'nonparametric'
 
 %% folders and filenames
 keys.filelist_as_blocks     =0;
@@ -128,12 +126,25 @@ keys.plot.excentricity_max_for_ylim     =30;
 keys.plot.eyetrace_factor               =0.5;
 keys.plot.hndtrace_factor               =0.5;
 
+% ANOVA labels for single unit plots
+keys.plot.anova_main    ={'E','in_epoch_main','','S','in_spaceLR_main','','C','ch_spaceLR_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
+keys.plot.anova_effector={'E','in_epoch_main','','S','in_spaceLR_main','','C','ch_spaceLR_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
+keys.plot.anova_epoch1  ={'E','in_AH','epoch','S','in','spaceLR','C','ch','spaceLR','H','in','hands','SxH','in','SxH'};
+keys.plot.anova_epoch2  ={'LL','in_LH_LS','PT','RL','in_LH_RS','PT','LR','in_RH_LS','PT','RR','in_RH_RS','PT'};
+
 %% are these used?
 keys.width.PSTH_perpos          =0.5;
 keys.width.raster               =0.1;
 keys.width.PSTH_summary         =1;
 
-%% colors
+%% colors & legends
+keys.condition_parameters={'reach_hand','choice','perturbation'};
+keys.labels.reach_hand={'NH','IH','CH'};
+keys.labels.hemifield={'IS','VS','CS'};
+keys.labels.preferred={'NP','PF'};
+keys.labels.choice={'IN','CH'};
+keys.labels.perturbation={'','PT'};
+
 % traces
 keys.colors.eye_ver         =[0.8 0 0];
 keys.colors.eye_hor         =[1 0 0];
@@ -195,6 +206,8 @@ keys.colors.IH_IS_IN=[0 128 255];
 keys.colors.IH_IS_CH=[0 64 128];
 keys.colors.CH_IS_IN=[0 255 0];
 keys.colors.CH_IS_CH=[0 128 0];
+
+
 %% these need to be fixed somehow
 keys.colors.NH_VS_IN=[150 150 150];
 keys.colors.NH_VS_CH=[80 80 80];
@@ -202,6 +215,148 @@ keys.colors.IH_VS_IN=[64 0 255];
 keys.colors.IH_VS_CH=[32 0 128];
 keys.colors.CH_VS_IN=[255 255 0];
 keys.colors.CH_VS_CH=[128 128 0];
+
+% population contra ipsi PSTH colors -- these are correct!
+keys.colors.NH_IN_CS=[255 0 64];
+keys.colors.NH_CH_CS=[128 0 32];
+keys.colors.IH_IN_CS=[255 0 255];
+keys.colors.IH_CH_CS=[128 0 128];
+keys.colors.CH_IN_CS=[255 128 0];
+keys.colors.CH_CH_CS=[128 64 0];
+keys.colors.NH_IN_IS=[0 255 255];
+keys.colors.NH_CH_IS=[0 128 128];
+keys.colors.IH_IN_IS=[0 128 255];
+keys.colors.IH_CH_IS=[0 64 128];
+keys.colors.CH_IN_IS=[0 255 0];
+keys.colors.CH_CH_IS=[0 128 0];
+%% these need to be fixed somehow
+keys.colors.NH_IN_VS=[150 150 150];
+keys.colors.NH_CH_VS=[80 80 80];
+keys.colors.IH_IN_VS=[64 0 255];
+keys.colors.IH_CH_VS=[32 0 128];
+keys.colors.CH_IN_VS=[255 255 0];
+keys.colors.CH_CH_VS=[128 128 0];
+% preferred
+
+keys.colors.NH_IN_PF=[255 0 64];
+keys.colors.NH_CH_PF=[128 0 32];
+keys.colors.IH_IN_PF=[255 0 255];
+keys.colors.IH_CH_PF=[128 0 128];
+keys.colors.CH_IN_PF=[255 128 0];
+keys.colors.CH_CH_PF=[128 64 0];
+keys.colors.NH_IN_NP=[0 255 255];
+keys.colors.NH_CH_NP=[0 128 128];
+keys.colors.IH_IN_NP=[0 128 255];
+keys.colors.IH_CH_NP=[0 64 128];
+keys.colors.CH_IN_NP=[0 255 0];
+keys.colors.CH_CH_NP=[0 128 0];
+
+
+
+keys.labels.stimulustype={'SS','TT','TD'};
+keys.labels.difficulty={'TA','D1','D2'};
+keys.labels.success={'ER','SU'};
+
+temp_colors_I=autumn(18)*255;
+temp_colors_C=winter(18)*255;
+temp_colors_V=spring(18)*255;
+
+% per position colors 
+
+keys.colors.SS_TA_ER=temp_colors_C(1,:);
+keys.colors.TT_TA_ER=temp_colors_C(2,:);
+keys.colors.TD_TA_ER=temp_colors_C(3,:);
+keys.colors.SS_D1_ER=temp_colors_C(4,:);
+keys.colors.TT_D1_ER=temp_colors_C(5,:);
+keys.colors.TD_D1_ER=temp_colors_C(6,:);
+keys.colors.SS_D2_ER=temp_colors_C(7,:);
+keys.colors.TT_D2_ER=temp_colors_C(8,:);
+keys.colors.TD_D2_ER=temp_colors_C(9,:);
+
+
+keys.colors.SS_TA_SU=temp_colors_I(10,:);
+keys.colors.TT_TA_SU=temp_colors_I(11,:);
+keys.colors.TD_TA_SU=temp_colors_I(12,:);
+keys.colors.SS_D1_SU=temp_colors_I(13,:);
+keys.colors.TT_D1_SU=temp_colors_I(14,:);
+keys.colors.TD_D1_SU=temp_colors_I(15,:);
+keys.colors.SS_D2_SU=temp_colors_I(16,:);
+keys.colors.TT_D2_SU=temp_colors_I(17,:);
+keys.colors.TD_D2_SU=temp_colors_I(18,:);
+
+
+%             col_right = winter(3);
+%             tar_purple = [1 0 1 ];
+keys.colors.SS_TA_ER_IS=temp_colors_I(1,:);
+keys.colors.TT_TA_ER_IS=temp_colors_I(2,:);
+keys.colors.TD_TA_ER_IS=temp_colors_I(3,:);
+keys.colors.SS_D1_ER_IS=temp_colors_I(4,:);
+keys.colors.TT_D1_ER_IS=temp_colors_I(5,:);
+keys.colors.TD_D1_ER_IS=temp_colors_I(6,:);
+keys.colors.SS_D2_ER_IS=temp_colors_I(7,:);
+keys.colors.TT_D2_ER_IS=temp_colors_I(8,:);
+keys.colors.TD_D2_ER_IS=temp_colors_I(9,:);
+
+keys.colors.SS_TA_ER_VS=temp_colors_V(1,:);
+keys.colors.TT_TA_ER_VS=temp_colors_V(2,:);
+keys.colors.TD_TA_ER_VS=temp_colors_V(3,:);
+keys.colors.SS_D1_ER_VS=temp_colors_V(4,:);
+keys.colors.TT_D1_ER_VS=temp_colors_V(5,:);
+keys.colors.TD_D1_ER_VS=temp_colors_V(6,:);
+keys.colors.SS_D2_ER_VS=temp_colors_V(7,:);
+keys.colors.TT_D2_ER_VS=temp_colors_V(8,:);
+keys.colors.TD_D2_ER_VS=temp_colors_V(9,:);
+
+keys.colors.SS_TA_ER_CS=temp_colors_C(1,:);
+keys.colors.TT_TA_ER_CS=temp_colors_C(2,:);
+keys.colors.TD_TA_ER_CS=temp_colors_C(3,:);
+keys.colors.SS_D1_ER_CS=temp_colors_C(4,:);
+keys.colors.TT_D1_ER_CS=temp_colors_C(5,:);
+keys.colors.TD_D1_ER_CS=temp_colors_C(6,:);
+keys.colors.SS_D2_ER_CS=temp_colors_C(7,:);
+keys.colors.TT_D2_ER_CS=temp_colors_C(8,:);
+keys.colors.TD_D2_ER_CS=temp_colors_C(9,:);
+
+
+keys.colors.SS_TA_SU_IS=temp_colors_I(10,:);
+keys.colors.TT_TA_SU_IS=temp_colors_I(11,:);
+keys.colors.TD_TA_SU_IS=temp_colors_I(12,:);
+keys.colors.SS_D1_SU_IS=temp_colors_I(13,:);
+keys.colors.TT_D1_SU_IS=temp_colors_I(14,:);
+keys.colors.TD_D1_SU_IS=temp_colors_I(15,:);
+keys.colors.SS_D2_SU_IS=temp_colors_I(16,:);
+keys.colors.TT_D2_SU_IS=temp_colors_I(17,:);
+keys.colors.TD_D2_SU_IS=temp_colors_I(18,:);
+
+keys.colors.SS_TA_SU_VS=temp_colors_V(10,:);
+keys.colors.TT_TA_SU_VS=temp_colors_V(11,:);
+keys.colors.TD_TA_SU_VS=temp_colors_V(12,:);
+keys.colors.SS_D1_SU_VS=temp_colors_V(13,:);
+keys.colors.TT_D1_SU_VS=temp_colors_V(14,:);
+keys.colors.TD_D1_SU_VS=temp_colors_V(15,:);
+keys.colors.SS_D2_SU_VS=temp_colors_V(16,:);
+keys.colors.TT_D2_SU_VS=temp_colors_V(17,:);
+keys.colors.TD_D2_SU_VS=temp_colors_V(18,:);
+
+keys.colors.SS_TA_SU_CS=temp_colors_C(10,:);
+keys.colors.TT_TA_SU_CS=temp_colors_C(11,:);
+keys.colors.TD_TA_SU_CS=temp_colors_C(12,:);
+keys.colors.SS_D1_SU_CS=temp_colors_C(13,:);
+keys.colors.TT_D1_SU_CS=temp_colors_C(14,:);
+keys.colors.TD_D1_SU_CS=temp_colors_C(15,:);
+keys.colors.SS_D2_SU_CS=temp_colors_C(16,:);
+keys.colors.TT_D2_SU_CS=temp_colors_C(17,:);
+keys.colors.TD_D2_SU_CS=temp_colors_C(18,:);
+
+color_fieldnames=fieldnames(keys.colors);
+for fn=1:numel(color_fieldnames)
+    switch color_fieldnames{fn}(end-1:end)
+        case 'CS'
+            keys.colors.([color_fieldnames{fn}(1:end-2) 'PF'])=keys.colors.(color_fieldnames{fn});
+        case 'IS'
+            keys.colors.([color_fieldnames{fn}(1:end-2) 'NP'])=keys.colors.(color_fieldnames{fn});
+    end
+end
 
 % population effector colors
 

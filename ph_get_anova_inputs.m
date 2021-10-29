@@ -1,11 +1,7 @@
 function [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o,keys)
             trial_pos=vertcat(o.trial.position);
             per_epoch=vertcat(o.trial.epoch);
-            %per_epoch=vertcat(population(unit).trial(tr_index).epoch);
             
-            if keys.subtract_baseline_for_anovas
-                per_epoch=ph_FR_subtract_baseline(per_epoch,keys);
-            end
             per_epoch=per_epoch(:);
             FR=[per_epoch.FR]';
             epochs={per_epoch.state}';
@@ -14,9 +10,9 @@ function [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o,keys)
             
             idx.LS =        repmat(trial_pos(:,1)<0,n_epochs,1); %% the limit here was set to 1!!???
             idx.RS =        repmat(trial_pos(:,1)>0,n_epochs,1);
-            idx.NH =        repmat([o.trial.hand]'==0,n_epochs,1);
-            idx.LH =        repmat([o.trial.hand]'==1,n_epochs,1);
-            idx.RH =        repmat([o.trial.hand]'==2,n_epochs,1);
+            idx.NH =        repmat([o.trial.reach_hand]'==0,n_epochs,1);
+            idx.LH =        repmat([o.trial.reach_hand]'==1,n_epochs,1);
+            idx.RH =        repmat([o.trial.reach_hand]'==2,n_epochs,1);
             idx.AH =        true(size(idx.LH));
             idx.ch =        repmat([o.trial.choice]'==1,n_epochs,1);
             idx.in =        repmat([o.trial.choice]'==0,n_epochs,1);
