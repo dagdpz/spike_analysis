@@ -1,24 +1,17 @@
 function ph_plot_unit_per_condition2(population,keys)
-tuning_per_unit_table=keys.tuning_per_unit_table;
-
+%tuning_per_unit_table=keys.tuning_per_unit_table;
 keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'single_cell_examples' filesep];
 %% colors and ylim preparation
-eye_offset=-keys.plot.trials_max_for_ylim-keys.plot.excentricity_max_for_ylim*keys.plot.eyetrace_factor;
-hnd_offset=eye_offset-keys.plot.excentricity_max_for_ylim*keys.plot.eyetrace_factor*2;
-eye_col_v=keys.colors.eye_ver;
-eye_col_h=keys.colors.eye_hor;
+eye_offset  =   -keys.plot.trials_max_for_ylim-keys.plot.excentricity_max_for_ylim*keys.plot.eyetrace_factor;
+hnd_offset  =   eye_offset-keys.plot.excentricity_max_for_ylim*keys.plot.eyetrace_factor*2;
+eye_col_v   =   keys.colors.eye_ver;
+eye_col_h   =   keys.colors.eye_hor;
 
 for unit=1:numel(population)
     types       =[population(unit).trial.type];
     effectors   =[population(unit).trial.effector];
-    hands       =[population(unit).trial.reach_hand];
-    
-    % copy of unit identifiers to keys... redundant?
-    [keys.unit_ID keys.stability_rating keys.SNR_rating keys.Single_rating keys.target keys.grid_x keys.grid_y keys.electrode_depth keys.channel keys.block_unit] =...
-        deal(population(unit).unit_ID, population(unit).stability_rating, population(unit).SNR_rating, population(unit).Single_rating, population(unit).target,...
-        population(unit).grid_x, population(unit).grid_y, population(unit).electrode_depth, population(unit).channel, population(unit).block_unit);
-    
-    current_unit_tuning= [tuning_per_unit_table(1,:); tuning_per_unit_table(ismember(tuning_per_unit_table(:,1), population(unit).unit_ID),:)];
+    hands       =[population(unit).trial.reach_hand];        
+    current_unit_tuning= [keys.tuning_per_unit_table(1,:); keys.tuning_per_unit_table(ismember(keys.tuning_per_unit_table(:,1), population(unit).unit_ID),:)];
     for a=1:numel(keys.position_and_plotting_arrangements)
         keys.arrangement=keys.position_and_plotting_arrangements{a};
         for type=unique(types)
@@ -35,7 +28,7 @@ for unit=1:numel(population)
             eff_for_typ=effectors(o_index);
             effectors_effector_loop=unique(eff_for_typ);
             
-            if sum(o_index)==0;
+            if sum(o_index)==0; % this line wont work as it is
                 disp(sprintf('%s has no trials for effector %.0f type %.0f hands %s completed= %.0f',population(unit).unit_ID,effector,type,mat2str(keys.cal.reach_hand),keys.cal.completed));
                 continue;
             end
@@ -55,33 +48,29 @@ for unit=1:numel(population)
                 %% new part!
                 [UC, CM, labels]=ph_get_condition_matrix(T(fig_idx),keys);
                 %% for general use
+                line_idx=true(size(CM,1),size(fig_idx,2));
                 for L=1:size(CM,1)
-                    line_idx(L,:)=true(size(fig_idx));
                     for con=1:size(CM,2)
                         line_idx(L,:)=line_idx(L,:) & [T.(keys.condition_parameters{con})]==CM(L,con);
                     end
                 end
-                n_lines=size(CM,1);
-                %unique_lines=1:size(CM,1); %% only needed now to specify average plotting
                 legend_labels_hem={};
                 for h=UC.hemifield % append hemifield labels, careful with the order!
                     legend_labels_hem=[legend_labels_hem; strcat(labels,['_' keys.labels.hemifield{h+2}])];
+                end        
+                legend_labels_hem=reshape(legend_labels_hem,numel(legend_labels_hem),1);        
+                if keys.plot.average_PSTH_line
+                    line_idx(end+1,:)=true(1,size(fig_idx,2));
+                    labels{end+1}='AV';
                 end
-                legend_labels_hem=reshape(legend_labels_hem,numel(legend_labels_hem),1);
+                n_lines=size(line_idx,1);
+                
                 side_labels={'L','R'};
                 side_labels_col={'IS','CS'};
-                %                 if keys.plot.average_heat_maps
-                %                     unique_lines(end)=[];
-                %                 end
                 if any(UC.hemifield==0) %&& fig==unique_figures(1)% vertical targets, KK uncomment, why figure and whz colors?
                     side_labels={'L','V','R'};
                     side_labels_col={'IS','VS','CS'};
                 end
-                %% IDEA!: take hemifields as conditions here already as well!!!
-                % if ~keys.plot.average_PSTH_line
-                %                                         % this just makes it simpler, looping several times but plotting the same all over
-                %                                         tr_index= tr_index &  [T.line]==lin;
-                %                                     end
                 
                 effectors_on_figure=effectors_effector_loop(ismember(effectors_effector_loop,eff_for_typ(fig_idx)));
                 for e=1:numel(effectors_on_figure)
@@ -90,12 +79,12 @@ for unit=1:numel(population)
                     [type_effector_full, type_effector_short type_string] = MPA_get_type_effector_name(type,effector);
                     
                     %% ANOVA results to print
-                    anova_title_part=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.plot.anova_main,'');
-                    
-                    fig_title=sprintf('%s, %s, %s, %s %s %s',keys.unit_ID, keys.target, type_effector_full, keys.arrangement, title_part, title_value);
+                    anova_title_part=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.plot.anova_main,'');                    
+                    fig_title=sprintf('%s, %s, %s, %s %s %s',population(unit).unit_ID, population(unit).target, type_effector_full, keys.arrangement, title_part, title_value);
                     fig_title_part=sprintf(', Stability %d, SNR %d, Single %d Grid: %d/%d Depth %.2f ANOVA %s Channel: %d Blocks&Units: %s ', ...
-                        keys.stability_rating, keys.SNR_rating, keys.Single_rating, keys.grid_x, keys.grid_y, keys.electrode_depth, anova_title_part, keys.channel, [keys.block_unit{:}]);
-                    
+                    population(unit).stability_rating, population(unit).SNR_rating, population(unit).Single_rating, population(unit).grid_x, population(unit).grid_y,...
+                    population(unit).electrode_depth, anova_title_part, population(unit).channel, [population(unit).block_unit{:}]);
+                
                     %% Per position PSTH figure
                     plot_1_title            = [fig_title  ' PSTHs'];
                     PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[plot_1_title fig_title_part]);
@@ -114,18 +103,26 @@ for unit=1:numel(population)
                             t_before_state=keys.PSTH_WINDOWS{w,3};
                             t_after_state=keys.PSTH_WINDOWS{w,4};
                             histo=[];
-                            lines_for_average=[];
                             raster_y=0;
-                            for lin=1:size(CM,1)
+                            for lin=1:n_lines
                                 col=keys.colors.(labels{lin})/255;
-                                line_struct=T(line_idx(lin,:) & [T.effector]==effector & [T.figure]==fig);
+                                line_struct=T(line_idx(lin,:) & [T.subplot_pos]==sub & [T.effector]==effector & [T.figure]==fig);
                                 n_trials=numel(line_struct);
                                 state_shift=state_seperator(lin)-t_before_state;
+                                state_seperator(lin)=state_shift + t_after_state + 0.1;
                                 if n_trials==0 || ~any([line_struct.states]==sta)
-                                    state_seperator(lin)=state_shift + t_after_state + 0.1;
                                     continue;
-                                else
-                                    lines_for_average =[lines_for_average; lin];
+                                end
+                                
+                                %% PSTH
+                                [histo(lin,:), bins, ~, SEM]=ph_spike_density(line_struct,w,keys,zeros(numel(line_struct),1),ones(numel(line_struct),1));
+                                bins=bins+state_shift;
+                                lineProps={'color',col,'linewidth',keys.width.PSTH_perpos};
+                                shadedErrorBar(bins,histo(lin,:),SEM,lineProps,1);
+                                
+                                %% skipping average raster
+                                if keys.plot.average_PSTH_line && lin==n_lines
+                                    continue;
                                 end
                                 
                                 %% Raster and eye hand traces  + Number of trials line and text
@@ -144,11 +141,11 @@ for unit=1:numel(population)
                                     trial_state_onset=line_struct(t).states_onset(line_struct(t).states==sta);
                                     time_axis=line_struct(t).time_axis-trial_state_onset+state_shift;
                                     t_idx=line_struct(t).time_axis-trial_state_onset>=t_before_state &...
-                                        line_struct(t).time_axis-trial_state_onset<=t_after_state;
+                                          line_struct(t).time_axis-trial_state_onset<=t_after_state;
                                     at_idx=line_struct(t).arrival_times-trial_state_onset>=t_before_state &...
-                                        line_struct(t).arrival_times-trial_state_onset<=t_after_state;
+                                           line_struct(t).arrival_times-trial_state_onset<=t_after_state;
                                     if keys.plot.eye_hand_traces
-                                        line(time_axis(t_idx),line_struct(t).x_eye(t_idx)*keys.plot.eyetrace_factor + eye_offset ,'color',eye_col_h);
+                                        line(time_axis(t_idx),line_struct(t).x_eye(t_idx)*keys.plot.eyetrace_factor + eye_offset,'color',eye_col_h);
                                         line(time_axis(t_idx),line_struct(t).y_eye(t_idx)*keys.plot.eyetrace_factor + eye_offset,'color',eye_col_v);
                                         line(time_axis(t_idx),line_struct(t).x_hnd(t_idx)*keys.plot.hndtrace_factor + hnd_offset,'color',hnd_col_h);
                                         line(time_axis(t_idx),line_struct(t).y_hnd(t_idx)*keys.plot.hndtrace_factor + hnd_offset,'color',hnd_col_v);
@@ -164,17 +161,6 @@ for unit=1:numel(population)
                                 end
                                 raster_y=raster_y-n_trials;
                                 
-                                % PSTH
-                                state_seperator(lin)=state_shift + t_after_state + 0.1;
-                                [histo(lin,:), bins, ~, SEM]=ph_spike_density(line_struct,w,keys,zeros(numel(line_struct),1),ones(numel(line_struct),1));
-                                bins=bins+state_shift;
-                                
-                                lineProps={'color',col,'linewidth',keys.width.PSTH_perpos};
-                                shadedErrorBar(bins,histo(lin,:),SEM,lineProps,1);
-                            end
-                            
-                            if keys.plot.average_PSTH_line
-                                line(bins,nanmean(histo(lines_for_average,:),1),'color','k','LineWidth',keys.width.PSTH_perpos);          %PSTH
                             end
                             state_seperator_max=max([state_seperator_max;state_seperator]);
                             y_max=max([y_max max(histo)]);
@@ -196,18 +182,12 @@ for unit=1:numel(population)
                     if sum(tr_index)==0 % might be the case if all trials are excluded cause of no spikes
                         continue;
                     end
-                    % Computing mean firing rates per position
-                    %                     if keys.plot.average_heat_maps
-                    %                         o.line_labels=[o.line_labels {'Av'}];
-                    %                         unique_lines=[unique_lines max(unique_lines)+1];
-                    %                         o.PSTH_perpos_colors=[o.PSTH_perpos_colors; 0 0 0];
-                    %                     end
                     subplot_indizes=1:max([T.subplot_pos]);
                     clear FR_heat;
                     
                     for sub=subplot_indizes
                         for sta=all_sta
-                            for lin=1:size(CM,1)
+                            for lin=1:n_lines
                                 lin_idx = line_idx(lin,:) & [T.subplot_pos]==sub & [T.figure]==fig;
                                 if sum(lin_idx)==0
                                     FR_heat(sta,lin).pos(sub)    =NaN;
@@ -217,19 +197,12 @@ for unit=1:numel(population)
                                     FR_heat(sta,lin).pos(sub)    =nanmean([states_trials(:,sta).FR]);
                                 end
                             end
-                            lin_idx=tr_index & [T.subplot_pos]==sub & [T.figure]==fig;
-                            if keys.plot.average_PSTH_line && sum(lin_idx)>0
-                                states_trials=   vertcat(T(lin_idx).epoch);
-                                FR_heat(sta,lin+1).pos(sub)=nanmean([states_trials(:,sta).FR]);
-                            elseif keys.plot.average_PSTH_line
-                                FR_heat(sta,lin+1).pos(sub)=NaN;
-                            end
                         end
                     end
                     
                     % Plotting heat maps
                     for sta=all_sta
-                        for lin=1:size(CM,1)
+                        for lin=1:n_lines
                             state_label =keys.EPOCHS{sta,1};
                             hh(sta+n_states*(lin-1))=subplot_assignment(keys,'FR',n_states,n_lines,sta,lin,e,0,effectors_on_figure,1);
                             plot_firing_rate_heatmap(FR_heat(sta,lin).pos,o.columns,o.rows,1:max(subplot_indizes));
@@ -269,11 +242,7 @@ for unit=1:numel(population)
                             
                             FR_means(sta,lin).vector=nanmean(sta_vector(lin_idx,:),1);
                             for ang=1:numel(unique_angles)
-                                if keys.plot.average_PSTH_line && lin==n_lines
-                                    line_struct=polar_struct(position_angles==unique_angles(ang));
-                                else
-                                    line_struct=polar_struct(position_angles==unique_angles(ang) & lin_idx');
-                                end
+                                line_struct=polar_struct(position_angles==unique_angles(ang) & lin_idx');
                                 states_trials       =vertcat(line_struct.epoch);
                                 if isempty(states_trials)% || isempty(subplot_struct.position) %unfortunate debugging for empty positions !
                                     FR_means(sta,lin).pos(ang)    =NaN;
@@ -288,7 +257,7 @@ for unit=1:numel(population)
                     
                     FR_mean_max=max([FR_means.pos]+[FR_sterr.pos]);
                     for sta=all_sta
-                        for lin=1:size(CM,1)
+                        for lin=1:n_lines
                             subplot_assignment(keys,'polar',n_states,n_lines,sta,lin,e,0,effectors_on_figure,1);
                             line_spec.color=keys.colors.(labels{lin})/255;
                             line_spec.linewidth=1;
@@ -301,8 +270,8 @@ for unit=1:numel(population)
                     ph_title_and_save(FR_summary_handle,plot_title,[plot_title fig_title_part],keys);
                 end
                 
-                %% Summary plot
-                fig_title=sprintf('%s, %s, %s type, %s %s %s' ,keys.unit_ID, keys.target, type_string, keys.arrangement, title_part, title_value);
+                %% Summary plot - average in summary???
+                fig_title=sprintf('%s, %s, %s type, %s %s %s' ,population(unit).unit_ID, population(unit).target, type_string, keys.arrangement, title_part, title_value);
                 plot_title        =[fig_title ' effector summary'];
                 FR_summary_handle   =figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[plot_title fig_title_part]);
                 
@@ -316,7 +285,6 @@ for unit=1:numel(population)
                 for r=1:numel(unique_rows)
                     row=unique_rows(r);
                     effectors_in_row=unique([T(fig_idx & [T.row]==row).effector]);
-                    %% PSTH summary R/L and U/D subplot
                     for c=unique_columns
                         hs(r,c)=subplot_assignment(keys,'PSTH',n_states,n_lines,1,lin,r,c,unique_rows,unique_columns);
                         hold on
@@ -331,10 +299,6 @@ for unit=1:numel(population)
                                 for lin=1:size(CM,1)
                                     col=keys.colors.([labels{lin} '_' side_labels_col{h}])/255;
                                     tr_index=fig_idx & line_idx(lin,:) &[T.row]==row & [T.column]==c & [T.accepted]==1 & [T.hemifield]==UC.hemifield(h);
-                                    %                                     if ~keys.plot.average_PSTH_line
-                                    %                                         % this just makes it simpler, looping several times but plotting the same all over
-                                    %                                         tr_index= tr_index &  [T.line]==lin;
-                                    %                                     end
                                     if sum(tr_index)==0
                                         continue;
                                     end
@@ -428,13 +392,9 @@ for unit=1:numel(population)
                             state_shift             =state_seperator-t_before_state;
                             raster_y=0;
                             for h=1:numel(UC.hemifield)
-                                for lin=1:n_lines
+                                for lin=1:size(CM,1)
                                     col=keys.colors.([labels{lin} '_' side_labels_col{h}])/255;
                                     tr_index=fig_idx & line_idx(lin,:) & [T.row]==row & [T.column]==c & [T.accepted]==1 & [T.hemifield]==UC.hemifield(h);
-                                    %                                     if ~keys.plot.average_PSTH_line
-                                    %                                         % this just makes it simpler, looping several times but plotting the same all over
-                                    %                                         tr_index= tr_index &  [T.line]==lin;
-                                    %                                     end
                                     n_trials     =sum(tr_index);
                                     line_struct=T(tr_index);
                                     spike_length=y_lim(2)*0.002/(1+sum(fig_idx & [T.accepted])*0.002);
@@ -443,12 +403,10 @@ for unit=1:numel(population)
                                         continue;
                                     end
                                     
-                                    %% Raster
                                     line([state_shift+t_before_state state_shift+t_after_state],[raster_y raster_y],'Color',col,'LineWidth',0.5); hold on;
                                     for t=1:numel(line_struct)
                                         trial_state_onset=line_struct(t).states_onset(line_struct(t).states==sta);
-                                        at_idx=line_struct(t).arrival_times-trial_state_onset>=t_before_state &...
-                                            line_struct(t).arrival_times-trial_state_onset<=t_after_state;
+                                        at_idx=line_struct(t).arrival_times-trial_state_onset>=t_before_state & line_struct(t).arrival_times-trial_state_onset<=t_after_state;
                                         ig_make_raster([line_struct(t).arrival_times(at_idx)]'+state_shift-trial_state_onset,raster_y-t*spike_length,spike_length,0,'Color',col,'LineWidth',keys.width.raster);
                                     end
                                     
@@ -500,17 +458,6 @@ X = [[X nan(size(X,1),1)] ; nan(1,size(X,2)+1)];
 pcolor(X); set(gca,'Ydir','reverse');
 axis equal; axis off;
 end
-
-% function title_and_save(figure_handle,filename,plot_title,keys)
-% mtit(figure_handle,  plot_title, 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 8,'Interpreter', 'none');
-% stampit;
-% if keys.plot.export
-%     wanted_size=[50 30];
-%     set(figure_handle, 'Paperunits','centimeters','PaperSize', wanted_size,'PaperPositionMode', 'manual','PaperPosition', [0 0 wanted_size])
-%     export_fig([keys.tuning_table_foldername filesep 'single_cell_examples' filesep filename], '-pdf','-transparent') % pdf by run
-%     close all
-% end
-% end
 
 function  anova_title_part=get_anova_results(keys,current_unit_tuning,type_effector_short,to_look_for,state_label)
 anova_title_part='';
@@ -648,16 +595,16 @@ set(h(isreallyaxes),'Clim',[min(min(L)) max(max(L))]);
 end
 
 
-                
+
 %                 %% per movement plot
 %                 keys.movement_angle_binwidth=60;
 %                 keys.movement_amplitude_binwidth=10;
 %                 keys.movement_plot_type='revealed_or_not';
 %                 keys.movement_plot_types={'pre','peri','post'};
-%                 
+%
 %                 binwidth=keys.movement_angle_binwidth*pi/180;
 %                 angular_movement_bins=-pi:binwidth:pi;
-%                 
+%
 %                 for e=1:numel(effectors_on_figure)
 %                     effector=effectors_on_figure(e);
 %                     o_e=o;
@@ -665,7 +612,7 @@ end
 %                     [type_effector_full, type_effector_short] = MPA_get_type_effector_name(type,effector);
 %                     om=ph_arrange_movement_positions(population(unit).trial(oe_index),keys); %why not using o_e => this would separate into error and success
 %                     PSTH_perpos_colors=om.PSTH_perpos_colors;
-%                     
+%
 %                     plot_4_title            = [fig_title  ' movement PSTHs '];
 %                     PSTH_movement_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[plot_4_title]);
 %                     fig_title_part=[type_effector_short];
@@ -704,13 +651,13 @@ end
 %                         rectangle('Position',[-0.15 y_lim_m_min 0.14 0.05*diff([y_lim_m_min y_lim_m_max])],'EdgeColor','none','FaceColor',[0.9 0.9 0.9]) %frame for indicating state separation
 %                         rectangle('Position',[-0.01 y_lim_m_min 0.06 0.05*diff([y_lim_m_min y_lim_m_max])],'EdgeColor','none','FaceColor',[0.6 0.6 0.6]) %frame for indicating state separation
 %                         rectangle('Position',[ 0.05 y_lim_m_min 0.1  0.05*diff([y_lim_m_min y_lim_m_max])],'EdgeColor','none','FaceColor',[0.3 0.3 0.3]) %frame for indicating state separation
-%                         
+%
 %                         line([0 0],[y_lim_m_min y_lim_m_max],'color','k');
 %                         set(gca,'ylim',[y_lim_m_min y_lim_m_max]);
 %                     end
 %                     ph_title_and_save(PSTH_movement_handle,plot_4_title,[plot_4_title fig_title_part],keys);
-%                     
-%                     
+%
+%
 %                     plot_5_title            = [fig_title  ' movement polar '];
 %                     fig_title_part=[type_effector_short];
 %                     polar_movement_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[plot_5_title]);
@@ -783,7 +730,7 @@ end
 %                                 ylabel(row_field,'interpreter','none')
 %                             end
 %                         end
-%                         
+%
 %                         subplot(numel(row_fields)+1,n_columns,n_column+numel(row_fields)*n_columns);
 %                         hold on
 %                         bar(FR_rev_mean(n_column,:),'FaceColor','g');

@@ -24,8 +24,9 @@ if nargin>2
 end
 
 %% DEFINITION OF CONDITION INDICES TO PLOT, CURRENTLY TARGET LOCATION, FIXATION LOCATION, MOVEMENT VECTORS, CHOICE, HANDS
-Precision=2;
-[~, displacement_types] = center_displacement_working(o,Precision);
+keys.precision.fixation=4;
+keys.precision.position=2;
+[~, displacement_types] = center_displacement_working(o,keys);
 all_val=displacement_types(:,1:4);
 fix_val=displacement_types(:,1:2);
 tar_val=displacement_types(:,3:4);
@@ -146,10 +147,11 @@ con_for_column          = non_idx;
 con_for_row             = eff_idx;
 fig_title               = '';
 sub_title               = 'movement vector ';
-val_for_figure          = {NaN};
+val_for_figure          = {[]};
 val_for_sub_assignment  = mov_val(u_mov_idx_idx,:);
 val_for_pos_assignment  = mov_val(u_mov_idx_idx,:);
 position_indexes        = mov_idx;
+fixation_indexes            = fix_idx;
 hemifield_indexes       = (real([o.tar_pos]' - [o.fix_pos]')>0)+1;
 fixation_per_trial      = fix_val;
 
@@ -599,9 +601,6 @@ switch keys.arrangement
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
         position_indexes        = cue_idx;
         hemifield_indexes       = (real([o.cue_pos]' - [o.fix_pos]')>0)+1;
-%         pop.PSTH_perpos_colors =   [1 0 0; 0 1 0];
-%         pop.PSTH_summary_colors=   [1 0 0; 1 1 0; 0 1 0; 0 1 1];
-%         pop.line_labels        =   {'err','suc'};
         
     case 'cue_position'
         con_for_figure          = suc_idx;
@@ -634,10 +633,6 @@ switch keys.arrangement
         con_for_trial_crit      = con_for_line;
         fig_title               = 'hand ';
         val_for_figure          = num2cell(hnd_values);
-%         color_idx=ismember(choice_color_combination,cho_values,'rows');
-%         pop.PSTH_perpos_colors     =   keys.hnd_choice_colors(color_idx,:);
-%         pop.PSTH_summary_colors    =   [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
-%         pop.line_labels            =   choice_labels(ismember(choice_color_combination,cho_values));
 %         
     case 'hands_inactivation'
         con_for_figure          = cho_idx;
@@ -658,10 +653,6 @@ switch keys.arrangement
         fig_title               = 'choice_instructed_comp ';
         val_for_figure          = num2cell(eff_values);
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
-%         color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
-%         pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
-%         pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
-%         pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
         
     case 'hands'
         con_for_figure          = cho_idx;
@@ -672,11 +663,6 @@ switch keys.arrangement
         sub_title               = 'movement vector ';
         val_for_figure          = num2cell(cho_values);
         con_for_column          = eff_idx;        
-        %[~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
-%         color_idx=ismember(hand_eff_color_combination(:,1),hnd_values) & ismember(hand_eff_color_combination(:,2),eff_values);
-%         pop.PSTH_perpos_colors     = keys.hnd_eff_colors(color_idx,:);
-%         pop.PSTH_summary_colors    = [keys.hnd_eff_colors_L(color_idx,:); keys.hnd_eff_colors_R(color_idx,:)] ;
-%         pop.line_labels            = hand_eff_labels(ismember(hand_eff_color_combination,hnd_eff_values,'rows'));
         %Precision=5;
         
     case 'fixation'
@@ -688,22 +674,11 @@ switch keys.arrangement
         val_for_pos_assignment  = fix_val(u_fix_idx_idx,:);
         position_indexes        = fix_idx;
         hemifield_indexes       = (real([o.fix_pos])'>0)+1;
-%         fixation_per_trial      = zeros(size(fix_val)); %% since we treat fixation as positions, there is no actual fixation needed any more!
-%         color_idx=ismember(choice_color_combination,cho_values,'rows');
-%         pop.PSTH_perpos_colors     = keys.colors.fix_offset;
-%         pop.PSTH_summary_colors    = [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
-%         pop.line_labels            = {''};
         
     case 'movement vectors'
         con_for_line            = fix_idx;
         con_for_trial_crit      = con_for_line;
         sub_title               = 'movement vector ';
-%        color_idx               = ismember(choice_color_combination,cho_values,'rows');
-%         n_unique_lines=numel(unique(con_for_line));
-%         color_factors=linspace(0.3,1,n_unique_lines);
-%         pop.PSTH_perpos_colors     =   keys.colors.fix_offset;
-%         pop.PSTH_summary_colors    =   [(keys.hnd_choice_colors_L(color_idx,:)'*color_factors)'; (keys.hnd_choice_colors_R(color_idx,:)'*color_factors)'] ;
-%         pop.line_labels            =   fix_labels;
         
     case 'target location by origin'
         con_for_line            = fix_idx;
@@ -713,12 +688,6 @@ switch keys.arrangement
         val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
         position_indexes        = tar_idx;
         hemifield_indexes       = (real([o.tar_pos]')>0)+1;
-%         color_idx=ismember(choice_color_combination,cho_values,'rows');
-%         n_unique_lines=numel(unique(con_for_line));
-%         color_factors=linspace(0.3,1,n_unique_lines);
-%         pop.PSTH_perpos_colors     = keys.colors.fix_offset;
-%         pop.PSTH_summary_colors    = [(keys.hnd_choice_colors_L(color_idx,:)'*color_factors)'; (keys.hnd_choice_colors_R(color_idx,:)'*color_factors)'] ;
-%         pop.line_labels            = fix_labels;
 end
 
 %% subplot positions
@@ -734,16 +703,14 @@ end
 %% Assigning each trial
 pop.trial=o;
 for t=1:numel(o)
-    %pop.trial(t).line           =con_for_line(t);
     pop.trial(t).figure         =con_for_figure(t);
     pop.trial(t).column         =con_for_column(t);
     pop.trial(t).row            =con_for_row(t);
-%     pop.trial(t).hand           =hands(t);
-%     pop.trial(t).choice         =choices(t);
     pop.trial(t).fixation       =fixation_per_trial(t,:);
     pop.trial(t).title_part     =sub_title;
     pop.trial(t).subplot_pos    =subplot_pos(position_indexes(t));
     pop.trial(t).pos_index      =position_indexes(t);
+    pop.trial(t).fix_index      =fixation_indexes(t);
     pop.trial(t).position       =val_for_pos_assignment(position_indexes(t),:);
     pop.trial(t).hemifield      =-1*(pop.trial(t).position(1)<0)+1*(pop.trial(t).position(1)>0);
 end
@@ -754,7 +721,10 @@ pop.hemifield_combinations = [con_for_figure con_for_trial_crit hemifield_indexe
 
 end
 
-function [s_c, displacement_types] = center_displacement_working(trial,Precision)
+function [s_c, displacement_types] = center_displacement_working(trial,keys)
+Prec_fix=keys.precision.fixation;
+Prec_pos=keys.precision.position;
+
 movement_direction  =NaN(size(trial'));
 fixation            =NaN(size(trial'));
 target              =NaN(size(trial'));
@@ -763,38 +733,38 @@ stmpos              =NaN(size(trial'));
 
 
 
-s_a=unique_positions([trial.fix_pos],Precision);
-s_b=unique_positions([trial.tar_pos] - [trial.fix_pos],Precision);
-s_c=unique_positions([trial.tar_pos],Precision);
-s_d=unique_positions([trial.cue_pos],Precision);
+s_a=unique_positions([trial.fix_pos],Prec_fix);
+s_b=unique_positions([trial.tar_pos] - [trial.fix_pos],Prec_pos);
+s_c=unique_positions([trial.tar_pos],Prec_fix);
+s_d=unique_positions([trial.cue_pos],Prec_pos);
 if isfield(trial,'stm_pos')
-    s_e=unique_positions([trial.stm_pos],Precision);
+    s_e=unique_positions([trial.stm_pos],Prec_pos);
 else
     s_e=s_d;
 end
 for t=1:numel(trial)
     for k=1:numel(s_a)
-        if abs(trial(t).fix_pos - s_a(k)) < Precision
+        if abs(trial(t).fix_pos - s_a(k)) < Prec_fix
             fixation(t)=s_a(k);
         end
     end
     for k=1:numel(s_b)
-        if abs(trial(t).tar_pos - trial(t).fix_pos - s_b(k)) < Precision
+        if abs(trial(t).tar_pos - trial(t).fix_pos - s_b(k)) < Prec_pos
             movement_direction(t)=k;
         end
     end
     for k=1:numel(s_c)
-        if abs(trial(t).tar_pos - s_c(k)) < Precision
+        if abs(trial(t).tar_pos - s_c(k)) < Prec_fix
             target(t)=s_c(k);
         end
     end
     for k=1:numel(s_d)
-        if abs(trial(t).cue_pos - s_d(k)) < Precision
+        if abs(trial(t).cue_pos - s_d(k)) < Prec_pos
             cuepos(t)=s_d(k);
         end
     end
     for k=1:numel(s_e)
-        if abs(trial(t).stm_pos - s_e(k)) < Precision
+        if abs(trial(t).stm_pos - s_e(k)) < Prec_pos
             stmpos(t)=s_e(k);
         end
     end
@@ -805,7 +775,7 @@ end
 [~,~,movement_direction]    =unique([real(movement_direction),imag(movement_direction)],'rows');
 [~,~,target_location]       =unique([real(target),imag(target)],'rows');
 [~,~,cue_location]          =unique([real(cuepos),imag(cuepos)],'rows');
-[~,~,stimulus_location]       =unique([real(stmpos),imag(stmpos)],'rows');
+[~,~,stimulus_location]     =unique([real(stmpos),imag(stmpos)],'rows');
 
 fix_y=imag(nanmean(fixation));
 fixation=fixation-1i*fix_y;

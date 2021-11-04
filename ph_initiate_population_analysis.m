@@ -116,6 +116,9 @@ for P=population_analysis_to_perform
         for fn=FN'
             if ~isempty(keys_in.(ana)(cc).(fn{:}))
                 keys.(AN).(fn{:})=keys_in.(ana)(cc).(fn{:});
+                if strcmp(fn{:},'condition_parameters')
+                keys.(fn{:})=keys_in.(ana)(cc).(fn{:});
+                end
             end
         end
         if isfield(keys_in.(ana)(cc),'tt') && isstruct(keys_in.(ana)(cc).tt)

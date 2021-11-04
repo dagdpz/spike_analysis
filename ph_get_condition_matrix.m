@@ -67,6 +67,7 @@ UC.reach_hand=UC.reach_hand;
 UC.stimulustype         =unique([trials.stimulustype]);
 UC.difficulty           =unique([trials.difficulty]);
 UC.success              =unique([trials.success]);
+UC.fix_index            =unique([whatisthis.trial.fix_index]);
 
 %CM_cell={};
 for c=1:numel(keys.condition_parameters)

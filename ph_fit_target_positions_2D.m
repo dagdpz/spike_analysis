@@ -1,5 +1,6 @@
 function Out=ph_fit_target_positions_2D(xin,yin,zin,fitsettings)
 
+disregard_baseline=fitsettings.baseline_subtracted;
 xout=fitsettings.xout;
 yout=fitsettings.yout;
 Xout=combvec(xout,yout)';
@@ -7,7 +8,6 @@ Z=double(zin(:));
 
 X=[xin(~isnan(Z)),yin(~isnan(Z))];
 Z=Z(~isnan(Z));
-disregard_baseline=1;
 
 %% temporary part to fit on per position averages instead of single trials
 [unique_positions, ~, pos_idx]=unique(X,'rows');

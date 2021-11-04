@@ -2,7 +2,7 @@ function keys=ph_general_settings(project,keys)
 %% condition_identifiers
 keys.labels.handsLR={'AH','LH','RH'};
 keys.labels.handsIC={'AH','IH','CH'};  %% AH!??
-keys.labels.perturbations={'','_PT'};  %% AH!??
+keys.labels.perturbations={'','_PT'};  
 keys.labels.choices={'in','ch'};
 keys.contra_ipsi_relative_to='target';
 
@@ -63,32 +63,12 @@ keys.project_versions       ={''};
 spike_analysis_location     =which('ph_initiation');
 keys.db_folder              =[spike_analysis_location(1:strfind(spike_analysis_location,['spike_analysis' filesep 'ph_initiation'])-1) 'Settings' filesep 'spike_analysis' filesep];
 
-keys.Flaffus.sorted_neurons_filename    ='Fla_sorted_neurons';
-keys.Linus.sorted_neurons_filename      ='Lin_sorted_neurons';
-keys.Curius.sorted_neurons_filename     ='Cur_sorted_neurons';
-keys.Tesla.sorted_neurons_filename      ='Tes_sorted_neurons';
-keys.Cornelius.sorted_neurons_filename  ='Cor_sorted_neurons';
-keys.Magnus.sorted_neurons_filename     ='Mag_sorted_neurons';
-keys.TDT_brain.sorted_neurons_filename  ='TDT_sorted_neurons';
-keys.Bacchus.sorted_neurons_filename    ='Bac_sorted_neurons';
-
-keys.Flaffus.sorted_neurons_sheetname    ='final_sorting';
-keys.Linus.sorted_neurons_sheetname      ='final_sorting';
-keys.Curius.sorted_neurons_sheetname     ='final_sorting';
-keys.Tesla.sorted_neurons_sheetname      ='final_sorting';
-keys.Cornelius.sorted_neurons_sheetname  ='final_sorting';
-keys.Magnus.sorted_neurons_sheetname     ='final_sorting';
-keys.TDT_brain.sorted_neurons_sheetname  ='final_sorting';
-keys.Bacchus.sorted_neurons_sheetname    ='final_sorting';
-
-keys.Flaffus.filelist_formatted         ={};
-keys.Linus.filelist_formatted           ={};
-keys.Curius.filelist_formatted          ={};
-keys.Tesla.filelist_formatted           ={};
-keys.Cornelius.filelist_formatted       ={};
-keys.Magnus.filelist_formatted          ={};
-keys.TDT_brain.filelist_formatted       ={};
-keys.Bacchus.filelist_formatted          ={};
+keys.All_monkeys={'Flaffus','Linus','Curius','Tesla','Cornelius','Magnus','TDT_brain','Bacchus'};
+for m=1:numel(keys.All_monkeys)
+keys.(keys.All_monkeys{m}).sorted_neurons_filename    =[keys.All_monkeys{m}(1:3) '_sorted_neurons'];
+keys.(keys.All_monkeys{m}).sorted_neurons_sheetname    ='final_sorting';
+keys.(keys.All_monkeys{m}).filelist_formatted         ={};    
+end
 
 keys.Flaffus.color    ='r';
 keys.Linus.color      =[0 0 255]/255;
@@ -112,7 +92,7 @@ keys.plot.waveforms                     =1;         % plot the waveform summary 
 keys.plot.polars_on_extra_figure        =0;         % recommended if there are too many conditions and the single cell heatmap plots are too small/crowded
 keys.plot.eye_hand_traces               =1;         % Incredible performance booster if turned off
 keys.plot.average_PSTH_line             =0;         % One PSTH line on top that represents the average of all others
-keys.plot.average_heat_maps             =0;
+%keys.plot.average_heat_maps             =0;
 keys.plot.export                        =1;         % save plots as pdfs, you typically want this
 keys.plot.events                        =1:100;     % select events that should be plotted (vertical lines) on all PSTH like plots
 keys.plot.population_PSTH_legends       =1;         % if population legends should be plotted or not
@@ -141,6 +121,7 @@ keys.width.PSTH_summary         =1;
 keys.condition_parameters={'reach_hand','choice','perturbation'};
 keys.labels.reach_hand={'NH','IH','CH'};
 keys.labels.hemifield={'IS','VS','CS'};
+keys.labels.fix_index={'IF','MF','CF'};
 keys.labels.preferred={'NP','PF'};
 keys.labels.choice={'IN','CH'};
 keys.labels.perturbation={'','PT'};
@@ -152,6 +133,26 @@ keys.colors.rhd_ver         =[0 0.8 0];
 keys.colors.rhd_hor         =[0 1 0];
 keys.colors.lhd_ver         =[0 0 0.8];
 keys.colors.lhd_hor         =[0 0 1];
+
+
+keys.colors.AV   =[0 0 0];
+
+
+keys.colors.IF   =[236 32 38];
+keys.colors.MF   =[16 159 218];
+keys.colors.CF   =[247 148 36];
+
+keys.colors.IF_CS   =[236 32 38];
+keys.colors.MF_CS   =[16 159 218];
+keys.colors.CF_CS   =[247 148 36];
+
+keys.colors.IF_VS   =[236 32 38]*2/3;
+keys.colors.MF_VS   =[16 159 218]*2/3;
+keys.colors.CF_VS   =[247 148 36]*2/3;
+
+keys.colors.IF_IS   =[236 32 38]*1/3;
+keys.colors.MF_IS   =[16 159 218]*1/3;
+keys.colors.CF_IS   =[247 148 36]*1/3;
 
 % cell count colors
 keys.colors.NO_AN   =[255 255 255];
@@ -365,11 +366,7 @@ keys.colors.EF_RE   =[0 255  0];
 keys.colors.EF_FG   =[0 0  255];
 
 %% overlapping tt and cc
-
-% keys.cc.instructed_choice           ={'in','ch'}; %to loop through them
 keys.colors.per_monkey          =[0 1 0; 1 0 0];
-keys.colors.fix_offset          =[236 32 38; 16 159 218; 247 148 36]/255;
-% keys.tt.instructed_choice           ='in';
 
 
 %% tuning table readout options (excluding particular subsets)

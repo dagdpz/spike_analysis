@@ -107,7 +107,7 @@ for u=1:numel(population)
         if strcmp(K.normalization,'none') || isempty(DN_epoch) %DN_epoch is empty? %% check if this works, for no multiplicative normalization
             norm_factor(:)= 1;
         end
-        if ~K.FR_subtract_baseline  || isempty(BL_epoch)
+        if (~K.FR_subtract_baseline  || isempty(BL_epoch)) && ~strcmp(K.normalization,'percent_change') % 20211102 percent_change has subtract baseline included basically
             baseline(:)=0;
         end
         %% not sure how (and why) to implement this
@@ -246,21 +246,29 @@ for u=1:numel(population)
                             condition(t,c).per_hemifield(f).window(w).unit(u).rea_lat=nanmean([pop.trial(ix).rea_lat]); %%??? this work?
                             condition(t,c).per_hemifield(f).window(w).unit(u).sac_sem=sterr([pop.trial(ix).sac_lat]); %%??? this work?
                             condition(t,c).per_hemifield(f).window(w).unit(u).rea_sem=sterr([pop.trial(ix).rea_lat]); %%??? this work?
-                            for x=1:size(UC.fixation,1)
-                                tr_fix=all(abs(bsxfun(@minus,vertcat(pop.trial.fixation),UC.fixation(x,:)))<4,2)'; %4 is precision --> add to keys?
-                                ix = tr_con & tr_hemi & tr_fix;
-                                if strcmp(keys.normalization_field,'RE')
-                                    [condition(t,c).per_hf_fixation(f,x).window(w).unit(u).average_spike_density]=...
-                                        ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
-                                else
-                                    [condition(t,c).per_hf_fixation(f,x).window(w).unit(u).average_spike_density]=...
-                                        ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
-                                end
-                                condition(t,c).per_hf_fixation(f,x).fixation=UC.fixation(x,:);
-                                condition(t,c).per_hf_fixation(f,x).effector=eff;
-                                condition(t,c).per_hf_fixation(f,x).position=[UC.hemifield(f) 0];
-                                condition(t,c).per_hf_fixation(f,x).sign.unit(u)=1;
+                            
+                            %% not sure if this makes much sense or if its even correct like this
+                            if any(ix) && ttest([per_epoch(ix,PF_epoch).FR], [per_epoch(ix,BL_epoch).FR])==1
+                                condition(t,c).per_hemifield(f).sign.unit(u)=sign(mean([per_epoch(ix,PF_epoch).FR]- [per_epoch(ix,BL_epoch).FR]));
+                            else
+                                condition(t,c).per_hemifield(f).sign.unit(u)=0;
                             end
+                            
+%                             for x=1:size(UC.fixation,1)
+%                                 tr_fix=all(abs(bsxfun(@minus,vertcat(pop.trial.fixation),UC.fixation(x,:)))<4,2)'; %4 is precision --> add to keys?
+%                                 ix = tr_con & tr_hemi & tr_fix;
+%                                 if strcmp(keys.normalization_field,'RE')
+%                                     [condition(t,c).per_hf_fixation(f,x).window(w).unit(u).average_spike_density]=...
+%                                         ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+%                                 else
+%                                     [condition(t,c).per_hf_fixation(f,x).window(w).unit(u).average_spike_density]=...
+%                                         ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+%                                 end
+%                                 condition(t,c).per_hf_fixation(f,x).fixation=UC.fixation(x,:);
+%                                 condition(t,c).per_hf_fixation(f,x).effector=eff;
+%                                 condition(t,c).per_hf_fixation(f,x).position=[UC.hemifield(f) 0];
+%                                 condition(t,c).per_hf_fixation(f,x).sign.unit(u)=1;
+%                             end
                             
                         case 'ON'
                             %% alternative per trial
@@ -322,23 +330,23 @@ for u=1:numel(population)
                         else
                             condition(t,c).per_position(p).sign.unit(u)=0;
                         end
-                        %% supposedly matches with target position precision...
-                        for x=1:size(UC.fixation,1)
-                            tr_fix=all(abs(bsxfun(@minus,vertcat(pop.trial.fixation),UC.fixation(x,:)))<4,2)';
-                            ix = tr_con & tr_pos & tr_fix;
-                            
-                            condition(t,c).per_position_fixation(p,x).window(w).unit(u).average_spike_density=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
-                            condition(t,c).per_position_fixation(p,x).position=UC.position(p,:);
-                            condition(t,c).per_position_fixation(p,x).fixation=UC.fixation(x,:);
-                            condition(t,c).per_position_fixation(p,x).effector=eff;
-                            condition(t,c).per_position_fixation(p,x).sign.unit(u)=0;
-                            % problem here if tr_con is empty (which it can be, because we are not requiring every condition to be valid for all units
-                            ix = tr_pos(tr_con) & tr_fix(tr_con);
-                            if any(ix) && ttest([per_epoch(ix,PF_epoch).FR], [per_epoch(ix,BL_epoch).FR])==1
-                                condition(t,c).per_position_fixation(p,x).sign.unit(u)=sign(mean([per_epoch(ix,PF_epoch).FR]- [per_epoch(ix,BL_epoch).FR]));
-                            end
-                        end
+%                         %% supposedly matches with target position precision...
+%                         for x=1:size(UC.fixation,1)
+%                             tr_fix=all(abs(bsxfun(@minus,vertcat(pop.trial.fixation),UC.fixation(x,:)))<4,2)';
+%                             ix = tr_con & tr_pos & tr_fix;
+%                             
+%                             condition(t,c).per_position_fixation(p,x).window(w).unit(u).average_spike_density=...
+%                                 ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+%                             condition(t,c).per_position_fixation(p,x).position=UC.position(p,:);
+%                             condition(t,c).per_position_fixation(p,x).fixation=UC.fixation(x,:);
+%                             condition(t,c).per_position_fixation(p,x).effector=eff;
+%                             condition(t,c).per_position_fixation(p,x).sign.unit(u)=0;
+%                             % problem here if tr_con is empty (which it can be, because we are not requiring every condition to be valid for all units
+%                             ix = tr_pos(tr_con) & tr_fix(tr_con);
+%                             if any(ix) && ttest([per_epoch(ix,PF_epoch).FR], [per_epoch(ix,BL_epoch).FR])==1
+%                                 condition(t,c).per_position_fixation(p,x).sign.unit(u)=sign(mean([per_epoch(ix,PF_epoch).FR]- [per_epoch(ix,BL_epoch).FR]));
+%                             end
+%                         end
                         ix = tr_con & tr_pos;
                         if p==unpref_idx
                             condition(t,c).per_preference(1).window(w).unit(u).average_spike_density=...
