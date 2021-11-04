@@ -162,10 +162,10 @@ for f=1:numel(fitfuns)
             
             %z=Z_mean-Out.gaussian1.z_fit_at_targets;
             if ~disregard_baseline
-                % baseline      rotation x0                 y0                    peak             sx                           sy       sigma x(ratio to sd_max_x)  ratio xy
-                LB=[min([z;0])  -inf        min(x)+dx          min(y)+dy            peakmin    sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
-                X0=[0           0        -Out.gaussian1.xmax -Out.gaussian1.ymax       peakstart         (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max        ];
-                UB=[max(z)      inf       max(x)-dx          max(y)-dy              peakmax     sd_max                       sd_max                           ];
+                % baseline      rotation x0                 y0                    peak       sx                           sy       sigma x(ratio to sd_max_x)  ratio xy
+                LB=[min([z;0])  -inf     min(x)+dx           min(y)+dy            peakmin    sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
+                X0=[0           0        -Out.gaussian1.xmax -Out.gaussian1.ymax  peakstart  (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max        ];
+                UB=[max(z)      inf       max(x)-dx          max(y)-dy            peakmax    sd_max                       sd_max                           ];
                 fitT=fittype(['ph_2D_fit_gaussian_2nd_RF( x, y, bl, phi, xmax, ymax, zmax, sx, sy, ' minratio ',' xmax1 ',' ymax1 ',' phi1 ',' sx1 ',' sy1 ' )'],'dependent',{'z'},'independent',{'x','y'},'coefficients',{'bl', 'phi', 'xmax', 'ymax', 'zmax', 'sx', 'sy'});
             else
                 %rotation x0                 y0                         peak             sx                           sy       sigma x(ratio to sd_max_x)  ratio xy
@@ -180,7 +180,7 @@ for f=1:numel(fitfuns)
     LB(same_bounds)=LB(same_bounds)-0.01;
     UB(same_bounds)=UB(same_bounds)+0.01;
     fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB,'Upper',UB,'Start',X0);
-    if sum(~isnan(z)) >= numel(X0)
+    if sum(~isnan(z)) >= numel(X0) %% > versus >=
         [fitobj, Goodness] =fit([x,y],z,fitT,fitopts);
     else
         [fitobj, Goodness] =fit([x,y],zeros(size(X0')),fitT,fitopts);

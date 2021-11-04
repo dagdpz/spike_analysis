@@ -201,30 +201,30 @@ for t=1:size(condition,1)
         for gt=1:numel(unique_group_values_tmp)
             unique_group_values=unique_group_values_tmp(gt);
             
-            %% PSTH per position plot
-            current=[condition(t,:).per_position]; current=current(:);
-            legend_labels=legend_labels_pos;
-            plot_title_part=['=' unique_group_values{1} ' PSTHs per position'];
-            units_valid=ones(size(complete_unit_list,1),1);
-            column_indexes=columns_pref;
-            plot_PSTH
-            
-            %% PSTH per position plot (by initial fixation - these here need to be fixed!)
-            if true
-                
-                current=[condition(t,:).per_position]; current=current(:);
-                plot_title_part=['=' unique_group_values{1} ' PSTHs per position ensu ' keys.PO.epoch_PF '-' keys.PO.epoch_BL];
-                units_valid=ones(size(complete_unit_list,1),1);
-                column_indexes=columns_pref;
-                plot_PSTH
-                
-%                 current=[condition(t,:).per_hemifield]; current=current(:);
-%                 plot_title_part=['=' unique_group_values{1} ' PSTHs ensu ' keys.PO.epoch_PF '-' keys.PO.epoch_BL];
+%             %% PSTH per position plot
+%             current=[condition(t,:).per_position]; current=current(:);
+%             legend_labels=legend_labels_pos;
+%             plot_title_part=['=' unique_group_values{1} ' PSTHs per position'];
+%             units_valid=ones(size(complete_unit_list,1),1);
+%             column_indexes=columns_pref;
+%             plot_PSTH
+%             
+%             %% PSTH per position plot (by initial fixation - these here need to be fixed!)
+%             if true
+%                 
+%                 current=[condition(t,:).per_position]; current=current(:);
+%                 plot_title_part=['=' unique_group_values{1} ' PSTHs per position ensu ' keys.PO.epoch_PF '-' keys.PO.epoch_BL];
 %                 units_valid=ones(size(complete_unit_list,1),1);
-%                 column_indexes=columns_hf;
+%                 column_indexes=columns_pref;
 %                 plot_PSTH
-                
-            end
+%                 
+% %                 current=[condition(t,:).per_hemifield]; current=current(:);
+% %                 plot_title_part=['=' unique_group_values{1} ' PSTHs ensu ' keys.PO.epoch_PF '-' keys.PO.epoch_BL];
+% %                 units_valid=ones(size(complete_unit_list,1),1);
+% %                 column_indexes=columns_hf;
+% %                 plot_PSTH
+%                 
+%             end
             
             unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values_tmp(1)),idx_unitID));
             group_units=find(all(unitidx,2))';

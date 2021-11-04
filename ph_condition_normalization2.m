@@ -1,5 +1,6 @@
 function [pop_out, condition, condition_per_trial, pref_valid]=ph_condition_normalization2(population,keys,UC,CM)
 %% assume arrangement was chosen already!
+%% position precision relevant for this part here as well!
 
 %% placeholders for non-used outputs
 switch keys.normalization_field
@@ -10,14 +11,8 @@ switch keys.normalization_field
 end
 K=keys.(keys.normalization_field);
 
-
-%% reduce all_trials by conditions_to_plot for population
-%% baseline is now per unit (and not per trial any more)
-%% type_effector_short?
-
 CP_out                      = [{'effector'},keys.condition_parameters];
 conditions_out              = combvec(UC.effector,CM')';
-
 
 %% define normalization matrix
 CM      =1;
@@ -41,7 +36,6 @@ switch K.normalization
     case {'by_type','none'} %this is standard
 end
 
-
 %% Convert to ipsi/contra, Baseline subtraction, normalization, re-ordering, and gaussian RFs
 pref_valid=false(numel(UC.type),numel(population));
 for u=1:numel(population)
@@ -54,8 +48,8 @@ for u=1:numel(population)
     pop_out(u)=pop;
     
     %% normalization factor and baseline (per trial!)
-    norm_factor=ones(size(pop.trial)); %% instead of uxn, make it txcH, same for baseline here?, could still be by trial (for plotting purposes only?)
-    baseline=zeros(size(pop.trial)); %% instead of uxn, make it txcH, same for baseline here?, could still be by trial (for plotting purposes only?)
+    norm_factor=ones(size(pop.trial));
+    baseline=zeros(size(pop.trial));
     
     for t=1:numel(UC.type)
         typ=UC.type(t);
@@ -95,7 +89,6 @@ for u=1:numel(population)
                 baseline(tr(:,n))   =nanmean(vertcat(per_epoch(:,BL_epoch).FR));
                 norm_factor(tr(:,n))=nanmean(vertcat(per_epoch(:,DN_epoch).FR));
             end
-            
         end
         
         %% per trial baseline/normalization
@@ -208,13 +201,11 @@ for u=1:numel(population)
             
             for par=1:numel(CP_out)
                 fn=CP_out{par};
-                trpar(par,:)=[pop.trial.(fn)]==conditions_out(c,par); %condition_matrix_wohf?
+                trpar(par,:)=[pop.trial.(fn)]==conditions_out(c,par); 
             end
             trpar(end+1,:)=trtyp;
             tr_con=all(trpar,1);
-            per_epoch=vertcat(pop.trial(tr_con).epoch); % take already normalized values???
-            
-            
+            per_epoch=vertcat(pop.trial(tr_con).epoch); % take already normalized values            
             for ep=1:size(per_epoch,2)
                 for p=1:size(UC.position,1)
                     tr_hemi=all(abs(bsxfun(@minus,vertcat(pop.trial.position),UC.position(p,:)))<1.5,2) & [pop.trial.choice]'==0; %% tr_pos?
@@ -254,30 +245,12 @@ for u=1:numel(population)
                                 condition(t,c).per_hemifield(f).sign.unit(u)=0;
                             end
                             
-%                             for x=1:size(UC.fixation,1)
-%                                 tr_fix=all(abs(bsxfun(@minus,vertcat(pop.trial.fixation),UC.fixation(x,:)))<4,2)'; %4 is precision --> add to keys?
-%                                 ix = tr_con & tr_hemi & tr_fix;
-%                                 if strcmp(keys.normalization_field,'RE')
-%                                     [condition(t,c).per_hf_fixation(f,x).window(w).unit(u).average_spike_density]=...
-%                                         ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
-%                                 else
-%                                     [condition(t,c).per_hf_fixation(f,x).window(w).unit(u).average_spike_density]=...
-%                                         ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
-%                                 end
-%                                 condition(t,c).per_hf_fixation(f,x).fixation=UC.fixation(x,:);
-%                                 condition(t,c).per_hf_fixation(f,x).effector=eff;
-%                                 condition(t,c).per_hf_fixation(f,x).position=[UC.hemifield(f) 0];
-%                                 condition(t,c).per_hf_fixation(f,x).sign.unit(u)=1;
-%                             end
-                            
                         case 'ON'
                             %% alternative per trial
                             trials_for_SD=find(tr_con & tr_hemi);
                             temp_window=keys.PSTH_WINDOWS(w,:);
                             keys.PSTH_WINDOWS{w,3}=keys.PSTH_WINDOWS{w,3}-keys.n_consecutive_bins_significant*keys.PSTH_binwidth;
                             keys.PSTH_WINDOWS{w,4}=keys.PSTH_WINDOWS{w,4}+keys.n_consecutive_bins_significant*keys.PSTH_binwidth;
-%                                 condition_per_trial(t,c).per_hemifield(f).unit(u).epoch_averages=...
-%                                     nanmean(reshape([per_epoch(tr_hemi(tr_con),:).FR],size(per_epoch(tr_hemi(tr_con),:))),1);
                                 condition_per_trial(t,c).per_hemifield(f).unit(u).epoch_FRs=...
                                     reshape([per_epoch(tr_hemi(tr_con),:).FR],size(per_epoch(tr_hemi(tr_con),:)))./repmat(norm_factor(trials_for_SD)',1,size(per_epoch,2));
                             for tr=1:numel(trials_for_SD)
@@ -291,6 +264,7 @@ for u=1:numel(population)
                                 condition_per_trial(t,c).per_hemifield(f).unit(u).epoch_averages=NaN(1,size(keys.EPOCHS,1));
                             end
                             keys.PSTH_WINDOWS(w,:)=temp_window;
+                            
                         case 'RT'
                             trials_for_SD=find(tr_con & tr_hemi);
                                 condition_per_trial(t,c).per_hemifield(f).unit(u).epoch_FRs=...
@@ -330,23 +304,6 @@ for u=1:numel(population)
                         else
                             condition(t,c).per_position(p).sign.unit(u)=0;
                         end
-%                         %% supposedly matches with target position precision...
-%                         for x=1:size(UC.fixation,1)
-%                             tr_fix=all(abs(bsxfun(@minus,vertcat(pop.trial.fixation),UC.fixation(x,:)))<4,2)';
-%                             ix = tr_con & tr_pos & tr_fix;
-%                             
-%                             condition(t,c).per_position_fixation(p,x).window(w).unit(u).average_spike_density=...
-%                                 ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
-%                             condition(t,c).per_position_fixation(p,x).position=UC.position(p,:);
-%                             condition(t,c).per_position_fixation(p,x).fixation=UC.fixation(x,:);
-%                             condition(t,c).per_position_fixation(p,x).effector=eff;
-%                             condition(t,c).per_position_fixation(p,x).sign.unit(u)=0;
-%                             % problem here if tr_con is empty (which it can be, because we are not requiring every condition to be valid for all units
-%                             ix = tr_pos(tr_con) & tr_fix(tr_con);
-%                             if any(ix) && ttest([per_epoch(ix,PF_epoch).FR], [per_epoch(ix,BL_epoch).FR])==1
-%                                 condition(t,c).per_position_fixation(p,x).sign.unit(u)=sign(mean([per_epoch(ix,PF_epoch).FR]- [per_epoch(ix,BL_epoch).FR]));
-%                             end
-%                         end
                         ix = tr_con & tr_pos;
                         if p==unpref_idx
                             condition(t,c).per_preference(1).window(w).unit(u).average_spike_density=...
@@ -374,7 +331,6 @@ for u=1:numel(population)
             
             %%double because single in Linus/Curius Pulvinar gaze ?
             FR_tmp=struct('FR',num2cell(zin_per_pos),'x',num2cell(UC.position(:,1)),'y',num2cell(UC.position(:,2)));
-            
             condition(t,c).fitting.unit(u).positions =FR_tmp;
             
             %% gaussian response fields (needs cleanup)
@@ -384,6 +340,7 @@ for u=1:numel(population)
             
             fitsettings=K.fitsettings;
             RF_tmp=ph_fit_target_positions_2D(RF_positions(:,1),RF_positions(:,2),zin,fitsettings);
+            %RF_tmp=fit_multiples(RF_positions(:,1),RF_positions(:,2),zin,fitsettings);
             condition(t,c).fitting.unit(u).parameters=RF_tmp;
             
         end
