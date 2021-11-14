@@ -229,6 +229,7 @@ for t=1:n_trials
         trial(t).channel(c).site_ID              =from_excel_per_channel(c).site{1} ;        
     end
     
+    
     %% SPIKES
     for c=1:n_chans_u,
         for u=1:n_units

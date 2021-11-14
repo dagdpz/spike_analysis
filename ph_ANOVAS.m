@@ -6,6 +6,7 @@ for unit=1:numel(population)
     types           =[population(unit).trial.type];
     effectors       =[population(unit).trial.effector];
     type_effectors  =combvec(unique(types),unique(effectors))';
+
     control    =ismember([population(unit).trial.perturbation],keys.cal.perturbation_groups{1});
     
     %% accepted AND completed!!
@@ -130,8 +131,8 @@ idx_fieldnames=fieldnames(idx)';
 %% Independently for Instructed and Choice !!
 for ch=1:numel(INCHnamepart)
     %% this part should go NOT? outside the loop! % perturbation here is defined as always the lowest accessible for control...;
-    tr_ch=idx.(INCHnamepart{ch}) & ismember(epochs,epoch_multicomp) & idx.PT==0;
-    tr_main=idx.(INCHnamepart{ch}) & ismember(epochs,main_multicomp) & idx.PT==0; %& ismember(epochs,epochs_for_multicomparison);
+    tr_ch=idx.(INCHnamepart{ch}) & ismember(epochs,epoch_multicomp) & (idx.PT==0) ; 
+    tr_main=idx.(INCHnamepart{ch}) & ismember(epochs,main_multicomp) & (idx.PT==0); %& ismember(epochs,epochs_for_multicomparison);
     for fn=idx_fieldnames
         idx.(['tr_' fn{:}])=      idx.(fn{:}) & repmat(tr_ch,1,size(idx.(fn{:}),2)) ;
     end
@@ -264,18 +265,18 @@ for ch=1:numel(INCHnamepart)
         idx1= idx.tr_Diff0; 
         idx2= idx.tr_Diff1;
 
-          %t-test
+        %t-test
         for sideindex=1:2 %left * right
-        for s=multicomp_epochs(:)'
-            idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
-            h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
-            DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
-            labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-            anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' ])=label{labelindex};
-            anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' '_DF'])=DF;
-            anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            for s=multicomp_epochs(:)'
+                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
+                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));disp
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            end
         end
-             end
     %
     
     %% space x hand anovas

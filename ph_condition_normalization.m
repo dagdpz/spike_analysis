@@ -39,9 +39,14 @@ per_trial.types       =[all_trialz.type];
 per_trial.effectors   =[all_trialz.effector];
 per_trial.hands       =[all_trialz.reach_hand];
 per_trial.choice      =[all_trialz.choice];
+
+            disp([ 'ph_condition_normalization - group checkup', num2str([all_trialz.perturbation])])
 per_trial.perturbation=[all_trialz.perturbation];
 per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
 per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
+
+            disp([ 'ph_condition_normalization', num2str(per_trial.perturbation)])
+
 
 u_hemifields    = unique(per_trial.hemifield);
 u_types         = unique(per_trial.types);

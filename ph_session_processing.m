@@ -150,17 +150,17 @@ for current_date = sessions(:)'
         end
         
         if ~isempty(pop_resorted)
-            pop_resorted=ph_epochs(pop_resorted,keys);
-            [pop_resorted.monkey]=deal(keys.monkey);
-            keys.tuning_per_unit_table=ph_ANOVAS(pop_resorted,keys);
+            pop_resorted                =ph_epochs(pop_resorted,keys);
+            [pop_resorted.monkey]       =deal(keys.monkey);
+            keys.tuning_per_unit_table  =ph_ANOVAS(pop_resorted,keys);
             
             %% plotting single cells per session
             if keys.plot.single_cells && ~isempty(pop_resorted)
                 ph_plot_unit_per_condition(pop_resorted,keys);
             end
-            
+
             %% Save population mat file per session and output
-            population=ph_reduce_population(pop_resorted);
+            population                  =ph_reduce_population(pop_resorted);
             save([keys.population_foldername filesep keys.population_filename '_' current_date{1} '.mat'],'population');
         end
         

@@ -111,8 +111,6 @@ end
 [hnd_eff_values,~,hef_idx]  =unique([hands effectors],'rows');
 [cho_ptb_values,~,chp_idx]  =unique([choices perturbations],'rows');
 
-
-
 [Styp_values,~,Styp_idx]      =unique(StimulusType');
 
 

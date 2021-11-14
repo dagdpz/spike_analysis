@@ -109,6 +109,7 @@ per_trial.hands       =[all_trialz.reach_hand];
 per_trial.choice      =[all_trialz.choice];
 per_trial.perturbation=[all_trialz.perturbation];
 per_trial.hemifield   =[whatisthis.trial.hemifield];
+
 per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
 per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
 
