@@ -260,8 +260,8 @@ for ch=1:numel(INCHnamepart)
         %%  Difficulty per space
         multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); %keys.anova_varnames{k}
         multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
-        label={'1T','-','1D'}; %higher FR for T , higher FR for D
-  
+        label={'Ta','-','Ea'}; %higher FR for T , higher FR for D
+        idx1 = [];  idx2 = [];
         idx1= idx.tr_Diff0; 
         idx2= idx.tr_Diff1;
 
@@ -270,14 +270,85 @@ for ch=1:numel(INCHnamepart)
             for s=multicomp_epochs(:)'
                 idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
                 h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
-                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));disp
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
                 labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' ])=label{labelindex};
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' '_DF'])=DF;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Easy' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Easy' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Easy' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
             end
         end
     %
+    
+            %%  Difficulty per space
+        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); %keys.anova_varnames{k}
+        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
+        label={'Ta','-','Di'}; %higher FR for T , higher FR for D
+        idx1 = [];  idx2 = [];
+  
+        idx1= idx.tr_Diff0; 
+        idx2= idx.tr_Diff2;
+    
+            %t-test
+        for sideindex=1:2 %left * right
+            for s=multicomp_epochs(:)'
+                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
+                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Diff' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Diff' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Diff' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            end
+        end
+    %% Spatial Competition
+    % compare sgl tar vs double same tar (HF2)
+    % sgl tar vs double same tar (HF1)
+    
+       multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); %keys.anova_varnames{k}
+        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
+        label={'ST','-','DT'}; %higher FR for T , higher FR for D
+        idx1 = [];  idx2 = [];
+  
+       
+        idx1= idx.tr_nonDistr1; %sgl stimuli
+        idx2= idx.tr_StimIn2HF0 & idx.tr_nonDistr2; % double targets
+    
+    
+            %t-test
+        for sideindex=1:2 %left * right
+            for s=multicomp_epochs(:)'
+                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
+                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            end
+        end
+%%%    
+      multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); %keys.anova_varnames{k}
+        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
+        label={'ST','-','DT'}; %higher FR for single T , higher FR for double target
+        idx1 = [];  idx2 = [];
+  
+       
+        idx1= idx.tr_nonDistr1; %sgl stimuli
+        idx2= idx.tr_StimIn2HF1 & idx.tr_nonDistr2; % double targets
+    
+    
+            %t-test
+        for sideindex=1:2 %left * right
+            for s=multicomp_epochs(:)'
+                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
+                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_1HFTar' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_1HFTar' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_1HFTar' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            end
+        end
     
     %% space x hand anovas
     if ismember('spaceLR',keys.anova_varnames) && ismember('hands',keys.anova_varnames)

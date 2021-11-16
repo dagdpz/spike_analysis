@@ -16,8 +16,17 @@ function [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o,keys)
             idx.Diff0 =        repmat([o.trial.difficulty]'==0,n_epochs,1);
             idx.Diff1 =        repmat([o.trial.difficulty]'==1,n_epochs,1);% easy
             idx.Diff2 =        repmat([o.trial.difficulty]'==2,n_epochs,1); % difficult
-
             
+            idx.StimIn2HF0 =        repmat([o.trial.stimuli_in_2hemifields]'==0,n_epochs,1);
+            idx.StimIn2HF1 =        repmat([o.trial.stimuli_in_2hemifields]'==1,n_epochs,1);
+            
+            idx.nonDistr1 =        repmat([o.trial.n_nondistractors]'==1,n_epochs,1); % 1 target
+            idx.nonDistr2 =        repmat([o.trial.n_nondistractors]'==2,n_epochs,1); % 2 targets
+
+            idx.Distr1 =        repmat([o.trial.n_distractors]'==1,n_epochs,1); % fixation
+            idx.Distr2 =        repmat([o.trial.n_distractors]'==2,n_epochs,1); % one distractor
+            idx.Distr3 =        repmat([o.trial.n_distractors]'==2,n_epochs,1); % 2 distractor
+           
             idx.LS =        repmat(trial_pos(:,1)<0,n_epochs,1); %% the limit here was set to 1!!???
             idx.RS =        repmat(trial_pos(:,1)>0,n_epochs,1);
             idx.NH =        repmat([o.trial.hand]'==0,n_epochs,1);

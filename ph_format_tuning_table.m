@@ -154,7 +154,7 @@ factors_per_hand={'epoch','epoch_ES','epoch_IX','position','position_PV','fixati
 general_factors={'epoch_main','spaceLR_main','hands_main','ExS','ExH','SxH','ExSxH'}; %factor for ANOVA: epoch*hand*space
 factors={'epoch','spaceLR','spaceLR_ES','spaceLR_IX','hands','hands_ES','hands_IX','SxH','SxH_ES','SxH_IX'}; %position independently for both hands somehow
 general_factors_per_hand_space={'PT_main','ExP','epoch_main'}; %position independently for both hands somehow
-factors_per_space={'Difficulty'};
+factors_per_space={'Difficulty_Easy', 'Difficulty_Diff', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
 
 
 idx_subregion   =DAG_find_column_index(tuning_per_unit_table,'Subregion');
