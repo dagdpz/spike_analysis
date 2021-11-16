@@ -592,8 +592,7 @@ switch keys.arrangement
         
         
     case 'success_in_cue'
-        con_for_line            = suc_idx;
-        con_for_trial_crit      = con_for_line;
+        con_for_trial_crit      = suc_idx;
         fig_title               = '';
         val_for_figure          = {shp_values};
         sub_title               = 'cue position';
@@ -604,8 +603,7 @@ switch keys.arrangement
         
     case 'cue_position'
         con_for_figure          = suc_idx;
-        con_for_line            = shp_idx;
-        con_for_trial_crit      = con_for_line;
+        con_for_trial_crit      = shp_idx;
         fig_title               = 'success ';
         sub_title               = 'cue position';
         val_for_figure          = num2cell(suc_values);
@@ -613,24 +611,15 @@ switch keys.arrangement
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
         position_indexes        = cue_idx;
         hemifield_indexes       = (real([o.cue_pos]' - [o.fix_pos]')>0)+1;
-%         pop.PSTH_perpos_colors =   jet(numel(shp_values));
-%         pop.PSTH_summary_colors=   [autumn(numel(shp_values));winter(numel(shp_values))] ;
-%         pop.line_labels        =   cue_shape_labels;
         
     case 'hand_choices'
-        con_for_line            = hch_idx;
-        con_for_trial_crit      = con_for_line;
+        con_for_trial_crit      = hch_idx;
         fig_title               = '';
         val_for_figure          = {hnd_cho_values};
-%         color_idx=ismember(hand_choice_color_combination(:,1),hnd_values) & ismember(hand_choice_color_combination(:,2),cho_values);
-%         pop.PSTH_perpos_colors     =   keys.hnd_choice_colors(ismember(hand_choice_color_combination,hnd_cho_values,'rows'),:);
-%         pop.PSTH_summary_colors    =   [keys.hnd_choice_colors_L(color_idx,:); keys.hnd_choice_colors_R(color_idx,:)] ;
-%         pop.line_labels            =   hand_choice_labels(ismember(hand_choice_color_combination,hnd_cho_values,'rows'));
         
     case 'options'
         con_for_figure          = hnd_idx;
-        con_for_line            = cho_idx;
-        con_for_trial_crit      = con_for_line;
+        con_for_trial_crit      = cho_idx;
         fig_title               = 'hand ';
         val_for_figure          = num2cell(hnd_values);
 %         
@@ -648,8 +637,7 @@ switch keys.arrangement
         
     case 'hands_inactivation_in_ch'
         con_for_figure          = eff_idx;
-        con_for_line            = chp_idx;
-        con_for_trial_crit      = con_for_line;
+        con_for_trial_crit      = chp_idx;
         fig_title               = 'choice_instructed_comp ';
         val_for_figure          = num2cell(eff_values);
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
@@ -657,8 +645,7 @@ switch keys.arrangement
     case 'hands'
         con_for_figure          = cho_idx;
         con_for_row             = ones(size(con_for_figure));
-        con_for_line            = hef_idx;
-        con_for_trial_crit      = con_for_line;
+        con_for_trial_crit      = hef_idx;
         fig_title               = 'choice ';
         sub_title               = 'movement vector ';
         val_for_figure          = num2cell(cho_values);
@@ -667,8 +654,7 @@ switch keys.arrangement
         
     case 'fixation'
         con_for_row             = eff_idx;
-        con_for_line            = non_idx;
-        con_for_trial_crit      = con_for_line;
+        con_for_trial_crit      = non_idx;
         sub_title               = 'fixation at ';
         val_for_sub_assignment  = fix_val(u_fix_idx_idx,:);
         val_for_pos_assignment  = fix_val(u_fix_idx_idx,:);
@@ -676,13 +662,11 @@ switch keys.arrangement
         hemifield_indexes       = (real([o.fix_pos])'>0)+1;
         
     case 'movement vectors'
-        con_for_line            = fix_idx;
-        con_for_trial_crit      = con_for_line;
+        con_for_trial_crit      = fix_idx;
         sub_title               = 'movement vector ';
         
     case 'target location by origin'
-        con_for_line            = fix_idx;
-        con_for_trial_crit      = con_for_line;
+        con_for_trial_crit      = fix_idx;
         sub_title               = 'target position ';
         val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
         val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
@@ -730,8 +714,6 @@ fixation            =NaN(size(trial'));
 target              =NaN(size(trial'));
 cuepos              =NaN(size(trial'));
 stmpos              =NaN(size(trial'));
-
-
 
 s_a=unique_positions([trial.fix_pos],Prec_fix);
 s_b=unique_positions([trial.tar_pos] - [trial.fix_pos],Prec_pos);

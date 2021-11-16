@@ -104,7 +104,7 @@ end
 
 %% normalization
 keys.normalization_field='PO';
-[~, condition,~,pref_valid]=ph_condition_normalization2(population,keys,UC,CM);
+[~, condition,~,pref_valid]=ph_condition_normalization(population,keys,UC,CM);
 
 %% condition comparison (kinda there to be used, but not used currently ???)
 comparisons_per_effector(1).reach_hand{1}=0;

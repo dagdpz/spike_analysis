@@ -33,7 +33,7 @@ for w=1:size(keys.PSTH_WINDOWS,1)
     state_shift     =state_seperator-t_before_state;
     
     %% background
-    [state_names,absolute_state_onsets,relative_state_onset,relative_epochs,epoch_names,states]=ph_state_onsets_2(trial,trial_onsets,sta,keys);
+    [state_names,absolute_state_onsets,relative_state_onset,relative_epochs,epoch_names,states]=ph_state_onsets(trial,trial_onsets,sta,keys);
     %[state_names,absolute_state_onsets,relative_state_onset,relative_epochs,epoch_names,states]=ph_state_onsets(trial,sta,keys);
     
     states_in_window=relative_state_onset>=t_before_state & relative_state_onset<=t_after_state;

@@ -156,7 +156,7 @@ for current_date = sessions(:)'
             
             %% plotting single cells per session
             if keys.plot.single_cells && ~isempty(pop_resorted)
-                ph_plot_unit_per_condition2(pop_resorted,keys);
+                ph_plot_unit_per_condition(pop_resorted,keys);
             end
             
             %% Save population mat file per session and output

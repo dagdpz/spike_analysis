@@ -8,7 +8,7 @@ for unit=1:numel(population)
             %o=ph_arrange_positions_and_plots(keys,population(unit).trial(tr_considered)); % arrangement  
             [UC, CM]=ph_get_condition_matrix(population(unit).trial,keys);          
             keys.normalization_field='AN';
-            o=ph_condition_normalization2(population(unit),keys,UC,CM); %condition wise normalization (also reduces conditions!???)
+            o=ph_condition_normalization(population(unit),keys,UC,CM); %condition wise normalization (also reduces conditions!???)
 
             for type=UC.type
                 %% check carefully multicomp epochs !!

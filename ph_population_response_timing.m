@@ -10,18 +10,12 @@ keys.PSTH_binwidth=keys.ON.PSTH_binwidth;
 keys.gaussian_kernel=keys.ON.gaussian_kernel;
 keys.kernel_type                        ='gaussian'; %'box'; % we take box kernel here!!
 
-% cols=keys.colors;
-% keys.line_colors=[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;
-%     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;
-
 %% tuning table preparation and grouping
-
 keys.normalization_field='ON';
 [tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
 [tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
 idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.ON.group_parameter);
 idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
-%idx_RF_frame=DAG_find_column_index(tuning_per_unit_table,keys.ON.RF_frame_parameter);
 group_values=tuning_per_unit_table(:,idx_group_parameter);
 group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
 cell_in_any_group=[false; ~ismember(group_values(2:end),keys.ON.group_excluded)];
@@ -34,7 +28,6 @@ tuning_per_unit_table=tuning_per_unit_table(cell_in_any_group,:);
 group_values=group_values(cell_in_any_group);
 complete_unit_list={population.unit_ID}';
 population=population(ismember(complete_unit_list,tuning_per_unit_table(:,idx_unitID)));
-
 
 all_trialz=[population.trial];
 condition_parameters  ={'reach_hand','choice','perturbation'};
@@ -60,8 +53,8 @@ tuning_per_unit_table=tuning_per_unit_table(unit_valid,:);
 %[~, condition2, condition]=ph_condition_normalization(population,keys);
 
 %% Convert to ipsi/contra, Baseline subtraction, normalization, re-ordering, and gaussian RFs
-%[~, condition2, condition]=ph_condition_normalization2(population,keys,UC,CM);
-[~, ~, condition]=ph_condition_normalization2(population,keys,UC,CM);
+%[~, condition2, condition]=ph_condition_normalization(population,keys,UC,CM);
+[~, ~, condition]=ph_condition_normalization(population,keys,UC,CM);
 
 %condition_matrix            = combvec(CM',UC.hemifield)';
 conditions_out              = combvec(UC.effector,CM')';
@@ -245,7 +238,6 @@ for t=1:numel(sigbins)
             hold on
             col=comparisons(comp).colors;
             unit_order=current(n).comparison(comp).unit_order;
-            %N_total=numel(unit_order); % for getting fraction
             state_shift=0;
             for w=1:size(keys.PSTH_WINDOWS,1)
                 t_before_state=keys.PSTH_WINDOWS{w,3};
@@ -418,8 +410,6 @@ function h=do_stats(Amat,Bmat,keys,paired)
 
 if keys.ON.permutation_tests
     confidence_criterion=0.95;
-    
-    
     Dav=abs(nanmean(Amat)-nanmean(Bmat));
     P_all=[Amat;Bmat];
     
