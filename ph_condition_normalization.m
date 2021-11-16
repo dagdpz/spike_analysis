@@ -239,6 +239,7 @@ for u=1:numel(population)
                             condition(t,c).per_hemifield(f).window(w).unit(u).rea_sem=sterr([pop.trial(ix).rea_lat]); %%??? this work?
                             
                             %% not sure if this makes much sense or if its even correct like this
+                            ix = tr_hemi(tr_con);
                             if any(ix) && ttest([per_epoch(ix,PF_epoch).FR], [per_epoch(ix,BL_epoch).FR])==1
                                 condition(t,c).per_hemifield(f).sign.unit(u)=sign(mean([per_epoch(ix,PF_epoch).FR]- [per_epoch(ix,BL_epoch).FR]));
                             else
