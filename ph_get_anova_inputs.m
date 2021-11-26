@@ -39,8 +39,6 @@ function [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o,keys)
             idx.SS(isnan(idx.SS))=0;
             
             temp_perturbation=repmat([o.trial.perturbation]',n_epochs,1); %% inactivation f.e.
-                        disp([ 'ph_get_anova_inputs - group check up', num2str(temp_perturbation')])
-
             idx.PT =        -1*ones(size(temp_perturbation));
             idx.PT(isnan(temp_perturbation)) =0;
             idx.PT(ismember(temp_perturbation,keys.cal.perturbation_groups{1})) =0;

@@ -204,10 +204,11 @@ for t=1:n_trials
     shift_in_seconds=1;
     stream_fieldnames=fieldnames(tr_in);
     stream_fieldnames=stream_fieldnames(~ismember(stream_fieldnames,{'spike_arrival_times','spike_waveforms','streams_tStart'}));
-    stream_fieldnames=stream_fieldnames(~cellfun(@(x) any(strfind(x,'_SR')),stream_fieldnames))';
+    stream_fieldnames=stream_fieldnames(~cellfun(@(x) any(strfind(x,'_SR')) || any(strfind(x,'_t0_from_rec_start') ),stream_fieldnames))';
     for FN=stream_fieldnames
         trial(t).(FN{:})=tr_in(t).(FN{:});
         trial(t).([FN{:} '_SR'])=tr_in(t).([FN{:} '_SR']);
+        trial(t).([FN{:} '_t0_from_rec_start'])=tr_in(t).([FN{:} '_t0_from_rec_start']);
         shift_n_samples=round(shift_in_seconds*trial(t).([FN{:} '_SR']));
         to_next_trial(t).(FN{:})=trial(t).(FN{:})(:,end-shift_n_samples:end);
         trial(t).(FN{:})(:,end-shift_n_samples:end)=[]; % cut off end of current trial (delta t = shift_in_seconds)            
