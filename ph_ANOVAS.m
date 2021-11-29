@@ -243,7 +243,7 @@ for ch=1:numel(INCHnamepart)
         %%  Difficulty per space
         multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
         multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
-        label={'Ta','-','Ea'}; %higher FR for T , higher FR for D
+        label={'Ta','-','eD'}; %higher FR for T , higher FR for D
         idx1= idx.tr_Diff0; 
         idx2= idx.tr_Diff1;
 
@@ -263,7 +263,7 @@ for ch=1:numel(INCHnamepart)
         %%  Difficulty per space
         multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
         multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
-        label={'Ta','-','Di'}; %higher FR for T , higher FR for D
+        label={'Ta','-','dD'}; %higher FR for T , higher FR for D
         idx1= idx.tr_Diff0; 
         idx2= idx.tr_Diff2;
     
@@ -286,7 +286,7 @@ for ch=1:numel(INCHnamepart)
         
         multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); %keys.anova_varnames{k}
         multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
-        label={'ST','-','DT'}; %higher FR for T , higher FR for D
+        label={'ST','-','2T'}; %higher FR for ST , higher FR for DT
         idx1= idx.tr_nonDistr1; %sgl stimuli
         idx2= idx.tr_StimIn2HF0 & idx.tr_nonDistr2; % double targets
                 
@@ -305,7 +305,7 @@ for ch=1:numel(INCHnamepart)
         %%%
         multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); %keys.anova_varnames{k}
         multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
-        label={'ST','-','DT'}; %higher FR for single T , higher FR for double target
+        label={'ST','-','1T'}; %higher FR for single T , higher FR for double target
         idx1= idx.tr_nonDistr1; %sgl stimuli
         idx2= idx.tr_StimIn2HF1 & idx.tr_nonDistr2; % double targets
         
