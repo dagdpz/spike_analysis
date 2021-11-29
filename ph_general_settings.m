@@ -339,15 +339,27 @@ keys.colors.SS_D2_SU_VS=temp_colors_V(16,:);
 keys.colors.TT_D2_SU_VS=temp_colors_V(17,:);
 keys.colors.TD_D2_SU_VS=temp_colors_V(18,:);
 
-keys.colors.SS_TA_SU_CS=temp_colors_C(10,:);
-keys.colors.TT_TA_SU_CS=temp_colors_C(11,:);
-keys.colors.TD_TA_SU_CS=temp_colors_C(12,:);
-keys.colors.SS_D1_SU_CS=temp_colors_C(13,:);
-keys.colors.TT_D1_SU_CS=temp_colors_C(14,:);
-keys.colors.TD_D1_SU_CS=temp_colors_C(15,:);
-keys.colors.SS_D2_SU_CS=temp_colors_C(16,:);
-keys.colors.TT_D2_SU_CS=temp_colors_C(17,:);
-keys.colors.TD_D2_SU_CS=temp_colors_C(18,:);
+col_left      = autumn(6);
+
+keys.colors.SS_TA_SU_CS= col_left(1,:); 
+keys.colors.TT_TA_SU_CS= col_left(1,:); 
+keys.colors.TD_TA_SU_CS= col_left(1,:); 
+keys.colors.SS_D1_SU_CS=col_left(6,:);
+keys.colors.TT_D1_SU_CS=col_left(6,:);
+keys.colors.TD_D1_SU_CS=col_left(6,:);
+keys.colors.SS_D2_SU_CS= col_left(3,:);
+keys.colors.TT_D2_SU_CS=col_left(3,:);
+keys.colors.TD_D2_SU_CS=col_left(3,:);
+
+% keys.colors.SS_TA_SU_CS=temp_colors_C(10,:);
+% keys.colors.TT_TA_SU_CS=temp_colors_C(11,:);
+% keys.colors.TD_TA_SU_CS=temp_colors_C(12,:);
+% keys.colors.SS_D1_SU_CS=temp_colors_C(13,:);
+% keys.colors.TT_D1_SU_CS=temp_colors_C(14,:);
+% keys.colors.TD_D1_SU_CS=temp_colors_C(15,:);
+% keys.colors.SS_D2_SU_CS=temp_colors_C(16,:);
+% keys.colors.TT_D2_SU_CS=temp_colors_C(17,:);
+% keys.colors.TD_D2_SU_CS=temp_colors_C(18,:);
 
 color_fieldnames=fieldnames(keys.colors);
 for fn=1:numel(color_fieldnames)
