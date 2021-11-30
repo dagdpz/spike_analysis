@@ -16,9 +16,9 @@ function [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o,keys)
             idx.StimIn2HF0 =        repmat([o.trial.stimuli_in_2hemifields]'==0,n_epochs,1);
             idx.StimIn2HF1 =        repmat([o.trial.stimuli_in_2hemifields]'==1,n_epochs,1);
             
-            idx.nonDistr0 =        repmat([o.trial.n_nondistractors]'==0,n_epochs,1); % 0 target
-            idx.nonDistr1 =        repmat([o.trial.n_nondistractors]'==1,n_epochs,1); % 1 targets
-            idx.nonDistr2 =        repmat([o.trial.n_nondistractors]'==2,n_epochs,1); % 2 targets
+            idx.nonDistr1 =        repmat([o.trial.n_nondistractors]'==0,n_epochs,1); % 1 target
+            idx.nonDistr2 =        repmat([o.trial.n_nondistractors]'==1,n_epochs,1); % 2 targets
+                        idx.nonDistr2 =        repmat([o.trial.n_nondistractors]'==1,n_epochs,1); % 2 targets
 
 
             idx.Distr1 =        repmat([o.trial.n_distractors]'==1,n_epochs,1); % fixation
