@@ -288,27 +288,8 @@ for ch=1:numel(INCHnamepart)
         multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
         label={'ST','-','1T'}; %higher FR for T , higher FR for D
         idx1= idx.tr_nonDistr1; %sgl stimuli
-        idx2= idx.tr_StimIn2HF0 & idx.tr_nonDistr2; % double targets
+        idx2= idx.tr_StimIn2HF0 & idx.tr_nonDistr2; % double targets 1HF
                 
-        %t-test
-        for sideindex=1:2 %left * right
-            for s=multicomp_epochs(:)'
-                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
-                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
-                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
-                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' ])=label{labelindex};
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' '_DF'])=DF;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
-            end
-        end
-        %%%
-        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); %keys.anova_varnames{k}
-        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
-        label={'ST','-','1T'}; %higher FR for single T , higher FR for double target
-        idx1= idx.tr_nonDistr1; %sgl stimuli
-        idx2= idx.tr_StimIn2HF1 & idx.tr_nonDistr2; % double targets
-        
         %t-test
         for sideindex=1:2 %left * right
             for s=multicomp_epochs(:)'
@@ -319,6 +300,25 @@ for ch=1:numel(INCHnamepart)
                 anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_1HFTar' ])=label{labelindex};
                 anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_1HFTar' '_DF'])=DF;
                 anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_1HFTar' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            end
+        end
+        %%%
+        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); %keys.anova_varnames{k}
+        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
+        label={'ST','-','2T'}; %higher FR for single T , higher FR for double target
+        idx1= idx.tr_nonDistr1; %sgl stimuli
+        idx2= idx.tr_StimIn2HF1 & idx.tr_nonDistr2; % double targets
+        
+        %t-test
+        for sideindex=1:2 %left * right
+            for s=multicomp_epochs(:)'
+                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
+                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
             end
         end
         
