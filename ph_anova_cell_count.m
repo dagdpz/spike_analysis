@@ -457,7 +457,7 @@ for e=first_loop
                 %                 keys.CC.factor='epoch';
                 hand_labels{1}=['_' keys.labels.handsIC{keys.tt.hands(1)+1} '_'];
             case 'space'
-                parameters(1)='_spaceLR_';
+                parameters{1}= '_spaceLR_';
             case 'space_and_hand'
                 parameters{1}='_spaceLR_';
                 parameters{2}='_hands_';

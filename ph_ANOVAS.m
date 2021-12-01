@@ -280,6 +280,25 @@ for ch=1:numel(INCHnamepart)
             end
         end
         
+                %%  single trials per space
+        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
+        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
+        label={'SC','-','SI'}; %higher FR for CS , higher FR for IS
+        idx1= (idx.nonDistr1 &  idx.suc1 | idx.Distr2 &  idx.suc0) ; 
+        idx2= (idx.nonDistr1 &  idx.suc1 | idx.Distr2 &  idx.suc0) ;
+    
+        %t-test
+        for sideindex=1:2 %left * right
+            for s=multicomp_epochs(:)'
+                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
+                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            end
+        end
         %% Spatial Competition
         % compare sgl tar vs double same tar (HF2)
         % sgl tar vs double same tar (HF1)

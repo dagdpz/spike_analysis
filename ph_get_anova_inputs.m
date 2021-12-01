@@ -7,7 +7,9 @@ function [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o,keys)
             epochs={per_epoch.state}';
             n_trials=size(trial_pos,1);
             n_epochs=numel(per_epoch)/n_trials;
-            
+
+            idx.suc0 =        repmat([o.trial.success]'==0,n_epochs,1);
+            idx.suc1 =        repmat([o.trial.success]'==1,n_epochs,1);% easy
             
             idx.Diff0 =        repmat([o.trial.difficulty]'==0,n_epochs,1);
             idx.Diff1 =        repmat([o.trial.difficulty]'==1,n_epochs,1);% easy

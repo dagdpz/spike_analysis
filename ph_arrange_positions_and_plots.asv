@@ -480,6 +480,7 @@ switch keys.arrangement
         pop.PSTH_perpos_colors =   [autumn(3);winter(3)] ;
         pop.PSTH_summary_colors=   [autumn(3);winter(3)] ;
         hemifield_indexes       = (real(tar_val(stm_idx))>0)+1;
+
         con_for_trial_crit      = con_for_line;
     case 'DisTar_Diff_Pos_Suc'
         [diff_values,~,diff_idx]        = unique(difficulty);
