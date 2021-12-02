@@ -28,9 +28,15 @@ row_size_valid3=row_size_valid&row_size_valid2;
 
 sizes.CH=2*vertcat(tuning_per_unit_table{row_CH & row_size_valid3,ix_size_x});
 sizes.IN=2*vertcat(tuning_per_unit_table{row_IN & row_size_valid3,ix_size_x});
+sizes.ALL=2*vertcat(tuning_per_unit_table{(row_IN | row_CH | row_NN) & row_size_valid3,ix_size_x});
+
+count.CH=numel(sizes.CH);
+count.IN=numel(sizes.IN);
+count.ALL=numel(sizes.ALL);
 
 centers.CH=vertcat(tuning_per_unit_table{row_CH & row_size_valid3,ix_center_x});
 centers.IN=vertcat(tuning_per_unit_table{row_IN & row_size_valid3,ix_center_x});
+centers.ALL=vertcat(tuning_per_unit_table{(row_IN | row_CH | row_NN) & row_size_valid3,ix_center_x});
 
 [sig.siz_CH, ps.siz_CH]=ttest2(sizes.CH,sizes.IN);
 [sig.cen_CH, ps.cen_CH]=ttest2(centers.CH,centers.IN);
@@ -38,13 +44,18 @@ centers.IN=vertcat(tuning_per_unit_table{row_IN & row_size_valid3,ix_center_x});
 
 means_sizes.CH=mean(sizes.CH);
 means_sizes.IN=mean(sizes.IN);
+means_sizes.ALL=mean(sizes.ALL);
 std_sizes.CH=std(sizes.CH);
 std_sizes.IN=std(sizes.IN);
+std_sizes.ALL=std(sizes.ALL);
 means_center.CH=mean(centers.CH);
 means_center.IN=mean(centers.IN);
+means_center.ALL=mean(centers.ALL);
 means_center_abs.CH=mean(abs(centers.CH));
 means_center_abs.IN=mean(abs(centers.IN));
+means_center_abs.ALL=mean(abs(centers.ALL));
 
+count
 std_sizes
 means_sizes
 ps
