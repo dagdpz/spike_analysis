@@ -122,8 +122,10 @@ for t=1:size(condition,1)
     current_window=vertcat(current.window);
     for w=1:numel(current(1).window) %% epochs might be different for different effectors.......... !!!!====???
         for g=1:numel(unique_group_values)
+            %%KK
             unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
             units=find(all(unitidx,2));
+            
             for comp=1:numel(comparisons_per_effector)
                 cM1=true(size(conditions_hf));
                 cM2=true(size(conditions_hf));
@@ -634,7 +636,9 @@ end
             PSTH_summary_handle(ef)     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_title);
             for g=1:numel(unique_group_values)
                 %%reducing to only units that have at least one condition
+                % KK
                 unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
+                
                 current_window=vertcat(current.window);
                 current_units=vertcat(current_window(:,1).unit);
                 empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density),current_units); %nans not needed hopefully

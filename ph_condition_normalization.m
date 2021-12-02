@@ -322,7 +322,11 @@ for u=1:numel(population)
             
             zin_per_pos=NaN(size(UC.position,1),1);
             %% supposedly matches with target position precision...
+            if sum(tr_con) == 0 
+                   continue
+            end
             for p=1:size(UC.position,1) %for FR plot only
+             
                 tr=all(abs(bsxfun(@minus,vertcat(pop.trial(tr_con).position),UC.position(p,:)))<1.5,2);
                 if sum(tr)==0; continue; end
                 zin_per_pos(p)=nanmean(vertcat(per_epoch(tr,RF_epoch).FR));

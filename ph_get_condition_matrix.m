@@ -68,6 +68,7 @@ UC.stimulustype         =unique([trials.stimulustype]);
 UC.difficulty           =unique([trials.difficulty]);
 UC.success              =unique([trials.success]);
 UC.fix_index            =unique([whatisthis.trial.fix_index]);
+UC.stimuli_in_2hemifields              =unique([trials.stimuli_in_2hemifields]);
 
 %CM_cell={};
 for c=1:numel(keys.condition_parameters)
@@ -83,7 +84,7 @@ for r=1:size(CM,1)
     for c=1:size(CM,2)
         add_to_label_index=0;
         switch keys.condition_parameters{c}
-            case {'choice','reach_hand','perturbation','success','difficulty'}
+            case {'choice','reach_hand','perturbation','success','difficulty', 'stimuli_in_2hemifields'}
                 add_to_label_index=1;
         end
         label_index=CM(r,c)+add_to_label_index;

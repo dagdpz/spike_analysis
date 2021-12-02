@@ -457,7 +457,7 @@ for e=first_loop
                 %                 keys.CC.factor='epoch';
                 hand_labels{1}=['_' keys.labels.handsIC{keys.tt.hands(1)+1} '_'];
             case 'space'
-                parameters(1)='_spaceLR_';
+                parameters{1}= '_spaceLR_';
             case 'space_and_hand'
                 parameters{1}='_spaceLR_';
                 parameters{2}='_hands_';
@@ -572,7 +572,7 @@ for e=first_loop
         keys.CC.factor=factor;
         tuning{L}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
     end
-    
+    % KK
     pie_tmp=[];
     pie_tmp=get_pie_multilevel(keys,pie_tmp,tuning);
     multilevel_data(e,:)=pie_tmp;
