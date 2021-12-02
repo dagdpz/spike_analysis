@@ -284,8 +284,11 @@ for ch=1:numel(INCHnamepart)
         multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
         multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
         label={'SC','-','SI'}; %higher FR for CS , higher FR for IS
-        idx1= (idx.nonDistr1 &  idx.suc1 | idx.Distr2 &  idx.suc0) ; 
-        idx2= (idx.nonDistr1 &  idx.suc1 | idx.Distr2 &  idx.suc0) ;
+        idx1= idx.nonDistr1 &  idx.suc1 ; 
+        idx2= idx.nonDistr1 &  idx.suc1 ; 
+       % idx1= sum([(idx.nonDistr1 &  idx.suc1) , (idx.Distr2 &  idx.suc0)],2) ; 
+       % idx2= sum([(idx.nonDistr1 &  idx.suc1) , (idx.Distr2 &  idx.suc0)],2) ;
+
     
         %t-test
         for sideindex=1:2 %left * right

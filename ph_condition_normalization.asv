@@ -25,8 +25,8 @@ switch K.normalization
         CM=combvec(UC.effector,UC.reach_hand,UC.choice, UC.perturbation,UC.hemifield);
         CP  ={'effector','reach_hand','choice','perturbation','hemifield'};
     case 'by_condition_DisTask' % 
-         CM=combvec(UC.stimulustype,UC.difficulty,UC.choice, UC.success,UC.hemifield);
-        CP  ={'stimulustype','difficulty','choice','success','hemifield'};
+        CM=combvec(UC.stimulustype);
+        CP  ={'stimulustype'};
     case 'by_perturbation'
         CM=combvec(UC.effector, UC.perturbation);
         CP  ={'effector','perturbation'};
