@@ -58,7 +58,8 @@ for unit=1:numel(population)
                 for h=UC.hemifield % append hemifield labels, careful with the order!
                     legend_labels_hem=[legend_labels_hem; strcat(labels,['_' keys.labels.hemifield{h+2}])];
                 end        
-                legend_labels_hem=reshape(legend_labels_hem,numel(legend_labels_hem),1);        
+                legend_labels_hem=legend_labels_hem'; 
+                legend_labels_hem=legend_labels_hem(:);        
                 if keys.plot.average_PSTH_line
                     line_idx(end+1,:)=true(1,size(fig_idx,2));
                     labels{end+1}='AV';
