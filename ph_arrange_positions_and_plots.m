@@ -423,19 +423,6 @@ switch keys.arrangement
         
         sub_title               = 'stimulus position';
         
-        %         pop.line_labels        =   {'Tar', 'Easy'}; %{'Diff', 'Easy','Tar'};
-        %          col_left      = autumn(6);
-        %             col_right     = winter(3);
-        %             tar_purple    = [0.5    0.2510    0.3922];
-        %             col_fix       = gray(6);
-        %
-        %             pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:)];[tar_purple; col_right(2,:)]] ;
-        %             pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:)];[tar_purple ; col_right(2,:)]] ;
-        %                  position_indexes        = stm_idx;
-        %                  val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        %                  val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        %
-        
         if length(diff_values) == 3
             fig_title               = 'StimTyp_Diff_Pos_Suc';
             
@@ -449,12 +436,7 @@ switch keys.arrangement
             position_indexes        = stm_idx;
             val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
             val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-            
-            %             pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
-            %             pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
-            %             val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
-            %             val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
-            %             position_indexes        = tar_idx;
+
             
         else
             pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
