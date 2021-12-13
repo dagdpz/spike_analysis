@@ -219,6 +219,7 @@ for ch=1:numel(INCHnamepart)
                 label={'LH','-','RH'};
         end
         
+       
         idx1=tr & Par(:,k)==0;
         idx2=tr & Par(:,k)==1;
         idx1m=tr_main & Par(:,k)==0 & ismember(epochs,multicomp_epochs);
@@ -239,7 +240,107 @@ for ch=1:numel(INCHnamepart)
         end
     end
     
+            %%  Error vs Correct per space
+        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
+        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
+        label={'Su','-','Er'}; %higher FR for T , higher FR for D
+        idx1= idx.suc1; 
+        idx2= idx.suc0;
+
+        %t-test
+        for sideindex=1:2 %left * right
+            for s=multicomp_epochs(:)'
+                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
+                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Suc_Err' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Suc_Err' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Suc_Err' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            end
+        end
     
+      %%  Target vs Easy Distractor
+        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
+        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
+        label={'Ta','-','Di'}; %higher FR for T , higher FR for D
+        idx1= idx.tr_Diff0 & idx.nonDistr1; %single targets
+        idx2= idx.tr_Diff1 & idx.nonDistr1;
+        idx3= idx.tr_Diff2 & idx.nonDistr1;
+
+        %t-test
+                sideindex=1 ; %left * right
+            for s=multicomp_epochs(:)'
+                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex); 
+
+                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired - difference between Tar & easy Distr - side 1
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                
+                if h == 0 %no difference between Tar & easy Distr, then check for Tar & DDiff Distr 
+                idx2 = idx3 ; 
+                h=do_stats(FR(idx1 & idxS),FR(idx3 & idxS),keys,0); 
+                DF=nanmean(FR(idx3 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                end
+                
+                if h == 0
+                idx2= idx.tr_Diff1; 
+                sideindex=2 ; %left * right
+                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex); 
+                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                end
+                
+                if h == 0 
+                idx2 = idx3 ;
+                sideindex=2 ; %left * right
+                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex); 
+                h=do_stats(FR(idx1 & idxS),FR(idx3 & idxS),keys,0); 
+                DF=nanmean(FR(idx3 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                end
+                
+                anova_struct.([INCHnamepart{ch} '_' s{:} '_' '' ])=label{labelindex};               
+                anova_struct.([INCHnamepart{ch}  '_' s{:} '_' 'SS_Tar_Dis' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch}  '_' s{:} '_' 'SS_Tar_Dis' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            end
+        
+        %%  Target vs Diff Distractor
+        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
+        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
+        label={'Ta','-','dD'}; %higher FR for T , higher FR for D
+        idx1= idx.tr_Diff0; 
+        idx2= idx.tr_Diff2;
+    
+        %t-test
+            for s=multicomp_epochs(:)'
+                idxS=ismember(epochs,s)  ; 
+                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                anova_struct.([INCHnamepart{ch} '_' s{:} '_' 'Tar_Diff' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' s{:} '_' 'Tar_Diff' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' s{:} '_' 'Tar_Diff' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            end
+   %%    Easy vs Diff Distractor      
+        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
+        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
+        label={'eD','-','dD'}; %higher FR for T , higher FR for D
+        idx1= idx.tr_Diff1; 
+        idx2= idx.tr_Diff2;
+    
+        %t-test
+            for s=multicomp_epochs(:)'
+                idxS=ismember(epochs,s)  ; 
+                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                anova_struct.([INCHnamepart{ch} '_' s{:} '_' 'Easy_Diff' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' s{:} '_' 'Easy_Diff' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' s{:} '_' 'Easy_Diff' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            end
         %%  Difficulty per space
         multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
         multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
@@ -254,9 +355,9 @@ for ch=1:numel(INCHnamepart)
                 h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
                 DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
                 labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Easy' ])=label{labelindex};
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Easy' '_DF'])=DF;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Easy' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Tar_Easy' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Tar_Easy' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Tar_Easy' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
             end
         end
         
@@ -274,9 +375,9 @@ for ch=1:numel(INCHnamepart)
                 h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
                 DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
                 labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Diff' ])=label{labelindex};
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Diff' '_DF'])=DF;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Diff' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Tar_Diff' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Tar_Diff' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Tar_Diff' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
             end
         end
         
@@ -284,24 +385,23 @@ for ch=1:numel(INCHnamepart)
         multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
         multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
         label={'SC','-','SI'}; %higher FR for CS , higher FR for IS
-        idx1= idx.nonDistr1 &  idx.suc1 ; 
-        idx2= idx.nonDistr1 &  idx.suc1 ; 
-       % idx1= sum([(idx.nonDistr1 &  idx.suc1) , (idx.Distr2 &  idx.suc0)],2) ; 
-       % idx2= sum([(idx.nonDistr1 &  idx.suc1) , (idx.Distr2 &  idx.suc0)],2) ;
+        idx1= idx.nonDistr1  ; %sgl tar
+        idx2= idx.nonDistr1  ; 
 
-    
         %t-test
-        for sideindex=1:2 %left * right
             for s=multicomp_epochs(:)'
-                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
-                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
-                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+                idxS_LS=ismember(epochs,s)  & idx.tr_sides(:,1);
+                idxS_RS=ismember(epochs,s)  & idx.tr_sides(:,2);
+
+                h=do_stats(FR(idx1 & idxS_LS),FR(idx2 & idxS_RS),keys,0); %not paired
+                DF=nanmean(FR(idx2 & idxS_RS))-nanmean(FR(idx1 & idxS_LS));
                 labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' ])=label{labelindex};
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' '_DF'])=DF;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+                anova_struct.([INCHnamepart{ch} '_' s{:} '_' 'SglTar_Space' ])=label{labelindex};
+                anova_struct.([INCHnamepart{ch} '_' s{:} '_' 'SglTar_Space' '_DF'])=DF;
+                anova_struct.([INCHnamepart{ch} '_' s{:} '_' 'SglTar_Space' '_IX'])=DF/(nanmean(FR(idx2 & idxS_RS))+ nanmean(FR(idx1 & idxS_LS)));
             end
-        end
+        
+
         %% Spatial Competition
         % compare sgl tar vs double same tar (HF2)
         % sgl tar vs double same tar (HF1)
