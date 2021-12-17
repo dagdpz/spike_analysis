@@ -671,7 +671,7 @@ end
 
 for t=1:numel(trial)
     if trial(t).n_distractors == 3 && trial(t).stimuli_in_2hemifields == 1
-         stmpos(t)= NaN; 
+         stmpos(t)= 0; 
         
     else
         for k=1:numel(s_e)
