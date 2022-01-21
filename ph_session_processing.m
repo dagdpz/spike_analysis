@@ -197,8 +197,6 @@ fields_to_remove={'unit','channel','x_eye','y_eye','x_hnd','y_hnd',...
     'TDT_ECG1','TDT_ECG1_SR','TDT_ECG1_tStart',...
     'TDT_POX1','TDT_POX1_SR','TDT_POX1_tStart'};
 
-
-
 for b=1:size(o_t,2)
     for t=1:size(o_t(b).trial,2)
         n_chans_s = 0;
@@ -246,7 +244,6 @@ fields_to_remove={'unit','channel',...
     'TDT_POX1','TDT_POX1_SR','TDT_POX1_tStart',...
     'TDT_ECG1','TDT_ECG1_SR','TDT_ECG1_tStart',...
     'TDT_LFPx','TDT_LFPx_SR','TDT_LFPx_tStart'};
-
 
 for b=1:size(o_t,2)
     for t=1:size(o_t(b).trial,2)
