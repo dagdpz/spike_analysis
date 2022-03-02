@@ -9,7 +9,7 @@ function pop=ph_LR_to_CI(keys,pop)
 % Right_hemisphere_targets={'dPulv_r','PUL_r','PUL_R','MIP_R','LIP_R'};
 % keys.contra_ipsi_relative_to
 target=pop.(keys.contra_ipsi_relative_to);
-if strcmpi(target(end-1:end),'_L')
+if strcmpi(target(end-1:end),'_L') 
     poptr=num2cell([pop.trial.hemifield]*-1);
     [pop.trial.hemifield]=deal(poptr{:});
     poptr=cellfun(@(x) x.*[-1,1],{pop.trial.position},'uniformoutput',false);
@@ -21,12 +21,12 @@ if strcmpi(target(end-1:end),'_L')
     [pop.trial(hand1).reach_hand]=deal(1);
     [pop.trial(hand2).reach_hand]=deal(2);
     % invert recording location if perturbation site is left
-    if strcmp(keys.contra_ipsi_relative_to,'perturbation_site') & strcmpi(target(end-1:end),'_L')
-        if strcmpi(pop.target(end-1:end),'_L')
-            pop.target = [pop.target(1:end-1), 'R'];
-        elseif strcmpi(pop.target(end-1:end),'_R')
-            pop.target = [pop.target(1:end-1), 'L'];
-        end
-    end
+%     if strcmp(keys.contra_ipsi_relative_to,'perturbation_site') & strcmpi(target(end-1:end),'_L')
+%         if strcmpi(pop.target(end-1:end),'_L')
+%             pop.target = [pop.target(1:end-1), 'R'];
+%         elseif strcmpi(pop.target(end-1:end),'_R')
+%             pop.target = [pop.target(1:end-1), 'L'];
+%         end
+%     end
 end
 end
