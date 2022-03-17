@@ -50,10 +50,7 @@ unit_valid=ismember(tuning_per_unit_table(:,idx_unitID),complete_unit_list);
 group_values=group_values(unit_valid);
 tuning_per_unit_table=tuning_per_unit_table(unit_valid,:);
 
-%[~, condition2, condition]=ph_condition_normalization(population,keys);
-
 %% Convert to ipsi/contra, Baseline subtraction, normalization, re-ordering, and gaussian RFs
-%[~, condition2, condition]=ph_condition_normalization(population,keys,UC,CM);
 [~, ~, condition]=ph_condition_normalization(population,keys,UC,CM);
 
 %condition_matrix            = combvec(CM',UC.hemifield)';

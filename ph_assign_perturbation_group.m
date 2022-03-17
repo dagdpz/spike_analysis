@@ -10,10 +10,6 @@ for u=1:numel(population)
         [population(u).trial(idx).perturbation]=deal(g-1);
         nanidx=nanidx&~idx;
     end
-    %     idx0=ismember([population(u).trial.perturbation],keys.cal.perturbation_groups{1});
-    %     idx1=ismember([population(u).trial.perturbation],keys.cal.perturbation_groups{2});
-    %     [population(u).trial(idx0).perturbation]=deal(0);
-    %     [population(u).trial(idx1).perturbation]=deal(1);
     [population(u).trial(nanidx).perturbation]=deal(NaN);
 end
 end

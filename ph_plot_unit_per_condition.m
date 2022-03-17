@@ -10,7 +10,7 @@ eye_col_h   =   keys.colors.eye_hor;
 for unit=1:numel(population)
     types       =[population(unit).trial.type];
     effectors   =[population(unit).trial.effector];
-    hands       =[population(unit).trial.reach_hand];        
+    hands       =[population(unit).trial.reach_hand];
     current_unit_tuning= [keys.tuning_per_unit_table(1,:); keys.tuning_per_unit_table(ismember(keys.tuning_per_unit_table(:,1), population(unit).unit_ID),:)];
     for a=1:numel(keys.position_and_plotting_arrangements)
         keys.arrangement=keys.position_and_plotting_arrangements{a};
@@ -57,9 +57,9 @@ for unit=1:numel(population)
                 legend_labels_hem={};
                 for h=UC.hemifield % append hemifield labels, careful with the order!
                     legend_labels_hem=[legend_labels_hem; strcat(labels,['_' keys.labels.hemifield{h+2}])];
-                end        
-                legend_labels_hem=legend_labels_hem'; 
-                legend_labels_hem=legend_labels_hem(:);        
+                end
+                legend_labels_hem=legend_labels_hem';
+                legend_labels_hem=legend_labels_hem(:);
                 if keys.plot.average_PSTH_line
                     line_idx(end+1,:)=true(1,size(fig_idx,2));
                     labels{end+1}='AV';
@@ -80,12 +80,12 @@ for unit=1:numel(population)
                     [type_effector_full, type_effector_short type_string] = MPA_get_type_effector_name(type,effector);
                     
                     %% ANOVA results to print
-                    anova_title_part=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.plot.anova_main,'');                    
+                    anova_title_part=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.plot.anova_main,'');
                     fig_title=sprintf('%s, %s, %s, %s %s %s',population(unit).unit_ID, population(unit).target, type_effector_full, keys.arrangement, title_part, title_value);
                     fig_title_part=sprintf(', Stability %d, SNR %d, Single %d Grid: %d/%d Depth %.2f ANOVA %s Channel: %d Blocks&Units: %s ', ...
-                    population(unit).stability_rating, population(unit).SNR_rating, population(unit).Single_rating, population(unit).grid_x, population(unit).grid_y,...
-                    population(unit).electrode_depth, anova_title_part, population(unit).channel, [population(unit).block_unit{:}]);
-                
+                        population(unit).stability_rating, population(unit).SNR_rating, population(unit).Single_rating, population(unit).grid_x, population(unit).grid_y,...
+                        population(unit).electrode_depth, anova_title_part, population(unit).channel, [population(unit).block_unit{:}]);
+                    
                     %% Per position PSTH figure
                     plot_1_title            = [fig_title  ' PSTHs'];
                     PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',[plot_1_title fig_title_part]);
@@ -142,9 +142,9 @@ for unit=1:numel(population)
                                     trial_state_onset=line_struct(t).states_onset(line_struct(t).states==sta);
                                     time_axis=line_struct(t).time_axis-trial_state_onset+state_shift;
                                     t_idx=line_struct(t).time_axis-trial_state_onset>=t_before_state &...
-                                          line_struct(t).time_axis-trial_state_onset<=t_after_state;
+                                        line_struct(t).time_axis-trial_state_onset<=t_after_state;
                                     at_idx=line_struct(t).arrival_times-trial_state_onset>=t_before_state &...
-                                           line_struct(t).arrival_times-trial_state_onset<=t_after_state;
+                                        line_struct(t).arrival_times-trial_state_onset<=t_after_state;
                                     if keys.plot.eye_hand_traces
                                         line(time_axis(t_idx),line_struct(t).x_eye(t_idx)*keys.plot.eyetrace_factor + eye_offset,'color',eye_col_h);
                                         line(time_axis(t_idx),line_struct(t).y_eye(t_idx)*keys.plot.eyetrace_factor + eye_offset,'color',eye_col_v);

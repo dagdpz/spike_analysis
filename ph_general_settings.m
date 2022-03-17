@@ -2,7 +2,7 @@ function keys=ph_general_settings(project,keys)
 %% condition_identifiers
 keys.labels.handsLR={'AH','LH','RH'};
 keys.labels.handsIC={'AH','IH','CH'};  %% AH!??
-keys.labels.perturbations={'','_PT'};  
+keys.labels.perturbations={'','_PT'};
 keys.labels.choices={'in','ch'};
 keys.contra_ipsi_relative_to='target';
 
@@ -24,9 +24,9 @@ keys.batching.Subregions{1}{1}           =struct('monkey',{''},'target',{''},'gr
 keys.batching.n_Subregions               =numel(keys.batching.Subregions);
 
 %% criterions to exclude trials and units
-keys.cal.process_spikes                  =1;      % you can choose not to run spikes at all           
-keys.cal.process_sites                   =1;      % you can choose not to run lfp sites at all (saving processing time)             
-keys.cal.process_by_block                =1;      % you can choose not to run by block (body signals f.e.) at all (saving processing time)                   
+keys.cal.process_spikes                  =1;      % you can choose not to run spikes at all
+keys.cal.process_sites                   =1;      % you can choose not to run lfp sites at all (saving processing time)
+keys.cal.process_by_block                =1;      % you can choose not to run by block (body signals f.e.) at all (saving processing time)
 
 keys.cal.MA_selection                   ={'display',0,'keep_raw_data',1,'saccade_definition',4,'reach_1st_pos',1,'correlation_conditions',{}};                        % if you want to run MA with specific settings
 keys.cal.units_from_sorting_table       =1;                         % exclude units that are not in the sorting table (and therefore apply stability/single/SNT ratings)
@@ -65,9 +65,9 @@ keys.db_folder              =[spike_analysis_location(1:strfind(spike_analysis_l
 
 keys.All_monkeys={'Flaffus','Linus','Curius','Tesla','Cornelius','Magnus','TDT_brain','Bacchus'};
 for m=1:numel(keys.All_monkeys)
-keys.(keys.All_monkeys{m}).sorted_neurons_filename    =[keys.All_monkeys{m}(1:3) '_sorted_neurons'];
-keys.(keys.All_monkeys{m}).sorted_neurons_sheetname    ='final_sorting';
-keys.(keys.All_monkeys{m}).filelist_formatted         ={};    
+    keys.(keys.All_monkeys{m}).sorted_neurons_filename    =[keys.All_monkeys{m}(1:3) '_sorted_neurons'];
+    keys.(keys.All_monkeys{m}).sorted_neurons_sheetname    ='final_sorting';
+    keys.(keys.All_monkeys{m}).filelist_formatted         ={};
 end
 
 keys.Flaffus.color    ='r';
@@ -263,7 +263,7 @@ temp_colors_I=autumn(18)*255;
 temp_colors_C=winter(18)*255;
 temp_colors_V=spring(18)*255;
 
-% per position colors 
+% per position colors
 
 keys.colors.SS_TA_ER=temp_colors_C(1,:);
 keys.colors.TT_TA_ER=temp_colors_C(2,:);
@@ -383,9 +383,9 @@ keys.colors.TD_D2_SU_VS=temp_colors_V(18,:);
 
 col_left      = autumn(6);
 
-keys.colors.SS_TA_SU_CS= col_left(1,:); 
-keys.colors.TT_TA_SU_CS= col_left(1,:); 
-keys.colors.TD_TA_SU_CS= col_left(1,:); 
+keys.colors.SS_TA_SU_CS= col_left(1,:);
+keys.colors.TT_TA_SU_CS= col_left(1,:);
+keys.colors.TD_TA_SU_CS= col_left(1,:);
 keys.colors.SS_D1_SU_CS=col_left(6,:);
 keys.colors.TT_D1_SU_CS=col_left(6,:);
 keys.colors.TD_D1_SU_CS=col_left(6,:);
@@ -567,7 +567,7 @@ keys.tt.unselect                    ={};
 
 keys.tt.selected_list                   ={};
 keys.tt.unselected_list                    ={};
-    keys.tt.type_effectors={'Msac'};
+keys.tt.type_effectors={'Msac'};
 
 %% population
 keys.sct=struct([]);

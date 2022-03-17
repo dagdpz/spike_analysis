@@ -54,7 +54,7 @@ if ~exist([keys.path_to_save 'spike_shapes'],'dir')
 end
 
 %% Get filelist
-data_path                                       = [keys.drive '\Data\'];
+data_path                                       = [keys.drive filesep 'Data' filesep];
 if isempty(keys.filelist_formatted)
     disp('get_filelist_from_folder is taking folder and dates from input')
     dates                                           = str2num(keys.date);
@@ -163,18 +163,15 @@ for current_date = sessions(:)'
             population=ph_reduce_population(pop_resorted);
             save([keys.population_foldername filesep keys.population_filename '_' current_date{1} '.mat'],'population');
         end
-        
     end
+    
     if keys.cal.process_sites
         idx_Site_ID=DAG_find_column_index(keys.sorting_table,'Site_ID');
         all_site_IDs=keys.sorting_table_sites(:,idx_Site_ID);
-        
-        
         % Excluding sites that dont match criterions... i.e. sites.unit_ID wont be assigned
         if keys.cal.units_from_sorting_table
             sites(~ismember({sites.site_ID},all_site_IDs))=[];
         end
-        
         if ~isempty(sites)      %% Save by site mat file per session
             save([keys.population_foldername filesep keys.sites_filename '_' current_date{1} '.mat'],'sites');
         end
@@ -411,9 +408,6 @@ if ~isempty(temp_xlsx)
     keys.sorting_table_units = sorting_table;
     keys.sorting_table_sites = sorting_table;
     keys.sorting_table       = sorting_table;
-%     stability_index=DAG_find_column_index(sorting_table,'Stability_rank');
-%     single_index=DAG_find_column_index(sorting_table,'Single_rank');
-%     SNR_index=DAG_find_column_index(sorting_table,'SNR_rank');
     usable_index=DAG_find_column_index(sorting_table,'Usable');
     to_exclude_s=~ismember([sorting_table{2:end,usable_index}]',1); % think about other site criterias and maybe we want an option to include not usable?
 %     keys.sorting_table_units([false;to_exclude_u],:) = [];

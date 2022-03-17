@@ -9,17 +9,16 @@ if nargin>1
     keys.project_versions=varargin{2};
 end
 for f=1:numel(keys.project_versions) % running multiple versions of the same project at once !
-if nargin>1
-    keys.project_versions=varargin{2};
-end
+    if nargin>1
+        keys.project_versions=varargin{2};
+    end
     if ~isempty(keys.project_versions{f})
         keys.project_version=keys.project_versions{f};
     end
     keys.version_specific_settings=[keys.db_folder project filesep keys.project_version filesep 'ph_project_version_settings.m'];
     run(keys.version_specific_settings);
     
-    % keys.anova_table_file=[keys.drive '\Projects\' project '\ephys\' keys.project_version '\tuning_table_combined_CI.mat'];
-    keys.tuning_table_foldername=[keys.drive '\Projects\' project '\ephys\' keys.project_version filesep];
+    keys.tuning_table_foldername=[keys.drive filesep 'Projects' filesep project filesep 'ephys' filesep keys.project_version filesep];
     keys.tuning_table_filename='tuning_table_combined';
     load([keys.tuning_table_foldername filesep keys.tuning_table_filename '.mat']);
     keys.tuning_per_unit_table=tuning_per_unit_table;

@@ -7,10 +7,6 @@ ph_copy_file_list_to_dir(tuning_per_unit_table(:,idx_ID),keys);
 end
 
 function ph_copy_file_list_to_dir(example_list,keys,additional_pattern,remove_original,verbose)
-%example_list=ph_initiate_example_cells_readout(project,versions);
-%ph_copy_file_list_to_dir(example_list,'Pulv_eye_gaze_position',{'20190309_Cur20151217'}, 'movement');
-%ph_initiate_example_cells_readout(project,versions)
-
 %IG_COPY_FILE_LIST_TO_DIR		- copy or move files in filelist from fromdir to todir
 % e.g. ig_copy_file_list_to_dir('Y:\Projects\Pulv_oculomotor\ephys\20180222\single_cell_examples','C:\Temp','C:\Temp\cells_perisac_ehn_42.txt',0,'memory',0,1);
 

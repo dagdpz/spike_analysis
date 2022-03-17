@@ -6,5 +6,4 @@ global MA_STATES
         keys.PSTH_WINDOWS=keys.WINDOWS_PER_TYPE{typ};
         keys.ANOVAS=keys.ANOVAS_PER_TYPE(typ);
         all_sta=find(ismember([keys.EPOCHS{:,2}],MA_STATES.all_states));        
-        %MPA_get_expected_states(typ,eff,0); %% does it make sense to distinguish by effector?
 end
