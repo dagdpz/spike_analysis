@@ -41,7 +41,7 @@ keys.cal.single_rating                  =[1,2,3];                   % not assign
 keys.cal.automatic_stablity             =0;                         % using automatic stability assessment
 keys.cal.SNR_rating                     =[1,2,3,4];                 % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl
 keys.cal.min_trials_per_condition       =5;                         % minimum trials per conditon (look at ph_arrange_positions to see how conditions are defined)
-keys.cal.min_spikes_per_unit            =50;                        % excluding units that have in total less spikes (workaround for sortcode assignment bug) - to be removed
+%keys.cal.min_spikes_per_unit            =50;                        % excluding units that have in total less spikes (workaround for sortcode assignment bug) - to be removed
 keys.cal.perturbation_groups            ={0,[2,3,4,5,6,7,8]};       % which perturbation values from excel table will be assigned to control and perturbation for comparisons and population analysis
 
 %% ANOVA normalization
@@ -59,9 +59,10 @@ keys.AN.test_types='parametric'; %% as opposed to 'nonparametric'
 keys.filelist_as_blocks     =0;
 keys.drive                  =DAG_get_server_IP;
 keys.basepath_to_save       =[keys.drive 'Projects' filesep project filesep 'ephys' filesep];
-keys.project_versions       ={''};
+%keys.project_versions       ={''};
 spike_analysis_location     =which('ph_initiation');
 keys.db_folder              =[spike_analysis_location(1:strfind(spike_analysis_location,['spike_analysis' filesep 'ph_initiation'])-1) 'Settings' filesep 'spike_analysis' filesep];
+%% this folder defines where to take settings from
 
 keys.All_monkeys={'Flaffus','Linus','Curius','Tesla','Cornelius','Magnus','TDT_brain','Bacchus'};
 for m=1:numel(keys.All_monkeys)
@@ -113,9 +114,9 @@ keys.plot.anova_epoch1  ={'E','in_AH','epoch','S','in','spaceLR','C','ch','space
 keys.plot.anova_epoch2  ={'LL','in_LH_LS','PT','RL','in_LH_RS','PT','LR','in_RH_LS','PT','RR','in_RH_RS','PT'};
 
 %% are these used?
-keys.width.PSTH_perpos          =0.5;
-keys.width.raster               =0.1;
-keys.width.PSTH_summary         =1;
+%keys.width.PSTH_perpos          =0.5;
+%keys.width.raster               =0.1;
+%keys.width.PSTH_summary         =1;
 
 %% colors & legends
 keys.condition_parameters={'reach_hand','choice','perturbation'};
