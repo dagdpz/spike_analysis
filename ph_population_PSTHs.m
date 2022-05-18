@@ -107,6 +107,7 @@ keys.normalization_field='PO';
 [~, condition,~,pref_valid]=ph_condition_normalization(population,keys,UC,CM);
 
 %% condition comparison (kinda there to be used, but not used currently ???)
+
 comparisons_per_effector(1).reach_hand{1}=0;
 comparisons_per_effector(1).reach_hand{2}=0;
 comparisons_per_effector(1).hemifield{1}=[-1];
@@ -641,8 +642,10 @@ end
                 
                 current_window=vertcat(current.window);
                 current_units=vertcat(current_window(:,1).unit);
-                empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density),current_units); %nans not needed hopefully
-                empty_conditions_and_units(:,end+1:numel(unitidx))=true;
+                
+                %empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density) || all(isnan( x.average_spike_density)),current_units) ; %nans not needed hopefully
+                empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density) ,current_units) ; %nans not needed hopefully, still there in MP mods
+                empty_conditions_and_units(:,end+1:numel(unitidx))=true; % from the last valid to the end
                 condition_empty=all(empty_conditions_and_units,2);
                 
                 if any(strfind(plot_title_part,'per position'))
@@ -749,6 +752,11 @@ end
         for spn=1:numel(sph)
             ef=spf(spn);
             axes(sph(spn));
+            %% alternative (MP ?)
+%             ef=spf(spn);
+%             set(0, 'CurrentFigure', PSTH_summary_handle(ef));
+%             subplot(sph(spn));
+            
             hold on
             
             %% type? completed? choices? hands? (effector doesnt matter???)

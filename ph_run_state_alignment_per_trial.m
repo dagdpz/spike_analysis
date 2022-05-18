@@ -37,6 +37,7 @@ trial=struct('type',NaNpar,'effector',NaNpar,'reach_hand',NaNpar,'choice',NaNpar
     'time_axis',NaNpar,'x_eye',NaNpar,'y_eye',NaNpar,'x_hnd',NaNpar,'y_hnd',NaNpar,'states_onset',NaNpar); %add all fields of trial(?)
 trials_wo_phys=[];
 trials_wo_cond=[];
+
 %% main loop
 for t=1:n_trials
     trial_states=MA_out.states(t).TDT_states;

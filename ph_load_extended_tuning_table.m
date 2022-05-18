@@ -58,6 +58,29 @@ if ~isempty(taskcaseexistingindex)
         TT(:,end+1)=task_existing_column;
         taskcases = [taskcases, {TT{1,I}(end-7:end)}];
     end
+    
+    %% trial criterion per hemifield separately for perturbation group (include if any condition is fullfilled, not ideal, but works for effector = 0)
+    if strcmp(keys.tt.trial_criterion_in,'per_hemifield_and_perturbation')
+        counter = 0;
+        for I=taskcaseexistingindex_hf
+            if ~((any(strfind(tuning_per_unit_table{1,I},'in_')==1) && strcmp(keys.tt.trial_criterion_in,'per_hemifield_and_perturbation')) ||...
+                    (any(strfind(tuning_per_unit_table{1,I},'ch_')==1) && strcmp(keys.tt.trial_criterion_ch,'per_hemifield_and_perturbation')))
+                continue;
+            end
+            counter = counter + 1;
+        task_existing_column=num2cell(cellfun(@(x) ~isempty(x)&&~ischar(x)&&x>=keys.cal.min_trials_per_condition,tuning_per_unit_table(:,I)));
+        strpos=strfind(tuning_per_unit_table{1,I},'_trials_per_hemifield');
+        task_existing_column{1,1}=['existing_' tuning_per_unit_table{1,I}([1:strpos,strpos+22:end])];
+        tuning_per_unit_table(:,end+1)=task_existing_column;
+        taskcases = [taskcases, {tuning_per_unit_table{1,I}(end-7:end)}];
+        end
+        %this nasty line put 1 to all to existing column if at least 1 is
+        %equal to 1, for each unit separately
+        tuning_per_unit_table(2:end,end-(counter-1):end) = repmat(num2cell(any(cellfun(@(x) x == 1, tuning_per_unit_table(2:end,end-(counter-1):end)),2)),...
+            1, size(tuning_per_unit_table(2:end,end-(counter-1):end),2)); 
+        
+    end
+    
     %%  General minimum number of trials criterion (across all hand/hemifield/position conditions)
     for I=taskcaseexistingindex_tot
         if ~((any(strfind(TT{1,I},'in_')==1) && strcmp(keys.tt.trial_criterion_in,'total')) ||...

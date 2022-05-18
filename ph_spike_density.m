@@ -73,7 +73,6 @@ end
 % %     SD=nanmean(reshape(SD(t_idx),keys.PSTH_binwidth/0.001,sum(t_idx)/keys.PSTH_binwidth*0.001),1);
 % end
 
-
 SD=NaN(1,numel(bins));
 SD_VAR=NaN(1,numel(bins));
 
@@ -88,6 +87,30 @@ switch keys.kernel_type
         n_bins=round(2*keys.gaussian_kernel/0.001);
         Kernel=ones(1,n_bins)/n_bins*1000; %%*1000 cause a one full spike in one 1ms bin means 1000sp/s locally
 end
+
+%try out zscore only on windows of analysis
+%     for t=1:numel(trial)
+%         idx_sta=trial(t).states==sta;
+%         if any(idx_sta)
+%             arrival_times=trial(t).arrival_times-trial(t).states_onset(idx_sta);
+%             n_trials=n_trials+1;
+%             SD_ms(n_trials,:)= conv(hist(arrival_times,PSTH_ms),gaussian,'same');
+%             
+%         end
+%     end
+%     
+%     if n_trials==0
+%         SD=NaN(1,sum(t_idx)/keys.PSTH_binwidth*0.001);  
+%     else
+%         baseline =  nanmean(reshape(SD_ms,[1 size(SD_ms,1)*size(SD_ms,2)]));
+%         SD_ms = SD_ms - baseline;
+%         SD=sum(SD_ms,1)/n_trials;
+%         SD=nanmean(reshape(SD(t_idx),keys.PSTH_binwidth/0.001,sum(t_idx)/keys.PSTH_binwidth*0.001),1);
+%         norm_std = nanstd(reshape(SD_ms,[1 size(SD_ms,1)*size(SD_ms,2)]));;
+%         SD=SD/norm_std;
+%     end
+%       
+%     
 
 if nargout>2 || (numel(baseline>=2) && (any(diff(baseline)) || any(diff(norm_factor))))
     SD_ms=zeros(numel(trial),numel(PSTH_ms));

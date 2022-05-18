@@ -23,8 +23,10 @@ for t=1:size(tasktypes_hands_choices,2) %% crashes for not existing monkey
             disp('tasktype needs to contain arrangement as well to work properly, f.e.: Ddre_han')
         end
     end
+    
 end
 TT=TT([true;row_index],:);
+TT=ph_target_reassign(keys,TT);
 
 %% selection (pick only specific entries)
 if size(TT,1)>1
