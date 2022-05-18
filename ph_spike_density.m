@@ -73,7 +73,8 @@ gaussian=normpdf(-5*keys.gaussian_kernel:0.001:5*keys.gaussian_kernel,0,keys.gau
     else
         SD=sum(SD_ms,1)/n_trials;
         SD=nanmean(reshape(SD(t_idx),keys.PSTH_binwidth/0.001,sum(t_idx)/keys.PSTH_binwidth*0.001),1);
-        SD=SD/norm_factor;
+%         SD=SD/norm_factor;
+        SD=(SD-norm_factor)/norm_factor;
     end
 % end
 %

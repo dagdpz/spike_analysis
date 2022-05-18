@@ -124,7 +124,7 @@ tuning_per_unit_table(:,end+1)=combined_column;
 
 %% create space OR interaction column
 taskcases=unique(taskcases);
-epochs={'Fhol','Cue','MemE','MemL','PreS','PeriS','Pre2','Peri2','PreG','CueG','TIhol','THol'};
+epochs={'Fhol','Cue','Del','PreS','PeriS','PostS','THol'};
 for t=1:numel(taskcases)
     taskcase=taskcases{t};
     idx.space   =DAG_find_column_index(tuning_per_unit_table,[keys.tt.IC_for_criterion '_spaceLR_main_'   taskcase] );
@@ -268,22 +268,40 @@ for t=1:numel(taskcases)
     tuning_per_unit_table(2:end,n_column)=num2cell(SXH_or_interaction);
     
     %% adding columns for visual, motor, visuomotor, and fixation cells
-    if any(idx.Cue) && any(idx.TIhol)
+    if any(idx.Cue)  && any(idx.Del)
         n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['visual_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ~ismember(tuning_per_unit_table(2:end,idx.TIhol),{'en','su','bi'}));
+        tuning_per_unit_table{1,n_column}=['visual_only_' taskcase];
+        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','bi'}) & ~ismember(tuning_per_unit_table(2:end,idx.Del),{'en','bi'}));
     end
     
-    if any(idx.Cue) && any(idx.TIhol)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['motor_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(~ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.TIhol),{'en','su','bi'}));
-    end
-    
-    if any(idx.Cue) && any(idx.TIhol)
+    if any(idx.Cue)  && any(idx.Del)
         n_column=n_column+1;
         tuning_per_unit_table{1,n_column}=['visuomotor_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.TIhol),{'en','su','bi'}));
+        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','bi'}) & ismember(tuning_per_unit_table(2:end,idx.Del),{'en','bi'}));
+    end
+    
+    if any(idx.Cue)  && any(idx.Del)
+        n_column=n_column+1;
+        tuning_per_unit_table{1,n_column}=['motor_only_' taskcase];
+        tuning_per_unit_table(2:end,n_column)=num2cell(~ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','bi'}) & ismember(tuning_per_unit_table(2:end,idx.Del),{'en','bi'}));
+    end
+    
+    if any(idx.Cue) % && any(idx.TIhol)
+        n_column=n_column+1;
+        tuning_per_unit_table{1,n_column}=['visual_en_' taskcase];
+        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','bi'}));% & ~ismember(tuning_per_unit_table(2:end,idx.TIhol),{'en','su','bi'}));
+    end
+    
+    if  any(idx.Del)
+        n_column=n_column+1;
+        tuning_per_unit_table{1,n_column}=['motor_en_' taskcase];
+        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Del),{'en','bi'})); %& ismember(tuning_per_unit_table(2:end,idx.Del),{'en','su','bi'}));
+    end
+    
+    if any(idx.Cue) && any(idx.Del)
+        n_column=n_column+1;
+        tuning_per_unit_table{1,n_column}=['visuomotor_' taskcase];
+        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.Del),{'en','su','bi'}));
     end
     
     if any(idx.Cue) && any(idx.PreS)
@@ -305,30 +323,30 @@ for t=1:numel(taskcases)
     end
     
     
-    if any(idx.Cue) && any(idx.Pre2)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['visual_pre2_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ~ismember(tuning_per_unit_table(2:end,idx.Pre2),{'en','su','bi'}));
-    end
+%     if any(idx.Cue) && any(idx.Pre2)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['visual_pre2_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ~ismember(tuning_per_unit_table(2:end,idx.Pre2),{'en','su','bi'}));
+%     end
+%     
+%     if any(idx.Cue) && any(idx.Pre2)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['motor_pre2_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell(~ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.Pre2),{'en','su','bi'}));
+%     end
+%     
+%     if any(idx.Cue) && any(idx.Pre2)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['visuomotor_pre2_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.Pre2),{'en','su','bi'}));
+%     end
+%     
     
-    if any(idx.Cue) && any(idx.Pre2)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['motor_pre2_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(~ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.Pre2),{'en','su','bi'}));
-    end
-    
-    if any(idx.Cue) && any(idx.Pre2)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['visuomotor_pre2_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.Pre2),{'en','su','bi'}));
-    end
-    
-    
-    if any(idx.Cue) && any(idx.TIhol)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['notclassified_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(~ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ~ismember(tuning_per_unit_table(2:end,idx.TIhol),{'en','su','bi'}));
-    end
+%     if any(idx.Cue) && any(idx.TIhol)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['notclassified_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell(~ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ~ismember(tuning_per_unit_table(2:end,idx.TIhol),{'en','su','bi'}));
+%     end
     %
     %     if any(idx.mem)
     %     n_column=n_column+1;
@@ -336,24 +354,24 @@ for t=1:numel(taskcases)
     %     tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.mem),'en') );
     %     end
     %
-    if any(idx.Fhol) && any(idx.PeriS) && any(idx.Cue) && any(idx.TIhol)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['fixation_only_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Fhol),'en') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'-') & ~ismember(tuning_per_unit_table(2:end,idx.Cue),'en') & ~ismember(tuning_per_unit_table(2:end,idx.TIhol),'en'));
-    end
-    
-    if any(idx.Fhol) && any(idx.PeriS) && any(idx.Cue) && any(idx.TIhol)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['fixation_and_sac_suppression_' taskcase];
-        %tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Fhol),'en') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'su') & ismember(tuning_per_unit_table(2:end,idx.TIhol),'en'));
-        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Fhol),'en') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'su') & ~ismember(tuning_per_unit_table(2:end,idx.Cue),'en') & ~ismember(tuning_per_unit_table(2:end,idx.TIhol),'en'));
-    end
-    if any(idx.Fhol) && any(idx.PeriS) && any(idx.Cue) && any(idx.TIhol)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['Sac_supression_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Fhol),'-') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'su') & ~ismember(tuning_per_unit_table(2:end,idx.Cue),'en') & ~ismember(tuning_per_unit_table(2:end,idx.TIhol),'en'));
-    end
-    
+%     if any(idx.Fhol) && any(idx.PeriS) && any(idx.Cue) && any(idx.TIhol)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['fixation_only_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Fhol),'en') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'-') & ~ismember(tuning_per_unit_table(2:end,idx.Cue),'en') & ~ismember(tuning_per_unit_table(2:end,idx.TIhol),'en'));
+%     end
+%     
+%     if any(idx.Fhol) && any(idx.PeriS) && any(idx.Cue) && any(idx.TIhol)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['fixation_and_sac_suppression_' taskcase];
+%         %tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Fhol),'en') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'su') & ismember(tuning_per_unit_table(2:end,idx.TIhol),'en'));
+%         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Fhol),'en') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'su') & ~ismember(tuning_per_unit_table(2:end,idx.Cue),'en') & ~ismember(tuning_per_unit_table(2:end,idx.TIhol),'en'));
+%     end
+%     if any(idx.Fhol) && any(idx.PeriS) && any(idx.Cue) && any(idx.TIhol)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['Sac_supression_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Fhol),'-') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'su') & ~ismember(tuning_per_unit_table(2:end,idx.Cue),'en') & ~ismember(tuning_per_unit_table(2:end,idx.TIhol),'en'));
+%     end
+%     
     
     %     if any(idx.Cue) && any(idx.PeriS)
     %     n_column=n_column+1;
@@ -373,23 +391,23 @@ for t=1:numel(taskcases)
     %     tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),'en') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'en'));
     %    end
     
-    if any(idx.Cue) && any(idx.PeriS)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['visual_peri_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ~ismember(tuning_per_unit_table(2:end,idx.PeriS),{'en','su','bi'}));
-    end
-    
-    if any(idx.Cue) && any(idx.PeriS)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['motor_peri_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(~ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.PeriS),{'en','su','bi'}));
-    end
-    
-    if any(idx.Cue) && any(idx.PeriS)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['visuomotor_peri_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.PeriS),{'en','su','bi'}));
-    end
+%     if any(idx.Cue) && any(idx.PeriS)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['visual_peri_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ~ismember(tuning_per_unit_table(2:end,idx.PeriS),{'en','su','bi'}));
+%     end
+%     
+%     if any(idx.Cue) && any(idx.PeriS)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['motor_peri_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell(~ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.PeriS),{'en','su','bi'}));
+%     end
+%     
+%     if any(idx.Cue) && any(idx.PeriS)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['visuomotor_peri_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.PeriS),{'en','su','bi'}));
+%     end
     %
     %
     %     if any(idx.mem)
@@ -452,72 +470,72 @@ for t=1:numel(taskcases)
             abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_EN)))));
     end
     
-    if any(idx.TIhol_IS_FR) && any(idx.Cue_IS_FR)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['VMI_post_IS_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell((cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_FR)) - cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_FR)))./...
-            (cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_FR)) + cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_FR))));
-    end
-    if any(idx.TIhol_CS_FR) && any(idx.Cue_CS_FR)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['VMI_post_CS_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell((cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_FR)) - cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_FR)))./...
-            (cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_FR)) + cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_FR))));
-    end
+%     if any(idx.TIhol_IS_FR) && any(idx.Cue_IS_FR)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['VMI_post_IS_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell((cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_FR)) - cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_FR)))./...
+%             (cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_FR)) + cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_FR))));
+%     end
+%     if any(idx.TIhol_CS_FR) && any(idx.Cue_CS_FR)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['VMI_post_CS_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell((cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_FR)) - cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_FR)))./...
+%             (cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_FR)) + cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_FR))));
+%     end
+%     
     
     
     
+%     if any(idx.TIhol_IS_EN) && any(idx.Cue_IS_EN)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['VMI_postEN_IS_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell((abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_EN))) - abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_EN))))./...
+%             (abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_EN)))));
+%     end
+%     if any(idx.TIhol_CS_EN) && any(idx.Cue_CS_EN)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['VMI_postEN_CS_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell((abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_EN))) - abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_EN))))./...
+%             (abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_EN)))));
+%     end
+%     
+%     if any(idx.TIhol_IS_EN) && any(idx.Cue_IS_EN) && any(idx.TIhol_CS_EN) && any(idx.Cue_CS_EN)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['VMI_postEN_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell((abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_EN))) - ...
+%             abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_EN))) - abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_EN))))./...
+%             (abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_EN))) + ...
+%             abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_EN)))));
+%         %     tuning_per_unit_table(2:end,n_column)=num2cell((abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_EN))) + ...
+%         %                                                     abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_EN))))/4);
+%     end
+%     
     
-    if any(idx.TIhol_IS_EN) && any(idx.Cue_IS_EN)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['VMI_postEN_IS_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell((abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_EN))) - abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_EN))))./...
-            (abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_EN)))));
-    end
-    if any(idx.TIhol_CS_EN) && any(idx.Cue_CS_EN)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['VMI_postEN_CS_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell((abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_EN))) - abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_EN))))./...
-            (abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_EN)))));
-    end
-    
-    if any(idx.TIhol_IS_EN) && any(idx.Cue_IS_EN) && any(idx.TIhol_CS_EN) && any(idx.Cue_CS_EN)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['VMI_postEN_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell((abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_EN))) - ...
-            abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_EN))) - abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_EN))))./...
-            (abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_EN))) + ...
-            abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_EN)))));
-        %     tuning_per_unit_table(2:end,n_column)=num2cell((abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_IS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_EN))) + ...
-        %                                                     abs(cell2mat(tuning_per_unit_table(2:end,idx.TIhol_CS_EN))) + abs(cell2mat(tuning_per_unit_table(2:end,idx.Cue_CS_EN))))/4);
-    end
-    
-    
-    if any(idx.CueG_IS_EN) && any(idx.PreG_IS_EN)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['PreCueSum_IS_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(cell2mat(tuning_per_unit_table(2:end,idx.CueG_IS_EN)) + cell2mat(tuning_per_unit_table(2:end,idx.PreG_IS_EN)));
-    end
-    
-    if any(idx.CueG_CS_EN) && any(idx.PreG_CS_EN)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['PreCueSum_CS_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell(cell2mat(tuning_per_unit_table(2:end,idx.CueG_CS_EN)) + cell2mat(tuning_per_unit_table(2:end,idx.PreG_CS_EN)));
-    end
-    
-    
-    if any(idx.CueG_IS_FR) && any(idx.PreG_IS_FR)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['PreCueMean_IS_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell((cell2mat(tuning_per_unit_table(2:end,idx.CueG_IS_FR)) + cell2mat(tuning_per_unit_table(2:end,idx.PreG_IS_FR)))/2);
-    end
-    
-    if any(idx.CueG_CS_FR) && any(idx.PreG_CS_FR)
-        n_column=n_column+1;
-        tuning_per_unit_table{1,n_column}=['PreCueMean_CS_' taskcase];
-        tuning_per_unit_table(2:end,n_column)=num2cell((cell2mat(tuning_per_unit_table(2:end,idx.CueG_CS_FR)) + cell2mat(tuning_per_unit_table(2:end,idx.PreG_CS_FR)))/2); %% /2 !! for mean
-    end
-    
+%     if any(idx.CueG_IS_EN) && any(idx.PreG_IS_EN)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['PreCueSum_IS_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell(cell2mat(tuning_per_unit_table(2:end,idx.CueG_IS_EN)) + cell2mat(tuning_per_unit_table(2:end,idx.PreG_IS_EN)));
+%     end
+%     
+%     if any(idx.CueG_CS_EN) && any(idx.PreG_CS_EN)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['PreCueSum_CS_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell(cell2mat(tuning_per_unit_table(2:end,idx.CueG_CS_EN)) + cell2mat(tuning_per_unit_table(2:end,idx.PreG_CS_EN)));
+%     end
+%     
+%     
+%     if any(idx.CueG_IS_FR) && any(idx.PreG_IS_FR)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['PreCueMean_IS_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell((cell2mat(tuning_per_unit_table(2:end,idx.CueG_IS_FR)) + cell2mat(tuning_per_unit_table(2:end,idx.PreG_IS_FR)))/2);
+%     end
+%     
+%     if any(idx.CueG_CS_FR) && any(idx.PreG_CS_FR)
+%         n_column=n_column+1;
+%         tuning_per_unit_table{1,n_column}=['PreCueMean_CS_' taskcase];
+%         tuning_per_unit_table(2:end,n_column)=num2cell((cell2mat(tuning_per_unit_table(2:end,idx.CueG_CS_FR)) + cell2mat(tuning_per_unit_table(2:end,idx.PreG_CS_FR)))/2); %% /2 !! for mean
+%     end
+%     
     
     for e=1:numel(epochs)
         if any(idx.([epochs{e} '_in_space_DF'])) && any(idx.([epochs{e} '_in_IS_FR'])) && any(idx.([epochs{e} '_in_CS_FR'])) && any(idx.([epochs{e} '_ch_IS_FR'])) && any(idx.([epochs{e} '_ch_CS_FR']))

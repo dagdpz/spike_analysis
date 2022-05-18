@@ -627,7 +627,7 @@ for ch=1:numel(INCHnamepart)
     
     perturbations_to_compare=unique(idx.tr_PT);
     if numel(perturbations_to_compare)>1
-        conditions_to_compare={'LH_LS','LH_RS','RH_LS','RH_RS'};
+        conditions_to_compare={'LH_LS','LH_RS','RH_LS','RH_RS','LS','RS'};
         labelpt={'SU','-','EN'};
         for c=1:numel(conditions_to_compare)
             idx_con=idx.(['tr_' conditions_to_compare{c}]);

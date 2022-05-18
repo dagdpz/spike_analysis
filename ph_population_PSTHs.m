@@ -24,16 +24,17 @@ legend_labels_pref={'NH NP IN' 'NH NP CH' 'IH NP IN' 'IH NP CH' 'CH NP IN' 'CH N
     'NH PF IN' 'NH PF CH' 'IH PF IN' 'IH PF CH' 'CH PF IN' 'CH PF CH' ...
     'NH NP IN P' 'NH NP CH P' 'IH NP IN P' 'IH NP CH P' 'CH NP IN P' 'CH NP CH P'  ...
     'NH PF IN P' 'NH PF CH P' 'IH PF IN P' 'IH PF CH P' 'CH PF IN P' 'CH PF CH P'};
-
+keys.line_types = {'-';'--';'-';'--';'-';'--';'-';'--';'-';'--';'-';'--';'-';'--';'-';'--';'-';'--';...
+    '-';'--';'-';'--';'-';'--';'-';'--';'-';'--';'-';'--';'-';'--';'-';'--';'-';'--'};
 cols=keys.colors;
 
 %% there are just too many colors once we include vertical targets, so for now we just keep use the same ones again...
-keys.line_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
-    cols.NH_VS_IN;cols.NH_VS_CH;cols.IH_VS_IN;cols.IH_VS_CH;cols.CH_VS_IN;cols.CH_VS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;...
-    [cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
-    cols.NH_VS_IN;cols.NH_VS_CH;cols.IH_VS_IN;cols.IH_VS_CH;cols.CH_VS_IN;cols.CH_VS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/610]; %%temporary for inactivation
+keys.line_colors=[[cols.NH_CS_IN;cols.NH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;...
+    cols.NH_VS_IN;cols.NH_VS_CH;cols.CH_VS_IN;cols.CH_VS_CH;cols.IH_VS_IN;cols.IH_VS_CH;...
+    cols.NH_IS_IN;cols.NH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;]/255;...
+    [cols.NH_CS_IN_P;cols.NH_CS_CH_P;cols.CH_CS_IN;cols.CH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;...
+    cols.NH_VS_IN;cols.NH_VS_CH;cols.CH_VS_IN;cols.CH_VS_CH;cols.IH_VS_IN;cols.IH_VS_CH;...
+    cols.NH_IS_IN_P;cols.NH_IS_CH_P;cols.CH_IS_IN;cols.CH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;]/255]; %%temporary for inactivation
 keys.pref_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;...
     [cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
@@ -231,11 +232,7 @@ for tye=1:size(type_effectors,1)
             [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{2})).perturbation]=deal(1);
             pop=ph_LR_to_CI(keys,pop);
             per_epoch=vertcat(pop.trial.epoch);
-            if keys.PO.FR_subtract_baseline
-                baseline=repmat(vertcat(per_epoch(:,BL_epoch).FR),1,size(condition_matrix,1));
-            else
-                baseline=zeros(numel(pop.trial),size(condition_matrix,1));
-            end
+            
             %% normalization factor
             for n=1:size(condition_matrix,1)
                 clear trpar
@@ -267,18 +264,27 @@ for tye=1:size(type_effectors,1)
                     continue
                 end
                 per_epoch=vertcat(pop.trial(tr_con).epoch);
+                
+                if keys.PO.FR_subtract_baseline
+                    baseline(tr_con)=vertcat(per_epoch(:,BL_epoch).FR);
+                else
+                    %                 baseline(tr_con)=zeros(numel(pop.trial,1));
+                    baseline(tr_con)=zeros(1,sum(tr_con));
+                end
+                
+                
                 if keys.PO.FR_subtract_baseline && ~keys.PO.baseline_per_trial
-                    baseline(:,n)=deal(nanmean(vertcat(per_epoch(:,BL_epoch).FR)));
+                    baseline(tr_con)=deal(nanmean(vertcat(per_epoch(:,BL_epoch).FR)));
                 end
                 
                 %what to do if per_epoch is empty or
-                if strcmp(keys.PO.normalization,'none') || isempty(DN_epoch) %DN_epoch is empty? %% check if this works, for no multiplicative normalization
+                if strcmp(keys.PO.normalization,'none') || isempty(DN_epoch) || keys.PO.FR_subtract_baseline %DN_epoch is empty? %% check if this works, for no multiplicative normalization
                     norm_factor(u,n)= 1;
                     %                 elseif isempty(per_epoch)
                     %                     norm_factor(u,n)=NaN;
                 elseif strcmp(keys.PO.normalization,'percent_change')
                     norm_factor(u,n)=deal(nanmean([per_epoch(:,BL_epoch).FR per_epoch(:,DN_epoch).FR NaN]))/100;
-                    baseline(:,n)=deal(nanmean([per_epoch(:,BL_epoch).FR per_epoch(:,DN_epoch).FR NaN]));
+                    baseline(tr_con)=deal(nanmean([per_epoch(:,BL_epoch).FR per_epoch(:,DN_epoch).FR NaN]));
                 elseif ~isempty(DN_epoch)
                     norm_factor(u,n)=nanmean([per_epoch(:,DN_epoch).FR NaN]);
                 end
@@ -323,10 +329,10 @@ for tye=1:size(type_effectors,1)
                 baseline(:)=deal(nanmean(SD));
             end
             
-            norm_factor(u,:)=deal(max([norm_factor(u,:) 0])); % now we always normalize to maximum condition, 0 makes sure some value is there..
+            %             norm_factor(u,:)=deal(max([norm_factor(u,:) 0])); % now we always normalize to maximum condition, 0 makes sure some value is there..
             %% correct normalization factors if they are too low
             if any(norm_factor(u,:)<1)
-                 baseline=baseline+1-nanmean(norm_factor(u,:)); % 
+                baseline=baseline+1-nanmean(norm_factor(u,:)); %
                 norm_factor(u,:)=deal(1);
             end
             
@@ -372,13 +378,13 @@ for tye=1:size(type_effectors,1)
                         ix = tr_con & tr_hemi;
                         n=max([1,find(ismember(condition_matrix(:,1:3),conditions_eff(ce,:),'rows') & condition_matrix(:,end)==u_hemifields(f))]);
                         condition(t,c).per_hemifield(f).window(w).unit(u).average_spike_density=...
-                            ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
+                            ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(u,n));
                         condition(t,c).per_hemifield(f).effector=eff;
                         for x=1:size(fixations,1)
                             tr_fix=all(abs(bsxfun(@minus,vertcat(pop.trial.fixation),fixations(x,:)))<4,2)'; %4 is precision --> add to keys?
                             ix = tr_con & tr_hemi & tr_fix;
                             condition(t,c).per_hf_fixation(f,x).window(w).unit(u).average_spike_density=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
+                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(u,n));
                             condition(t,c).per_hf_fixation(f,x).fixation=fixations(x,:);
                             condition(t,c).per_hf_fixation(f,x).effector=eff;
                             condition(t,c).per_hf_fixation(f,x).position=[u_hemifields(f) 0];
@@ -392,7 +398,7 @@ for tye=1:size(type_effectors,1)
                         tr_pos=all(abs(bsxfun(@minus,vertcat(pop.trial.position),positions(p,:)))<1.5,2)';
                         ix = tr_con & tr_pos;
                         
-                        condition(t,c).per_position(p).window(w).unit(u).average_spike_density= ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
+                        condition(t,c).per_position(p).window(w).unit(u).average_spike_density= ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(u,n));
                         condition(t,c).per_position(p).position=positions(p,:);
                         condition(t,c).per_position(p).fixation=1;
                         condition(t,c).per_position(p).effector=eff;
@@ -417,7 +423,7 @@ for tye=1:size(type_effectors,1)
                             % ph_spike_density(pop.trial(tr_con & trpos & trfix),w,keys,base_line,norm_fact);
                             
                             condition(t,c).per_position_fixation(p,x).window(w).unit(u).average_spike_density=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
+                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(u,n));
                             condition(t,c).per_position_fixation(p,x).position=positions(p,:);
                             condition(t,c).per_position_fixation(p,x).fixation=fixations(x,:);
                             condition(t,c).per_position_fixation(p,x).effector=eff;
@@ -433,12 +439,12 @@ for tye=1:size(type_effectors,1)
                         ix = tr_con & tr_pos;
                         if p==pref_idx
                             condition(t,c).per_preference(1).window(w).unit(u).average_spike_density=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
+                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(u,n));
                             condition(t,c).per_preference(1).effector=eff;
                         end
                         if p==unpref_idx
                             condition(t,c).per_preference(2).window(w).unit(u).average_spike_density=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix,n),norm_factor(u,n));
+                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(u,n));
                             condition(t,c).per_preference(2).effector=eff;
                         end
                     end
@@ -1031,6 +1037,7 @@ end
                         sph(spn)=subplot(numel(unique_group_values),max(columns_to_loop),spn-(ef-1)*sp_per_effector);
                         col=(conditions_PSTH(c,1)+1)*6 + (conditions_PSTH(c,3))*2 + (conditions_PSTH(c,4)+1) + (conditions_PSTH(c,5)*18);
                         current_color=keys.line_colors(col,:);
+                        current_line_type = keys.line_types{col};
                         spl(spn)=spl(spn)+1;
                     elseif any(strfind(plot_title_part,'pref'))
                         column=columns_to_loop(c);
@@ -1080,7 +1087,11 @@ end
                             t_after_state=keys.PSTH_WINDOWS{w,4};
                             bins=t_before_state:keys.PSTH_binwidth:t_after_state;
                             bins=bins+state_shift-t_before_state;
-                            props={'color',current_color,'linewidth',1};
+                            if strcmp(plot_title_part,' PSTHs')
+                                props={'color',current_color,'linewidth',3,'LineStyle',current_line_type};
+                            else
+                                props={'color',current_color,'linewidth',3};
+                            end
                             errorbarhandle=shadedErrorBar(bins,nanmean(vertcat(current(c).window(w).unit(units).average_spike_density),1),...
                                 sterr(vertcat(current(c).window(w).unit(units).average_spike_density),1),props,1); %% STERR!!!!
                             state_shift=state_shift+t_after_state-t_before_state+0.1;

@@ -33,7 +33,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         if redo_anovas
             clear tuning_per_unit_table
             population = ph_accept_trials_per_unit(population);
-            population = ph_assign_perturbation_group(keys,population);
+%             population = ph_assign_perturbation_group(keys,population);
             population = ph_epochs(population,keys);
             tuning_per_unit_table=ph_ANOVAS(population,keys); % main function
             save([keys.tuning_table_foldername keys.tuning_table_filename],'tuning_per_unit_table');

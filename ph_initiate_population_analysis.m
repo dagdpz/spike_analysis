@@ -84,7 +84,7 @@ for P=population_analysis_to_perform
         
         keys.(AN).IC_to_plot='in';
         keys.(AN).plot_per_position=0;
-        keys.(AN).fontsize_factor=1.5;
+        keys.(AN).fontsize_factor=4;
         
         keys.(AN).split_SUs={''};
         keys.(AN).RF_frame_colors                 	= {};
