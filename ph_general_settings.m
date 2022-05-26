@@ -197,19 +197,36 @@ keys.colors.RH_LS_IN=[0 255 0];
 keys.colors.RH_LS_CH=[0 128 0];
 
 % population contra ipsi PSTH colors
-keys.colors.NH_CS_IN=[255 0 64];
-keys.colors.NH_CS_CH=[128 0 32];
-keys.colors.IH_CS_IN=[255 0 255];
-keys.colors.IH_CS_CH=[128 0 128];
-keys.colors.CH_CS_IN=[255 128 0];
-keys.colors.CH_CS_CH=[128 64 0];
-keys.colors.NH_IS_IN=[0 255 255];
-keys.colors.NH_IS_CH=[0 128 128];
-keys.colors.IH_IS_IN=[0 128 255];
-keys.colors.IH_IS_CH=[0 64 128];
-keys.colors.CH_IS_IN=[0 255 0];
-keys.colors.CH_IS_CH=[0 128 0];
+% keys.colors.NH_CS_IN=[255 0 64];
 
+
+%% MP changed colors for choice because he added dotted lines for that
+keys.colors.NH_CS_IN=[255 102 0];
+keys.colors.NH_CS_IN_P=[204 51 0];
+% keys.colors.NH_CS_CH=[128 0 32];
+% keys.colors.NH_CS_CH=[255 0 64];
+keys.colors.NH_CS_CH=[255 102 0];
+keys.colors.NH_CS_CH_P=[204 51 0];
+keys.colors.IH_CS_IN=[255 0 255];
+% keys.colors.IH_CS_CH=[128 0 128];
+keys.colors.IH_CS_CH=[255 0 255];
+keys.colors.CH_CS_IN=[255 128 0];
+% keys.colors.CH_CS_CH=[128 64 0];
+keys.colors.CH_CS_CH=[255 128 0];
+% keys.colors.NH_IS_IN=[0 255 255];
+keys.colors.NH_IS_IN=[0 119 255];
+keys.colors.NH_IS_IN_P=[0 70 141];
+% keys.colors.NH_IS_CH=[0 128 128];
+% keys.colors.NH_IS_CH=[0 255 255];
+keys.colors.NH_IS_CH=[0 119 255];
+keys.colors.NH_IS_CH_P=[0 70 141];
+keys.colors.IH_IS_IN=[0 128 255];
+% keys.colors.IH_IS_CH=[0 64 128];
+keys.colors.IH_IS_CH=[0 128 255];
+keys.colors.CH_IS_IN=[0 255 0];
+
+keys.colors.CH_IS_CH=[0 128 0];
+%keys.colors.CH_IS_CH=[0 255 0];
 
 %% these need to be fixed somehow
 keys.colors.NH_VS_IN=[150 150 150];

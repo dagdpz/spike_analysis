@@ -103,6 +103,7 @@ for P=population_analysis_to_perform
         keys.(AN).link_y_lim=1; 
         keys.(AN).IC_to_plot='in';
         keys.(AN).fontsize_factor=1.5;
+        % keys.(AN).fontsize_factor=4;  %% MP: this should be in the settings file
         keys.(AN).split_SUs={''};
         keys.(AN).RF_frame_colors                 	= {};
         keys.(AN).RF_frame_entries                 	= {};

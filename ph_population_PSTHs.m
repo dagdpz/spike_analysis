@@ -16,7 +16,7 @@ fitsettings.xout=[-30:30]; % range for gaussian fit
 fitsettings.yout=[-15:15];
 fitsettings.range_factor=1;
 fitsettings.fittypes=keys.PO.fittypes;
-fitsettings.baseline_subtracted=keys.PO.FR_subtract_baseline; 
+fitsettings.baseline_subtracted=keys.PO.FR_subtract_baseline;
 keys.PO.fitsettings=fitsettings;
 
 %% tuning table preparation and grouping
@@ -107,7 +107,6 @@ keys.normalization_field='PO';
 [~, condition,~,pref_valid]=ph_condition_normalization(population,keys,UC,CM);
 
 %% condition comparison (kinda there to be used, but not used currently ???)
-
 comparisons_per_effector(1).reach_hand{1}=0;
 comparisons_per_effector(1).reach_hand{2}=0;
 comparisons_per_effector(1).hemifield{1}=[-1];
@@ -204,30 +203,30 @@ for t=1:size(condition,1)
         for gt=1:numel(unique_group_values_tmp)
             unique_group_values=unique_group_values_tmp(gt);
             
-%             %% PSTH per position plot
-%             current=[condition(t,:).per_position]; current=current(:);
-%             legend_labels=legend_labels_pos;
-%             plot_title_part=['=' unique_group_values{1} ' PSTHs per position'];
-%             units_valid=ones(size(complete_unit_list,1),1);
-%             column_indexes=columns_pref;
-%             plot_PSTH
-%             
-%             %% PSTH per position plot (by initial fixation - these here need to be fixed!)
-%             if true
-%                 
-%                 current=[condition(t,:).per_position]; current=current(:);
-%                 plot_title_part=['=' unique_group_values{1} ' PSTHs per position ensu ' keys.PO.epoch_PF '-' keys.PO.epoch_BL];
-%                 units_valid=ones(size(complete_unit_list,1),1);
-%                 column_indexes=columns_pref;
-%                 plot_PSTH
-%                 
-% %                 current=[condition(t,:).per_hemifield]; current=current(:);
-% %                 plot_title_part=['=' unique_group_values{1} ' PSTHs ensu ' keys.PO.epoch_PF '-' keys.PO.epoch_BL];
-% %                 units_valid=ones(size(complete_unit_list,1),1);
-% %                 column_indexes=columns_hf;
-% %                 plot_PSTH
-%                 
-%             end
+            %             %% PSTH per position plot
+            %             current=[condition(t,:).per_position]; current=current(:);
+            %             legend_labels=legend_labels_pos;
+            %             plot_title_part=['=' unique_group_values{1} ' PSTHs per position'];
+            %             units_valid=ones(size(complete_unit_list,1),1);
+            %             column_indexes=columns_pref;
+            %             plot_PSTH
+            %
+            %             %% PSTH per position plot (by initial fixation - these here need to be fixed!)
+            %             if true
+            %
+            %                 current=[condition(t,:).per_position]; current=current(:);
+            %                 plot_title_part=['=' unique_group_values{1} ' PSTHs per position ensu ' keys.PO.epoch_PF '-' keys.PO.epoch_BL];
+            %                 units_valid=ones(size(complete_unit_list,1),1);
+            %                 column_indexes=columns_pref;
+            %                 plot_PSTH
+            %
+            % %                 current=[condition(t,:).per_hemifield]; current=current(:);
+            % %                 plot_title_part=['=' unique_group_values{1} ' PSTHs ensu ' keys.PO.epoch_PF '-' keys.PO.epoch_BL];
+            % %                 units_valid=ones(size(complete_unit_list,1),1);
+            % %                 column_indexes=columns_hf;
+            % %                 plot_PSTH
+            %
+            %             end
             
             unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values_tmp(1)),idx_unitID));
             group_units=find(all(unitidx,2))';
@@ -384,7 +383,7 @@ for t=1:size(condition,1)
             %normalize firing rates?
             for u=1:size(pos,2)
                 FR=[pos(:,u).FR];
-                if keys.PO.FR_subtract_baseline 
+                if keys.PO.FR_subtract_baseline
                     [FRmax(u), maxposition(u)]=max([FR(FR>0) 0]);
                     FRmin=min([FR(FR<0) 0]);
                     FRmax(u)=max([abs(FRmax(u)) abs(FRmin)]);
@@ -406,7 +405,7 @@ for t=1:size(condition,1)
                 n=RF_sort_index(u);
                 subplot(RF_rows,RF_columns,n);
                 RF=RFparameters(u);
-                if keys.PO.FR_subtract_baseline 
+                if keys.PO.FR_subtract_baseline
                     Zout=round(RF.Zout/FRmax(u)/2*254 + 127)+1;
                 else
                     Zout=round(RF.Zout/FRmax(u)*254)+1;
@@ -622,7 +621,7 @@ for t=1:size(condition,1)
             
             [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
             ph_append_to_anova_table(keys,'RFs',complete_unit_list(group_units),RFparameters,type_effector_short,labels{c});
-
+            
             save([keys.path_to_save filename plot_title_part '.mat'],'RFsizes','RFparameters');
         end
     end
@@ -712,7 +711,11 @@ end
                             t_after_state=keys.PSTH_WINDOWS{w,4};
                             bins=t_before_state:keys.PSTH_binwidth:t_after_state;
                             bins=bins+state_shift-t_before_state;
-                            props={'color',current_color,'linewidth',1};
+                            if strcmp(plot_title_part,' PSTHs')
+                                props={'color',current_color,'linewidth',3,'LineStyle',current_line_type};
+                            else
+                                props={'color',current_color,'linewidth',3};
+                            end
                             errorbarhandle=shadedErrorBar(bins,nanmean(vertcat(current(c).window(w).unit(units).average_spike_density),1),...
                                 sterr(vertcat(current(c).window(w).unit(units).average_spike_density),1),props,1); %% STERR!!!!
                             state_shift=state_shift+t_after_state-t_before_state+0.1;
@@ -753,9 +756,9 @@ end
             ef=spf(spn);
             axes(sph(spn));
             %% alternative (MP ?)
-%             ef=spf(spn);
-%             set(0, 'CurrentFigure', PSTH_summary_handle(ef));
-%             subplot(sph(spn));
+            %             ef=spf(spn);
+            %             set(0, 'CurrentFigure', PSTH_summary_handle(ef));
+            %             subplot(sph(spn));
             
             hold on
             
@@ -832,7 +835,7 @@ end
                     %% also, can we speed up by plotting the same background for every subplot???
                     y_lim=get(gca,'ylim');
                     tr=[all_trialz.type]==typ & [all_trialz.effector]==eff & ismember([all_trialz.completed],keys.cal.completed) &...
-                       ismember([all_trialz.reach_hand],UC.reach_hand) & ismember([all_trialz.choice],UC.choice);
+                        ismember([all_trialz.reach_hand],UC.reach_hand) & ismember([all_trialz.choice],UC.choice);
                     ph_PSTH_background(all_trialz(tr),y_lim,y_lim,y_lim,keys,1)
                 end
                 ph_title_and_save(PSTH_summary_handle,  [filename plot_title_part ' summary, ' type_effector_short ],plot_title,keys)

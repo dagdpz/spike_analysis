@@ -63,21 +63,21 @@ if ~isempty(taskcaseexistingindex)
     if strcmp(keys.tt.trial_criterion_in,'per_hemifield_and_perturbation')
         counter = 0;
         for I=taskcaseexistingindex_hf
-            if ~((any(strfind(tuning_per_unit_table{1,I},'in_')==1) && strcmp(keys.tt.trial_criterion_in,'per_hemifield_and_perturbation')) ||...
-                    (any(strfind(tuning_per_unit_table{1,I},'ch_')==1) && strcmp(keys.tt.trial_criterion_ch,'per_hemifield_and_perturbation')))
+            if ~((any(strfind(TT{1,I},'in_')==1) && strcmp(keys.tt.trial_criterion_in,'per_hemifield_and_perturbation')) ||...
+                    (any(strfind(TT{1,I},'ch_')==1) && strcmp(keys.tt.trial_criterion_ch,'per_hemifield_and_perturbation')))
                 continue;
             end
             counter = counter + 1;
-        task_existing_column=num2cell(cellfun(@(x) ~isempty(x)&&~ischar(x)&&x>=keys.cal.min_trials_per_condition,tuning_per_unit_table(:,I)));
-        strpos=strfind(tuning_per_unit_table{1,I},'_trials_per_hemifield');
-        task_existing_column{1,1}=['existing_' tuning_per_unit_table{1,I}([1:strpos,strpos+22:end])];
-        tuning_per_unit_table(:,end+1)=task_existing_column;
-        taskcases = [taskcases, {tuning_per_unit_table{1,I}(end-7:end)}];
+            task_existing_column=num2cell(cellfun(@(x) ~isempty(x)&&~ischar(x)&&x>=keys.cal.min_trials_per_condition,TT(:,I)));
+            strpos=strfind(TT{1,I},'_trials_per_hemifield');
+            task_existing_column{1,1}=['existing_' TT{1,I}([1:strpos,strpos+22:end])];
+            TT(:,end+1)=task_existing_column;
+            taskcases = [taskcases, {TT{1,I}(end-7:end)}];
         end
         %this nasty line put 1 to all to existing column if at least 1 is
         %equal to 1, for each unit separately
-        tuning_per_unit_table(2:end,end-(counter-1):end) = repmat(num2cell(any(cellfun(@(x) x == 1, tuning_per_unit_table(2:end,end-(counter-1):end)),2)),...
-            1, size(tuning_per_unit_table(2:end,end-(counter-1):end),2)); 
+        TT(2:end,end-(counter-1):end) = repmat(num2cell(any(cellfun(@(x) x == 1, TT(2:end,end-(counter-1):end)),2)),...
+            1, size(TT(2:end,end-(counter-1):end),2));
         
     end
     
@@ -290,6 +290,118 @@ for t=1:numel(taskcases)
     TT=get_VMI(TT,idx.TIhol_IS_EN,idx.Cue_IS_EN,['VMI_postEN_IS_' taskcase],'absolute');
     TT=get_VMI(TT,idx.TIhol_CS_EN,idx.Cue_CS_EN,['VMI_postEN_CS_' taskcase],'absolute');
     
+    %% MP
+    
+%     TT=get_VM(TT,idx.Cue,idx.Del,'first',['visual_only_' taskcase]); %% doesnt use suppression though !
+%     TT=get_VM(TT,idx.Cue,idx.Del,'both',['visuomotor_' taskcase]); %% doesnt use suppression though ! --> does use it for this one Oo
+%     TT=get_VM(TT,idx.Cue,idx.Del,'second',['motor_only_' taskcase]); %% doesnt use suppression though !
+%     TT=get_VM(TT,idx.Cue,idx.Del,'first',['visual_only_' taskcase]); %% doesnt use suppression though !
+%     TT=get_VM(TT,idx.Cue,idx.Del,'first',['visual_only_' taskcase]); %% doesnt use suppression though !
+    
+    
+    n_column=size(TT,2);
+    if any(idx.Cue) % && any(idx.TIhol)
+        n_column=n_column+1;
+        TT{1,n_column}=['visual_en_' taskcase];
+        TT(2:end,n_column)=num2cell(ismember(TT(2:end,idx.Cue),{'en','bi'}));% & ~ismember(TT(2:end,idx.TIhol),{'en','su','bi'}));
+    end
+    
+    if  any(idx.Del)
+        n_column=n_column+1;
+        TT{1,n_column}=['motor_en_' taskcase];
+        TT(2:end,n_column)=num2cell(ismember(TT(2:end,idx.Del),{'en','bi'})); %& ismember(TT(2:end,idx.Del),{'en','su','bi'}));
+    end
+    
+    
+    %     if any(idx.Cue)  && any(idx.Del)
+    %         n_column=n_column+1;
+    %         tuning_per_unit_table{1,n_column}=['visual_only_' taskcase];
+    %         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','bi'}) & ~ismember(tuning_per_unit_table(2:end,idx.Del),{'en','bi'}));
+    %     end
+    %
+    %     if any(idx.Cue)  && any(idx.Del)
+    %         n_column=n_column+1;
+    %         tuning_per_unit_table{1,n_column}=['visuomotor_' taskcase];
+    %         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','bi'}) & ismember(tuning_per_unit_table(2:end,idx.Del),{'en','bi'}));
+    %     end
+    %
+    %     if any(idx.Cue) && any(idx.Del)
+    %         n_column=n_column+1;
+    %         tuning_per_unit_table{1,n_column}=['visuomotor_' taskcase];
+    %         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.Del),{'en','su','bi'}));
+    %     end
+    %
+    %     if any(idx.Cue)  && any(idx.Del)
+    %         n_column=n_column+1;
+    %         tuning_per_unit_table{1,n_column}=['motor_only_' taskcase];
+    %         tuning_per_unit_table(2:end,n_column)=num2cell(~ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','bi'}) & ismember(tuning_per_unit_table(2:end,idx.Del),{'en','bi'}));
+    %     end
+    %
+    
+    %% MP end
+    
+    
+    %% why this one was there for MP Mods?
+    %     if any(idx.PeriS_IS_FR) && any(idx.Cue_IS_FR)
+    %         n_column=n_column+1;
+    %         tuning_per_unit_table{1,n_column}=['VMI_peri_IS_' taskcase];
+    %         tuning_per_unit_table(2:end,n_column)=num2cell((cell2mat(tuning_per_unit_table(2:end,idx.PeriS_IS_FR)) - cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_FR)))./...
+    %             (cell2mat(tuning_per_unit_table(2:end,idx.PeriS_IS_FR)) + cell2mat(tuning_per_unit_table(2:end,idx.Cue_IS_FR))));
+    %     end
+    
+    %     if any(idx.Cue) && any(idx.TIhol)
+    %         n_column=n_column+1;
+    %         tuning_per_unit_table{1,n_column}=['notclassified_' taskcase];
+    %         tuning_per_unit_table(2:end,n_column)=num2cell(~ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ~ismember(tuning_per_unit_table(2:end,idx.TIhol),{'en','su','bi'}));
+    %     end
+    %
+    %     if any(idx.mem)
+    %     n_column=n_column+1;
+    %     tuning_per_unit_table{1,n_column}=['delay_' taskcase];
+    %     tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.mem),'en') );
+    %     end
+    %
+    %
+    
+    %     if any(idx.Cue) && any(idx.PeriS)
+    %         n_column=n_column+1;
+    %         tuning_per_unit_table{1,n_column}=['visual_peri_' taskcase];
+    %         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ~ismember(tuning_per_unit_table(2:end,idx.PeriS),{'en','su','bi'}));
+    %     end
+    %
+    %     if any(idx.Cue) && any(idx.PeriS)
+    %         n_column=n_column+1;
+    %         tuning_per_unit_table{1,n_column}=['motor_peri_' taskcase];
+    %         tuning_per_unit_table(2:end,n_column)=num2cell(~ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.PeriS),{'en','su','bi'}));
+    %     end
+    %
+    %     if any(idx.Cue) && any(idx.PeriS)
+    %         n_column=n_column+1;
+    %         tuning_per_unit_table{1,n_column}=['visuomotor_peri_' taskcase];
+    %         tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Cue),{'en','su','bi'}) & ismember(tuning_per_unit_table(2:end,idx.PeriS),{'en','su','bi'}));
+    %     end
+    %
+    %
+    %
+    %     if any(idx.Fhol) && any(idx.PeriS) && any(idx.Cue)
+    %     n_column=n_column+1;
+    %     tuning_per_unit_table{1,n_column}=['fixation_only_' taskcase];
+    %     tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Fhol),'en') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'-') & ismember(tuning_per_unit_table(2:end,idx.Cue),'-'));
+    %     end
+    %
+    %     if any(idx.Fhol) && any(idx.PeriS)
+    %     n_column=n_column+1;
+    %     tuning_per_unit_table{1,n_column}=['fixation_and_sac_suppression_' taskcase];
+    %     tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Fhol),'en') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'su'));
+    %     end
+    %     if any(idx.Fhol) && any(idx.PeriS)
+    %     n_column=n_column+1;
+    %     tuning_per_unit_table{1,n_column}=['Sac_supression_' taskcase];
+    %     tuning_per_unit_table(2:end,n_column)=num2cell(ismember(tuning_per_unit_table(2:end,idx.Fhol),'-') & ismember(tuning_per_unit_table(2:end,idx.PeriS),'su'));
+    %     end
+    
+    
+    
     
     
     n_column=size(TT,2);
@@ -337,6 +449,7 @@ for t=1:numel(taskcases)
         TT{1,n_column}=['PreCueMean_CS_' taskcase];
         TT(2:end,n_column)=num2cell((cell2mat(TT(2:end,idx.CueG_CS_FR)) + cell2mat(TT(2:end,idx.PreG_CS_FR)))/2); %% /2 !! for mean
     end
+    
     
     
     for e=1:numel(epochs)
