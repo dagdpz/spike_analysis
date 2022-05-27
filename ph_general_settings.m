@@ -113,10 +113,11 @@ keys.plot.anova_effector={'E','in_epoch_main','','S','in_spaceLR_main','','C','c
 keys.plot.anova_epoch1  ={'E','in_AH','epoch','S','in','spaceLR','C','ch','spaceLR','H','in','hands','SxH','in','SxH'};
 keys.plot.anova_epoch2  ={'LL','in_LH_LS','PT','RL','in_LH_RS','PT','LR','in_RH_LS','PT','RR','in_RH_RS','PT'};
 
-%% are these used?
-%keys.width.PSTH_perpos          =0.5;
-%keys.width.raster               =0.1;
-%keys.width.PSTH_summary         =1;
+
+keys.plot.PSTH_perpos_width          =0.5;
+keys.plot.raster_width               =0.1;
+keys.plot.PSTH_summary_width         =1;
+
 
 %% colors & legends
 keys.condition_parameters={'reach_hand','choice','perturbation'};

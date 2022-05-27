@@ -42,6 +42,9 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
                     [~,units_valid,~]=intersect({population.unit_ID},tuning_table(:,1));
                     pop=population(units_valid);
                     pop_trials=[pop.trial];
+                    if isempty(pop_trials)
+                        continue;
+                    end
                     for pt=1:numel(keys.cal.perturbation_groups)
                         pop_trials_pt=pop_trials(ismember([pop_trials.perturbation],keys.cal.perturbation_groups{pt}));
                         if isempty(pop_trials_pt)

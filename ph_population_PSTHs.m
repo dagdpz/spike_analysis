@@ -711,11 +711,11 @@ end
                             t_after_state=keys.PSTH_WINDOWS{w,4};
                             bins=t_before_state:keys.PSTH_binwidth:t_after_state;
                             bins=bins+state_shift-t_before_state;
-                            if strcmp(plot_title_part,' PSTHs')
-                                props={'color',current_color,'linewidth',3,'LineStyle',current_line_type};
-                            else
+%                             if strcmp(plot_title_part,' PSTHs')
+%                                 props={'color',current_color,'linewidth',3,'LineStyle',current_line_type};
+%                             else
                                 props={'color',current_color,'linewidth',3};
-                            end
+%                             end
                             errorbarhandle=shadedErrorBar(bins,nanmean(vertcat(current(c).window(w).unit(units).average_spike_density),1),...
                                 sterr(vertcat(current(c).window(w).unit(units).average_spike_density),1),props,1); %% STERR!!!!
                             state_shift=state_shift+t_after_state-t_before_state+0.1;

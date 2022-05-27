@@ -20,8 +20,8 @@ unique_states=unique([trial.states]);
 trial_onsets=NaN(numel(trial),numel(unique_states));
 for t=1:numel(trial)
     [~,si]=ismember(unique_states,trial(t).states);
-    si=si(si~=0);
-    [~,ssi]=sort(si);
+    [sisorted,ssi]=sort(si);
+    ssi=ssi(sisorted~=0);
     trial_onsets(t,ssi)=trial(t).states_onset;
 end
 
@@ -54,17 +54,17 @@ for w=1:size(keys.PSTH_WINDOWS,1)
         temp_state_onsets=absolute_state_onsets(states_in_window);
         temp_state_onsets=temp_state_onsets(state_positions_idx);
         for p=1:numel(state_positions)
-            text(double(state_positions(p)),diff(y_limframe)*-0.07+y_limframe(1),num2str(round(temp_state_onsets(p)*1000)),...
-                'rotation',45,'fontsize',8*fontsize_factor,'horizontalalignment','center'); %this is a trick: becuase they are plotted in different colors, they will be different elements in adobe
+            text(double(state_positions(p)),diff(y_limframe)*-0.02+y_limframe(1),num2str(round(temp_state_onsets(p)*1000)),...
+                'rotation',45,'fontsize',8*fontsize_factor,'horizontalalignment','center','verticalalignment','top'); %this is a trick: becuase they are plotted in different colors, they will be different elements in adobe
             if p>1 && state_positions(p)-state_positions(p-1)<diff(x_limframe)/100
                 current_y=prev_y-diff(y_limframe)*0.15;
             else
                 current_y=y_limframe(2)-diff(y_limframe)*0.15;
             end
-            text(double(state_positions(p)),current_y,state_names_in_window(p),...
-                'fontsize',6*fontsize_factor,'interpreter','none','rotation',90,'verticalalignment','top');  %label for state
+            text(double(state_positions(p)),current_y,state_names_in_window(p),'fontsize',8*fontsize_factor,'interpreter','none','rotation',90,'verticalalignment','top');  %label for state
             prev_y=current_y;
         end
+        line([unique(state_positions); unique(state_positions)],y_limframe,'color',[0.8 0.8 0.8],'linewidth',1,'LineStyle', '--');
         line([state_shift state_shift],y_limframe,'color',[0 0 0],'linewidth',1.5,'LineStyle', '--');
         
         %         text(double(state_positions'),ones(size(state_positions'))*(y_limframe(2)-diff(y_limframe)*0.15),state_names(states_in_window),...
@@ -75,16 +75,16 @@ for w=1:size(keys.PSTH_WINDOWS,1)
     end
     
     %% this here is LS version
-    %     text(state_seperator+(t_after_state-t_before_state)/2,y_limPSTH(2)-diff(y_limPSTH)*0.05,window_label,...
-    %         'color',[0 0 0],'fontsize',6*fontsize_factor,'horizontalalignment','center','verticalalignment','top');
-    %% MP
-    if w == 1
-        text(state_shift+0.1,y_limPSTH(2)-diff(y_limPSTH)*0.05,window_label,...
+        text(state_seperator+(t_after_state-t_before_state)/2,y_limPSTH(2)-diff(y_limPSTH)*0.05,window_label,...
             'color',[0 0 0],'fontsize',11*fontsize_factor,'horizontalalignment','center','verticalalignment','top');
-    else
-        text(state_shift-0.15,y_limPSTH(2)-diff(y_limPSTH)*0.05,window_label,...
-            'color',[0 0 0],'fontsize',11*fontsize_factor,'horizontalalignment','center','verticalalignment','top');
-    end
+%     %% MP
+%     if w == 1
+%         text(state_shift+0.1,y_limPSTH(2)-diff(y_limPSTH)*0.05,window_label,...
+%             'color',[0 0 0],'fontsize',11*fontsize_factor,'horizontalalignment','center','verticalalignment','top');
+%     else
+%         text(state_shift-0.15,y_limPSTH(2)-diff(y_limPSTH)*0.05,window_label,...
+%             'color',[0 0 0],'fontsize',11*fontsize_factor,'horizontalalignment','center','verticalalignment','top');
+%     end
     for ep=find(epochs_in_window')
         %         ptch=rectangle('Position',[relative_epochs(ep,1)+state_shift y_limPSTH(1) diff(relative_epochs(ep,:)) diff(y_limPSTH)*0.1],'EdgeColor','none','FaceColor',[0.8 0.8 0.8]); %frame for indicating FR window
         %         text(double(state_shift+relative_epochs(ep,1)+diff(relative_epochs(ep,:))/2),y_limPSTH(1)+diff(y_limPSTH)*0.01,epoch_names(ep),'color',[ep ep ep]/255,'verticalalignment','middle','horizontalalignment','left','rotation',90,'fontsize',6*fontsize_factor);
@@ -97,10 +97,11 @@ for w=1:size(keys.PSTH_WINDOWS,1)
     state_seperator=state_shift + t_after_state + 0.1;
     state_seperator_max=max([state_seperator_max;state_seperator]);
 end
-line([0.8 1],[y_limframe(1)+y_limframe(2)*0.05 y_limframe(1)+y_limframe(2)*0.05],'linewidth',1,'color','k')
-text(0.9,(y_limframe(1)+y_limframe(2)*0.05),'200 ms','horizontalalignment','center','verticalalignment','bottom',...
-    'fontsize',4*fontsize_factor)
-text(0,diff(y_limframe)*-0.07+y_limframe(1),'0','fontsize',8*fontsize_factor)
+%% time scaling
+w1end=keys.PSTH_WINDOWS{1,4}-keys.PSTH_WINDOWS{1,3};
+line([w1end-0.05 w1end+0.15],[y_limframe(1)+y_limframe(2)*0.05 y_limframe(1)+y_limframe(2)*0.05],'linewidth',1,'color','k')
+text(w1end+0.05,(y_limframe(1)+y_limframe(2)*0.05),'200 ms','horizontalalignment','center','verticalalignment','bottom','fontsize',4*fontsize_factor)
+text(0,diff(y_limframe)*-0.02+y_limframe(1),'0','fontsize',8*fontsize_factor,'rotation',45)
 line([0 0],y_limframe,'linewidth',1,'color','k');
 set(gca,'ylim',single(y_lim),'xlim',[0 state_seperator_max-0.1]);
 y_tick      =get(gca,'ytick');

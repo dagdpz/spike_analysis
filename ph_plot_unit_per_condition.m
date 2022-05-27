@@ -96,7 +96,7 @@ for unit=1:numel(population)
                         subplot(o.rows,o.columns,sub,'XlimMode','Manual','YlimMode','Manual','XtickMode','Manual')
                         hold on
                         subplot_struct=T([T.subplot_pos]==sub & [T.effector]==effector);
-                        title([subplot_struct(1).title_part num2str(round(subplot_struct(1).position))]);
+                        title([subplot_struct(1).title_part ' ' num2str(round(subplot_struct(1).position))]);
                         state_seperator=zeros(n_lines,1);
                         state_seperator_max=0.2;
                         for w=1:size(keys.PSTH_WINDOWS,1)
@@ -118,7 +118,7 @@ for unit=1:numel(population)
                                 %% PSTH
                                 [histo(lin,:), bins, ~, SEM]=ph_spike_density(line_struct,w,keys,zeros(numel(line_struct),1),ones(numel(line_struct),1));
                                 bins=bins+state_shift;
-                                lineProps={'color',col,'linewidth',keys.width.PSTH_perpos};
+                                lineProps={'color',col,'linewidth',keys.plot.PSTH_perpos_width};
                                 shadedErrorBar(bins,histo(lin,:),SEM,lineProps,1);
                                 
                                 %% skipping average raster
@@ -151,7 +151,7 @@ for unit=1:numel(population)
                                         line(time_axis(t_idx),line_struct(t).x_hnd(t_idx)*keys.plot.hndtrace_factor + hnd_offset,'color',hnd_col_h);
                                         line(time_axis(t_idx),line_struct(t).y_hnd(t_idx)*keys.plot.hndtrace_factor + hnd_offset,'color',hnd_col_v);
                                     end
-                                    ig_make_raster([line_struct(t).arrival_times(at_idx)]'+state_shift-trial_state_onset,raster_y-t,1,0,'Color',col,'LineWidth',keys.width.raster);
+                                    ig_make_raster([line_struct(t).arrival_times(at_idx)]'+state_shift-trial_state_onset,raster_y-t,1,0,'Color',col,'LineWidth',keys.plot.raster_width);
                                 end
                                 line([state_shift+t_before_state state_shift+t_after_state],[raster_y-t raster_y-t],'Color',col,'LineWidth',0.5);
                                 
@@ -304,7 +304,7 @@ for unit=1:numel(population)
                                         continue;
                                     end
                                     [PSTH,~,~,SEM]=ph_spike_density(T(tr_index),w,keys,zeros(sum(tr_index),1),ones(sum(tr_index),1));
-                                    lineProps={'color',col,'linewidth',keys.width.PSTH_summary};
+                                    lineProps={'color',col,'linewidth',keys.plot.PSTH_summary_width};
                                     shadedErrorBar(bins,PSTH,SEM,lineProps,1);
                                     hs_ylim=max(hs_ylim,max(PSTH));
                                 end
@@ -408,7 +408,7 @@ for unit=1:numel(population)
                                     for t=1:numel(line_struct)
                                         trial_state_onset=line_struct(t).states_onset(line_struct(t).states==sta);
                                         at_idx=line_struct(t).arrival_times-trial_state_onset>=t_before_state & line_struct(t).arrival_times-trial_state_onset<=t_after_state;
-                                        ig_make_raster([line_struct(t).arrival_times(at_idx)]'+state_shift-trial_state_onset,raster_y-t*spike_length,spike_length,0,'Color',col,'LineWidth',keys.width.raster);
+                                        ig_make_raster([line_struct(t).arrival_times(at_idx)]'+state_shift-trial_state_onset,raster_y-t*spike_length,spike_length,0,'Color',col,'LineWidth',keys.plot.raster_width);
                                     end
                                     
                                     line([state_shift+t_before_state state_shift+t_after_state],[raster_y-t*spike_length raster_y-t*spike_length],'Color',col,'LineWidth',0.5);
