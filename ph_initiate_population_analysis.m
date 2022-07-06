@@ -8,7 +8,7 @@ end
 keys=struct;
 project=varargin{1};
 keys=ph_general_settings(project,keys);
-project_specific_settings=[keys.db_folder project filesep 'ph_project_settings.m'];
+project_specific_settings=[keys.db_folder 'ph_project_settings.m'];
 run(project_specific_settings);
 
 if nargin>1
@@ -19,7 +19,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         keys.project_version=keys.project_versions{f};
     end
     version_folder=keys.project_version;
-    keys.version_specific_settings=[keys.db_folder project filesep keys.project_version filesep 'ph_project_version_settings.m'];
+    keys.version_specific_settings=[keys.db_folder keys.project_version filesep 'ph_project_version_settings.m'];
     run(keys.version_specific_settings);
     keys.project_version=version_folder;
     keys.monkeys=keys.batching.monkeys;

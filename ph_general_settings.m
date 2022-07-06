@@ -1,19 +1,53 @@
 function keys=ph_general_settings(project,keys)
 %% condition_identifiers
-keys.labels.handsLR={'AH','LH','RH'};
-keys.labels.handsIC={'AH','IH','CH'};  %% AH!??
-keys.labels.perturbations={'','_PT'};
-keys.labels.choices={'in','ch'};
+
+% labels for legends and colors
+
+keys.condition_parameters={'choice','reach_hand','perturbation'};
 keys.contra_ipsi_relative_to='target';
 
-%% general settings (multi-summary PSTH)
+keys.labels.handsIC                 ={'AH','IH','CH'};  %% AH!??
+keys.labels.perturbations           ={'','_PT'};
+keys.labels.reach_hand              ={'AH','IH','CH'};
+keys.labels.reach_handLR            ={'AH','LH','RH'}; 
+keys.labels.choice                  ={'in','ch'};
+keys.labels.perturbation            ={'','PT'};
+keys.labels.stimulustype            ={'SS','TT','TD'};
+keys.labels.difficulty              ={'TA','D1','D2'};
+keys.labels.success                 ={'ER','SU'};
+keys.labels.hemifield               ={'IS','VS','CS'};
+keys.labels.fix_index               ={'IF','MF','CF'};
+keys.labels.preferred               ={'NP','PF'};
+keys.labels.stimuli_in_2hemifields  ={'1H','2H'};
 
+%% labels for tuning table entries
+keys.TTconditions.hands             ={'AH','LH','RH'};
+keys.TTconditions.choice            ={'in','ch'};
+keys.TTconditions.hemifield         ={'LS','RS'};
+keys.TTlabels.UD                    ={'DN','-','UP'};
+keys.TTlabels.CR                    ={'UC','-','CR'};
+keys.TTlabels.choices               ={'in','-','ch'};
+keys.TTlabels.true                  ={false,true}; %% this should go i think... should be a logical 0 or 1
+keys.TTlabels.SglTar_Suc            ={'LS','-','RS'};
+keys.TTlabels.Difficulty_Easy       ={'Ta','-','eD'}; %higher FR for T , higher FR for D
+keys.TTlabels.Difficulty_Diff       ={'Ta','-','dD'}; %higher FR for T , higher FR for D
+keys.TTlabels.SpatialComp_1HFTar    ={'ST','-','1T'}; %higher FR for T , higher FR for D
+keys.TTlabels.SpatialComp_2HFTar    ={'ST','-','2T'}; %higher FR for single T , higher FR for double target
+keys.TTlabels.epoch                 ={'su','-','en','bi'};
+keys.TTlabels.hemifield             ={'LS','-','RS'}; %% call this hemifield
+keys.TTlabels.hands                 ={'LH','-','RH'};
+keys.TTlabels.PT                    ={'SU','-','EN'};
+
+keys.cal.precision_fix=4;
+keys.cal.precision_tar=2;
+keys.cal.remove_trials_without_spikes=1;
+
+%% general settings (multi-summary PSTH)
 keys.PSTH_binwidth                      =0.01;                      % resolution of PSTH's (in seconds)
 keys.gaussian_kernel                    =0.02;                      % std for the convolution to derive spie density (in seconds)
 keys.kernel_type                        ='gaussian';
 keys.FR_at_peak                         =0;                         % currently not used
 keys.position_and_plotting_arrangements ={'hands'};                 % defines position batching and which conditions go into different figures/lines
-keys.condition_parameters  ={'reach_hand','choice','perturbation'};
 
 %% Batching per figure ! subregion keys..?
 keys.batching.monkeys                    ={'Curius','Linus'};       % monkeys on the project
@@ -27,7 +61,6 @@ keys.batching.n_Subregions               =numel(keys.batching.Subregions);
 keys.cal.process_spikes                  =1;      % you can choose not to run spikes at all
 keys.cal.process_sites                   =1;      % you can choose not to run lfp sites at all (saving processing time)
 keys.cal.process_by_block                =1;      % you can choose not to run by block (body signals f.e.) at all (saving processing time)
-
 keys.cal.MA_selection                   ={'display',0,'keep_raw_data',1,'saccade_definition',4,'reach_1st_pos',1,'correlation_conditions',{}};                        % if you want to run MA with specific settings
 keys.cal.units_from_sorting_table       =1;                         % exclude units that are not in the sorting table (and therefore apply stability/single/SNT ratings)
 keys.cal.datasets                       =[];
@@ -59,9 +92,8 @@ keys.AN.test_types='parametric'; %% as opposed to 'nonparametric'
 keys.filelist_as_blocks     =0;
 keys.drive                  =DAG_get_server_IP;
 keys.basepath_to_save       =[keys.drive 'Projects' filesep project filesep 'ephys' filesep];
-%keys.project_versions       ={''};
 spike_analysis_location     =which('ph_initiation');
-keys.db_folder              =[spike_analysis_location(1:strfind(spike_analysis_location,['spike_analysis' filesep 'ph_initiation'])-1) 'Settings' filesep 'spike_analysis' filesep];
+keys.db_folder              =[spike_analysis_location(1:strfind(spike_analysis_location,['spike_analysis' filesep 'ph_initiation'])-1) 'Settings' filesep project filesep 'spike_analysis' filesep];
 %% this folder defines where to take settings from
 
 keys.All_monkeys={'Flaffus','Linus','Curius','Tesla','Cornelius','Magnus','TDT_brain','Bacchus'};
@@ -108,9 +140,9 @@ keys.plot.eyetrace_factor               =0.5;
 keys.plot.hndtrace_factor               =0.5;
 
 % ANOVA labels for single unit plots
-keys.plot.anova_main    ={'E','in_epoch_main','','S','in_spaceLR_main','','C','ch_spaceLR_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
-keys.plot.anova_effector={'E','in_epoch_main','','S','in_spaceLR_main','','C','ch_spaceLR_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
-keys.plot.anova_epoch1  ={'E','in_AH','epoch','S','in','spaceLR','C','ch','spaceLR','H','in','hands','SxH','in','SxH'};
+keys.plot.anova_main    ={'E','in_epoch_main','','S','in_hemifield_main','','C','ch_hemifield_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
+keys.plot.anova_effector={'E','in_epoch_main','','S','in_hemifield_main','','C','ch_hemifield_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
+keys.plot.anova_epoch1  ={'E','in_AH','epoch','S','in','hemifield','C','ch','hemifield','H','in','hands','SxH','in','SxH'};
 keys.plot.anova_epoch2  ={'LL','in_LH_LS','PT','RL','in_LH_RS','PT','LR','in_RH_LS','PT','RR','in_RH_RS','PT'};
 
 
@@ -120,14 +152,29 @@ keys.plot.PSTH_summary_width         =1;
 
 
 %% colors & legends
-keys.condition_parameters={'reach_hand','choice','perturbation'};
-keys.labels.reach_hand={'NH','IH','CH'};
-keys.labels.hemifield={'IS','VS','CS'};
-keys.labels.fix_index={'IF','MF','CF'};
-keys.labels.preferred={'NP','PF'};
-keys.labels.choice={'IN','CH'};
-keys.labels.perturbation={'','PT'};
-keys.labels.stimuli_in_2hemifields={'1H','2H'};
+% keys.condition_parameters={'reach_hand','choice','perturbation'};
+% keys.labels.reach_hand={'NH','IH','CH'};
+% keys.labels.hemifield={'IS','VS','CS'};
+% keys.labels.fix_index={'IF','MF','CF'};
+% keys.labels.preferred={'NP','PF'};
+% keys.labels.choice={'IN','CH'};
+% keys.labels.perturbation={'','PT'};
+% keys.labels.stimuli_in_2hemifields={'1H','2H'};
+% 
+% labels.UD={'DN','-','UP'};
+% labels.CR={'UC','-','CR'};
+% labels.choices={'in','-','ch'};
+% labels.true={'false','true'};
+% labels.SglTar_Suc={'LS','-','RS'};
+% labels.Difficulty_Easy={'Ta','-','eD'}; %higher FR for T , higher FR for D
+% labels.Difficulty_Diff={'Ta','-','dD'}; %higher FR for T , higher FR for D
+% labels.SpatialComp_1HFTar={'ST','-','1T'}; %higher FR for T , higher FR for D
+% labels.SpatialComp_2HFTar={'ST','-','2T'}; %higher FR for single T , higher FR for double target
+% labels.epoch={'su','-','en','bi'};
+% labels.spaceLR={'LS','-','RS'};
+% labels.hands={'LH','-','RH'};
+% labels.PT={'SU','-','EN'};
+
 
 % traces
 keys.colors.eye_ver         =[0.8 0 0];
@@ -139,7 +186,6 @@ keys.colors.lhd_hor         =[0 0 1];
 
 
 keys.colors.AV   =[0 0 0];
-
 
 keys.colors.IF   =[236 32 38];
 keys.colors.MF   =[16 159 218];
@@ -166,117 +212,118 @@ keys.colors.EP_SU   =[0   65 255];
 keys.colors.CR      =[255   0   0];
 keys.colors.UC      =[127   0   0];
 
-keys.colors.NH_IN   =[0 255 0];
-keys.colors.NH_CH   =[0 128 0];
-keys.colors.IH_IN   =[64 0 255];
-keys.colors.IH_CH   =[32 0 128];
-keys.colors.CH_IN   =[255 255 0];
-keys.colors.CH_CH   =[128 128 0];
-keys.colors.IS_IN   =[0 255 255];
-keys.colors.IS_CH   =[0 128 128];
-keys.colors.CS_IN   =[255 0 64];
-keys.colors.CS_CH   =[128 0 32];
 
-% single cell PSTH colors per position
-keys.colors.LH_IN   =[64 0 255];
-keys.colors.LH_CH   =[32 0 128];
-keys.colors.RH_IN   =[255 255 0];
-keys.colors.RH_CH   =[128 128 0];
+% single cell PSTH colors per position - i think those are wrong and should
+% be reversed in name
+keys.colors.in_LH   =[64 0 255];
+keys.colors.ch_LH   =[32 0 128];
+keys.colors.in_RH   =[255 255 0];
+keys.colors.ch_RH   =[128 128 0];
 
-% single cell PSTH colors per hemifield
-keys.colors.NH_RS_IN=[255 0 64];
-keys.colors.NH_RS_CH=[128 0 32];
-keys.colors.LH_RS_IN=[255 0 255];
-keys.colors.LH_RS_CH=[128 0 128];
-keys.colors.RH_RS_IN=[255 128 0];
-keys.colors.RH_RS_CH=[128 64 0];
-keys.colors.NH_LS_IN=[0 255 255];
-keys.colors.NH_LS_CH=[0 128 128];
-keys.colors.LH_LS_IN=[0 128 255];
-keys.colors.LH_LS_CH=[0 64 128];
-keys.colors.RH_LS_IN=[0 255 0];
-keys.colors.RH_LS_CH=[0 128 0];
+keys.colors.in_AH   =[0 255 0];
+keys.colors.ch_AH   =[0 128 0];
+keys.colors.in_IH   =[64 0 255];
+keys.colors.ch_IH   =[32 0 128];
+keys.colors.in_CH   =[255 255 0];
+keys.colors.ch_CH   =[128 128 0];
 
-% population contra ipsi PSTH colors
-% keys.colors.NH_CS_IN=[255 0 64];
+keys.colors.in_IS   =[0 255 255];
+keys.colors.ch_IS   =[0 128 128];
+keys.colors.in_CS   =[255 0 64];
+keys.colors.ch_CS   =[128 0 32];
 
+% 
+% % single cell PSTH colors per hemifield
+% keys.colors.NH_RS_IN=[255 0 64];
+% keys.colors.NH_RS_CH=[128 0 32];
+% keys.colors.LH_RS_IN=[255 0 255];
+% keys.colors.LH_RS_CH=[128 0 128];
+% keys.colors.RH_RS_IN=[255 128 0];
+% keys.colors.RH_RS_CH=[128 64 0];
+% keys.colors.NH_LS_IN=[0 255 255];
+% keys.colors.NH_LS_CH=[0 128 128];
+% keys.colors.LH_LS_IN=[0 128 255];
+% keys.colors.LH_LS_CH=[0 64 128];
+% keys.colors.RH_LS_IN=[0 255 0];
+% keys.colors.RH_LS_CH=[0 128 0];
+% 
+% % population contra ipsi PSTH colors
+% % keys.colors.NH_CS_IN=[255 0 64];
+% % 
+% % 
+% %% MP changed colors for choice because he added dotted lines for that
+% keys.colors.NH_CS_IN=[255 102 0];
+% keys.colors.NH_CS_IN_P=[204 51 0];
+% % keys.colors.NH_CS_CH=[128 0 32];
+% % keys.colors.NH_CS_CH=[255 0 64];
+% keys.colors.NH_CS_CH=[255 102 0];
+% keys.colors.NH_CS_CH_P=[204 51 0];
+% keys.colors.IH_CS_IN=[255 0 255];
+% % keys.colors.IH_CS_CH=[128 0 128];
+% keys.colors.IH_CS_CH=[255 0 255];
+% keys.colors.CH_CS_IN=[255 128 0];
+% % keys.colors.CH_CS_CH=[128 64 0];
+% keys.colors.CH_CS_CH=[255 128 0];
+% % keys.colors.NH_IS_IN=[0 255 255];
+% keys.colors.NH_IS_IN=[0 119 255];
+% keys.colors.NH_IS_IN_P=[0 70 141];
+% % keys.colors.NH_IS_CH=[0 128 128];
+% % keys.colors.NH_IS_CH=[0 255 255];
+% keys.colors.NH_IS_CH=[0 119 255];
+% keys.colors.NH_IS_CH_P=[0 70 141];
+% keys.colors.IH_IS_IN=[0 128 255];
+% % keys.colors.IH_IS_CH=[0 64 128];
+% keys.colors.IH_IS_CH=[0 128 255];
+% keys.colors.CH_IS_IN=[0 255 0];
+% 
+% keys.colors.CH_IS_CH=[0 128 0];
+% %keys.colors.CH_IS_CH=[0 255 0];
+% 
+% %% these need to be fixed somehow
+% keys.colors.NH_VS_IN=[150 150 150];
+% keys.colors.NH_VS_CH=[80 80 80];
+% keys.colors.IH_VS_IN=[64 0 255];
+% keys.colors.IH_VS_CH=[32 0 128];
+% keys.colors.CH_VS_IN=[255 255 0];
+% keys.colors.CH_VS_CH=[128 128 0];
 
-%% MP changed colors for choice because he added dotted lines for that
-keys.colors.NH_CS_IN=[255 102 0];
-keys.colors.NH_CS_IN_P=[204 51 0];
-% keys.colors.NH_CS_CH=[128 0 32];
-% keys.colors.NH_CS_CH=[255 0 64];
-keys.colors.NH_CS_CH=[255 102 0];
-keys.colors.NH_CS_CH_P=[204 51 0];
-keys.colors.IH_CS_IN=[255 0 255];
-% keys.colors.IH_CS_CH=[128 0 128];
-keys.colors.IH_CS_CH=[255 0 255];
-keys.colors.CH_CS_IN=[255 128 0];
-% keys.colors.CH_CS_CH=[128 64 0];
-keys.colors.CH_CS_CH=[255 128 0];
-% keys.colors.NH_IS_IN=[0 255 255];
-keys.colors.NH_IS_IN=[0 119 255];
-keys.colors.NH_IS_IN_P=[0 70 141];
-% keys.colors.NH_IS_CH=[0 128 128];
-% keys.colors.NH_IS_CH=[0 255 255];
-keys.colors.NH_IS_CH=[0 119 255];
-keys.colors.NH_IS_CH_P=[0 70 141];
-keys.colors.IH_IS_IN=[0 128 255];
-% keys.colors.IH_IS_CH=[0 64 128];
-keys.colors.IH_IS_CH=[0 128 255];
-keys.colors.CH_IS_IN=[0 255 0];
-
-keys.colors.CH_IS_CH=[0 128 0];
-%keys.colors.CH_IS_CH=[0 255 0];
-
-%% these need to be fixed somehow
-keys.colors.NH_VS_IN=[150 150 150];
-keys.colors.NH_VS_CH=[80 80 80];
-keys.colors.IH_VS_IN=[64 0 255];
-keys.colors.IH_VS_CH=[32 0 128];
-keys.colors.CH_VS_IN=[255 255 0];
-keys.colors.CH_VS_CH=[128 128 0];
 
 % population contra ipsi PSTH colors -- these are correct!
-keys.colors.NH_IN_CS=[255 0 64];
-keys.colors.NH_CH_CS=[128 0 32];
-keys.colors.IH_IN_CS=[255 0 255];
-keys.colors.IH_CH_CS=[128 0 128];
-keys.colors.CH_IN_CS=[255 128 0];
-keys.colors.CH_CH_CS=[128 64 0];
-keys.colors.NH_IN_IS=[0 255 255];
-keys.colors.NH_CH_IS=[0 128 128];
-keys.colors.IH_IN_IS=[0 128 255];
-keys.colors.IH_CH_IS=[0 64 128];
-keys.colors.CH_IN_IS=[0 255 0];
-keys.colors.CH_CH_IS=[0 128 0];
+keys.colors.in_AH_CS=[255 0 64];
+keys.colors.ch_AH_CS=[128 0 32];
+keys.colors.in_IH_CS=[255 0 255];
+keys.colors.ch_IH_CS=[128 0 128];
+keys.colors.in_CH_CS=[255 128 0];
+keys.colors.ch_CH_CS=[128 64 0];
+keys.colors.in_AH_IS=[0 255 255];
+keys.colors.ch_AH_IS=[0 128 128];
+keys.colors.in_IH_IS=[0 128 255];
+keys.colors.ch_IH_IS=[0 64 128];
+keys.colors.in_CH_IS=[0 255 0];
+keys.colors.ch_CH_IS=[0 128 0];
+
+
 %% these need to be fixed somehow
-keys.colors.NH_IN_VS=[150 150 150];
-keys.colors.NH_CH_VS=[80 80 80];
-keys.colors.IH_IN_VS=[64 0 255];
-keys.colors.IH_CH_VS=[32 0 128];
-keys.colors.CH_IN_VS=[255 255 0];
-keys.colors.CH_CH_VS=[128 128 0];
+keys.colors.in_AH_VS=[150 150 150];
+keys.colors.ch_AH_VS=[80 80 80];
+keys.colors.in_IH_VS=[64 0 255];
+keys.colors.ch_IH_VS=[32 0 128];
+keys.colors.in_CH_VS=[255 255 0];
+keys.colors.ch_CH_VS=[128 128 0];
 % preferred
 
-keys.colors.NH_IN_PF=[255 0 64];
-keys.colors.NH_CH_PF=[128 0 32];
-keys.colors.IH_IN_PF=[255 0 255];
-keys.colors.IH_CH_PF=[128 0 128];
-keys.colors.CH_IN_PF=[255 128 0];
-keys.colors.CH_CH_PF=[128 64 0];
-keys.colors.NH_IN_NP=[0 255 255];
-keys.colors.NH_CH_NP=[0 128 128];
-keys.colors.IH_IN_NP=[0 128 255];
-keys.colors.IH_CH_NP=[0 64 128];
-keys.colors.CH_IN_NP=[0 255 0];
-keys.colors.CH_CH_NP=[0 128 0];
-
-
-
-keys.labels.stimulustype={'SS','TT','TD'};
-keys.labels.difficulty={'TA','D1','D2'};
-keys.labels.success={'ER','SU'};
+keys.colors.in_AH_PF=[255 0 64];
+keys.colors.ch_AH_PF=[128 0 32];
+keys.colors.in_IH_PF=[255 0 255];
+keys.colors.ch_IH_PF=[128 0 128];
+keys.colors.in_CH_PF=[255 128 0];
+keys.colors.ch_CH_PF=[128 64 0];
+keys.colors.in_AH_NP=[0 255 255];
+keys.colors.ch_AH_NP=[0 128 128];
+keys.colors.in_IH_NP=[0 128 255];
+keys.colors.ch_IH_NP=[0 64 128];
+keys.colors.in_CH_NP=[0 255 0];
+keys.colors.ch_CH_NP=[0 128 0];
 
 temp_colors_I=autumn(18)*255;
 temp_colors_C=winter(18)*255;
@@ -293,7 +340,6 @@ keys.colors.TD_D1_ER=temp_colors_C(6,:);
 keys.colors.SS_D2_ER=temp_colors_C(7,:);
 keys.colors.TT_D2_ER=temp_colors_C(8,:);
 keys.colors.TD_D2_ER=temp_colors_C(9,:);
-
 
 keys.colors.SS_TA_SU=temp_colors_I(10,:);
 keys.colors.TT_TA_SU=temp_colors_I(11,:);
@@ -316,7 +362,6 @@ keys.colors.SS_D2_1H_ER=temp_colors_C(7,:);
 keys.colors.TT_D2_1H_ER=temp_colors_C(8,:);
 keys.colors.TD_D2_1H_ER=temp_colors_C(9,:);
 
-
 keys.colors.SS_TA_1H_SU=temp_colors_I(10,:);
 keys.colors.TT_TA_1H_SU=temp_colors_I(11,:);
 keys.colors.TD_TA_1H_SU=temp_colors_I(12,:);
@@ -336,7 +381,6 @@ keys.colors.TD_D1_2H_ER=temp_colors_C(6,:);
 keys.colors.SS_D2_2H_ER=temp_colors_C(7,:);
 keys.colors.TT_D2_2H_ER=temp_colors_C(8,:);
 keys.colors.TD_D2_2H_ER=temp_colors_C(9,:);
-
 
 keys.colors.SS_TA_2H_SU=temp_colors_I(10,:);
 keys.colors.TT_TA_2H_SU=temp_colors_I(11,:);
@@ -544,10 +588,7 @@ keys.colors.SS_D2_2H_SU_CS=temp_colors_C(16,:);
 keys.colors.TT_D2_2H_SU_CS=temp_colors_C(17,:);
 keys.colors.TD_D2_2H_SU_CS=temp_colors_C(18,:);
 
-
-
 %%
-
 color_fieldnames=fieldnames(keys.colors);
 for fn=1:numel(color_fieldnames)
     switch color_fieldnames{fn}(end-1:end)
@@ -559,7 +600,6 @@ for fn=1:numel(color_fieldnames)
 end
 
 % population effector colors
-
 keys.colors.EF_SA   =[0 255  0];
 keys.colors.EF_RE   =[0 255  0];
 keys.colors.EF_FG   =[0 0  255];
@@ -569,12 +609,7 @@ keys.colors.per_monkey          =[0 1 0; 1 0 0];
 
 
 %% tuning table readout options (excluding particular subsets)
-
 keys.tt.combine_tuning_properties   ={'place_name_here'}; %% additional table entry from combining columns
-keys.tt.epoch_criterion             ='none';
-keys.tt.space_criterion             ='none';
-keys.tt.hands_criterion             ='none';
-keys.tt.SXH_criterion               ='none';
 keys.tt.perturbations               = 0;
 keys.tt.choices                     = 0;
 keys.tt.hands                       = 0;
@@ -583,10 +618,9 @@ keys.tt.trial_criterion_in          ='per_position';
 keys.tt.trial_criterion_ch          ='per_hemifield';
 keys.tt.selection                   ={};
 keys.tt.unselect                    ={};
-
-keys.tt.selected_list                   ={};
-keys.tt.unselected_list                    ={};
-keys.tt.type_effectors={'Msac'};
+keys.tt.selected_list               ={};
+keys.tt.unselected_list             ={};
+keys.tt.type_effectors              ={'Msac'};
 
 %% population
 keys.sct=struct([]);
@@ -595,9 +629,8 @@ keys.ons=struct([]);
 keys.pop=struct([]);
 keys.hst=struct([]);
 
-%% EPOCH SETTINGS %%
-%% For each task type seperately, analysis epochs are defined
-%%
+%% EPOCH SETTINGS 
+% For each task type seperately, analysis epochs are defined
 
 %% Fixation only type
 keys.EPOCHS_PER_TYPE{1}={...
@@ -624,7 +657,7 @@ keys.ANOVAS_PER_TYPE(1).epoch={'INI' 'Facq';...
     'Fhol' 'PeriR';...
     'Fhol' 'Thol'};
 
-keys.ANOVAS_PER_TYPE(1).spaceLR            ={'Facq','Fhol','PreS','PeriS','PreR','PeriR','Thol'}';
+keys.ANOVAS_PER_TYPE(1).hemifield            ={'Facq','Fhol','PreS','PeriS','PreR','PeriR','Thol'}';
 keys.ANOVAS_PER_TYPE(1).positions          ={'Facq','Fhol','PreS','PeriS','PreR','PeriR','Thol'}';
 keys.ANOVAS_PER_TYPE(1).hands              ={'Facq','Fhol','PreS','PeriS','PreR','PeriR','Thol'}';
 keys.ANOVAS_PER_TYPE(1).SxH                ={'Facq','Fhol','PreS','PeriS','PreR','PeriR','Thol'}';
@@ -654,7 +687,7 @@ keys.WINDOWS_PER_TYPE{2}={...
     'Saccade',      60,	-0.01,  0.22;...
     'T hold',       20,	-0.3,   0.1;...
     };
-keys.ANOVAS_PER_TYPE(2).spaceLR            ={'Cue','PreS','PeriS','Tacq','Thol'}';
+keys.ANOVAS_PER_TYPE(2).hemifield            ={'Cue','PreS','PeriS','Tacq','Thol'}';
 keys.ANOVAS_PER_TYPE(2).positions          ={'Cue','PreS','PeriS','Tacq','Thol'}';
 keys.ANOVAS_PER_TYPE(2).hands              ={'Facq','Fhol','Cue','PreS','PeriS','Tacq','Thol'}';
 keys.ANOVAS_PER_TYPE(2).SxH                ={'Cue','PreS','PeriS','Tacq','Thol'}';
@@ -689,7 +722,7 @@ keys.ANOVAS_PER_TYPE(3).epoch={'INI' 'Facq';...
     'Fhol' 'TIhol';...
     'Fhol' 'Thol';...
     };
-keys.ANOVAS_PER_TYPE(3).spaceLR            ={'Cue','MemE','MemL','PreS','PeriS','TIhol','Thol'}';
+keys.ANOVAS_PER_TYPE(3).hemifield            ={'Cue','MemE','MemL','PreS','PeriS','TIhol','Thol'}';
 keys.ANOVAS_PER_TYPE(3).positions             ={'Cue','MemE','MemL','PreS','PeriS','TIhol','Thol'}';
 keys.ANOVAS_PER_TYPE(3).hands              ={'Facq','Fhol','Cue','MemE','MemL','PreS','PeriS','TIhol','Thol'}';
 keys.ANOVAS_PER_TYPE(3).SxH                ={'Cue','MemE','MemL','PreS','PeriS','TIhol','Thol'}';
@@ -731,7 +764,7 @@ keys.ANOVAS_PER_TYPE(4).epoch={'INI' 'Facq';...
     'EDel' 'PostR';...
     'Fhol' 'Thol';...
     };
-keys.ANOVAS_PER_TYPE(4).spaceLR            ={'INI','Facq','Fhol','Cue','EDel','Del','PreS','PeriS','PostS','PreR','PeriR','PostR','Thol'}';
+keys.ANOVAS_PER_TYPE(4).hemifield            ={'INI','Facq','Fhol','Cue','EDel','Del','PreS','PeriS','PostS','PreR','PeriR','PostR','Thol'}';
 keys.ANOVAS_PER_TYPE(4).positions          ={'INI','Facq','Fhol','Cue','EDel','Del','PreS','PeriS','PostS','PreR','PeriR','PostR','Thol'}';
 keys.ANOVAS_PER_TYPE(4).hands              ={'INI','Facq','Fhol','Cue','EDel','Del','PreS','PeriS','PostS','PreR','PeriR','PostR','Thol'}';
 keys.ANOVAS_PER_TYPE(4).SxH                ={'INI','Facq','Fhol','Cue','EDel','Del','PreS','PeriS','PostS','PreR','PeriR','PostR','Thol'}';
@@ -762,7 +795,7 @@ keys.ANOVAS_PER_TYPE(5).epoch={'INI' 'Facq';...
     'Fhol' 'PeriS';...
     'Fhol' 'Thol';...
     };
-keys.ANOVAS_PER_TYPE(5).spaceLR            ={'Cue','MemE','PreS','PeriS','Thol'}';
+keys.ANOVAS_PER_TYPE(5).hemifield            ={'Cue','MemE','PreS','PeriS','Thol'}';
 keys.ANOVAS_PER_TYPE(5).positions          ={'Cue','MemE','PreS','PeriS','Thol'}';
 keys.ANOVAS_PER_TYPE(5).hands              ={'Facq','Fhol','Cue','MemE','PreS','PeriS','Thol'}';
 keys.ANOVAS_PER_TYPE(5).SxH                ={'Cue','MemE','PreS','PeriS','Thol'}';
@@ -793,7 +826,7 @@ keys.ANOVAS_PER_TYPE(6).epoch={'INI' 'Facq';...
     'Fhol' 'Exp';...
     'Fhol' 'Thol';...
     };
-keys.ANOVAS_PER_TYPE(6).spaceLR            ={'Cue','MemE','PeriS','Exp','Thol'}';
+keys.ANOVAS_PER_TYPE(6).hemifield            ={'Cue','MemE','PeriS','Exp','Thol'}';
 keys.ANOVAS_PER_TYPE(6).positions          ={'Cue','MemE','PeriS','Exp','Thol'}';
 keys.ANOVAS_PER_TYPE(6).hands              ={'Facq','Fhol','Cue','MemE','PeriS','Exp','Thol'}';
 keys.ANOVAS_PER_TYPE(6).SxH                ={'Cue','MemE','PreS','Exp','Thol'}';

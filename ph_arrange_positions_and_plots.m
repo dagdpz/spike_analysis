@@ -24,8 +24,6 @@ if nargin>2
 end
 
 %% DEFINITION OF CONDITION INDICES TO PLOT, CURRENTLY TARGET LOCATION, FIXATION LOCATION, MOVEMENT VECTORS, CHOICE, HANDS
-keys.precision.fixation=4;
-keys.precision.position=2;
 [~, displacement_types] = center_displacement_working(o,keys);
 all_val=displacement_types(:,1:4);
 fix_val=displacement_types(:,1:2);
@@ -55,14 +53,11 @@ cueshape                =[o.cue_shape]';
 success                 =[o.success]';
 effectors               =[o.effector]';
 perturbations_orig      =[o.perturbation]';
-%
-%% KK STUFF
-%% spatial distractor task
-difficulty = [o.difficulty];
-stimuli_in_2hemifields = [o.stimuli_in_2hemifields];
-n_distractors = [o.n_distractors];
-n_nondistractors = [o.n_nondistractors];
-StimulusType = [o.stimulustype];
+difficulty              = [o.difficulty];
+stimuli_in_2hemifields  = [o.stimuli_in_2hemifields];
+n_distractors           = [o.n_distractors];
+n_nondistractors        = [o.n_nondistractors];
+StimulusType            = [o.stimulustype];
 
 %% perturbation (painful, because its either in groups - for analysis, or by block (actuallz original perturbation value from table) - for single cell plotting
 perturbations=zeros(size(perturbations_orig));
@@ -89,57 +84,15 @@ end
 [ptb_values,~,ptb_idx]      =unique(perturbations);
 [blo_values,~,blo_idx]      =unique(blocks);
 [eff_values,~,eff_idx]      =unique(effectors);
+[diff_values,~,diff_idx]    =unique(difficulty);
+%[diff_values,~,diff_idx]    =unique(difficulty+3*success'); % i believe
+%this separation is not needed any more
+[Styp_values,~,Styp_idx]    =unique(StimulusType');
 [hnd_cho_values,~,hch_idx]  =unique([hands choices],'rows');
 [hnd_ptb_values,~,hpt_idx]  =unique([hands perturbations],'rows');
 [hnd_blo_values,~,hbl_idx]  =unique([hands blocks],'rows');
 [hnd_eff_values,~,hef_idx]  =unique([hands effectors],'rows');
 [cho_ptb_values,~,chp_idx]  =unique([choices perturbations],'rows');
-
-%% KK stuff
-[diff_values,~,diff_idx]        = unique(difficulty);
-[diff_values,~,diff_idx]      =unique(difficulty+3*success');
-[Styp_values,~,Styp_idx]      =unique(StimulusType');
-
-
-%
-%
-% %% labels
-% hand_labels         ={'NH','NH CH','LH','LH CH','RH','RH CH'};
-% choice_labels       ={'IN','CH','','','',''};
-% hand_choice_labels  ={'NH IN','NH CH','LH IN','LH CH','RH IN','RH CH'};
-% hand_ptb_labels     =cellstr([repmat('NH ',numel(blo_values_o),1) num2str(blo_values_o); repmat('LH ',numel(blo_values_o),1) num2str(blo_values_o); repmat('RH ',numel(blo_values_o),1) num2str(blo_values_o)])';
-% hand_eff_labels     =cellstr([repmat('NH ',numel(eff_values),1) num2str(eff_values); repmat('LH ',numel(eff_values),1) num2str(eff_values); repmat('RH ',numel(eff_values),1) num2str(eff_values)])';
-% fix_labels          =num2cell(num2str(unique(fix_idx)))';
-% cue_shape_labels ={};
-% for n_shp=1:numel(shp_values)
-%     cue_shape_labels{n_shp}=sprintf('%.1f',shp_values(n_shp));
-% end
-
-% %% color assignment
-% cols=keys.colors;
-% keys.hnd_choice_colors_L=[cols.NH_LS_IN;cols.NH_LS_CH;cols.LH_LS_IN;cols.LH_LS_CH;cols.RH_LS_IN;cols.RH_LS_CH]/255;
-% keys.hnd_choice_colors_R=[cols.NH_RS_IN;cols.NH_RS_CH;cols.LH_RS_IN;cols.LH_RS_CH;cols.RH_RS_IN;cols.RH_RS_CH]/255;
-% keys.hnd_choice_colors  =[cols.NH_IN;cols.NH_CH;cols.LH_IN;cols.LH_CH;cols.RH_IN;cols.RH_CH]/255;
-% b_pt=(max(blo_values):-1*max(blo_values)/2/(numel(blo_values)-1):max(blo_values)/2)'/max(blo_values);
-% b_pt(isnan(b_pt))=1; %% for the case of onlý one block... -.-
-% keys.hnd_ptb_colors_L=[b_pt*cols.NH_LS_IN;b_pt*cols.LH_LS_IN;b_pt*cols.RH_LS_IN]/255;
-% keys.hnd_ptb_colors_R=[b_pt*cols.NH_RS_IN;b_pt*cols.LH_RS_IN;b_pt*cols.RH_RS_IN]/255;
-% keys.hnd_ptb_colors  =[b_pt*cols.NH_IN   ;b_pt*cols.LH_IN   ;b_pt*cols.RH_IN   ]/255;
-%
-% % hnd_set_values(hnd_set_values(:,2)==min(hnd_set_values(:,2)),2)=1;
-% % hnd_set_values(hnd_set_values(:,2)==max(hnd_set_values(:,2)),2)=2;
-% hand_choice_color_combination=[0 0; 0 1; 1 0; 1 1; 2 0; 2 1];
-% hand_blo_color_combination   =fliplr(combvec(unique(blocks)',[0 1 2])');
-% hand_eff_color_combination   =fliplr(combvec(unique(effectors)',[0 1 2])');
-% %hand_pt_color_combination   =[0 1; 0 2; 0 3;1 1; 1 2; 1 3; 2 1; 2 2; 2 3];
-% hand_color_combination=[0; NaN; 1; NaN; 2; NaN];
-% choice_color_combination=[0; 1; NaN; NaN; NaN; NaN];
-%
-% b_ef=(numel(eff_values):-1*numel(eff_values)/2/(numel(eff_values)-1):numel(eff_values)/2)'/numel(eff_values);
-% b_ef(isnan(b_ef))=1; %% for the case of onlý one block... -.-
-% keys.hnd_eff_colors_L=[b_ef*cols.NH_LS_IN;b_ef*cols.LH_LS_IN;b_ef*cols.RH_LS_IN]/255;
-% keys.hnd_eff_colors_R=[b_ef*cols.NH_RS_IN;b_ef*cols.LH_RS_IN;b_ef*cols.RH_RS_IN]/255;
-% keys.hnd_eff_colors  =[b_ef*cols.NH_IN   ;b_ef*cols.LH_IN   ;b_ef*cols.RH_IN   ]/255;
 
 %% defaults
 con_for_figure          = non_idx;
@@ -151,7 +104,7 @@ val_for_figure          = {[]};
 val_for_sub_assignment  = mov_val(u_mov_idx_idx,:);
 val_for_pos_assignment  = mov_val(u_mov_idx_idx,:);
 position_indexes        = mov_idx;
-fixation_indexes            = fix_idx;
+fixation_indexes        = fix_idx;
 hemifield_indexes       = (real([o.tar_pos]' - [o.fix_pos]')>0)+1;
 fixation_per_trial      = fix_val;
 
@@ -163,98 +116,30 @@ switch keys.arrangement
         fig_title               = 'StimType';
         con_for_figure          = Styp_idx;
         val_for_figure          = num2cell(Styp_values);
-        
-        con_for_line            = diff_idx';  %%% there was no ' !?
-        %         if length(diff_values) == 3
-        %             pop.line_labels        =   {'Tar', 'Easy','Diff'}; %{'Diff', 'Easy','Tar'};
-        %
-        %         else
-        %             pop.line_labels        =   {'Diff','Diff2', 'Easy','Tar'};
-        %         end
-        
-        %position_indexes        = stm_idx;
-        %val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        %val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        
-        %      position_indexes = mov_idx;
-        %      val_for_sub_assignment  = tar_val(u_mov_idx_idx,:);
-        %      val_for_pos_assignment  = mov_val(u_mov_idx_idx,:);
-        
         val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
         val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
         position_indexes        = tar_idx;
-        
         sub_title               = 'stimulus position';
-        %         if length(diff_values) == 3
-        %             col_left = autumn(3);
-        %             col_right = winter(3);
-        %             tar_purple = [1 0 1 ];
-        % %
-        % %             pop.PSTH_perpos_colors =   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(1,:);col_right(2,:);tar_purple]] ;
-        % %             pop.PSTH_summary_colors=   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(1,:);col_right(2,:);tar_purple]] ;
-        %             pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
-        %             pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
-        %         else
-        %             pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
-        %             pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
-        %         end
-        %             pop.PSTH_perpos_colors =   [autumn(6);winter(6)] ;
-        %             pop.PSTH_summary_colors=   [autumn(6);winter(6)] ;
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
         
     case 'StimulusType_Difficulty_Position_Successful'
         [diff_values,~,diff_idx]        = unique(difficulty);
-        
-        
-        
         fig_title               = 'StimuType_Diff_Pos_Suc';
         con_for_figure          = Styp_idx;
         val_for_figure          = num2cell(Styp_values);
-        
-        con_for_line            = diff_idx';  %%% there was no ' !?
-        if length(diff_values) == 3
-            pop.line_labels        =   {'Diff', 'Easy','Tar'};
-            
-        else
-            pop.line_labels        =   {'Diff','Diff2', 'Easy','Tar'};
-        end
-        
         position_indexes        = stm_idx;
         val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
         val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
         sub_title               = 'stimulus position';
-        
-        col_left = autumn(3);
-        col_right = winter(3);
-        tar_purple = [1 0 1 ];
-        
-        pop.PSTH_perpos_colors =   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(1,:);col_right(2,:);tar_purple]] ;
-        pop.PSTH_summary_colors=   [[col_left(2,:);col_left(3,:);col_left(1,:)];[col_right(1,:);col_right(2,:);tar_purple]] ;
-        
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
         
     case 'DoubleSameTargets_Position'
         [diff_values,~,diff_idx]      =unique(difficulty+3*success');
-        
         fig_title               = 'StimulusType';
         con_for_figure          = Styp_idx;
         val_for_figure          = num2cell(Styp_values);
-        
-        con_for_line            = diff_idx';
-        pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
-        
         position_indexes        = stm_idx;
         val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
         val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
         sub_title               = 'stimulus position';
-        pop.PSTH_perpos_colors =   [summer(6);winter(6)] ;
-        pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
-        % con_for_figure          = suc_idx;
-        
     case 'StimType_Diff_Pos_ErVsCor'
         difficulty =  difficulty+3*success';
         %              difficulty =  difficulty(success ==1)';
@@ -266,134 +151,42 @@ switch keys.arrangement
         [diff_values,~,diff_idx]        = unique(difficulty);
         fig_title               = 'StimType_Diff_Pos_ErVsCor';
         con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);
-        
-        con_for_line            = diff_idx';
-        pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
-        
+        val_for_figure          = num2cell(Styp_values);                
         position_indexes        = stm_idx;
         val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
         val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
         sub_title               = 'stimulus position';
         
-        
-        col_left = autumn(10);
-        col_right = winter(6);
-        tar_pink   = [0.4235    0.2510    0.3922];
-        tar_purple = [1 0 1 ];
-        Diff_R_easy = [0.2000    1.0000    0.8000 ];
-        Diff_L_easy = [0.6000    0.8000    1.0000 ];
-        
-        
-        pop.PSTH_perpos_colors =   [[col_left(4,:);col_left(7,:);col_left(2,:)  ;col_left(5,:); col_left(10,:)  ;col_left(1,:)];    [col_right(1,:);Diff_L_easy;tar_pink; col_right(4,:);Diff_R_easy;tar_purple]] ;
-        pop.PSTH_summary_colors=   [[col_left(4,:);col_left(7,:);col_left(2,:)  ;col_left(5,:); col_left(10,:)  ;col_left(1,:)];    [col_right(1,:);Diff_L_easy;tar_pink; col_right(4,:);Diff_R_easy;tar_purple]] ;
-        % uisetcolor([0.6 0.8 1])
-        % pop.PSTH_perpos_colors =   [autumn(6);winter(6)] ;
-        % pop.PSTH_summary_colors=   [autumn(6);winter(6)] ;
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
-        
+    case 'StimulusType_Difficulty_Position' %% this is a guess that this one is supposed to be a different one     
         [diff_values,~,diff_idx]        = unique(difficulty);
-        
         fig_title               = 'StimulusType_Difficulty_Position';
         con_for_figure          = Styp_idx;
         val_for_figure          = num2cell(Styp_values);
-        con_for_line            = diff_idx';  %%% there was no ' !?
-        if length(diff_values) == 3
-            pop.line_labels        =   {'Tar', 'Easy','Diff'}; %{'Diff', 'Easy','Tar'};
-        else
-            pop.line_labels        =   {'Tar', 'Easy','Diff','Diff2',};
-        end
-        
-        %position_indexes        = stm_idx;
-        %val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        %val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        
-        %      position_indexes = mov_idx;
-        %      val_for_sub_assignment  = tar_val(u_mov_idx_idx,:);
-        %      val_for_pos_assignment  = mov_val(u_mov_idx_idx,:);
-        
         val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
         val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
         position_indexes        = tar_idx;
         
         sub_title               = 'stimulus position';
-        if length(diff_values) == 3
-            col_left      = autumn(6);
-            col_right     = winter(3);
-            tar_purple    = [0.5    0.2510    0.3922];
-            col_fix       = gray(6);
-            
-            pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
-            pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
-            
-            pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
-            pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
-        else
-            pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
-            pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
-        end
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
         
     case 'StimulusType_Difficulty_Position_Successful'
         [diff_values,~,diff_idx]        = unique(difficulty);
-        
-        
-        
         fig_title               = 'StimuType_Diff_Pos_Suc';
         con_for_figure          = Styp_idx;
         val_for_figure          = num2cell(Styp_values);
-        
-        con_for_line            = diff_idx';  %%% there was no ' !?
-        if length(diff_values) == 3
-            pop.line_labels        =   {'Tar', 'Easy','Diff'}; %{'Diff', 'Easy','Tar'};
-        else
-            pop.line_labels        =   {'Tar', 'Easy','Diff','Diff2',};
-        end
-        
         position_indexes        = stm_idx;
         val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
         val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
         sub_title               = 'stimulus position';
-        
-        if length(diff_values) == 3
-            col_left      = autumn(6);
-            col_right     = winter(3);
-            tar_purple    = [0.5    0.2510    0.3922];
-            col_fix       = gray(6);
-            
-            pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
-            pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
-            
-            %pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
-            %pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
-        else
-            pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
-            pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
-        end
-        
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
         
     case 'DoubleSameTargets_Position'
         [diff_values,~,diff_idx]      =unique(difficulty+3*success');
-        
         fig_title               = 'StimulusType';
         con_for_figure          = Styp_idx;
         val_for_figure          = num2cell(Styp_values);
-        
-        con_for_line            = diff_idx';
-        pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
-        
         position_indexes        = stm_idx;
         val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
         val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
         sub_title               = 'stimulus position';
-        pop.PSTH_perpos_colors =   [summer(6);winter(6)] ;
-        pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
         % con_for_figure          = suc_idx;
         
     case 'StimType_Diff_Pos_ErVsCor'
@@ -405,279 +198,118 @@ switch keys.arrangement
         %              Styp_idx(idx_difficulty)       =[];
         
     case 'StimTyp_Diff_Pos_Suc'
-        [diff_values,~,diff_idx]        = unique(difficulty);
-        
-        
-        
+        [diff_values,~,diff_idx]        = unique(difficulty);        
         fig_title               = 'StimTyp_Diff_Pos_Suc';
         con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);
-        
-        con_for_line            = diff_idx';  %%% there was no ' !?
+        val_for_figure          = num2cell(Styp_values);        
+        sub_title               = 'stimulus position';        
         if length(diff_values) == 3
-            pop.line_labels        =   {'Tar', 'Easy','Diff'}; %{'Diff', 'Easy','Tar'};
-        else
-            pop.line_labels        =   {'Tar', 'Easy','Diff','Diff2',};
-        end
-        
-        
-        sub_title               = 'stimulus position';
-        
-        %         pop.line_labels        =   {'Tar', 'Easy'}; %{'Diff', 'Easy','Tar'};
-        %          col_left      = autumn(6);
-        %             col_right     = winter(3);
-        %             tar_purple    = [0.5    0.2510    0.3922];
-        %             col_fix       = gray(6);
-        %
-        %             pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:)];[tar_purple; col_right(2,:)]] ;
-        %             pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:)];[tar_purple ; col_right(2,:)]] ;
-        %                  position_indexes        = stm_idx;
-        %                  val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        %                  val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        %
-        
-        if length(diff_values) == 3
-            fig_title               = 'StimTyp_Diff_Pos_Suc';
-            
-            col_left      = autumn(6);
-            col_right     = winter(3);
-            tar_purple    = [0.5    0.2510    0.3922];
-            col_fix       = gray(6);
-            
-            pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
-            pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
+            fig_title               = 'StimTyp_Diff_Pos_Suc';            
             position_indexes        = stm_idx;
             val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
             val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-            
-            %             pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple; col_right(2,:);col_right(1,:)]] ;
-            %             pop.PSTH_summary_colors=   [[col_left(1,:);col_left(6,:);col_left(3,:)];[col_fix(1,:);col_fix(4,:);col_fix(3,:)];[tar_purple ; col_right(2,:);col_right(1,:)]] ;
-            %             val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
-            %             val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
-            %             position_indexes        = tar_idx;
-            
-        else
-            pop.PSTH_perpos_colors =   [autumn(4);winter(4)] ;
-            pop.PSTH_summary_colors=   [autumn(4);winter(4)] ;
         end
-        
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
         
     case 'Sgl_Diff_Pos_Suc_SaccadeEpoch'
         [diff_values,~,diff_idx]        = unique(difficulty);
         fig_title               = 'StimTyp_Diff_Pos_Suc';
         con_for_figure          = Styp_idx;
         val_for_figure          = num2cell(Styp_values);
-        
         val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
         val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
-        position_indexes        = tar_idx;
-        
-        con_for_line            = diff_idx';  %%% 
-        pop.line_labels        =   {'Tar', 'Easy','Diff'};             
+        position_indexes        = tar_idx;       
         sub_title               = 'stimulus position';
-        pop.PSTH_perpos_colors =   [autumn(3);winter(3)] ;
-        pop.PSTH_summary_colors=   [autumn(3);winter(3)] ;
-        hemifield_indexes       = (real(tar_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
+        
     case 'DisTar_Diff_Pos_Suc'
         [diff_values,~,diff_idx]        = unique(difficulty);
-        
-        con_for_line           = diff_idx';
-        pop.line_labels        =   {'T-Deasy', 'T-Ddiff'};
-        pop.line_labels        =   {'T-Deasy', 'T-Ddiff'};
-        
         sub_title               = 'stimulus position';
-        
-        col_left      = autumn(6);
-        col_right     = winter(3);
-        pop.PSTH_perpos_colors =   [[col_left(6,:);col_left(3,:)];[col_right(2,:);col_right(1,:)]] ;
-        pop.PSTH_summary_colors=   [[col_left(6,:);col_left(3,:)];[col_right(2,:);col_right(1,:)]] ;
-        
-        %hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        hemifield_indexes       = (real(tar_val(stm_idx))>0)+1;
-        
-        con_for_trial_crit      = con_for_line;
-        
         val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
         val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
         position_indexes        = tar_idx;
-        
         
     case 'SpatialCompetition_Targets'
         % left vs Right is defined where the saccade was made to
-        con_for_line           = Styp_idx;
-        pop.line_labels        =   {'SglT','DblT-2Hf','DblT-1HF'};
-        pop.line_labels        =   {'SglT','DblT-2Hf','DblT-1HF'};
-        
         sub_title               = 'stimulus position';
-        
-        col_left      = autumn(6);
-        col_right     = winter(3);
-        tar_purple    = [0.5    0.2510    0.3922];
-        col_fix       = gray(6);
-        
-        %
-        pop.PSTH_perpos_colors =   [[col_left(1,:);col_left(3,:);[0.6350, 0.0780, 0.1840] 	];    [tar_purple; col_right(2,:);col_right(1,:)]] ;
-        pop.PSTH_summary_colors=   [[col_left(1,:);col_left(3,:);[0.6350, 0.0780, 0.1840] 	];    [tar_purple ; col_right(2,:);col_right(1,:) ]] ;
-        
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
-        
         val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
         val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
         position_indexes        = tar_idx;
-        %unique(stm_val(find(StimulusType == 4),:), 'rows' )
-        %unique(stm_val(find(StimulusType == 2),:), 'rows' )
         
     case 'SpatialCompetition_Distractor'
         [diff_values,~,diff_idx]        = unique(difficulty);
-        
         fig_title               = 'DifficultyLevel';
         con_for_figure          = diff_idx';
         val_for_figure          = num2cell(diff_values);
-        
-        con_for_line           = Styp_idx;
-        pop.line_labels        =   {'SglD','DblD-2Hf','DblD-1HF'};
-        
         sub_title               = 'stimulus position';
-        pop.PSTH_perpos_colors =   [spring(3);winter(3)] ;
-        pop.PSTH_summary_colors=   [spring(3);winter(3)] ;
-        
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
-        
         position_indexes        = stm_idx;
         val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
         val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
         
     case 'StimType_Diff_Pos_ErVsCor'
         difficulty =  difficulty+3*success';
-        
-        [diff_values,~,diff_idx]        = unique(difficulty);
         fig_title               = 'StimType_Diff_Pos_ErVsCor';
         con_for_figure          = Styp_idx;
         val_for_figure          = num2cell(Styp_values);
-        
-        con_for_line            = diff_idx';
-        pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
-        pop.line_labels        =   {'ETar','EEasy','EDiff','CTar','CEasy','CDiff'};
-        
         position_indexes        = stm_idx;
         val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
         val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
         sub_title               = 'stimulus position';
         
-        
-        col_left = autumn(10);
-        col_right = winter(6);
-        tar_pink   = [0.4235    0.2510    0.3922];
-        tar_purple = [1 0 1 ];
-        Diff_R_easy = [0.2000    1.0000    0.8000 ];
-        Diff_L_easy = [0.6000    0.8000    1.0000 ];
-        
-        pop.PSTH_perpos_colors =   [[col_left(4,:);col_left(7,:);col_left(2,:)  ;col_left(5,:); col_left(10,:)  ;col_left(1,:)];    [col_right(1,:);Diff_L_easy;tar_pink; col_right(4,:);Diff_R_easy;tar_purple]] ;
-        pop.PSTH_summary_colors=   [[col_left(4,:);col_left(7,:);col_left(2,:)  ;col_left(5,:); col_left(10,:)  ;col_left(1,:)];    [col_right(1,:);Diff_L_easy;tar_pink; col_right(4,:);Diff_R_easy;tar_purple]] ;
-        pop.PSTH_perpos_colors =   [[col_left(2,:);col_left(7,:);col_left(4,:)  ;col_left(1,:); col_left(10,:)  ;col_left(5,:)];    [tar_pink; Diff_L_easy; col_right(1,:);tar_purple; Diff_R_easy; col_right(4,:)]] ;
-        pop.PSTH_summary_colors=   [[col_left(2,:);col_left(7,:);col_left(4,:)  ;col_left(1,:); col_left(10,:)  ;col_left(5,:)];    [tar_pink; Diff_L_easy; col_right(1,:);tar_purple; Diff_R_easy; col_right(4,:)]] ;
-        % uisetcolor([0.6 0.8 1])
-        % pop.PSTH_perpos_colors =   [autumn(6);winter(6)] ;
-        % pop.PSTH_summary_colors=   [autumn(6);winter(6)] ;
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
-        
     case 'StimulusType_Difficulty_Position_ErrorVsCorrect_lastVers'
-        [diff_values,~,diff_idx]      =unique(difficulty+3*success');
-        
         fig_title               = 'StimulusType_Difficulty_Position';
         con_for_figure          = Styp_idx';
         val_for_figure          = num2cell(Styp_values);
-        
-        con_for_line            = diff_idx';
-        pop.line_labels        =   {'EDiff','EEasy','ETar','CDiff','CEasy','CTar'};
-        
         position_indexes        = stm_idx;
         val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
         val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
         sub_title               = 'stimulus position';
-        pop.PSTH_perpos_colors =   [summer(6);winter(6)] ;
-        pop.PSTH_summary_colors=   [summer(6);winter(6)] ;
-        hemifield_indexes       = (real(stm_val(stm_idx))>0)+1;
-        con_for_trial_crit      = con_for_line;
-        
         
     case 'success_in_cue'
-        con_for_trial_crit      = suc_idx;
         fig_title               = '';
         val_for_figure          = {shp_values};
         sub_title               = 'cue position';
         val_for_sub_assignment  = cue_val(u_cue_idx_idx,:);
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
         position_indexes        = cue_idx;
-        hemifield_indexes       = (real([o.cue_pos]' - [o.fix_pos]')>0)+1;
         
     case 'cue_position'
         con_for_figure          = suc_idx;
-        con_for_trial_crit      = shp_idx;
         fig_title               = 'success ';
         sub_title               = 'cue position';
         val_for_figure          = num2cell(suc_values);
         val_for_sub_assignment  = cue_val(u_cue_idx_idx,:);
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
         position_indexes        = cue_idx;
-        hemifield_indexes       = (real([o.cue_pos]' - [o.fix_pos]')>0)+1;
         
     case 'hand_choices'
-        con_for_trial_crit      = hch_idx;
         fig_title               = '';
         val_for_figure          = {hnd_cho_values};
         
     case 'options'
         con_for_figure          = hnd_idx;
-        con_for_trial_crit      = cho_idx;
         fig_title               = 'hand ';
         val_for_figure          = num2cell(hnd_values);
-        %
+        
     case 'hands_inactivation'
         con_for_figure          = cho_idx;
-        con_for_line            = hpt_idx;
-        con_for_trial_crit      = perturbation_group;
         fig_title               = 'choice ';
         val_for_figure          = num2cell(cho_values);
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
-        %         color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
-        %         pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
-        %         pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
-        %         pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
         
     case 'hands_inactivation_in_ch'
         con_for_figure          = eff_idx;
-        con_for_trial_crit      = chp_idx;
         fig_title               = 'choice_instructed_comp ';
         val_for_figure          = num2cell(eff_values);
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
-        color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
-        pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
-        pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
-        pop.line_labels            = hand_ptb_labels(ismember(hand_blo_color_combination,hnd_blo_values,'rows'));
      
     case 'hands_in_ch'
         con_for_figure          = eff_idx;
-        con_for_line            = cho_idx;
-        con_for_trial_crit      = con_for_line;
         fig_title               = 'choice_instructed_comp ';
         val_for_figure          = num2cell(eff_values);
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
-        color_idx=ismember(hand_blo_color_combination(:,1),hnd_values) & ismember(hand_blo_color_combination(:,2),blo_values);
-        pop.PSTH_perpos_colors     = keys.hnd_ptb_colors(ismember(hand_blo_color_combination,hnd_blo_values,'rows'),:);
-        pop.PSTH_summary_colors    = [keys.hnd_ptb_colors_L(color_idx,:); keys.hnd_ptb_colors_R(color_idx,:)] ;
-        pop.line_labels            = hand_eff_labels(ismember(hand_eff_color_combination,hnd_eff_values,'rows'));  
   
     case 'hands'
         con_for_figure          = cho_idx;
         con_for_row             = ones(size(con_for_figure));
-        con_for_trial_crit      = hef_idx;
         fig_title               = 'choice ';
         sub_title               = 'movement vector ';
         val_for_figure          = num2cell(cho_values);
@@ -686,24 +318,19 @@ switch keys.arrangement
         
     case 'fixation'
         con_for_row             = eff_idx;
-        con_for_trial_crit      = non_idx;
         sub_title               = 'fixation at ';
         val_for_sub_assignment  = fix_val(u_fix_idx_idx,:);
         val_for_pos_assignment  = fix_val(u_fix_idx_idx,:);
         position_indexes        = fix_idx;
-        hemifield_indexes       = (real([o.fix_pos])'>0)+1;
         
     case 'movement vectors'
-        con_for_trial_crit      = fix_idx;
         sub_title               = 'movement vector ';
         
     case 'target location by origin'
-        con_for_trial_crit      = fix_idx;
         sub_title               = 'target position ';
         val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
         val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
         position_indexes        = tar_idx;
-        hemifield_indexes       = (real([o.tar_pos]')>0)+1;
 end
 
 %% subplot positions
@@ -730,16 +357,11 @@ for t=1:numel(o)
     pop.trial(t).position       =val_for_pos_assignment(position_indexes(t),:);
     pop.trial(t).hemifield      =-1*(pop.trial(t).position(1)<0)+1*(pop.trial(t).position(1)>0);
 end
-
-%% trial criterion (very temporary) - needs to be separate for ch and IN, also for hands!...
-pop.position_combinations  = [con_for_figure con_for_trial_crit position_indexes];
-pop.hemifield_combinations = [con_for_figure con_for_trial_crit hemifield_indexes];
-
 end
 
 function [s_c, displacement_types] = center_displacement_working(trial,keys)
-Prec_fix=keys.precision.fixation;
-Prec_pos=keys.precision.position;
+Prec_fix=keys.cal.precision_fix;
+Prec_pos=keys.cal.precision_tar;
 
 movement_direction  =NaN(size(trial'));
 fixation            =NaN(size(trial'));
@@ -796,7 +418,7 @@ fixation=fixation-1i*fix_y;
 target=target-1i*fix_y;
 
 displacement_types=[real(fixation) imag(fixation) real(target) imag(target) real(cuepos) imag(cuepos), real(stmpos) imag(stmpos),...
-    unique_condition fixation_location movement_direction target_location, cue_location, stimulus_location]; %
+    unique_condition fixation_location movement_direction target_location, cue_location, stimulus_location]; 
 
 if numel(trial)==0
     displacement_types=NaN(1,14);

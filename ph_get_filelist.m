@@ -4,20 +4,17 @@ project=varargin{1};
 keys=struct;
 keys.combine_monkeys=0;
 keys=ph_general_settings(project,keys);
-project_specific_settings=[keys.db_folder project filesep 'ph_project_settings.m'];
+project_specific_settings=[keys.db_folder 'ph_project_settings.m'];
 run(project_specific_settings)
-
 keys.project_versions=varargin{2};
 for f=1:numel(keys.project_versions) % running multiple versions of the same project at once !
     keys.project_version=keys.project_versions{f};
     version_folder=keys.project_version;
-    keys.version_specific_settings=[keys.db_folder project filesep keys.project_version filesep 'ph_project_version_settings.m'];
+    keys.version_specific_settings=[keys.db_folder keys.project_version filesep 'ph_project_version_settings.m'];
     run(keys.version_specific_settings);
     keys.project_version=version_folder;
-    
     keys.folder_to_save=[keys.basepath_to_save keys.project_version];
-    keys.subfolder_prefix='scatter';
-    
+    keys.subfolder_prefix='scatter';    
     filelist=struct;
     filelist_formatted=struct;
     selection=keys.tt.selection;
@@ -67,9 +64,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
                         runs3=arrayfun(@(x) sprintf('%02d',mod(x,100)), blocks(:,1),'UniformOutput',false);
                         runs4=arrayfun(@(x) sprintf('%02d',x), blocks(:,3),'UniformOutput',false);
                         
-                        
-                        current_filelist=strcat(['Y:\Data\' keys.monkey '_phys' filesep], runs0, [keys.monkey(1:3)], runs1, '-', runs2, '-', runs3, '_', runs4,'.mat');
-                        
+                        current_filelist=strcat(['Y:\Data\' keys.monkey '_phys' filesep], runs0, keys.monkey(1:3), runs1, '-', runs2, '-', runs3, '_', runs4,'.mat');
                         filelist.([keys.monkey(1:3) '_' target '_PT' num2str(pt-1) '_' keys.tt.tasktypes{tt}])=current_filelist;
                     end
                 end
@@ -78,15 +73,13 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     end
     save([keys.folder_to_save filesep 'behaviour_filelist.mat'],'filelist','filelist_formatted');
 end
-
 end
-
 
 function output_blocks_or_runs=run2block(base_path,given_blocks_or_runs,reverse)
 folder_content=dir([base_path filesep '*.mat']);
 complete_filelist=vertcat(folder_content.name);
-filelist_blocks=str2num(complete_filelist(:,end-5:end-4));
-filelist_runs=str2num(complete_filelist(:,end-14:end-13));
+filelist_blocks=str2double(complete_filelist(:,end-5:end-4));
+filelist_runs=str2double(complete_filelist(:,end-14:end-13));
 
 if strcmp(reverse,'reverse') || reverse==1
     [~,idx] =ismember(given_blocks_or_runs,filelist_blocks);

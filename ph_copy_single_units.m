@@ -6,22 +6,11 @@ idx_ID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 ph_copy_file_list_to_dir(tuning_per_unit_table(:,idx_ID),keys);
 end
 
-function ph_copy_file_list_to_dir(example_list,keys,additional_pattern,remove_original,verbose)
-%IG_COPY_FILE_LIST_TO_DIR		- copy or move files in filelist from fromdir to todir
-% e.g. ig_copy_file_list_to_dir('Y:\Projects\Pulv_oculomotor\ephys\20180222\single_cell_examples','C:\Temp','C:\Temp\cells_perisac_ehn_42.txt',0,'memory',0,1);
-
-
-if nargin < 3,
-    additional_pattern = '';
-end
-
-if nargin < 4,
-    remove_original = 0;
-end
-
-if nargin < 5,
-    verbose = 0;
-end
+function ph_copy_file_list_to_dir(example_list,keys)
+additional_pattern = '';
+remove_original = 0;
+verbose = 0;
+    
 project=keys.project;
 version=keys.project_version;
 fromdir=['Y:\Projects\' project '\ephys\' version '\single_cell_examples'];
@@ -64,5 +53,4 @@ end
 if success,
     fprintf('Copied %d files from %s to %s\n',k,fromdir,todir);
 end
-
 end

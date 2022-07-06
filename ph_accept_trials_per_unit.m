@@ -1,8 +1,10 @@
-function pop_resorted = ph_accept_trials_per_unit(pop_resorted)
+function pop_resorted = ph_accept_trials_per_unit(pop_resorted,keys)
 for u=1:numel(pop_resorted)
     FRs=[pop_resorted(u).trial.FR_average];
     FRsT=FRs;
-    %FRsT=FRsT(FRsT~=0); % this has to be commented for pulv_oculomotor!!
+    if keys.cal.remove_trials_without_spikes
+        FRsT=FRsT(FRsT~=0); % this has to be commented for pulv_oculomotor!!
+    end
     unit_mean=double(nanmedian(FRsT));
     unit_std=double(nanstd(FRsT));
     confidence_interval=3*unit_std; %poisson?

@@ -27,19 +27,28 @@ if nargin<3
 end
 keys=struct;
 keys=ph_general_settings(project,keys);
-project_specific_settings=[keys.db_folder project filesep 'ph_project_settings.m'];
+project_specific_settings=[keys.db_folder 'ph_project_settings.m'];
 run(project_specific_settings)
 if nargin>=2
     keys.project_versions=versions;
 end
 for f=1:numel(keys.project_versions) % running multiple versions of the same project at once !
+
     if ~isempty(keys.project_versions{f})
         keys.project_version=keys.project_versions{f};
     end
-    if ~exist([keys.db_folder project filesep keys.project_version filesep],'dir')
-        mkdir([keys.db_folder project], keys.project_version);
+    if ~exist([keys.db_folder keys.project_version filesep],'dir')
+        mkdir([keys.db_folder ], keys.project_version);
     end
-    keys.version_specific_settings=[keys.db_folder project filesep keys.project_version filesep 'ph_project_version_settings.m'];
+    seed_filename=[keys.basepath_to_save keys.project_version filesep 'seed.mat']; %might not be defined yet
+    if exist(seed_filename,'file');
+        load(seed_filename);
+        rng(seed);
+    else
+        seed=rng;
+        save(seed_filename,'seed');
+    end
+    keys.version_specific_settings=[keys.db_folder keys.project_version filesep 'ph_project_version_settings.m'];
     if keep_version_settings && exist(keys.version_specific_settings,'file')
         run(keys.version_specific_settings)
         keys.project_versions=versions;
@@ -48,7 +57,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         delete(keys.version_specific_settings);
         copyfile(project_specific_settings,keys.version_specific_settings);
     end
-    keys.additional_settings=[keys.db_folder project filesep keys.project_version filesep 'ph_additional_settings.m'];
+    keys.additional_settings=[keys.db_folder keys.project_version filesep 'ph_additional_settings.m'];
     if exist(keys.additional_settings,'file')
         run(keys.additional_settings)
     end

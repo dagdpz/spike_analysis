@@ -126,7 +126,7 @@ for current_date = sessions(:)'
     
     if keys.cal.process_spikes
         pop_resorted(ismember({pop_resorted.unit_ID},{'no unit'}))=[];              %% remove units that were not taken over from excel sheet (??)
-        pop_resorted = ph_accept_trials_per_unit(pop_resorted);                     %% add field accepted for each trial per unit
+        pop_resorted = ph_accept_trials_per_unit(pop_resorted,keys);                     %% add field accepted for each trial per unit
         
         % plot the cells not meeting criteria
         idx_Neuron_ID=DAG_find_column_index(keys.sorting_table,'Neuron_ID');

@@ -1,7 +1,6 @@
 function [UC, CM, labels]=ph_get_condition_matrix(trials,keys)
-types       =[trials.type];
-effectors   =[trials.effector];
-all_type_effectors      = combvec(unique(types),unique(effectors))';
+%% type and effectors
+all_type_effectors      = combvec(unique([trials.type]),unique([trials.effector]))';
 type_effectors =[];
 
 if isfield(keys,'conditions_to_plot')
@@ -31,51 +30,38 @@ UC.type_effector_labels=type_effector_short;
 tr_con=ismember([trials.completed],keys.cal.completed);
 [whatisthis]=ph_arrange_positions_and_plots(keys,trials(tr_con));
 
-hands       =[trials.reach_hand];
-choice      =[trials.choice];
-perturbation=[trials.perturbation];
-hemifield   =[whatisthis.trial.hemifield];
+for c=1:numel(keys.condition_parameters)
+    UC.(keys.condition_parameters{c})=unique([trials.(keys.condition_parameters{c})]);
+end
 
-position=vertcat(whatisthis.trial.position);
+%% this part is not ideal
+perturbation=[trials.perturbation];
+perturbation(ismember(perturbation, keys.cal.perturbation_groups{1}))=0;
+perturbation(ismember(perturbation, keys.cal.perturbation_groups{2}))=1;
+perturbation(isnan(perturbation))=0;
+UC.perturbation     =unique(perturbation);
+UC.position             =unique(vertcat(whatisthis.trial.position),'rows');
+UC.hemifield            =unique([whatisthis.trial.hemifield]);
+UC.fix_index            =unique([whatisthis.trial.fix_index]);
 fixations_temp=unique(vertcat(whatisthis.trial.fixation),'rows');
 fix_temp_idx=true(size(fixations_temp,1),1);
 for x=1:size(fixations_temp,1)-1
-    if any(all(abs(bsxfun(@minus,fixations_temp(x+1:end,:),fixations_temp(x,:)))<4,2)) %% precision....
+    if any(all(abs(bsxfun(@minus,fixations_temp(x+1:end,:),fixations_temp(x,:)))<keys.cal.precision_fix,2))
         fix_temp_idx(x)=false;
     end
 end
 UC.fixation=fixations_temp(fix_temp_idx,:);
-perturbation(ismember(perturbation, keys.cal.perturbation_groups{1}))=0;
-perturbation(ismember(perturbation, keys.cal.perturbation_groups{2}))=1;
-perturbation(isnan(perturbation))=0;
-
-UC.hemifield        =unique(hemifield); 
-UC.position         =unique(position,'rows');
-UC.reach_hand       =unique(hands);
-UC.choice           =unique(choice);
-UC.perturbation     =unique(perturbation);
-% UC.perturbation     =UC.perturbation(~isnan(UC.perturbation));
-
 %% limit conditions key?
 if ~any(keys.tt.hands==0) % cause hands 0 is any hand
     UC.reach_hand     =UC.reach_hand(ismember(UC.reach_hand,keys.tt.hands));
 end
 UC.choice    =UC.choice(ismember(UC.choice,keys.tt.choices));
-UC.reach_hand=UC.reach_hand;
+%% up to here
 
-%% KK stuff
-UC.stimulustype         =unique([trials.stimulustype]);
-UC.difficulty           =unique([trials.difficulty]);
-UC.success              =unique([trials.success]);
-UC.fix_index            =unique([whatisthis.trial.fix_index]);
-UC.stimuli_in_2hemifields              =unique([trials.stimuli_in_2hemifields]);
 
-%CM_cell={};
 for c=1:numel(keys.condition_parameters)
     CM_cell{c}=UC.(keys.condition_parameters{c});
-    %Conditons_per_trial(:,c)=[trials.(keys.condition_parameters{c})];
 end
-%CM=unique(Conditons_per_trial,'rows');
 CM=combvec(CM_cell{:})';
 
 %% NOW, since we know the conditions, we can also define legends and colors (legend defines fields in keys.color.)!

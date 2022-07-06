@@ -46,7 +46,8 @@ for unit=1:numel(population)
                 fig_idx=[T.figure]==fig;
                 
                 %% new part!
-                [UC, CM, labels]=ph_get_condition_matrix(T(fig_idx),keys);
+                [UC, CM, labels]=ph_get_condition_matrix(T(fig_idx),keys);             
+
                 %% for general use
                 line_idx=true(size(CM,1),size(fig_idx,2));
                 for L=1:size(CM,1)
@@ -54,16 +55,18 @@ for unit=1:numel(population)
                         line_idx(L,:)=line_idx(L,:) & [T.(keys.condition_parameters{con})]==CM(L,con);
                     end
                 end
-                legend_labels_hem={};
+                labels_hem={};
                 for h=UC.hemifield % append hemifield labels, careful with the order!
-                    legend_labels_hem=[legend_labels_hem; strcat(labels,['_' keys.labels.hemifield{h+2}])];
+                    labels_hem=[labels_hem; strcat(labels,['_' keys.labels.hemifield{h+2}])];
                 end
-                legend_labels_hem=legend_labels_hem';
-                legend_labels_hem=legend_labels_hem(:);
+                labels_hem=labels_hem';
+                labels_hem=labels_hem(:);   
                 if keys.plot.average_PSTH_line
                     line_idx(end+1,:)=true(1,size(fig_idx,2));
                     labels{end+1}='AV';
                 end
+                legend_labels=strrep(labels,'IH','LH');
+                legend_labels=strrep(labels,'CH','RH');
                 n_lines=size(line_idx,1);
                 
                 side_labels={'L','R'};
@@ -207,7 +210,7 @@ for unit=1:numel(population)
                             state_label =keys.EPOCHS{sta,1};
                             hh(sta+n_states*(lin-1))=subplot_assignment(keys,'FR',n_states,n_lines,sta,lin,e,0,effectors_on_figure,1);
                             plot_firing_rate_heatmap(FR_heat(sta,lin).pos,o.columns,o.rows,1:max(subplot_indizes));
-                            title([strrep(labels{lin},'_',' ') ' ' state_label]);
+                            title([strrep(legend_labels{lin},'_',' ') ' ' state_label]);
                         end
                         % one single colorbar
                         if sta==n_states && exist('hh','var')
@@ -336,7 +339,7 @@ for unit=1:numel(population)
                                     FR_1quarters(R,sta,con)=quantile(FR_summ{R,sta,con},0.25);
                                     FR_2quarters(R,sta,con)=quantile(FR_summ{R,sta,con},0.5);
                                     FR_3quarters(R,sta,con)=quantile(FR_summ{R,sta,con},0.75);
-                                    FR_labels{R,sta,con}=strrep([side_labels{h} ' ' labels{lin}],'_',' ');
+                                    FR_labels{R,sta,con}=strrep([side_labels{h} ' ' legend_labels{lin}],'_',' ');
                                     
                                     hb_ylim=[min(hb_ylim(1),max([FR_1quarters(R,sta,con) nanmean(FR_summ{R,sta,con})])) ...
                                         max(hb_ylim(2),max([FR_3quarters(R,sta,con) nanmean(FR_summ{R,sta,con})]))];
@@ -354,7 +357,7 @@ for unit=1:numel(population)
                                 bm=nanmean(FR_summ{R,sta,b});
                                 ci=[sterr(FR_summ{R,sta,b})*1.96 0];
                                 ci=ci(1);
-                                col=keys.colors.(legend_labels_hem{b})/255;
+                                col=keys.colors.(labels_hem{b})/255;
                                 bar(b,bm,1,'FaceColor',col);
                                 eb=errorbar_constant_barsize_working(b, bm, ci, ci, 0.3);
                                 patch([b-0.1 b+0.1 b+0.1 b-0.1],[FR_1quarters(R,sta,b) FR_1quarters(R,sta,b) FR_3quarters(R,sta,b) FR_3quarters(R,sta,b)],'k','EdgeColor','none');

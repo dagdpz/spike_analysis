@@ -182,7 +182,7 @@ for u=1:numel(population)
             FR_for_pref=NaN(size(UC.position,1),1);
             per_epoch=get_per_epoch(pop.trial(trtyp));
             for p=1:size(UC.position,1)
-                tr_hemi=all(abs(bsxfun(@minus,vertcat(pop.trial.position),UC.position(p,:)))<1.5,2) & [pop.trial.choice]'==0; %% tr_pos?
+                tr_hemi=all(abs(bsxfun(@minus,vertcat(pop.trial.position),UC.position(p,:)))<keys.cal.precision_tar,2) & [pop.trial.choice]'==0; %% tr_pos?
                 FR_for_pref(p)=nanmean([per_epoch((tr_hemi(trtyp)),PF_epoch{t}).FR])-nanmean(baseline(tr_hemi & trtyp'));
             end
             %         if ischar(unique_group_values{g}) && strcmp(unique_group_values{g},'su') %very specific rule, be aware of this one!
@@ -194,8 +194,8 @@ for u=1:numel(population)
             pref_valid(t,u)=true;
             for ch=UC.choice
                 pref_valid(t,u)=pref_valid(t,u) && pref_idx~=unpref_idx && ...
-                    sum(all(abs(bsxfun(@minus,vertcat(pop.trial(trtyp).position),UC.position(pref_idx,:)))<1.5,2)   & [pop.trial(trtyp).choice]'==ch) >=keys.cal.min_trials_per_condition && ...
-                    sum(all(abs(bsxfun(@minus,vertcat(pop.trial(trtyp).position),UC.position(unpref_idx,:)))<1.5,2) & [pop.trial(trtyp).choice]'==ch) >=keys.cal.min_trials_per_condition;
+                    sum(all(abs(bsxfun(@minus,vertcat(pop.trial(trtyp).position),UC.position(pref_idx,:)))<keys.cal.precision_tar,2)   & [pop.trial(trtyp).choice]'==ch) >=keys.cal.min_trials_per_condition && ...
+                    sum(all(abs(bsxfun(@minus,vertcat(pop.trial(trtyp).position),UC.position(unpref_idx,:)))<keys.cal.precision_tar,2) & [pop.trial(trtyp).choice]'==ch) >=keys.cal.min_trials_per_condition;
             end
         end
         
@@ -213,7 +213,7 @@ for u=1:numel(population)
             per_epoch=get_per_epoch(pop.trial(tr_con));% take already normalized values
             for ep=1:size(per_epoch,2)
                 for p=1:size(UC.position,1)
-                    tr_hemi=all(abs(bsxfun(@minus,vertcat(pop.trial.position),UC.position(p,:)))<1.5,2) & [pop.trial.choice]'==0; 
+                    tr_hemi=all(abs(bsxfun(@minus,vertcat(pop.trial.position),UC.position(p,:)))<keys.cal.precision_tar,2) & [pop.trial.choice]'==0; 
                     condition(t,c).per_position(p).epoch(ep).unit(u).FR=nanmean([per_epoch(tr_hemi(tr_con),ep).FR])-nanmean(baseline(tr_hemi & tr_con'));
                 end
             end
@@ -290,7 +290,7 @@ for u=1:numel(population)
                                 
                 if strcmp(keys.normalization_field,'PO') %% && plot_position??
                     for p=1:size(UC.position,1)
-                        tr_pos=all(abs(bsxfun(@minus,vertcat(pop.trial.position),UC.position(p,:)))<1.5,2)';
+                        tr_pos=all(abs(bsxfun(@minus,vertcat(pop.trial.position),UC.position(p,:)))<keys.cal.precision_tar,2)';
                         ix = tr_con & tr_pos;
                         
                         condition(t,c).per_position(p).window(w).unit(u).average_spike_density= ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
@@ -320,13 +320,14 @@ for u=1:numel(population)
             end
             
             zin_per_pos=NaN(size(UC.position,1),1);
+
             %% supposedly matches with target position precision...
             if sum(tr_con) == 0
                 continue
             end
             for p=1:size(UC.position,1) %for FR plot only
                 
-                tr=all(abs(bsxfun(@minus,vertcat(pop.trial(tr_con).position),UC.position(p,:)))<1.5,2);
+                tr=all(abs(bsxfun(@minus,vertcat(pop.trial(tr_con).position),UC.position(p,:)))<keys.cal.precision_tar,2);
                 if sum(tr)==0; continue; end
                 zin_per_pos(p)=nanmean(vertcat(per_epoch(tr,RF_epoch{t}).FR));
             end

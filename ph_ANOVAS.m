@@ -5,31 +5,34 @@ for unit=1:numel(population)
     if sum([population(unit).trial.accepted]==1 & [population(unit).trial.completed]==1)>0 % temporary? for pulv_oculomotor_dataset
         for a=1:numel(keys.position_and_plotting_arrangements) % arrangement defines poaitions, therefore also hemifield (which is part of conditions)
             keys.arrangement=keys.position_and_plotting_arrangements{a};
-            %o=ph_arrange_positions_and_plots(keys,population(unit).trial(tr_considered)); % arrangement  
-            [UC, CM]=ph_get_condition_matrix(population(unit).trial,keys);          
+            %o=ph_arrange_positions_and_plots(keys,population(unit).trial(tr_considered)); % arrangement
+            keys.labels.reach_hand=keys.labels.reach_handLR ;
+            [UC, CM, lables]=ph_get_condition_matrix(population(unit).trial,keys);
             keys.normalization_field='AN';
             o=ph_condition_normalization(population(unit),keys,UC,CM); %condition wise normalization (also reduces conditions!???)
-
+            
             for type=UC.type
                 %% check carefully multicomp epochs !!
                 keys.main_multicomp                     =keys.ANOVAS_PER_TYPE(type).main;
                 keys.epoch_multicomp                    =keys.ANOVAS_PER_TYPE(type).epoch;
-                keys.epoch_spaceLR_multicomp            =keys.ANOVAS_PER_TYPE(type).spaceLR;
+                keys.epoch_hemifield_multicomp          =keys.ANOVAS_PER_TYPE(type).hemifield;
                 keys.epoch_hands_multicomp              =keys.ANOVAS_PER_TYPE(type).hands;
                 keys.epoch_SxH_multicomp                =keys.ANOVAS_PER_TYPE(type).SxH;
                 keys.epoch_position_multicomp           =keys.ANOVAS_PER_TYPE(type).positions;
                 
+                keys.anova_epochs=keys.ANOVAS_PER_TYPE(type); %% this here should eventually replace having to repeat the above
                 for effector=UC.effector
                     keys=ph_get_epoch_keys(keys,type,effector,sum(UC.type_effector(:,1)==type)>1);
                     [~, condition_fieldname_part]=MPA_get_type_effector_name(type,effector);
-                    tr_index= [o.trial.effector]==effector & [o.trial.type]==type ;                                       
+                    tr_index= [o.trial.effector]==effector & [o.trial.type]==type ;
                     if sum(tr_index)==0;
                         fprintf('no trials for effector %.0f type %.0f \n',effector,type);continue;
                     end
                     o_e=o;
                     o_e.trial=o.trial(tr_index);
                     
-                    trial_criterion=get_minimum_trials(keys,o_e,tr_index);
+                    %trial_criterion_old=get_minimum_trials(keys,o_e,tr_index);
+                    trial_criterion=ph_get_minimum_trials(keys,o_e,CM,UC,lables);
                     [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o_e,keys);
                     [anova_struct]=n_way_anova(keys,epochs,FR,idx,u_pos,u_fix);
                     anova_struct_current_unit.([condition_fieldname_part '_'  keys.arrangement(1:3)])=anova_struct; clear anova_struct
@@ -55,7 +58,7 @@ for unit=1:numel(population)
                     end
                     o_e=o;
                     o_e.trial=o.trial(tr_index);
-                    keys.labels.eff={condition_fieldname_part1 '-' condition_fieldname_part2};
+                    keys.TTlabels.effector={condition_fieldname_part1 '-' condition_fieldname_part2};
                     [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o_e,keys);
                     [anova_struct]=effector_comparison_anova(keys,epochs,FR,idx,u_pos,u_fix);
                     anova_struct_current_unit.([condition_fieldname_part '_'  keys.arrangement(1:3)])=anova_struct; clear anova_struct
@@ -72,7 +75,7 @@ for unit=1:numel(population)
     %inital_fieldnames={'unit_ID','monkey','target','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
     unit_table(1,1:numel(inital_fieldnames))=inital_fieldnames;
     for fn=1:numel(inital_fieldnames)
-        unit_table{rows_to_update,fn}=population(unit).(inital_fieldnames{fn});
+        unit_table{2,fn}=population(unit).(inital_fieldnames{fn});
     end
     title_counter=numel(inital_fieldnames);
     FN=fieldnames(anova_struct_current_unit);
@@ -81,40 +84,51 @@ for unit=1:numel(population)
         for fnsub=1:numel(FNsub)
             title_counter=title_counter+1;
             unit_table{1,title_counter}=[FNsub{fnsub} '_' FN{fn}];
-            unit_table{rows_to_update,title_counter}=anova_struct_current_unit.(FN{fn}).(FNsub{fnsub});
+            unit_table{2,title_counter}=anova_struct_current_unit.(FN{fn}).(FNsub{fnsub});
         end
     end
-    tuning_per_unit_table=DAG_update_mastertable_cell(tuning_per_unit_table,unit_table,rows_to_update);
+%     tic
+%     tuning_per_unit_table=DAG_update_mastertable_cell(tuning_per_unit_table,unit_table,rows_to_update);
+%     toc
+
+    
+    titles_update=unit_table(1,:);
+    titles_original_table=tuning_per_unit_table(1,:);
+    [~, title_positions]=ismember(titles_update,titles_original_table);
+    for n_update_column=1:numel(titles_update)
+        XXX=title_positions(n_update_column);
+        if XXX==0
+            n_column=size(tuning_per_unit_table,2)+1;
+            tuning_per_unit_table(1,n_column)=titles_update(n_update_column);
+        else
+            n_column=XXX;
+        end
+        tuning_per_unit_table(rows_to_update,n_column)=unit_table(2,n_update_column);
+    end
 end
 end
 
 function anova_struct=n_way_anova(keys,epochs,FR,idx,Positions,Fixations)
-INCHnamepart=keys.labels.choices([sum(idx.in)>0 sum(idx.ch)>0]);
-LHRHnamepart=keys.labels.handsLR;
-LSRSnamepart={'LS','RS'};
-labelen={'su','-','en','bi'};
-labelsp={'LS','-','RS'};
-labelud={'DN','-','UP'};
-labelha={'LH','-','RH'};
-labelcr={'UC','-','CR'};
-labelIN={'in','-','ch'};
-true_labels={'false','true'};
-
-%% doesnt even belong here...
-%epochs_for_multicomparison=keys.epoch_for_multicomparison(ismember(keys.epoch_for_multicomparison,keys.EPOCHS(:,1)));
-idx_ep=ismember(keys.epoch_multicomp(:,1),keys.EPOCHS(:,1)) &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
-epoch_multicomp=keys.epoch_multicomp(idx_ep,:);
-idx_ep=ismember(keys.main_multicomp,keys.EPOCHS(:,1));
-main_multicomp=keys.main_multicomp(idx_ep,:);
+labels=keys.TTlabels;
+labels.control_test={};
+conditions=keys.TTconditions;
+IN=conditions.choice{1};
+CH=conditions.choice{2};
+conditions.choice=conditions.choice([sum(idx.in)>0 sum(idx.ch)>0]);
 
 [~, ~, epoch_idx]=unique(epochs);
 idx_fieldnames=fieldnames(idx)';
 
+% epochs for epoch comparison
+epoch_multicomp=keys.epoch_multicomp;
+idx_ep=ismember(epoch_multicomp(:,1),epochs') &  ismember(epoch_multicomp(:,2),epochs');
+epoch_multicomp=epoch_multicomp(idx_ep,:);
 %% Independently for Instructed and Choice !!
-for ch=1:numel(INCHnamepart)
-    %% this part should go NOT? outside the loop! % perturbation here is defined as always the lowest accessible for control...;
-    tr_ch=idx.(INCHnamepart{ch}) & ismember(epochs,epoch_multicomp) & idx.PT==0;
-    tr_main=idx.(INCHnamepart{ch}) & ismember(epochs,main_multicomp) & idx.PT==0; %& ismember(epochs,epochs_for_multicomparison);
+for ch=1:numel(conditions.choice)
+    INCH=conditions.choice{ch};
+    labels.INCH=conditions.choice{ch};
+    %% perturbation here is defined as always the lowest accessible for control... (???)
+    tr_ch=idx.(INCH) & idx.PT==0;
     for fn=idx_fieldnames
         idx.(['tr_' fn{:}])=      idx.(fn{:}) & repmat(tr_ch,1,size(idx.(fn{:}),2)) ;
     end
@@ -123,290 +137,163 @@ for ch=1:numel(INCHnamepart)
     n_lr=sum(idx.tr_LS)>0 && sum(idx.tr_RS)>0;
     n_2hands=sum(idx.tr_LH_LS)>0 && sum(idx.tr_LH_RS)>0 && sum(idx.tr_RH_LS)>0 && sum(idx.tr_RH_RS)>0;
     if n_2hands % three-way anova epoch, space, hand
-        keys.anova_varnames={'epoch' 'spaceLR' 'hands'};
-        tr=tr_ch & (idx.tr_LH_LS | idx.tr_LH_RS | idx.tr_RH_LS | idx.tr_RH_RS);
+        keys.anova_varnames={'epoch' 'hemifield' 'hands'};
+        tr=idx.tr_LH_LS | idx.tr_LH_RS | idx.tr_RH_LS | idx.tr_RH_RS;
         Par=[epoch_idx, idx.tr_RS, idx.tr_RH];
     elseif n_lr % two-way anova epoch, space
-        keys.anova_varnames={'epoch' 'spaceLR'};
-        tr=tr_ch & (idx.tr_LS | idx.tr_RS);
+        keys.anova_varnames={'epoch' 'hemifield'};
+        tr=idx.tr_LS | idx.tr_RS;
         Par=[epoch_idx, idx.tr_RS];
     else
-        disp(['Not fitting dataset... no left or right ' INCHnamepart{ch} ' present?'])
-        anova_struct.([INCHnamepart{ch} '_epoch_main'])=[];
+        disp(['Not fitting dataset... no left or right ' INCH ' present?'])
+        anova_struct.([INCH '_epoch_main'])=[];
         continue;
     end
-    
+        
     %% main effects and general interactions
+    tr_main=idx.(INCH) & ismember(epochs,keys.main_multicomp) & idx.PT==0; %& ismember(epochs,epochs_for_multicomparison);
     [anova_out.p,anova_out.table,anova_out.stats,anova_out.terms] = anovan(FR(tr_main),Par(tr_main,:),'model','full','varnames',keys.anova_varnames,'display',keys.plot.anova_tables);
-    anova_struct.([INCHnamepart{ch} '_epoch_main'])=anova_out.p(1)<0.05; %main effect on epoch!
+    anova_struct.([INCH '_epoch_main'])=anova_out.p(1)<0.05; %main effect on epoch!
     handindexes=[1,2,3];
     handindexes=handindexes(any(idx.tr_hands));
-    
-    %% epoch tuning per hand
-    multicomp_epochs=epoch_multicomp;
-    for row=1:size(multicomp_epochs,1)
-        s=multicomp_epochs(row,2);
-        b=multicomp_epochs(row,1);
-        % per hand
-        for hn=handindexes
-            % separately define enhancement and supression for each side (left/right)
-            for sideindex=1:2
-                idx1=tr & ismember(epochs,b) & idx.sides(:,sideindex) & idx.tr_hands(:,hn);
-                idx2=tr & ismember(epochs,s) & idx.sides(:,sideindex) & idx.tr_hands(:,hn);
-                if sum(idx1)>1 && sum(idx2)>1
-                    h=do_stats(FR(idx1),FR(idx2),keys,0); %%unpaired ?? ttest versus baseline
-                else
-                    h=false;
-                end
-                DF(sideindex)=(nanmean(FR(idx2))-nanmean(FR(idx1)));
-                labelindex=h*sign(DF(sideindex))+2; labelindex(isnan(labelindex))=2;
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' LSRSnamepart{sideindex} '_' s{:} '_epoch_FR'])=nanmean(FR(idx2));
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' LSRSnamepart{sideindex} '_' s{:} '_epoch_DF'])= DF(sideindex) ;
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' LSRSnamepart{sideindex} '_' s{:} '_epoch'])= labelen{labelindex};
-                ensu(sideindex)=h*sign(DF(sideindex))+2;
-            end
-            % select label dependend on both sides
-            ensu(isnan(ensu))=2;
-            if any(ensu==1) && any(ensu==3)
-                labelindex=4;
-            elseif any(ensu~=2)
-                labelindex=unique(ensu(ensu~=2));
-            else
-                labelindex=2;
-            end
-            [~,DFidx]=max(abs(DF));
-            DF=DF(DFidx);
-            idxbl=tr & ismember(epochs,b) & idx.sides(:,DFidx) & idx.tr_hands(:,hn); % take respective baseline index for side!
-            idxep=tr & ismember(epochs,s) & idx.sides(:,DFidx) & idx.tr_hands(:,hn); % take respective epoch index for side!
-            anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn}  '_' s{:} '_epoch'])=labelen{labelindex};
-            anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn}  '_' s{:} '_epoch_DF'])=DF; %%% to think about !!!!
-            anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn}  '_' s{:} '_epoch_SC'])=DF/nanmean(FR(idxbl)); %%% to think about !!!! now it corresponds to % signal change
-            labelindex=-1*all(ensu==1)+all(ensu==3)+2;
-            anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn}  '_' s{:} '_epoch_bilateral'])=labelen{labelindex};
-            
-        end
-    end
-    
-    %% epoch tuning across all trials
-    multicomp_epochs=epoch_multicomp;
-    for row=1:size(multicomp_epochs,1)
-        s=multicomp_epochs(row,2);
-        b=multicomp_epochs(row,1);
-        idxbl=tr_ch & ismember(epochs,b);
-        idxep=tr_ch & ismember(epochs,s);        
-        if sum(idxbl)>1 && sum(idxep)>1
-            h=do_stats(FR(idxbl),FR(idxep),keys,1); %%paired ?? ttest versus baseline
-        else
-            h=false;
-        end
-        DF=(nanmean(FR(idxep))-nanmean(FR(idxbl)));
-        labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-        anova_struct.([INCHnamepart{ch} '_' s{:} '_epoch'])=labelen{labelindex};
-        %             anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn}  '_' s{:} '_epoch_DF'])=DF; %%% to think about !!!!
-        %             anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn}  '_' s{:} '_epoch_SC'])=DF/nanmean(FR(idxbl)); %%% to think about !!!! now it corresponds to % signal change
-        
-    end
-    
-    
-    %% hand OR space tuning (gets overwritten in case of both)
+
+    %% Epoch X space/hand tuning (regardless of the other)
     for k=2:numel(keys.anova_varnames)
         multicomp_epochs=keys.(['epoch_' keys.anova_varnames{k} '_multicomp']);
-        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
-        switch keys.anova_varnames{k}
-            case 'spaceLR'
-                label={'LS','-','RS'};
-            case 'hands'
-                label={'LH','-','RH'};
-        end
-        
-        idx1=tr & Par(:,k)==0;
-        idx2=tr & Par(:,k)==1;
+        %multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to think about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
+        label=labels.(keys.anova_varnames{k});
         idx1m=tr_main & Par(:,k)==0 & ismember(epochs,multicomp_epochs);
         idx2m=tr_main & Par(:,k)==1 & ismember(epochs,multicomp_epochs);
-        
         labelindex=(anova_out.p(k)<0.05) *sign(nanmean(FR(idx2m))-nanmean(FR(idx1m)))+2; labelindex(isnan(labelindex))=2;
-        anova_struct.([INCHnamepart{ch} '_' keys.anova_varnames{k} '_main'])=label{labelindex}; %main effect with direction!
-        anova_struct.([INCHnamepart{ch} '_Ex' upper(keys.anova_varnames{k}(1))])=anova_out.p(k+numel(keys.anova_varnames)-1)<0.05; %main effect with direction!
-        
-        for s=multicomp_epochs(:)'
-            idxS=ismember(epochs,s);
-            h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0);
-            DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
-            labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_' keys.anova_varnames{k}])=label{labelindex};
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_' keys.anova_varnames{k} '_DF'])=DF;
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_' keys.anova_varnames{k} '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
-        end
+        anova_struct.([INCH '_' keys.anova_varnames{k} '_main'])=label{labelindex}; %main effect with direction!
+        anova_struct.([INCH '_Ex' upper(keys.anova_varnames{k}(1))])=anova_out.p(k+numel(keys.anova_varnames)-1)<0.05; %TRUE/FALSE labels??
     end
-    
-    
-        %%  Difficulty per space
-        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
-        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
-        label={'Ta','-','eD'}; %higher FR for T , higher FR for D
-        idx1= idx.tr_Diff0; 
-        idx2= idx.tr_Diff1;
 
-        %t-test
-        for sideindex=1:2 %left * right
-            for s=multicomp_epochs(:)'
-                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
-                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
-                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
-                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Easy' ])=label{labelindex};
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Easy' '_DF'])=DF;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Easy' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
-            end
-        end
-        
-        %%  Difficulty per space
-        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
-        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
-        label={'Ta','-','dD'}; %higher FR for T , higher FR for D
-        idx1= idx.tr_Diff0; 
-        idx2= idx.tr_Diff2;
-    
-        %t-test
-        for sideindex=1:2 %left * right
-            for s=multicomp_epochs(:)'
-                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
-                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
-                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
-                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Diff' ])=label{labelindex};
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Diff' '_DF'])=DF;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'Difficulty_Diff' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
-            end
-        end
-        
-                %%  single trials per space
-        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); 
-        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); 
-        label={'SC','-','SI'}; %higher FR for CS , higher FR for IS
-        idx1= idx.nonDistr1 &  idx.suc1 ; 
-        idx2= idx.nonDistr1 &  idx.suc1 ; 
-       % idx1= sum([(idx.nonDistr1 &  idx.suc1) , (idx.Distr2 &  idx.suc0)],2) ; 
-       % idx2= sum([(idx.nonDistr1 &  idx.suc1) , (idx.Distr2 &  idx.suc0)],2) ;
-
-    
-        %t-test
-        for sideindex=1:2 %left * right
-            for s=multicomp_epochs(:)'
-                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
-                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
-                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
-                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' ])=label{labelindex};
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' '_DF'])=DF;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
-            end
-        end
-        %% Spatial Competition
-        % compare sgl tar vs double same tar (HF2)
-        % sgl tar vs double same tar (HF1)
-        
-        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); %keys.anova_varnames{k}
-        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
-
-        label={'ST','-','1T'}; %higher FR for T , higher FR for D
-        idx1= idx.tr_nonDistr1; %sgl stimuli
-        idx2= idx.tr_StimIn2HF0 & idx.tr_nonDistr2; % double targets 1HF
-                
-        %t-test
-        for sideindex=1:2 %left * right
-            for s=multicomp_epochs(:)'
-                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
-                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
-                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
-                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_1HFTar' ])=label{labelindex};
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_1HFTar' '_DF'])=DF;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_1HFTar' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
-            end
-        end
-        %%%
-        multicomp_epochs=keys.(['epoch_spaceLR_multicomp']); %keys.anova_varnames{k}
-        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to hink about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
-
-        label={'ST','-','2T'}; %higher FR for single T , higher FR for double target
-        idx1= idx.tr_nonDistr1; %sgl stimuli
-        idx2= idx.tr_StimIn2HF1 & idx.tr_nonDistr2; % double targets
-        
-        %t-test
-        for sideindex=1:2 %left * right
-            for s=multicomp_epochs(:)'
-                idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
-                h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
-                DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
-                labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' ])=label{labelindex};
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' '_DF'])=DF;
-                anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SpatialComp_2HFTar' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
-            end
-        end
-        
-    %% space x hand anovas
-    if ismember('spaceLR',keys.anova_varnames) && ismember('hands',keys.anova_varnames)
+    %% space x hand anovas per epoch
+    if ismember('hemifield',keys.anova_varnames) && ismember('hands',keys.anova_varnames)
         k=6;
-        multicomp_epochs=keys.epoch_SxH_multicomp;
-        multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs'));
-        tr_SXH=tr_main & ismember(epochs,multicomp_epochs);
+        tr_SXH=tr_main & ismember(epochs,keys.epoch_SxH_multicomp);
         labelindexcr=(anova_out.p(k)<0.05) *sign(nanmean(FR(tr_SXH & idx.tr_CR))-nanmean(FR(tr_SXH & idx.tr_UC)))+2; labelindexcr(isnan(labelindexcr))=2;% 3 crossed>uncrossed ,1 crossed<uncrossed
-        anova_struct.([INCHnamepart{ch} '_SxH'])=labelcr{labelindexcr};
-        anova_struct.([INCHnamepart{ch} '_ExSxH'])=anova_out.p(7)<0.05;
-        
-        for s=multicomp_epochs(:)'
+        anova_struct.([INCH '_SxH'])=labels.CR{labelindexcr};
+        anova_struct.([INCH '_ExSxH'])=anova_out.p(7)<0.05;
+               
+        for s=keys.epoch_SxH_multicomp'
             idxS= tr & ismember(epochs,s);
             if any(~isnan(FR(idxS))) && any(idx.tr_LS(idxS)) && any(idx.tr_RS(idxS)) && any(idx.tr_LH(idxS)) && any(idx.tr_RH(idxS))
                 [anova_outs.p,anova_outs.table,anova_outs.stats,anova_outs.terms] = anovan(FR(idxS),double([idx.tr_RS(idxS),idx.tr_RH(idxS)]),'model','full','varnames',{'space';'hands'},'display',keys.plot.anova_tables);
                 
-                %% replacing hand and space tuning with anova per epoch !!
                 h=anova_outs.p(1)<0.05;
                 DF=nanmean(FR(idx.tr_RS & idxS))-nanmean(FR(idx.tr_LS & idxS));
                 labelindexsp=h*sign(DF)+2; labelindexsp(isnan(labelindexsp))=2;
-                anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_spaceLR'])= labelsp{labelindexsp}; %
-                anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_spaceLR_DF'])= DF; %
-                anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_spaceLR_IX'])= DF/(nanmean(FR(idx.tr_RS & idxS))+nanmean(FR(idx.tr_LS & idxS))); %
+                anova_struct.([INCH '_' s{:} '_SxH_hemifield'])= labels.hemifield{labelindexsp}; %
+                anova_struct.([INCH '_' s{:} '_SxH_hemifield_DF'])= DF; %
+                anova_struct.([INCH '_' s{:} '_SxH_hemifield_IX'])= DF/(nanmean(FR(idx.tr_RS & idxS))+nanmean(FR(idx.tr_LS & idxS))); %
                 
                 h=anova_outs.p(2)<0.05;
                 DF=nanmean(FR(idx.tr_RH & idxS))-nanmean(FR(idx.tr_LH & idxS));
                 labelindexha=h*sign(DF)+2; labelindexha(isnan(labelindexha))=2;
-                anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_hands'])= labelha{labelindexha};
-                anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_hands_DF'])= DF;
-                anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_hands_IX'])= DF/(nanmean(FR(idx.tr_RH & idxS))+nanmean(FR(idx.tr_LH & idxS)));
+                anova_struct.([INCH '_' s{:} '_SxH_hands'])= labels.hands{labelindexha};
+                anova_struct.([INCH '_' s{:} '_SxH_hands_DF'])= DF;
+                anova_struct.([INCH '_' s{:} '_SxH_hands_IX'])= DF/(nanmean(FR(idx.tr_RH & idxS))+nanmean(FR(idx.tr_LH & idxS)));
                 
                 h=anova_outs.p(3)<0.05;
                 DF=nanmean(FR(idx.tr_CR & idxS))-nanmean(FR(idx.tr_UC & idxS));
                 labelindexcr=h*sign(DF)+2; labelindexcr(isnan(labelindexcr))=2;
-                anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH'])=labelcr{labelindexcr};
-                anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_DF'])=DF;
-                anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_IX'])=DF/(nanmean(FR(idx.tr_CR & idxS))+nanmean(FR(idx.tr_UC & idxS)));
+                anova_struct.([INCH '_' s{:} '_SxH'])=labels.CR{labelindexcr};
+                anova_struct.([INCH '_' s{:} '_SxH_DF'])=DF;
+                anova_struct.([INCH '_' s{:} '_SxH_IX'])=DF/(nanmean(FR(idx.tr_CR & idxS))+nanmean(FR(idx.tr_UC & idxS)));
                 
-                %% space per hand tuning and hand per space tuning
-                
-                for hn=handindexes
-                    idxL=idxS & idx.tr_LS & idx.tr_hands(:,hn);
-                    idxR=idxS & idx.tr_RS & idx.tr_hands(:,hn);
-                    h=do_stats(FR(idxL),FR(idxR),keys,0); 
-                    DF=(nanmean(FR(idxR))-nanmean(FR(idxL)));
-                    labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                    anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_spaceLR_DF'])= DF;
-                    anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_spaceLR'])= labelsp{labelindex};
-                end
-                
-                for sideindex=1:2
-                    idxL=idxS & idx.sides(:,sideindex) & idx.tr_LH;
-                    idxR=idxS & idx.sides(:,sideindex) & idx.tr_RH;
-                    h=do_stats(FR(idxL),FR(idxR),keys,0); 
-                    DF=(nanmean(FR(idxR))-nanmean(FR(idxL)));
-                    labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                    anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_hands_DF'])= DF;
-                    anova_struct.([INCHnamepart{ch} '_' LSRSnamepart{sideindex} '_' s{:} '_hands'])= labelha{labelindex};
-                end
             end
         end
+    end    
+    
+    %% epoch tuning across all trials    
+    labels.conditions={''};
+    idx.conditions=idx.tr_all;
+    anova_struct=do_epoch_stats(keys,anova_struct,FR,epochs,idx,labels,'epoch_multicomp','epoch');
+    
+    %% epoch tuning per hand & space
+    labels.conditions={'AH_LS','AH_RS','LH_LS','LH_RS','RH_LS','RH_RS'};
+    idx.conditions=[idx.tr_LS idx.tr_RS idx.tr_LH_LS idx.tr_LH_RS idx.tr_RH_LS idx.tr_RH_RS];
+    anova_struct=do_epoch_stats(keys,anova_struct,FR,epochs,idx,labels,'epoch_multicomp','epoch');
+    
+    %% epoch tuning per hand (taking tuning for both HFs into account, 'bi' if opposing direction for both HFs)
+    
+    for row=1:size(epoch_multicomp,1)
+        s=epoch_multicomp(row,2);
+        b=epoch_multicomp(row,1);
+        for hn=handindexes
+            LHRH=conditions.hands{hn};
+            % select label dependend on both sides - make sure they are both present?
+            combined_tuning=[anova_struct.([INCH '_' LHRH '_LS_' s{:} '_epoch'])    anova_struct.([INCH '_' LHRH '_RS_' s{:} '_epoch'])];
+            combined_DF=    [anova_struct.([INCH '_' LHRH '_LS_' s{:} '_epoch_DF']) anova_struct.([INCH '_' LHRH '_RS_' s{:} '_epoch_DF'])];
+            switch combined_tuning
+                case {'-su','su-','susu'};   labelindex=1;
+                case {'--'};                 labelindex=2;
+                case {'-en','en-','enen'};   labelindex=3;
+                case {'suen','ensu'};        labelindex=4;
+            end
+            anova_struct.([INCH '_' LHRH  '_' s{:} '_epoch'])=labels.epoch{labelindex};
+            [~,DFidx]=max(abs(combined_DF)); %this does not necessarily make sense to be honest
+            DF=combined_DF(DFidx);
+            anova_struct.([INCH '_' LHRH  '_' s{:} '_epoch_DF'])=DF; %%% to think about !!!!
+            idxbl=tr & ismember(epochs,b) & idx.sides(:,DFidx) & idx.tr_hands(:,hn); % take respective baseline index for side!
+            anova_struct.([INCH '_' LHRH  '_' s{:} '_epoch_SC'])=DF/nanmean(FR(idxbl)); %%% to think about !!!! now it corresponds to % signal change
+            labelindex=-1*strcmp(combined_tuning,'susu')+strcmp(combined_tuning,'enen')+2;
+            anova_struct.([INCH '_' LHRH  '_' s{:} '_epoch_bilateral'])=labels.epoch{labelindex};
+        end
     end
+      
+    %% hand and space tuning per epoch (across all trials)
+    labels.conditions={''};
+    idx.conditions=idx.tr_all;
+    anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_hemifield_multicomp','tr_LS','tr_RS','hemifield');
+    anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_hands_multicomp','tr_LH','tr_RH','hands');
+    
+    %% hemifield tuning per hand
+    labels.conditions=conditions.hands;
+    idx.conditions=idx.tr_hands;
+    anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_SxH_multicomp','tr_LS','tr_RS','hemifield');
+            
+    %% hand tuning per hemifield
+    labels.conditions=conditions.hemifield;
+    idx.conditions=idx.sides;
+    anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_SxH_multicomp','tr_LH','tr_RH','hands');
+           
+    %%  Difficulty stuff    
+    labels.conditions=conditions.hemifield;
+    idx.conditions=idx.tr_sides;
+    anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_hemifield_multicomp','tr_Diff0','tr_Diff1','Difficulty_Easy');
+    anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_hemifield_multicomp','tr_Diff0','tr_Diff2','Difficulty_Diff');
+    anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_hemifield_multicomp','tr_nonDistr1','tr_TT1HF','SpatialComp_1HFTar');
+    anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_hemifield_multicomp','tr_nonDistr1','tr_TT2HF','SpatialComp_2HFTar');
+        
+    %%  single trials per space - this was not do what it's supposed to do !
+    labels.conditions={''};
+    idx.conditions=idx.tr_all;
+    anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_hemifield_multicomp','tr_SglL','tr_SglR','SglTar_Suc');
+    
+    %% old version to compare
+    %     multicomp_epochs=keys.(['epoch_hemifield_multicomp']);
+    %     multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs'));
+    %     label={'SC','-','SI'}; %higher FR for CS , higher FR for IS
+    %     idx1= idx.nonDistr1 &  idx.suc1 ;
+    %     idx2= idx.nonDistr1 &  idx.suc1 ;
+    %     % idx1= sum([(idx.nonDistr1 &  idx.suc1) , (idx.Distr2 &  idx.suc0)],2) ;
+    %     % idx2= sum([(idx.nonDistr1 &  idx.suc1) , (idx.Distr2 &  idx.suc0)],2) ;
+    %
+    %     %t-test
+    %     for sideindex=1:2 %left * right
+    %         for s=multicomp_epochs(:)'
+    %             idxS=ismember(epochs,s)  & idx.tr_sides(:,sideindex);
+    %             h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+    %             DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+    %             labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+    %             anova_struct.([INCH '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' ])=label{labelindex};
+    %             anova_struct.([INCH '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' '_DF'])=DF;
+    %             anova_struct.([INCH '_' LSRSnamepart{sideindex} '_' s{:} '_' 'SglTar_Suc' '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+    %         end
+    %     end
     
     %% Position anova (per hand) + comparison CH vs IN
     epochs_for_position_comparison=keys.epoch_position_multicomp(ismember(keys.epoch_position_multicomp,keys.EPOCHS(:,1)));
@@ -414,7 +301,8 @@ for ch=1:numel(INCHnamepart)
     
     u_hnd                       =find(any(idx.tr_hands,1));
     for hn=u_hnd
-        tr=idx.(INCHnamepart{ch}) & idx.tr_hands(:,hn) & ismember(epochs,epochs_for_position_comparison);
+        LHRH=conditions.hands{hn};
+        tr=idx.(INCH) & idx.tr_hands(:,hn) & ismember(epochs,epochs_for_position_comparison);
         if size(Fixations,1)==1
             varnames={'State','position'};
             [anova_out.p,anova_out.table,anova_out.stats,anova_out.terms] =...
@@ -423,14 +311,14 @@ for ch=1:numel(INCHnamepart)
             varnames={'State','position','fixation'};
             [anova_out.p,anova_out.table,anova_out.stats,anova_out.terms] =...
                 anovan(FR(tr),{epochs(tr),idx.pos(tr),idx.fix(tr)},'model','full','varnames',varnames,'display',keys.plot.anova_tables);
-            anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_fixation_main'])=anova_out.p(3)<0.05; %main effect on epoch!
+            anova_struct.([INCH '_' LHRH '_fixation_main'])=anova_out.p(3)<0.05; %main effect on epoch!
         end
-        anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_epoch_main'])=anova_out.p(1)<0.05; %main effect on epoch!
-        anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_position_main'])=anova_out.p(2)<0.05; %main effect on epoch!
+        anova_struct.([INCH '_' LHRH '_epoch_main'])=anova_out.p(1)<0.05; %main effect on epoch!
+        anova_struct.([INCH '_' LHRH '_position_main'])=anova_out.p(2)<0.05; %main effect on epoch!
         
         
         for s=multicomp_epochs(:)'
-            tr=idx.(INCHnamepart{ch}) & idx.tr_hands(:,hn) & ismember(epochs,s);  %this is not ideal, because tr is used in a different way here
+            tr=idx.(INCH) & idx.tr_hands(:,hn) & ismember(epochs,s);  %this is not ideal, because tr is used in a different way here
             b=epoch_multicomp(ismember(epoch_multicomp(:,2),s),1);
             
             if any(~isnan(FR(tr)))
@@ -461,36 +349,36 @@ for ch=1:numel(INCHnamepart)
                 h2=anova_outs.p(2)<0.05;
                 h3=anova_outs.p(3)<0.05;
                 
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_position'])=true_labels{h1+1};
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_fixation'])=true_labels{h2+1};
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_PxF'])=true_labels{h3+1};
-
-
+                anova_struct.([INCH '_' LHRH '_' s{:} '_position'])=labels.true{h1+1};
+                anova_struct.([INCH '_' LHRH '_' s{:} '_fixation'])=labels.true{h2+1};
+                anova_struct.([INCH '_' LHRH '_' s{:} '_PxF'])=labels.true{h3+1};
+                
+                
                 pecc = anovan(FR(tr),[idx.ecc(tr),idx.ang(tr)],'model','full','varnames',{'Eccentricity','Angle'},'display',keys.plot.anova_tables);
                 
                 h1=pecc(1)<0.05;
                 h2=pecc(2)<0.05;
                 h3=pecc(3)<0.05;
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_distance'])=true_labels{h1+1};
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_angle'])=true_labels{h2+1};
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_DxA'])=true_labels{h3+1};
-
+                anova_struct.([INCH '_' LHRH '_' s{:} '_distance'])=labels.true{h1+1};
+                anova_struct.([INCH '_' LHRH '_' s{:} '_angle'])=labels.true{h2+1};
+                anova_struct.([INCH '_' LHRH '_' s{:} '_DxA'])=labels.true{h3+1};
+                
                 % x and y separately
                 pxy = anovan(FR(tr),[idx.pos_x(tr),idx.pos_y(tr)],'model','full','varnames',{'x','y'},'display',keys.plot.anova_tables);
                 h1=pxy(1)<0.05;
                 h2=pxy(2)<0.05;
                 h3=pxy(3)<0.05;
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_positionx'])=true_labels{h1+1};
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_positiony'])=true_labels{h2+1};
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_positionxy'])=true_labels{h3+1};
+                anova_struct.([INCH '_' LHRH '_' s{:} '_positionx'])=labels.true{h1+1};
+                anova_struct.([INCH '_' LHRH '_' s{:} '_positiony'])=labels.true{h2+1};
+                anova_struct.([INCH '_' LHRH '_' s{:} '_positionxy'])=labels.true{h3+1};
                 for xory={'x','y'}
                     xorytag=xory{:};
                     switch xorytag
                         case 'x'
-                            labelxy=labelsp;
+                            labelxy=labels.hemifield;
                             hxy=h1;
                         case 'y'
-                            labelxy=labelud;
+                            labelxy=labels.UD;
                             hxy=h2;
                     end
                     if hxy
@@ -504,26 +392,24 @@ for ch=1:numel(INCHnamepart)
                         [~,pref_idx]=max(meanFR_per_position);
                         directionality_per_position(end)=directionality_per_position(end)*-1; %need to invert, because we are doing the full circle i.e. comparing last to first
                         if ttestperpos(end)==1 && all(diff(directionality_per_position(ttestperpos==1))==0) % new definition of monotonic
-                            anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_gaze_modulation_' xorytag])='monotonous';
-                            anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_gaze_pref_' xorytag])=labelxy{(directionality_per_position(end)==1)*2+1};
-                            
+                            anova_struct.([INCH '_' LHRH '_' s{:} '_gaze_modulation_' xorytag])='monotonous';
+                            anova_struct.([INCH '_' LHRH '_' s{:} '_gaze_pref_' xorytag])=labelxy{(directionality_per_position(end)==1)*2+1};
                         else
-                            anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_gaze_modulation_' xorytag])='nonmonotonous';
+                            anova_struct.([INCH '_' LHRH '_' s{:} '_gaze_modulation_' xorytag])='nonmonotonous';
                             if pref_idx==1 || pref_idx==numel(u_xy_pos)
-                                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_gaze_pref_' xorytag])='PE';
+                                anova_struct.([INCH '_' LHRH '_' s{:} '_gaze_pref_' xorytag])='PE';
                             else
-                                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_gaze_pref_' xorytag])='CE';
+                                anova_struct.([INCH '_' LHRH '_' s{:} '_gaze_pref_' xorytag])='CE';
                             end
                         end
-                    else
-                        %% not even nonmonotoneous
-                        anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_gaze_modulation_' xorytag])='-';
-                        anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_gaze_pref_' xorytag])='-';
+                    else % not even nonmonotoneous
+                        anova_struct.([INCH '_' LHRH '_' s{:} '_gaze_modulation_' xorytag])='-';
+                        anova_struct.([INCH '_' LHRH '_' s{:} '_gaze_pref_' xorytag])='-';
                     end
                 end
                 
                 %% choice part for position with strongest response
-                if ch==2  && ~isempty(anova_struct.in_epoch_main) && isfield(anova_struct,['in_' LHRHnamepart{hn} '_' s{:} '_epoch_DF'])%any(idx.in) %% there has to be choice and instructed
+                if ch==2  && ~isempty(anova_struct.in_epoch_main) && isfield(anova_struct,['in_' LHRH '_' s{:} '_epoch_DF'])%any(idx.in) %% there has to be choice and instructed
                     clear Average_FR_per_position_IN Average_FR_per_position_CH
                     for p=1:max(idx.pos)
                         Average_FR_per_position_IN(p)=nanmean(FR(idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.pos==p));
@@ -531,7 +417,7 @@ for ch=1:numel(INCHnamepart)
                     end
                     % preference (highest or lowest) defined by over all
                     % increase or decrease in this epoch
-                    if false % anova_struct.(['in_' LHRHnamepart{hn} '_' s{:} '_epoch_DF']) <0
+                    if false % anova_struct.(['in_' LHRH '_' s{:} '_epoch_DF']) <0
                         invertsign=-1;
                         takemin=1;
                     else
@@ -539,13 +425,13 @@ for ch=1:numel(INCHnamepart)
                         takemin=0;
                     end
                     
-                        if takemin
-                            [~,RF_position_index_IN]=min(Average_FR_per_position_IN);
-                            [~,RF_position_index_CH]=min(Average_FR_per_position_CH);
-                        else
-                            [~,RF_position_index_IN]=max(Average_FR_per_position_IN);
-                            [~,RF_position_index_CH]=max(Average_FR_per_position_CH);
-                        end
+                    if takemin
+                        [~,RF_position_index_IN]=min(Average_FR_per_position_IN);
+                        [~,RF_position_index_CH]=min(Average_FR_per_position_CH);
+                    else
+                        [~,RF_position_index_IN]=max(Average_FR_per_position_IN);
+                        [~,RF_position_index_CH]=max(Average_FR_per_position_CH);
+                    end
                     
                     for boots=1:100
                         %% preference based on instructed trials
@@ -585,15 +471,15 @@ for ch=1:numel(INCHnamepart)
                         bootstrapped.ch_prefHO_FR(boots)=nanmean(FR(idx_CH_prefHO_in));
                     end
                     
-%                      labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-%                         anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH'])       =labelIN{labelindex};
-%                         anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH'])       =labelIN{labelindex};
-%                         anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_FR'])    =nanmean(FR(idx_IN_prefHI_in));
-%                         anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_FR'])    =nanmean(FR(idx_CH_prefHI_in));
-%                         anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_DF'])    =nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idx_IN_prefHO_in));
-%                         anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_DF'])    =nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_CH_prefHO_in));
-%                         anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_IX'])    =(nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idx_IN_prefHO_in)))/nanmean(FR(idx_IN_prefHI_in | idx_IN_prefHO_in));
-%                         anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_IX'])    =(nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_CH_prefHO_in)))/nanmean(FR(idx_CH_prefHI_in | idx_CH_prefHO_in));
+                    %                      labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                    %                         anova_struct.([IN '_' LHRH '_' s{:} '_prefH'])       =labels.choices{labelindex};
+                    %                         anova_struct.([CH '_' LHRH '_' s{:} '_prefH'])       =labels.choices{labelindex};
+                    %                         anova_struct.([IN '_' LHRH '_' s{:} '_prefH_FR'])    =nanmean(FR(idx_IN_prefHI_in));
+                    %                         anova_struct.([CH '_' LHRH '_' s{:} '_prefH_FR'])    =nanmean(FR(idx_CH_prefHI_in));
+                    %                         anova_struct.([IN '_' LHRH '_' s{:} '_prefH_DF'])    =nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idx_IN_prefHO_in));
+                    %                         anova_struct.([CH '_' LHRH '_' s{:} '_prefH_DF'])    =nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_CH_prefHO_in));
+                    %                         anova_struct.([IN '_' LHRH '_' s{:} '_prefH_IX'])    =(nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idx_IN_prefHO_in)))/nanmean(FR(idx_IN_prefHI_in | idx_IN_prefHO_in));
+                    %                         anova_struct.([CH '_' LHRH '_' s{:} '_prefH_IX'])    =(nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_CH_prefHO_in)))/nanmean(FR(idx_CH_prefHI_in | idx_CH_prefHO_in));
                     
                     %% baselines per hemifield???
                     idxb_IN_prefHI_in  =idx.in & idx.hands(:,hn) & ismember(epochs,b) & idx.LR(:,RF_in_hemifield_index_IN);
@@ -607,63 +493,63 @@ for ch=1:numel(INCHnamepart)
                     idxb_CH_prefHO_ch  =idx.ch & idx.hands(:,hn) & ismember(epochs,b) & idx.LR(:,RF_out_hemifield_index_CH);
                     
                     if sum(idx_IN_prefHI_in)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefHI_in)>=keys.cal.min_trials_per_condition
-%                         h=do_stats(FR(idx_IN_prefHI_in),FR(idx_CH_prefHI_in),keys,0);
-%                         DF=nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_IN_prefHI_in));
-%                         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-%                         anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH'])       =labelIN{labelindex};
-%                         anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH'])       =labelIN{labelindex};
-%                         anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_FR'])    =nanmean(FR(idx_IN_prefHI_in));
-%                         anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_FR'])    =nanmean(FR(idx_CH_prefHI_in));
-%                         anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_DF'])    =nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idx_IN_prefHO_in));
-%                         anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_DF'])    =nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_CH_prefHO_in));
-%                         anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_IX'])    =(nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idx_IN_prefHO_in)))/nanmean(FR(idx_IN_prefHI_in | idx_IN_prefHO_in));
-%                         anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_IX'])    =(nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_CH_prefHO_in)))/nanmean(FR(idx_CH_prefHI_in | idx_CH_prefHO_in));
-
+                        %                         h=do_stats(FR(idx_IN_prefHI_in),FR(idx_CH_prefHI_in),keys,0);
+                        %                         DF=nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_IN_prefHI_in));
+                        %                         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+                        %                         anova_struct.([IN '_' LHRH '_' s{:} '_prefH'])       =labels.choices{labelindex};
+                        %                         anova_struct.([CH '_' LHRH '_' s{:} '_prefH'])       =labels.choices{labelindex};
+                        %                         anova_struct.([IN '_' LHRH '_' s{:} '_prefH_FR'])    =nanmean(FR(idx_IN_prefHI_in));
+                        %                         anova_struct.([CH '_' LHRH '_' s{:} '_prefH_FR'])    =nanmean(FR(idx_CH_prefHI_in));
+                        %                         anova_struct.([IN '_' LHRH '_' s{:} '_prefH_DF'])    =nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idx_IN_prefHO_in));
+                        %                         anova_struct.([CH '_' LHRH '_' s{:} '_prefH_DF'])    =nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_CH_prefHO_in));
+                        %                         anova_struct.([IN '_' LHRH '_' s{:} '_prefH_IX'])    =(nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idx_IN_prefHO_in)))/nanmean(FR(idx_IN_prefHI_in | idx_IN_prefHO_in));
+                        %                         anova_struct.([CH '_' LHRH '_' s{:} '_prefH_IX'])    =(nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idx_CH_prefHO_in)))/nanmean(FR(idx_CH_prefHI_in | idx_CH_prefHO_in));
+                        
                         h= prctile([bootstrapped.ch_prefHI_FR]-[bootstrapped.in_prefHI_FR],2.5) >0 | prctile([bootstrapped.ch_prefHI_FR]-[bootstrapped.in_prefHI_FR],97.5) <0;
                         DF=nanmean([bootstrapped.ch_prefHI_FR]-[bootstrapped.in_prefHI_FR]);
                         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH'])       =labelIN{labelindex};
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH'])       =labelIN{labelindex};
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_FR'])    =nanmean([bootstrapped.in_prefHI_FR]);
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_FR'])    =nanmean([bootstrapped.ch_prefHI_FR]);
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_DF'])    =nanmean([bootstrapped.in_prefHI_FR]-[bootstrapped.in_prefHO_FR]);
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_DF'])    =nanmean([bootstrapped.ch_prefHI_FR]-[bootstrapped.ch_prefHO_FR]);
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefH_IX'])    =nanmean([bootstrapped.in_prefHI_FR]-[bootstrapped.in_prefHO_FR])/nanmean([bootstrapped.in_prefHI_FR,bootstrapped.in_prefHO_FR]);
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefH_IX'])    =nanmean([bootstrapped.ch_prefHI_FR]-[bootstrapped.ch_prefHO_FR])/nanmean([bootstrapped.ch_prefHI_FR,bootstrapped.ch_prefHO_FR]);
+                        anova_struct.([IN '_' LHRH '_' s{:} '_prefH'])       =labels.choices{labelindex};
+                        anova_struct.([CH '_' LHRH '_' s{:} '_prefH'])       =labels.choices{labelindex};
+                        anova_struct.([IN '_' LHRH '_' s{:} '_prefH_FR'])    =nanmean([bootstrapped.in_prefHI_FR]);
+                        anova_struct.([CH '_' LHRH '_' s{:} '_prefH_FR'])    =nanmean([bootstrapped.ch_prefHI_FR]);
+                        anova_struct.([IN '_' LHRH '_' s{:} '_prefH_DF'])    =nanmean([bootstrapped.in_prefHI_FR]-[bootstrapped.in_prefHO_FR]);
+                        anova_struct.([CH '_' LHRH '_' s{:} '_prefH_DF'])    =nanmean([bootstrapped.ch_prefHI_FR]-[bootstrapped.ch_prefHO_FR]);
+                        anova_struct.([IN '_' LHRH '_' s{:} '_prefH_IX'])    =nanmean([bootstrapped.in_prefHI_FR]-[bootstrapped.in_prefHO_FR])/nanmean([bootstrapped.in_prefHI_FR,bootstrapped.in_prefHO_FR]);
+                        anova_struct.([CH '_' LHRH '_' s{:} '_prefH_IX'])    =nanmean([bootstrapped.ch_prefHI_FR]-[bootstrapped.ch_prefHO_FR])/nanmean([bootstrapped.ch_prefHI_FR,bootstrapped.ch_prefHO_FR]);
                     end
                     if sum(idx_CH_prefHI_in)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefHO_in)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefHI_FR'])   =nanmean(FR(idx_CH_prefHI_in));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefHO_FR'])   =nanmean(FR(idx_CH_prefHO_in));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefHI_DF'])    =nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idxb_CH_prefHI_in));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefHO_DF'])    =nanmean(FR(idx_CH_prefHO_in))-nanmean(FR(idxb_CH_prefHO_in));
+                        anova_struct.([CH '_' LHRH '_' s{:} '_prefHI_FR'])   =nanmean(FR(idx_CH_prefHI_in));
+                        anova_struct.([CH '_' LHRH '_' s{:} '_prefHO_FR'])   =nanmean(FR(idx_CH_prefHO_in));
+                        anova_struct.([CH '_' LHRH '_' s{:} '_prefHI_DF'])    =nanmean(FR(idx_CH_prefHI_in))-nanmean(FR(idxb_CH_prefHI_in));
+                        anova_struct.([CH '_' LHRH '_' s{:} '_prefHO_DF'])    =nanmean(FR(idx_CH_prefHO_in))-nanmean(FR(idxb_CH_prefHO_in));
                     end
                     if sum(idx_IN_prefHI_in)>=keys.cal.min_trials_per_condition && sum(idx_IN_prefHO_in)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefHI_FR'])   =nanmean(FR(idx_IN_prefHI_in));
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefHO_FR'])   =nanmean(FR(idx_IN_prefHO_in));
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefHI_DF'])    =nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idxb_IN_prefHI_in));
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefHO_DF'])    =nanmean(FR(idx_IN_prefHO_in))-nanmean(FR(idxb_IN_prefHO_in));
+                        anova_struct.([IN '_' LHRH '_' s{:} '_prefHI_FR'])   =nanmean(FR(idx_IN_prefHI_in));
+                        anova_struct.([IN '_' LHRH '_' s{:} '_prefHO_FR'])   =nanmean(FR(idx_IN_prefHO_in));
+                        anova_struct.([IN '_' LHRH '_' s{:} '_prefHI_DF'])    =nanmean(FR(idx_IN_prefHI_in))-nanmean(FR(idxb_IN_prefHI_in));
+                        anova_struct.([IN '_' LHRH '_' s{:} '_prefHO_DF'])    =nanmean(FR(idx_IN_prefHO_in))-nanmean(FR(idxb_IN_prefHO_in));
                     end
                     
                     if sum(idx_IN_prefHI_ch)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefHI_ch)>=keys.cal.min_trials_per_condition
                         h=do_stats(FR(idx_IN_prefHI_ch),FR(idx_CH_prefHI_ch),keys,0);
                         DF=nanmean(FR(idx_CH_prefHI_ch))-nanmean(FR(idx_IN_prefHI_ch));
                         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefHch'])       =labelIN{labelindex};
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefHch'])       =labelIN{labelindex};
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:} '_prefHch_FR'])    =nanmean(FR(idx_IN_prefHI_ch));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:} '_prefHch_FR'])    =nanmean(FR(idx_CH_prefHI_ch));
+                        anova_struct.([IN '_' LHRH '_' s{:} '_prefHch'])       =labels.choices{labelindex};
+                        anova_struct.([CH '_' LHRH '_' s{:} '_prefHch'])       =labels.choices{labelindex};
+                        anova_struct.([IN '_' LHRH '_' s{:} '_prefHch_FR'])    =nanmean(FR(idx_IN_prefHI_ch));
+                        anova_struct.([CH '_' LHRH '_' s{:} '_prefHch_FR'])    =nanmean(FR(idx_CH_prefHI_ch));
                     end
                     if sum(idx_CH_prefHI_ch)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefHO_ch)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefHIch_FR'])   =nanmean(FR(idx_CH_prefHI_ch));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefHOch_FR'])   =nanmean(FR(idx_CH_prefHO_ch));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefHIch_DF'])    =nanmean(FR(idx_CH_prefHI_ch))-nanmean(FR(idxb_CH_prefHI_ch));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefHOch_DF'])    =nanmean(FR(idx_CH_prefHO_ch))-nanmean(FR(idxb_CH_prefHO_ch));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefHIch_FR'])   =nanmean(FR(idx_CH_prefHI_ch));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefHOch_FR'])   =nanmean(FR(idx_CH_prefHO_ch));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefHIch_DF'])    =nanmean(FR(idx_CH_prefHI_ch))-nanmean(FR(idxb_CH_prefHI_ch));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefHOch_DF'])    =nanmean(FR(idx_CH_prefHO_ch))-nanmean(FR(idxb_CH_prefHO_ch));
                     end
                     if sum(idx_IN_prefHI_ch)>=keys.cal.min_trials_per_condition && sum(idx_IN_prefHO_ch)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefHIch_FR'])   =nanmean(FR(idx_IN_prefHI_ch));
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefHOch_FR'])   =nanmean(FR(idx_IN_prefHO_ch));
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefHIch_DF'])    =nanmean(FR(idx_IN_prefHI_ch))-nanmean(FR(idxb_IN_prefHI_ch));
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefHOch_DF'])    =nanmean(FR(idx_IN_prefHO_ch))-nanmean(FR(idxb_IN_prefHO_ch));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefHIch_FR'])   =nanmean(FR(idx_IN_prefHI_ch));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefHOch_FR'])   =nanmean(FR(idx_IN_prefHO_ch));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefHIch_DF'])    =nanmean(FR(idx_IN_prefHI_ch))-nanmean(FR(idxb_IN_prefHI_ch));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefHOch_DF'])    =nanmean(FR(idx_IN_prefHO_ch))-nanmean(FR(idxb_IN_prefHO_ch));
                     end
                     % preferred location
                     idx_IN_prefPI_in  =idx.in & idx.hands(:,hn) & ismember(epochs,s) & idx.pos==RF_position_index_IN;
@@ -681,30 +567,30 @@ for ch=1:numel(INCHnamepart)
                         h=do_stats(FR(idx_IN_prefPI_in),FR(idx_CH_prefPI_in),keys,0);
                         DF=nanmean(FR(idx_CH_prefPI_in))-nanmean(FR(idx_IN_prefPI_in));
                         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefP'])      =labelIN{labelindex};
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefP'])      =labelIN{labelindex};
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefP'])      =labels.choices{labelindex};
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefP'])      =labels.choices{labelindex};
                     end
                     
                     if sum(idx_IN_prefPI_in)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPI_in)>=keys.cal.min_trials_per_condition &&...
                             sum(idx_IN_prefPO_in)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPO_in)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefP_DF'])   =nanmean(FR(idx_IN_prefPI_in))-nanmean(FR(idx_IN_prefPO_in));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefP_DF'])   =nanmean(FR(idx_CH_prefPI_in))-nanmean(FR(idx_CH_prefPO_in));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefP_DF'])   =nanmean(FR(idx_IN_prefPI_in))-nanmean(FR(idx_IN_prefPO_in));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefP_DF'])   =nanmean(FR(idx_CH_prefPI_in))-nanmean(FR(idx_CH_prefPO_in));
                     end
                     if sum(idx_IN_prefPI_in)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefPI_FR'])   =nanmean(FR(idx_IN_prefPI_in));
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefPI_DF'])   =nanmean(FR(idx_IN_prefPI_in))-nanmean(FR(idxb_IN_prefPI_in));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefPI_FR'])   =nanmean(FR(idx_IN_prefPI_in));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefPI_DF'])   =nanmean(FR(idx_IN_prefPI_in))-nanmean(FR(idxb_IN_prefPI_in));
                     end
                     if sum(idx_IN_prefPO_in)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefPO_FR'])   =nanmean(FR(idx_IN_prefPO_in));
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefPO_DF'])   =nanmean(FR(idx_IN_prefPO_in))-nanmean(FR(idxb_IN_prefPO_in));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefPO_FR'])   =nanmean(FR(idx_IN_prefPO_in));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefPO_DF'])   =nanmean(FR(idx_IN_prefPO_in))-nanmean(FR(idxb_IN_prefPO_in));
                     end
                     if sum(idx_CH_prefPI_in)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefPI_FR'])   =nanmean(FR(idx_CH_prefPI_in));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefPI_DF'])   =nanmean(FR(idx_CH_prefPI_in))-nanmean(FR(idxb_CH_prefPI_in));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefPI_FR'])   =nanmean(FR(idx_CH_prefPI_in));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefPI_DF'])   =nanmean(FR(idx_CH_prefPI_in))-nanmean(FR(idxb_CH_prefPI_in));
                     end
                     if sum(idx_CH_prefPO_in)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefPO_FR'])  =nanmean(FR(idx_CH_prefPO_in));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefPO_DF'])   =nanmean(FR(idx_CH_prefPO_in))-nanmean(FR(idxb_CH_prefPO_in));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefPO_FR'])  =nanmean(FR(idx_CH_prefPO_in));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefPO_DF'])   =nanmean(FR(idx_CH_prefPO_in))-nanmean(FR(idxb_CH_prefPO_in));
                     end
                     
                     % preferred location
@@ -722,84 +608,73 @@ for ch=1:numel(INCHnamepart)
                         h=do_stats(FR(idx_IN_prefPI_ch),FR(idx_CH_prefPI_ch),keys,0);
                         DF=nanmean(FR(idx_CH_prefPI_ch))-nanmean(FR(idx_IN_prefPI_ch));
                         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefPch'])      =labelIN{labelindex};
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefPch'])      =labelIN{labelindex};
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefPch'])      =labels.choices{labelindex};
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefPch'])      =labels.choices{labelindex};
                     end
                     
                     if sum(idx_IN_prefPI_ch)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPI_ch)>=keys.cal.min_trials_per_condition &&...
                             sum(idx_IN_prefPO_ch)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPO_ch)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefPch_DF'])   =nanmean(FR(idx_IN_prefPI_ch))-nanmean(FR(idx_IN_prefPO_ch));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefPch_DF'])   =nanmean(FR(idx_CH_prefPI_ch))-nanmean(FR(idx_CH_prefPO_ch));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefPch_DF'])   =nanmean(FR(idx_IN_prefPI_ch))-nanmean(FR(idx_IN_prefPO_ch));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefPch_DF'])   =nanmean(FR(idx_CH_prefPI_ch))-nanmean(FR(idx_CH_prefPO_ch));
                     end
                     if sum(idx_IN_prefPI_ch)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefPIch_FR'])   =nanmean(FR(idx_IN_prefPI_ch));
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefPIch_DF'])   =nanmean(FR(idx_IN_prefPI_ch))-nanmean(FR(idxb_IN_prefPI_ch));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefPIch_FR'])   =nanmean(FR(idx_IN_prefPI_ch));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefPIch_DF'])   =nanmean(FR(idx_IN_prefPI_ch))-nanmean(FR(idxb_IN_prefPI_ch));
                     end
                     if sum(idx_IN_prefPO_ch)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefPOch_FR'])  =nanmean(FR(idx_IN_prefPO_ch));
-                        anova_struct.([INCHnamepart{1} '_' LHRHnamepart{hn} '_' s{:}  '_prefPOch_DF'])   =nanmean(FR(idx_IN_prefPO_ch))-nanmean(FR(idxb_IN_prefPO_ch));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefPOch_FR'])   =nanmean(FR(idx_IN_prefPO_ch));
+                        anova_struct.([IN '_' LHRH '_' s{:}  '_prefPOch_DF'])   =nanmean(FR(idx_IN_prefPO_ch))-nanmean(FR(idxb_IN_prefPO_ch));
                     end
                     if sum(idx_CH_prefPI_ch)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefPIch_FR'])   =nanmean(FR(idx_CH_prefPI_ch));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefPIch_DF'])   =nanmean(FR(idx_CH_prefPI_ch))-nanmean(FR(idxb_CH_prefPI_ch));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefPIch_FR'])   =nanmean(FR(idx_CH_prefPI_ch));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefPIch_DF'])   =nanmean(FR(idx_CH_prefPI_ch))-nanmean(FR(idxb_CH_prefPI_ch));
                     end
                     if sum(idx_CH_prefPO_ch)>=keys.cal.min_trials_per_condition
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefPOch_FR'])  =nanmean(FR(idx_CH_prefPO_ch));
-                        anova_struct.([INCHnamepart{2} '_' LHRHnamepart{hn} '_' s{:}  '_prefPOch_DF'])   =nanmean(FR(idx_CH_prefPO_ch))-nanmean(FR(idxb_CH_prefPO_ch));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefPOch_FR'])   =nanmean(FR(idx_CH_prefPO_ch));
+                        anova_struct.([CH '_' LHRH '_' s{:}  '_prefPOch_DF'])   =nanmean(FR(idx_CH_prefPO_ch))-nanmean(FR(idxb_CH_prefPO_ch));
                     end
                 end
             else
-                anova_struct.([INCHnamepart{ch} '_' LHRHnamepart{hn} '_' s{:} '_position'])=labelsp{2};
+                anova_struct.([INCH '_' LHRH '_' s{:} '_position'])=labels.hemifield{2};
             end
         end
     end
     
-    %% subset ANOVA (!) - inactivation for example...
+    %% perturbation ANOVA (!) 
     % temporarly recompute this stuff    :((
-    tr=idx.(INCHnamepart{ch}) & ismember(epochs,epoch_multicomp) & (idx.PT==0 | idx.PT==1); %& ismember(epochs,epochs_for_multicomparison);
-    tr_main=idx.(INCHnamepart{ch}) & ismember(epochs,main_multicomp) & (idx.PT==0 | idx.PT==1); %& ismember(epochs,epochs_for_multicomparison);
+    tr=idx.(INCH) & ismember(epochs,epoch_multicomp) & (idx.PT==0 | idx.PT==1); %& ismember(epochs,epochs_for_multicomparison);
+    tr_main=idx.(INCH) & ismember(epochs,keys.main_multicomp) & (idx.PT==0 | idx.PT==1); %& ismember(epochs,epochs_for_multicomparison);
     for fn=idx_fieldnames
         idx.(['tr_' fn{:}])=      idx.(fn{:}) & repmat(tr,1,size(idx.(fn{:}),2)) ;
     end
+    idx.tr_CT=idx.tr_PT==0;
     
-    multicomp_epochs=keys.epoch_SxH_multicomp;
-    hand_space_multicomp=multicomp_epochs(ismember(multicomp_epochs,epochs'));
+    %
+    %     epoch_multicomp=keys.epoch_multicomp(idx_ep,:);
+    %     multicomp_epochs=keys.epoch_SxH_multicomp;
+    %     hand_space_multicomp=multicomp_epochs(ismember(multicomp_epochs,epochs'));
     
     perturbations_to_compare=unique(idx.tr_PT);
     if numel(perturbations_to_compare)>1
-        conditions_to_compare={'LH_LS','LH_RS','RH_LS','RH_RS','LS','RS'};
-        labelpt={'SU','-','EN'};
-        for c=1:numel(conditions_to_compare)
-            idx_con=idx.(['tr_' conditions_to_compare{c}]);
-            
+        labels.control_test={'EP','BL'};
+        labels.conditions={'LH_LS','LH_RS','RH_LS','RH_RS','LS','RS'};
+        idx.conditions=[idx.tr_LH_LS idx.tr_LH_RS idx.tr_RH_LS idx.tr_RH_RS idx.tr_LS idx.tr_RS];
+        anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_SxH_multicomp','tr_CT','tr_PT','PT');
+        
+        for c=1:numel(labels.conditions)
+            idx_con=idx.(['tr_' labels.conditions{c}]);
+            CON=labels.conditions{c};
             if any(idx.tr_PT(tr_main & idx_con)==0) && any(idx.tr_PT(tr_main & idx_con)==1)
                 [anova_out.p,anova_out.table,anova_out.stats,anova_out.terms] = anovan(FR(tr_main & idx_con),[epoch_idx(tr_main & idx_con) idx.tr_PT(tr_main & idx_con)],'model','full','varnames',{'epoch', 'perturbation'},'display',keys.plot.anova_tables);
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_epoch_main'])    =anova_out.p(1)<0.05; %main effect on epoch!
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_PT_main'])       =anova_out.p(2)<0.05; %main effect on epoch!
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_ExP'])           =anova_out.p(3)<0.05; %main effect on epoch!
+                anova_struct.([INCH '_' CON '_epoch_main'])    =anova_out.p(1)<0.05; %main effect on epoch!
+                anova_struct.([INCH '_' CON '_PT_main'])       =anova_out.p(2)<0.05; %main effect on epoch!
+                anova_struct.([INCH '_' CON '_ExP'])           =anova_out.p(3)<0.05; %main effect on epoch!
             end
             
-            
-            for s=hand_space_multicomp(:)'
-                idxS= ismember(epochs,s);
-                idx1=idx.tr_PT==0   & idx_con & idxS;
-                idx2=idx.tr_PT==1   & idx_con & idxS;
-                
-                if sum(idx1)>0 && sum(idx2)>0
-                    h=do_stats(FR(idx1),FR(idx2),keys,0);
-                    DF=(nanmean(FR(idx2))-nanmean(FR(idx1)));
-                else
-                    h=false;
-                    DF=single(NaN);
-                end
-                labelindexpt=h*sign(DF)+2; labelindexpt(isnan(labelindexpt))=2;
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_' s{:} '_PT']) = labelpt{labelindexpt}; %
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_' s{:} '_PT_DF']) = DF; %
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_' s{:} '_PT_IX']) = DF/(nanmean(FR(idx2))+nanmean(FR(idx1)));
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_' s{:} '_CT_FR']) = nanmean(FR(idx1)); %
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_' s{:} '_PT_FR']) = nanmean(FR(idx2)); %
-                
-            end
+            %% this part here i would basically like to remove in total...
+            % a) you can get PT vs. CT test by using baseline correct AN
+            % normalization
+            % b) I'm not sure what is done with PT_epoch_DF afterwards
             for row=1:size(epoch_multicomp,1)
                 s=epoch_multicomp(row,2);
                 b=epoch_multicomp(row,1);
@@ -823,204 +698,127 @@ for ch=1:numel(INCHnamepart)
                 end
                 
                 labelindexpt=h*sign(DF)+2; labelindexpt(isnan(labelindexpt))=2;
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_' s{:} '_PTbl']) = labelpt{labelindexpt}; %
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_' s{:} '_PTbl_DF']) = DF; %
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_' s{:} '_PT_epoch_DF']) = DFPT; %
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_' s{:} '_CT_epoch_DF']) = DFCT; %
+                anova_struct.([INCH '_' CON '_' s{:} '_PTbl']) = labels.PT{labelindexpt}; %
+                anova_struct.([INCH '_' CON '_' s{:} '_PTbl_DF']) = DF; %
+                anova_struct.([INCH '_' CON '_' s{:} '_PT_epoch_DF']) = DFPT; %
+                anova_struct.([INCH '_' CON '_' s{:} '_CT_epoch_DF']) = DFCT; %
             end
             
             
         end
-        %         labelindexcr=(anova_out.p(k)<0.05) *sign(nanmean(FR(tr & idx.tr_CR))-nanmean(FR(tr & idx.tr_UC)))+2; labelindexcr(isnan(labelindexcr))=2;% 3 crossed>uncrossed ,1 crossed<uncrossed
-        %         anova_struct.([INCHnamepart{ch} '_SxH'])=labelcr{labelindexcr};
-        %         anova_struct.([INCHnamepart{ch} '_ExSxH'])=anova_out.p(7)<0.05;
-        %
-        %         for s=multicomp_epochs(:)'
-        %             idxS= tr & ismember(epochs,s);
-        %             if any(~isnan(FR(idxS))) && any(idx.tr_LS(idxS)) && any(idx.tr_RS(idxS)) && any(idx.tr_LH(idxS)) && any(idx.tr_RH(idxS))
-        %                 [anova_outs.p,anova_outs.table,anova_outs.stats,anova_outs.terms] = anovan(FR(idxS),double([idx.tr_RS(idxS),idx.tr_RH(idxS)]),'model','full','varnames',{'space';'hands'},'display',keys.plot.anova_tables);
-        %
-        %                 %% replacing hand and space tuning with anova per epoch !!
-        %                 h=anova_outs.p(1)<0.05;
-        %                 ES=nanmean(FR(idx.tr_RS & idxS))-nanmean(FR(idx.tr_LS & idxS));
-        %                 labelindexsp=h*sign(ES)+2; labelindexsp(isnan(labelindexsp))=2;
-        %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_spaceLR'])= labelsp{labelindexsp}; %
-        %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_spaceLR_ES'])= ES; %
-        %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_spaceLR_IX'])= ES/(nanmean(FR(idx.tr_RS & idxS))+nanmean(FR(idx.tr_LS & idxS))); %
-        %
-        %                 h=anova_outs.p(2)<0.05;
-        %                 ES=nanmean(FR(idx.tr_RH & idxS))-nanmean(FR(idx.tr_LH & idxS));
-        %                 labelindexha=h*sign(ES)+2; labelindexha(isnan(labelindexha))=2;
-        %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_hands'])= labelha{labelindexha};
-        %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_hands_ES'])= ES;
-        %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_hands_IX'])= ES/(nanmean(FR(idx.tr_RH & idxS))+nanmean(FR(idx.tr_LH & idxS)));
-        %
-        %                 h=anova_outs.p(3)<0.05;
-        %                 ES=nanmean(FR(idx.tr_CR & idxS))-nanmean(FR(idx.tr_UC & idxS));
-        %                 labelindexcr=h*sign(ES)+2; labelindexcr(isnan(labelindexcr))=2;
-        %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH'])=labelcr{labelindexcr};
-        %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_ES'])=ES;
-        %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_IX'])=ES/(nanmean(FR(idx.tr_CR & idxS))+nanmean(FR(idx.tr_UC & idxS)));
-        %             end
-        %         end
-        
     end
 end
 end
 
 function anova_struct=effector_comparison_anova(keys,epochs,FR,idx,Positions,Fixations)
 anova_struct=struct();
-INCHnamepart=keys.labels.choices([sum(idx.in)>0 sum(idx.ch)>0]);
-LHRHnamepart=keys.labels.handsLR;
-labelen={'su','-','en','bi'};
-labelsp={'LS','-','RS'};
-labelha={'LH','-','RH'};
-labelcr={'UC','-','CR'};
-labelef=keys.labels.eff;
-labelIN={'IN','-','CH'};
-true_labels={'false','true'};
+conditions=keys.TTconditions;
+conditions.choice=conditions.choice([sum(idx.in)>0 sum(idx.ch)>0]);
+labels=keys.TTlabels;
 
-conditions_to_compare={'LH_LS','LH_RS','RH_LS','RH_RS'};
-
-idx_ep=ismember(keys.epoch_multicomp(:,1),keys.EPOCHS(:,1)) &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
-epoch_multicomp=keys.epoch_multicomp(idx_ep,:);
-idx_ep=ismember(keys.main_multicomp,keys.EPOCHS(:,1));
-main_multicomp=keys.main_multicomp(idx_ep,:);
-
-[~, ~, epoch_idx]=unique(epochs);
 %% Independently for Instructed and Choice !!
 idx_fieldnames=fieldnames(idx)';
-for ch=1:numel(INCHnamepart)
+for ch=1:numel(conditions.choice)
     
-    %% this part should go outside the loop!
-    tr=idx.(INCHnamepart{ch}) & ismember(epochs,epoch_multicomp); %& ismember(epochs,epochs_for_multicomparison);
+    %% this part should go outside the loop! ... NAH
+    tr=idx.(conditions.choice{ch}); 
+    labels.INCH=conditions.choice{ch};
     for fn=idx_fieldnames
         idx.(['tr_' fn{:}])=      idx.(fn{:}) & repmat(tr,1,size(idx.(fn{:}),2));
     end
     
-    %% 3-way ANOVA per epoch...
+    labels.control_test={};
     
-    multicomp_epochs=keys.epoch_SxH_multicomp; %% needs to be replaced by something meaningful
+    labels.conditions={''};
+    idx.conditions=idx.tr_all;
+    % epoch_SxH_multicomp needs to be replaced by something meaningful
+    anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_SxH_multicomp','tr_E1','tr_E2','effector');
+        
+    labels.conditions={'LH_LS','LH_RS','RH_LS','RH_RS','LS','RS'};
+    idx.conditions=[idx.tr_LH_LS idx.tr_LH_RS idx.tr_RH_LS idx.tr_RH_RS idx.tr_LS idx.tr_RS];
+    anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,'epoch_SxH_multicomp','tr_E1','tr_E2','effector');
+    
+%     %% 3-way ANOVA per epoch...
+%     
+%     multicomp_epochs=keys.epoch_SxH_multicomp; %% needs to be replaced by something meaningful
+%     for s=multicomp_epochs(:)'
+%         idxS= tr & ismember(epochs,s);
+%         if any(~isnan(FR(idxS))) && any(idx.tr_LS(idxS)) && any(idx.tr_RS(idxS)) && any(idx.tr_LH(idxS)) && any(idx.tr_RH(idxS))
+%             [anova_outs.p,anova_outs.table,anova_outs.stats,anova_outs.terms] = anovan(FR(idxS),double([idx.tr_RS(idxS),idx.tr_RH(idxS),idx.tr_E2(idxS)]),'model','full','varnames',{'space';'hands';'effector'},'display',keys.plot.anova_tables);
+%         end
+%     end
+end
+end
+
+%% stats per epoch and condition
+function anova_struct=do_stats_per_epoch_and_condition(keys,anova_struct,FR,epochs,idx,labels,epochs_FN,idx1_FN,idx2_FN,fieldnamepart)
+multicomp_epochs=keys.(epochs_FN);
+multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs'));
+label=labels.(fieldnamepart);
+idx1= idx.(idx1_FN);
+idx2= idx.(idx2_FN);
+INCH= labels.INCH;
+COND=labels.conditions;
+
+SEP='_';
+for  c=1:size(idx.conditions,2)
+    if isempty(COND{c})
+        SEP='';
+    end
     for s=multicomp_epochs(:)'
-        idxS= tr & ismember(epochs,s);
-        if any(~isnan(FR(idxS))) && any(idx.tr_LS(idxS)) && any(idx.tr_RS(idxS)) && any(idx.tr_LH(idxS)) && any(idx.tr_RH(idxS))
-            [anova_outs.p,anova_outs.table,anova_outs.stats,anova_outs.terms] = anovan(FR(idxS),double([idx.tr_RS(idxS),idx.tr_RH(idxS),idx.tr_E2(idxS)]),'model','full','varnames',{'space';'hands';'effector'},'display',keys.plot.anova_tables);
-            
-            %% replacing hand and space tuning with anova per epoch !!
-            h=anova_outs.p(1)<0.05;
-            ES=nanmean(FR(idx.tr_RS & idxS))-nanmean(FR(idx.tr_LS & idxS));
-            labelindexsp=h*sign(ES)+2; labelindexsp(isnan(labelindexsp))=2;
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_spaceLR'])= labelsp{labelindexsp}; %
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_spaceLR_ES'])= ES; %
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_spaceLR_IX'])= ES/(nanmean(FR(idx.tr_RS & idxS))+nanmean(FR(idx.tr_LS & idxS))); %
-            
-            h=anova_outs.p(2)<0.05;
-            ES=nanmean(FR(idx.tr_RH & idxS))-nanmean(FR(idx.tr_LH & idxS));
-            labelindexha=h*sign(ES)+2; labelindexha(isnan(labelindexha))=2;
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_hands'])= labelha{labelindexha};
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_hands_ES'])= ES;
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_hands_IX'])= ES/(nanmean(FR(idx.tr_RH & idxS))+nanmean(FR(idx.tr_LH & idxS)));
-            
-            h=anova_outs.p(3)<0.05;
-            ES=nanmean(FR(idx.tr_E2 & idxS))-nanmean(FR(idx.tr_E1 & idxS));
-            labelindexef=h*sign(ES)+2; labelindexef(isnan(labelindexef))=2;
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_effector'])=labelef{labelindexef};
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_effector_ES'])=ES;
-            anova_struct.([INCHnamepart{ch} '_' s{:} '_effector_IX'])=ES/(nanmean(FR(idx.tr_E2 & idxS))+nanmean(FR(idx.tr_E1 & idxS)));
-            
-            for c=1:numel(conditions_to_compare)
-                idx1=idx.tr_E1   & idx.(['tr_' conditions_to_compare{c}]) & idxS;
-                idx2=idx.tr_E2   & idx.(['tr_' conditions_to_compare{c}]) & idxS;
+        idxS=ismember(epochs,s)  & idx.conditions(:,c);
+        if any(idx1 & idxS) && any(idx2 & idxS)
+            h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+            DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
+            labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+            anova_struct.([INCH '_' COND{c} SEP s{:} '_' fieldnamepart ])=label{labelindex};
+            anova_struct.([INCH '_' COND{c} SEP s{:} '_' fieldnamepart '_DF'])=DF;
+            anova_struct.([INCH '_' COND{c} SEP s{:} '_' fieldnamepart '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            if ~isempty(labels.control_test)
                 
-                if sum(idx1)>0 && sum(idx2)>0
-                    h=do_stats(FR(idx1),FR(idx2),keys,0);
-                    ES=(nanmean(FR(idx2))-nanmean(FR(idx1)))/(nanmean(FR(idx2))+nanmean(FR(idx1)));
-                else
-                    h=false;
-                    ES=single(NaN);
-                end
-                labelindexef=h*sign(ES)+2; labelindexef(isnan(labelindexef))=2;
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_' s{:} '_effector']) = labelef{labelindexef};
-                anova_struct.([INCHnamepart{ch} '_' conditions_to_compare{c} '_' s{:} '_effector_ES']) = ES; %
+                anova_struct.([INCH '_' COND{c} SEP s{:} '_' labels.control_test{1} '_FR']) = nanmean(FR(idx1));
+                anova_struct.([INCH '_' COND{c} SEP s{:} '_' labels.control_test{2} '_FR']) = nanmean(FR(idx2));
             end
-            
-            
-            %freaking interactions
-            %
-            %                 h=anova_outs.p(4)<0.05;
-            %                 ES=nanmean(FR(idx.tr_CR & idxS))-nanmean(FR(idx.tr_UC & idxS));
-            %                 labelindexcr=h*sign(ES)+2; labelindexcr(isnan(labelindexcr))=2;
-            %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH'])=labelcr{labelindexcr};
-            %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_ES'])=ES;
-            %                 anova_struct.([INCHnamepart{ch} '_' s{:} '_SxH_IX'])=ES/(nanmean(FR(idx.tr_CR & idxS))+nanmean(FR(idx.tr_UC & idxS)));
         end
     end
-    
 end
 end
 
-function trial_criterion=get_minimum_trials(keys,o,tr_index)
-INCHnamepart={'in','ch'};
-LHRHnamepart={'AH','NH','LH','RH'};
-PTnamepart={'','PT_'};
-
-o.position_combinations=o.position_combinations(tr_index,:);
-o.hemifield_combinations=o.hemifield_combinations(tr_index,:);
-
-hands           =[o.trial.reach_hand];
-choices         =[o.trial.choice];
-perturbations   =[o.trial.perturbation];
-
-possible_combinations=combvec([-1 keys.cal.reach_hand],keys.cal.choice,1:numel(keys.cal.perturbation_groups))';
-unique_position_indexes=unique(o.position_combinations(:,3));
-unique_hemifield_indexes=unique(o.hemifield_combinations(:,3));
-nonnanidx=~any(isnan(o.position_combinations),2)';
-
-clear trial_criterion %n_trials_per_condition
-for c=1:size(possible_combinations,1)
-    
-    if possible_combinations(c,1)==-1 %% any hand, relevant later
-        idx=nonnanidx & choices==possible_combinations(c,2) & ismember(perturbations,keys.cal.perturbation_groups{possible_combinations(c,3)});
-    else
-        idx=nonnanidx & hands==possible_combinations(c,1) & choices==possible_combinations(c,2) & ismember(perturbations,keys.cal.perturbation_groups{possible_combinations(c,3)});
+%% similarly, make epoch effects
+function anova_struct=do_epoch_stats(keys,anova_struct,FR,epochs,idx,labels,epochs_FN,fieldnamepart)
+%% epoch tuning per hand
+multicomp_epochs=keys.(epochs_FN);
+idx_ep=ismember(multicomp_epochs(:,1),epochs') &  ismember(multicomp_epochs(:,2),epochs');
+multicomp_epochs=multicomp_epochs(idx_ep,:);
+label=labels.(fieldnamepart);
+INCH= labels.INCH;
+COND=labels.conditions;
+for row=1:size(multicomp_epochs,1)
+    s=multicomp_epochs(row,2);
+    b=multicomp_epochs(row,1);
+    for  c=1:size(idx.conditions,2)
+        idx1=ismember(epochs,b) & idx.conditions(:,c); %% & tr ???
+        idx2=ismember(epochs,s) & idx.conditions(:,c);
+        if sum(idx1)>1 && sum(idx2)>1
+            h=do_stats(FR(idx1),FR(idx2),keys,0); %%unpaired ?? ttest versus baseline
+        else
+            h=false;
+        end
+        DF=(nanmean(FR(idx2))-nanmean(FR(idx1)));
+        labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
+        if isempty(COND{c})
+            prefix=[INCH '_' s{:} '_' fieldnamepart];
+        else
+            prefix=[INCH '_' COND{c} '_' s{:} '_' fieldnamepart];
+        end
+        anova_struct.([prefix '_FR'])=nanmean(FR(idx2));
+        anova_struct.([prefix '_DF'])= DF;
+        anova_struct.(prefix)        = label{labelindex};
     end
-    namepart=[INCHnamepart{possible_combinations(c,2)+1} '_' LHRHnamepart{possible_combinations(c,1)+2} '_' PTnamepart{possible_combinations(c,3)}];
-    
-    
-    %% trials_total    
-    trial_criterion.([namepart 'trials_total'])=sum(idx);
-    
-    %% trials_per_condition (should be renamed per_position) **    
-    [~, ~, unique_combinations]= unique(o.position_combinations(idx,:),'rows');
-    if all(ismember(unique_position_indexes,o.position_combinations(idx,3)))
-        least_trials_in_position=hist(unique_combinations,1:max(unique_combinations));
-    else % in case the postiion wasnt succesfully selected at all (especially imoprtant for choice!)
-        least_trials_in_position=0;
-    end
-    trial_criterion.([namepart 'trials_per_condition'])=min(least_trials_in_position);
-    %n_trials_per_condition(c)=min(least_trials_in_position);
-    
-    %% trials_per_hemfield    
-    [~, ~, unique_hemifield]= unique(o.hemifield_combinations(idx,:),'rows');
-    if all(ismember(unique_hemifield_indexes,o.hemifield_combinations(idx,3)))
-        least_trials_in_hemifield=hist(unique_hemifield,1:max(unique_hemifield));
-    else % in case the position wasnt succesfully selected at all (especially imoprtant for choice!)
-        least_trials_in_hemifield=0;
-    end
-    trial_criterion.([namepart 'trials_per_hemifield'])=min(least_trials_in_hemifield);
-    
-    %% trials_per_congruent_hand_hemifeld    
-    unique_hemifield = o.hemifield_combinations(idx,3);
-    if possible_combinations(c,1)==1 %left hand
-        unique_hemifield(unique_hemifield==2)=[];
-    elseif possible_combinations(c,1)==2 %right hand
-        unique_hemifield(unique_hemifield==1)=[];
-    end
-    congruent_trials=numel(unique_hemifield);
-    trial_criterion.([namepart 'trials_per_congruent_hand_hemifield'])=congruent_trials;
 end
 end
 
+%% embedded test selection
 function h=do_stats(A,B,keys,paired)
 switch keys.AN.test_types
     case 'parametric'
@@ -1055,7 +853,6 @@ end
 end
 
 %% this function is almost ready to be implemented
-
 function [oo,keys]=ph_FR_at_peak(o,keys)
 oo=o;
 for t=1:numel(o)
@@ -1086,3 +883,67 @@ for t=1:numel(o)
     end
 end
 end
+
+%% this ugly function should not be needed any more
+function trial_criterion=get_minimum_trials(keys,o,tr_index)
+INCHnamepart={'in','ch'};
+LHRHnamepart={'AH','NH','LH','RH'};
+PTnamepart={'','PT_'};
+
+o.position_combinations=o.position_combinations(tr_index,:);
+o.hemifield_combinations=o.hemifield_combinations(tr_index,:);
+
+hands           =[o.trial.reach_hand];
+choices         =[o.trial.choice];
+perturbations   =[o.trial.perturbation];
+
+possible_combinations=combvec([-1 keys.cal.reach_hand],keys.cal.choice,1:numel(keys.cal.perturbation_groups))';
+unique_position_indexes=unique(o.position_combinations(:,3));
+unique_hemifield_indexes=unique(o.hemifield_combinations(:,3));
+nonnanidx=~any(isnan(o.position_combinations),2)';
+
+clear trial_criterion %n_trials_per_condition
+for c=1:size(possible_combinations,1)
+    
+    if possible_combinations(c,1)==-1 %% any hand, relevant later
+        idx=nonnanidx & choices==possible_combinations(c,2) & ismember(perturbations,keys.cal.perturbation_groups{possible_combinations(c,3)});
+    else
+        idx=nonnanidx & hands==possible_combinations(c,1) & choices==possible_combinations(c,2) & ismember(perturbations,keys.cal.perturbation_groups{possible_combinations(c,3)});
+    end
+    namepart=[INCHnamepart{possible_combinations(c,2)+1} '_' LHRHnamepart{possible_combinations(c,1)+2} '_' PTnamepart{possible_combinations(c,3)}];
+    
+    
+    %% trials_total
+    trial_criterion.([namepart 'trials_total'])=sum(idx);
+    
+    %% trials_per_condition (should be renamed per_position) **
+    [~, ~, unique_combinations]= unique(o.position_combinations(idx,:),'rows');
+    if all(ismember(unique_position_indexes,o.position_combinations(idx,3)))
+        least_trials_in_position=hist(unique_combinations,1:max(unique_combinations));
+    else % in case the postiion wasnt succesfully selected at all (especially imoprtant for choice!)
+        least_trials_in_position=0;
+    end
+    trial_criterion.([namepart 'trials_per_condition'])=min(least_trials_in_position);
+    %n_trials_per_condition(c)=min(least_trials_in_position);
+    
+    %% trials_per_hemifield
+    [~, ~, unique_hemifield]= unique(o.hemifield_combinations(idx,:),'rows');
+    if all(ismember(unique_hemifield_indexes,o.hemifield_combinations(idx,3)))
+        least_trials_in_hemifield=hist(unique_hemifield,1:max(unique_hemifield));
+    else % in case the position wasnt succesfully selected at all (especially imoprtant for choice!)
+        least_trials_in_hemifield=0;
+    end
+    trial_criterion.([namepart 'trials_per_hemifield'])=min(least_trials_in_hemifield);
+    
+    %% trials_per_congruent_hand_hemifeld
+    unique_hemifield = o.hemifield_combinations(idx,3);
+    if possible_combinations(c,1)==1 %left hand
+        unique_hemifield(unique_hemifield==2)=[];
+    elseif possible_combinations(c,1)==2 %right hand
+        unique_hemifield(unique_hemifield==1)=[];
+    end
+    congruent_trials=numel(unique_hemifield);
+    trial_criterion.([namepart 'trials_per_congruent_hand_hemifield'])=congruent_trials;
+end
+end
+

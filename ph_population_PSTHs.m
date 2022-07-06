@@ -263,10 +263,10 @@ for t=1:size(condition,1)
                     FRmean(p)=nanmean([pos(p,:).FR]);
                 end
                 for p=1:size(pos,1)
-                    if ~keys.PO.FR_subtract_baseline
-                        FRmeancolidx=round(FRmean(p)/mean(FRmax)/2*254 + 127)+1;
-                    else
+                    if ~keys.PO.FR_subtract_baseline %% these 2 lines were reversed?
                         FRmeancolidx=round(FRmean(p)/mean(FRmax)*254)+1;
+                    else
+                        FRmeancolidx=round(FRmean(p)/mean(FRmax)/2*254 + 127)+1;
                     end
                     if ~isnan(FRmean(p))
                         plot(pos(p,1).x,pos(p,1).y,'o','markerfacecolor',RF_colormap(FRmeancolidx,:),'markeredgecolor','none','markersize',5);
