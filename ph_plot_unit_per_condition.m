@@ -17,7 +17,7 @@ for unit=1:numel(population)
         for type=unique(types)
             
             %% selection of epochs to plot
-            effectors_effector_loop=unique(effectors);
+            effectors_effector_loop=unique(effectors(ismember(effectors,keys.cal.effectors)));
             [keys all_sta]=ph_get_epoch_keys(keys,type,effectors_effector_loop,1);
             n_states=numel(all_sta);
             
@@ -28,7 +28,7 @@ for unit=1:numel(population)
             eff_for_typ=effectors(o_index);
             effectors_effector_loop=unique(eff_for_typ);
             
-            if sum(o_index)==0; % this line wont work as it is
+            if sum(o_index & [population(unit).trial.accepted])==0; % this line wont work as it is
                 disp(sprintf('%s has no trials for effector %.0f type %.0f hands %s completed= %.0f',population(unit).unit_ID,effector,type,mat2str(keys.cal.reach_hand),keys.cal.completed));
                 continue;
             end

@@ -12,6 +12,7 @@ Z=Z(~isnan(Z));
 %% temporary part to fit on per position averages instead of single trials (not used?)
 [unique_positions, ~, pos_idx]=unique(X,'rows');
 Z_mean=NaN(size(unique_positions,1),1);
+Z_weights=NaN(size(unique_positions,1),1);
 for p=1:max(pos_idx)
     Z_mean(p)=mean(Z(pos_idx==p));
     Z_weights(p)=1/var(Z(pos_idx==p));
@@ -45,9 +46,9 @@ for f=1:numel(fitfuns)
             UB=[max(Z)         2*max(abs(Z))   inf          -1*log(1/4)/min([dx,dy])                               max(x)-dx         max(y)-dy];
             fitT=fittype('ph_2D_fit_sigmoidal( x, y, bl, amp, phi, lambda, x0, y0 )','dependent',{'z'},'independent',{'x','y'},'coefficients',{'bl', 'amp', 'phi', 'lambda', 'x0', 'y0'});
         case 'gaussian1'
-            range_factor=fitsettings.range_factor;
-            x_range=(max(max(xin))-min(min(xin)))*range_factor; if x_range==0; x_range=1; end;
-            y_range=(max(max(yin))-min(min(yin)))*range_factor; if y_range==0; y_range=1; end;
+%             range_factor=fitsettings.range_factor;
+%             x_range=(max(max(xin))-min(min(xin)))*range_factor; if x_range==0; x_range=1; end;
+%             y_range=(max(max(yin))-min(min(yin)))*range_factor; if y_range==0; y_range=1; end;
             sd_max=fitsettings.sd_max_x;
             zscaling=max(Z)-min(Z);
             zscaling_sign=sign(mean(sign(z)));
@@ -76,9 +77,9 @@ for f=1:numel(fitfuns)
             end
             
         case 'gaussian2' %not used currently, cause too many parameters
-            range_factor=fitsettings.range_factor;
-            x_range=(max(max(xin))-min(min(xin)))*range_factor; if x_range==0; x_range=1; end;
-            y_range=(max(max(yin))-min(min(yin)))*range_factor; if y_range==0; y_range=1; end;
+%             range_factor=fitsettings.range_factor;
+%             x_range=(max(max(xin))-min(min(xin)))*range_factor; if x_range==0; x_range=1; end;
+%             y_range=(max(max(yin))-min(min(yin)))*range_factor; if y_range==0; y_range=1; end;
             sign_idx=z<0;
             start_pos_xy_1=[0 0];
             start_pos_xy_2=[0 0];
@@ -149,6 +150,7 @@ for f=1:numel(fitfuns)
     same_bounds=LB==UB;
     LB(same_bounds)=LB(same_bounds)-0.01;
     UB(same_bounds)=UB(same_bounds)+0.01;
+    %fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB,'Upper',UB,'Start',X0,'Weights',Z_weights);
     fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB,'Upper',UB,'Start',X0);
     if sum(~isnan(z)) >= numel(X0) 
         [fitobj, Goodness] =fit([x,y],z,fitT,fitopts);

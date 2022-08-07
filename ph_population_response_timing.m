@@ -30,15 +30,13 @@ complete_unit_list={population.unit_ID}';
 population=population(ismember(complete_unit_list,tuning_per_unit_table(:,idx_unitID)));
 
 all_trialz=[population.trial];
-condition_parameters  ={'reach_hand','choice','perturbation'};
-keys.condition_parameters  =condition_parameters;
 [UC, CM]=ph_get_condition_matrix(all_trialz,keys);
 
-% reduce trials to only valid
+% reduce trials to only valid ... obsolete?
 unit_valid=true(size(population));
 for u=1:numel(population)
     poptr=population(u).trial;
-    valid=ismember([poptr.effector],UC.effector) & ismember([poptr.type],UC.type) & ismember([poptr.choice],UC.choice) & ismember([poptr.reach_hand],UC.reach_hand);
+    valid=ismember([poptr.effector],UC.effector) & ismember([poptr.type],UC.type);% & ismember([poptr.choice],UC.choice) & ismember([poptr.reach_hand],UC.reach_hand);
     population(u).trial=population(u).trial(valid);
     if sum(valid)==0
         unit_valid(u)=false;
@@ -59,7 +57,7 @@ conditions_hf               = combvec(UC.hemifield,conditions_out')';
 
 %% condition comparison
 comparisons=keys.ON.comparisons_per_effector;
-condition_parameters_comparissons = [{'hemifield'} {'effector'} condition_parameters];
+condition_parameters_comparissons = [{'hemifield'} {'effector'} keys.condition_parameters];
 
 % comparisons_per_effector is misleading, because effector comparison is possible as well
 for g=1:numel(unique_group_values)
@@ -152,10 +150,13 @@ for t=1:numel(sigbins)
         N_total=sum(ismember(group_values,unique_group_values{g}));
         current=[sigbins(t).per_group(g)];
         
-        fig_title=sprintf('Selection: %s %s %s hnd %s ch %s %s, %s = %s N=%s ',...
-            [Sel_for_title{:}],keys.monkey,[keys.conditions_to_plot{:}],mat2str(UC.reach_hand),mat2str(double(UC.choice)),keys.arrangement,keys.ON.group_parameter,unique_group_values{g},mat2str(double(N_total)));
-        filename=sprintf('%s %s %s = %s %s %s hnd %s ch %s',...
-            [Sel_for_title{:}],keys.monkey,keys.ON.group_parameter,unique_group_values{g},[keys.conditions_to_plot{:}],keys.arrangement(1:3),mat2str(UC.reach_hand),mat2str(double(UC.choice)));
+     %% ideally, the names are taken from conditions as well, not hardcoded tt.hands and tt.choices !!
+        
+        condition_title=ph_get_condition_title(keys);
+        fig_title=sprintf('Selection: %s %s %s %s %s, %s = %s N=%s ',...
+            [Sel_for_title{:}],keys.monkey,[keys.conditions_to_plot{:}],condition_title,keys.arrangement,keys.ON.group_parameter,unique_group_values{g},mat2str(double(N_total)));
+        filename=sprintf('%s %s %s = %s %s %s %s',...
+            [Sel_for_title{:}],keys.monkey,keys.ON.group_parameter,unique_group_values{g},[keys.conditions_to_plot{:}],keys.arrangement(1:3),condition_title);
         
         %% save metadata
         unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));

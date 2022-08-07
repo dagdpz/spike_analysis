@@ -1,6 +1,6 @@
 function ph_initiate_population_analysis(varargin)
 %ph_initiate_population_analysis('PPC_pulv_eye_hand',{'LIP_dPul_inj_working'},{'pop','ons','sct','ccs'})
-population_analysis_to_perform={'pop','beh','ons','sct','ccs','gaz','ref','gfl','hst'}; 
+population_analysis_to_perform={'pop','ons','sct','ccs','gaz','ref','gfl','hst','beh'}; 
 
 if nargin>2
     population_analysis_to_perform=varargin{3};
@@ -56,7 +56,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
 end
 end
 
-function loop_through_plots(population,keys_in,population_selection,population_analysis_to_perform)
+function loop_through_plots(population_full,keys_in,population_selection,population_analysis_to_perform)
 for P=population_analysis_to_perform
     ana=P{:};
     AN=upper(ana(1:2));
@@ -77,26 +77,27 @@ for P=population_analysis_to_perform
         
         % presets
         keys.(AN).logarithmic_scale=0;
-        keys.(AN).absolutes=0;
+        keys.(AN).absolutes=0;                  %%%??????????????????????
         keys.(AN).VMI='';
         keys.(AN).hist_column='';
         keys.(AN).color_option='monkeys_by_color';      
-        keys.(AN).epoch_BL='INI';
-        keys.(AN).epoch_PF='INI';
-        keys.(AN).epoch_GB='INI';
-        keys.(AN).epoch_for_normalization='INI'; %%%epoch_for_normalization ... divisive!
-        keys.(AN).epoch_DN='INI';
-        keys.(AN).epoch_RF='INI';
+        keys.(AN).epoch_BL='none';
+        keys.(AN).epoch_PF='none';
+        %keys.(AN).epoch_GB='INI';
+        %keys.(AN).epoch_for_normalization='INI'; %%%epoch_for_normalization ... divisive!
+        keys.(AN).epoch_DN='none';
+        keys.(AN).epoch_RF='none';
         keys.(AN).fittypes={'sigmoidal','linear','gaussian1'}; %,'gaussian2' %,'linear'
-        keys.(AN).FR_subtract_baseline=0;
+        %keys.(AN).FR_subtract_baseline=0;
         keys.(AN).baseline_per_trial=0;
         keys.(AN).normalization='none'; 
+        keys.(AN).unpref_def='horizontally_opposite'; 
         keys.(AN).permutation_tests=1; 
-        keys.(AN).plot_as_pie=1;
+        keys.(AN).plot_as_pie=1; %%%%%%%%%%
         keys.(AN).percent=0;
         
         % plotting keys
-        keys.(AN).plot_RF=0; 
+        %keys.(AN).plot_RF=0; 
         keys.(AN).plot_per_position=0;
         keys.(AN).plot_posneg=0;
         keys.(AN).y_lim=[]; 
@@ -113,7 +114,7 @@ for P=population_analysis_to_perform
         
         %% key asignment
         FN=fieldnames(keys_in.(ana)(cc));
-        FN=FN(~ismember(FN,'tt'));
+        FN=FN(~ismember(FN,{'tt','cal'}));
         for fn=FN'
             if ~isempty(keys_in.(ana)(cc).(fn{:}))
                 keys.(AN).(fn{:})=keys_in.(ana)(cc).(fn{:});
@@ -122,12 +123,20 @@ for P=population_analysis_to_perform
                 end
             end
         end
+        
+        keys.(AN).FR_subtract_baseline=~strcmp(keys.(AN).epoch_BL,'none');
         if isfield(keys_in.(ana)(cc),'tt') && isstruct(keys_in.(ana)(cc).tt)
             for fn=fieldnames(keys_in.(ana)(cc).tt)'
                 keys.tt.(fn{:})=keys_in.(ana)(cc).tt.(fn{:});
             end
         end
-        
+        % new part for condition limiting !1
+        if isfield(keys_in.(ana)(cc),'cal') && isstruct(keys_in.(ana)(cc).cal)
+            for fn=fieldnames(keys_in.(ana)(cc).cal)'
+                keys.cal.(fn{:})=keys_in.(ana)(cc).cal.(fn{:});
+            end
+        end
+
         if isfield(keys_in.(ana)(cc),'tt') && isfield(keys_in.(ana)(cc).tt,'selection')
             keys.tt.selection                       = [population_selection ; keys_in.(ana)(cc).tt.selection];
         else
@@ -145,6 +154,7 @@ for P=population_analysis_to_perform
             keys_in.(ana)(cc).conditions_to_plot={'ololol'};
         end
         
+        population = ph_accept_trials_per_unit(population_full,keys);
         
         for a=1:numel(keys.(AN).position_and_plotting_arrangements)            
             keys.arrangement= keys.(AN).position_and_plotting_arrangements{a};  

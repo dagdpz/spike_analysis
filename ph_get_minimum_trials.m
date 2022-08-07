@@ -2,24 +2,6 @@ function trial_criterion=ph_get_minimum_trials(keys,o,CM,UC,labels)
 %% assign position indexes...
 UC.pos_idx=1:max([o.trial.pos_index]);
 
-% %% override labels
-% for r=1:size(CM,1)
-%     label='';
-%     for c=1:size(CM,2)
-%         add_to_label_index=0;
-%         switch keys.condition_parameters{c}
-%             case {'choice','reach_hand','perturbation','success','difficulty', 'stimuli_in_2hemifields'}
-%                 add_to_label_index=1;
-%         end
-%         label_index=CM(r,c)+add_to_label_index;
-%         to_add=keys.labels.(keys.condition_parameters{c}){label_index};
-%         if ~isempty(to_add)
-%             label=[label '_' to_add];
-%         end
-%     end
-%     labels{r}=label(2:end);
-% end
-
 %% gotta find if and where reach hand condition is present, because of _trials_per_congruent_hand_hemifield
 [~,reach_hand_idx]=ismember(keys.condition_parameters,'reach_hand');
 reach_hand_idx=find(reach_hand_idx);
@@ -60,9 +42,9 @@ for c=1:size(CM,1)
         end
         trials_congruent=sum(all([trpar; trhf(hf,:)],1));
     end    
-    trial_criterion.([namepart '_trials_total_'])=sum(all(trpar,1));
-    trial_criterion.([namepart '_trials_per_position_'])=min(trials_in_position); 
-    trial_criterion.([namepart '_trials_per_hemifield_'])=min(trials_in_hemifield);
-    trial_criterion.([namepart '_trials_per_congruent_hand_hemifield_'])=min(trials_congruent);
+    trial_criterion.([namepart '_trials_total'])=sum(all(trpar,1));
+    trial_criterion.([namepart '_trials_per_position'])=min(trials_in_position); 
+    trial_criterion.([namepart '_trials_per_hemifield'])=min(trials_in_hemifield);
+    trial_criterion.([namepart '_trials_per_congruent_hand_hemifield'])=min(trials_congruent);
 end
 end

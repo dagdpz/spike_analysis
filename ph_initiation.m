@@ -40,6 +40,9 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     if ~exist([keys.db_folder keys.project_version filesep],'dir')
         mkdir([keys.db_folder ], keys.project_version);
     end
+    if ~exist([keys.basepath_to_save keys.project_version filesep],'dir')
+        mkdir([keys.basepath_to_save ], keys.project_version);
+    end
     seed_filename=[keys.basepath_to_save keys.project_version filesep 'seed.mat']; %might not be defined yet
     if exist(seed_filename,'file');
         load(seed_filename);

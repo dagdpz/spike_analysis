@@ -27,7 +27,7 @@ keys.TTconditions.hemifield         ={'LS','RS'};
 keys.TTlabels.UD                    ={'DN','-','UP'};
 keys.TTlabels.CR                    ={'UC','-','CR'};
 keys.TTlabels.choices               ={'in','-','ch'};
-keys.TTlabels.true                  ={false,true}; %% this should go i think... should be a logical 0 or 1
+keys.TTlabels.true                  ={'NO','YE'}; %% this should go i think... should be a logical 0 or 1
 keys.TTlabels.SglTar_Suc            ={'LS','-','RS'};
 keys.TTlabels.Difficulty_Easy       ={'Ta','-','eD'}; %higher FR for T , higher FR for D
 keys.TTlabels.Difficulty_Diff       ={'Ta','-','dD'}; %higher FR for T , higher FR for D
@@ -215,6 +215,9 @@ keys.colors.UC      =[127   0   0];
 
 % single cell PSTH colors per position - i think those are wrong and should
 % be reversed in name
+keys.colors.in   =[0 255 0];
+keys.colors.ch   =[0 128 0];
+
 keys.colors.in_LH   =[64 0 255];
 keys.colors.ch_LH   =[32 0 128];
 keys.colors.in_RH   =[255 255 0];

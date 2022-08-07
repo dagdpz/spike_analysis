@@ -26,7 +26,7 @@ O_entries={'LS','RS','LH','RH'}; % Original entries
 R_entries={'CS','IS','CH','IH'}; % What they become for right hemisphere
 L_entries={'IS','CS','IH','CH'}; % What they become for left hemisphere
 tuning_table_temp=TT(R_hem,:);   % reduced table with only units form right hemisphere
-for e=1:numel(O_entries)                            % simply finding each table entry that refers to space (LS, RS, LH, RH), and replace it
+for e=1:numel(O_entries)         % simply finding each table entry that refers to space (LS, RS, LH, RH), and replace it
     tuning_table_temp(cellfun(@(x) strcmp(x,O_entries{e}),tuning_table_temp))=R_entries(e);
 end
 TT(R_hem,:)=tuning_table_temp;
@@ -38,9 +38,6 @@ end
 TT(L_hem,:)=tuning_table_temp;
 
 %% inverting hemifield/hand differences (DF) and normalized indexes (IX) for right hemisphere, so R-L becomes C-I (ONLY INVERTING RIGHT HEMISPHERE HERE)
-% ES_columns=cellfun(@(x) any(strfind(x,'_ES_')),TT(1,:));
-% TT(R_hem,ES_columns)= cellfun(@(x) x*-1,TT(R_hem,ES_columns),'uniformoutput',false);
-
 DF_columns=cellfun(@(x) any(strfind(x,'_hemifield_DF')) || any(strfind(x,'_hands_DF')),TT(1,:));
 TT(R_hem,DF_columns)= cellfun(@(x) x*-1,TT(R_hem,DF_columns),'uniformoutput',false);
 
@@ -67,18 +64,18 @@ LH_columns=find_string_in_the_beginning_or_separated_by_underscore(TT,'LH_');
 RH_columns=find_string_in_the_beginning_or_separated_by_underscore(TT,'RH_');
 Lhem_LH=TT(L_hem,LH_columns);                                    % reduced table Left hemisphere left  hand (temporary stored information)
 Lhem_RH=TT(L_hem,RH_columns);                                    % reduced table Left hemisphere right hand (temporary stored information)
-for c=LH_columns                                                                    % looping through all LH columns to replace left hemisphere rows with respective RH entries
+for c=LH_columns                                                 % looping through all LH columns to replace left hemisphere rows with respective RH entries
     table_title=TT{1,c};
     position_in_title_to_change=strfind(table_title,'LH_');
-    table_title(position_in_title_to_change)='R';                                   % we replaced LH with RH, so this is now the header of the column we want to replace left hemisphere entries
+    table_title(position_in_title_to_change)='R';                % we replaced LH with RH, so this is now the header of the column we want to replace left hemisphere entries
     counterhand_column=DAG_find_column_index(TT,table_title);    % position of the respective RH column in the full table
     TT(L_hem,c)=Lhem_RH(:,RH_columns==counterhand_column);       % here we replace all left hemisphere rows for the current (LH) column with the respective temporarily stored RH column entries
     TT{1,c}(position_in_title_to_change)='C';                    % now we can rename the column, since we swapped RH entries to LH for left hemisphere, it's now contra hand (for both hemispheres!)
 end
-for c=RH_columns                                                                    % this is the same as above, but now for RH columns
+for c=RH_columns                                                 % this is the same as above, but now for RH columns
     table_title=TT{1,c};
     position_in_title_to_change=strfind(table_title,'RH_');
-    table_title(position_in_title_to_change)='C';                                   % here's the only difference: there is no LH in the column headers any more, becuase we replaced it with CH
+    table_title(position_in_title_to_change)='C';                % here's the only difference: there is no LH in the column headers any more, becuase we replaced it with CH
     counterhand_column=DAG_find_column_index(TT,table_title);
     TT(L_hem,c)=Lhem_LH(:,LH_columns==counterhand_column);
     TT{1,c}(position_in_title_to_change)='I';
@@ -200,18 +197,17 @@ end
 
 function completed_table=format_excel_tuning_table(TT,tasks,keys)
 cases=keys.position_and_plotting_arrangements;
-N_columns_unchanged=12; %%
+N_columns_unchanged=12; 
 in_or_ch={'in','ch'};
-hands={'AH','IH','CH'}; %%!!!
+hands={'AH','IH','CH'}; 
 sides={'IS','CS'}; 
 
 %% these are the ANOVA results we are looking for
 general_factors={'epoch_main','hemifield_main','hands_main','ExS','ExH','SxH','ExSxH'}; %factor for ANOVA: epoch*hand*space
 general_factors_per_hand={'position_main'};
-general_factors_per_hand_space={'PT_main','ExP','epoch_main'}; %position independently for both hands somehow
-%factors_per_hand={'epoch','epoch_ES','epoch_IX','position','position_ES','position_IX'}; %position independently for both hands somehow
-factors={'epoch','hemifield','hemifield_ES','hemifield_IX','hands','hands_ES','hands_IX','SxH','SxH_ES','SxH_IX'}; %position independently for both hands somehow
-factors_per_hand={'epoch','epoch_ES','epoch_IX','position','position_PV','fixation','fixation_PV','fixation','fixation_PV','PxF','PxF_PV','RF_shift','gaze_modulation_x','gaze_modulation_y','RF_choice1','RF_choice2'}; %position independently for both hands somehow
+general_factors_per_hand_space={'PT_main','ExP','epoch_main'}; 
+factors={'epoch','hemifield','hemifield_ES','hemifield_IX','hands','hands_ES','hands_IX','SxH','SxH_ES','SxH_IX'};
+factors_per_hand={'epoch','epoch_ES','epoch_IX','position','position_PV','fixation','fixation_PV','fixation','fixation_PV','PxF','PxF_PV','RF_shift','gaze_modulation_x','gaze_modulation_y','RF_choice1','RF_choice2'}; 
 factors_per_space={'Difficulty_Easy', 'Difficulty_Diff', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
 
 idx_subregion   =DAG_find_column_index(TT,'Subregion');
@@ -223,11 +219,11 @@ for t=1:numel(tasks)
     temp_table2=[temp_table vertcat({'task'},repmat({current_task},size(TT,1)-1,1))];
     for c=1:numel(cases)
         current_case=cases{c}(1:3);
-        idx_N_trials=~cellfun(@isempty,strfind(TT(1,:),['_trials_' keys.tt.trial_criterion_in '_' current_task '_' current_case])) & ~cellfun(@isempty,strfind(TT(1,:),'in_'));
+        idx_N_trials=~cellfun(@isempty,strfind(TT(1,:),['trials_' keys.tt.trial_criterion_in '_' current_task '_' current_case])) & ~cellfun(@isempty,strfind(TT(1,:),'in_'));
         underscore_idx=cellfun(@(x) strfind(x,'_'),TT(1,idx_N_trials),'UniformOutput',false);
         N_trial_titles=cellfun(@(x,y) ['N_trials_' x(1:y(end-4)-1)],TT(1,idx_N_trials),underscore_idx,'UniformOutput',false);
         temp_table_IN=vertcat(N_trial_titles,TT(2:end,idx_N_trials));
-        idx_N_trials=~cellfun(@isempty,strfind(TT(1,:),['_trials_' keys.tt.trial_criterion_ch '_' current_task '_' current_case])) & ~cellfun(@isempty,strfind(TT(1,:),'ch_'));
+        idx_N_trials=~cellfun(@isempty,strfind(TT(1,:),['trials_' keys.tt.trial_criterion_ch '_' current_task '_' current_case])) & ~cellfun(@isempty,strfind(TT(1,:),'ch_'));
         underscore_idx=cellfun(@(x) strfind(x,'_'),TT(1,idx_N_trials),'UniformOutput',false);
         N_trial_titles=cellfun(@(x,y) ['N_trials_' x(1:y(end-4)-1)],TT(1,idx_N_trials),underscore_idx,'UniformOutput',false);
         temp_table_CH=vertcat(N_trial_titles,TT(2:end,idx_N_trials));

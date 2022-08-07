@@ -24,7 +24,7 @@ if ~all(cellfun(@isempty,strfind(TT(1,:),'_trials_per_position'))) %~isempty(tas
                 disp(['per_hemifield_and_perturbation not supported as trial criterion' ]);
         end
         
-        strtofind=['_trials_' keys.tt.(['trial_criterion_' crit])];
+        strtofind=['trials_' keys.tt.(['trial_criterion_' crit])];
         taskcaseexistingindex=find(~cellfun(@isempty,strfind(TT(1,:),strtofind)));
         for I=taskcaseexistingindex
             if ~(any(strfind(TT{1,I},[crit '_'])==1) || any(strfind(TT{1,I},['_' crit '_'])))
@@ -38,24 +38,24 @@ if ~all(cellfun(@isempty,strfind(TT(1,:),'_trials_per_position'))) %~isempty(tas
         end
     end
     
-else % this is for previous version (backwards compatibility) ... not needed any more??
-    taskcaseexistingindex=find(~cellfun(@isempty,strfind(TT(1,:),'in_epoch_main'))); %not ideal
-    taskcases={};
-    for I=taskcaseexistingindex
-        task_existing_column=num2cell(~cellfun(@isempty,TT(:,I)));
-        task_existing_column{1,1}=['existing' TT{1,I}(14:end)];
-        TT(:,end+1)=task_existing_column;
-        taskcases = [taskcases, {TT{1,I}(15:end)}];
-    end
-    %% to be combined with previous
-    taskcaseexistingindex=find(~cellfun(@isempty,strfind(TT(1,:),'ch_epoch_main'))); %not ideal
-    %taskcases={};
-    for I=taskcaseexistingindex
-        task_existing_column=num2cell(~cellfun(@isempty,TT(:,I)));
-        task_existing_column{1,1}=['existing' TT{1,I}(1:3) TT{1,I}(14:end)];
-        TT(:,end+1)=task_existing_column;
-        %taskcases = [taskcases, {TT{1,I}(15:end)}];
-    end
+% else % this is for previous version (backwards compatibility) ... not needed any more??
+%     taskcaseexistingindex=find(~cellfun(@isempty,strfind(TT(1,:),'in_epoch_main'))); %not ideal
+%     taskcases={};
+%     for I=taskcaseexistingindex
+%         task_existing_column=num2cell(~cellfun(@isempty,TT(:,I)));
+%         task_existing_column{1,1}=['existing' TT{1,I}(14:end)];
+%         TT(:,end+1)=task_existing_column;
+%         taskcases = [taskcases, {TT{1,I}(15:end)}];
+%     end
+%     %% to be combined with previous
+%     taskcaseexistingindex=find(~cellfun(@isempty,strfind(TT(1,:),'ch_epoch_main'))); %not ideal
+%     %taskcases={};
+%     for I=taskcaseexistingindex
+%         task_existing_column=num2cell(~cellfun(@isempty,TT(:,I)));
+%         task_existing_column{1,1}=['existing' TT{1,I}(1:3) TT{1,I}(14:end)];
+%         TT(:,end+1)=task_existing_column;
+%         %taskcases = [taskcases, {TT{1,I}(15:end)}];
+%     end
 end
 
 %% create space OR interaction column
@@ -93,6 +93,7 @@ for t=1:numel(taskcases)
     
     %% adding columns for visual, motor, visuomotor, and fixation cells
     if any(idx.Fhol) && any(idx.PeriS) && any(idx.Cue) && any(idx.TIhol)
+        n_column=size(TT,2);
         TT{1,n_column+1}=['fixation_only_' taskcase];
         TT{1,n_column+2}=['fixation_and_sac_suppression_' taskcase];
         TT{1,n_column+3}=['Sac_supression_' taskcase];

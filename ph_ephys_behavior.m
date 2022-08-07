@@ -48,7 +48,7 @@ keys.plot.export=1;
 
 
 %% modify filelist to create batches for each session
-for monkeys={'Both','Cur','Lin'}
+for monkeys=[{'Both'} keys.monkeys]
     monkey=monkeys{:};
     if strcmp(monkey,'Both')
         monkey='Lin';

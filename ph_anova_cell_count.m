@@ -290,8 +290,8 @@ switch keys.CC.plot_type
         keys.x_labels={'Retinotopic','Object centered'};
         factors{1}='gaze';
         factors{2}='gaze_interaction';
-    case 'eccentricity_x_angle' 
-        keys.x_labels={''}; 
+    case 'eccentricity_x_angle'
+        keys.x_labels={''};
         factors{1}='eccentricity_x_angle';
     case 'visuomotor'
         keys.x_labels={''}; %%?
@@ -343,9 +343,9 @@ for l=levels
         case 'visuomotor'
             keys.all_colors{l}   =visuomotor_colors;
             keys.legends{l}=visuomotor_legend;
-%         case 'SxH'
-%             keys.all_colors{l}   =SxH_colors;
-%             keys.legends{l}=SxH_legend;
+            %         case 'SxH'
+            %             keys.all_colors{l}   =SxH_colors;
+            %             keys.legends{l}=SxH_legend;
         case 'space_x_hand'
             keys.all_colors{l}   =crossed_uncrossed_colors;
             keys.legends{l}=crossed_uncrossed_legend;
@@ -381,9 +381,9 @@ end
 
 keys.n1=numel(keys.legends{1});
 if size(factors)>1
-keys.n2=numel(keys.legends{2});
+    keys.n2=numel(keys.legends{2});
 else
-keys.n2=0;
+    keys.n2=0;
 end
 
 function [multilevel_data matrix_data] = summary_anova_multilevel(keys)
@@ -405,7 +405,7 @@ second_loop=1:numel(keys.factors);
 switch keys.CC.plot_type
     case 'per_task'
         first_loop=1:numel(keys.CC.tasktypes);
-        second_loop=1:numel(keys.CC.epochs);        
+        second_loop=1:numel(keys.CC.epochs);
     case 'per_epoch'
         second_loop=1:numel(keys.CC.tasktypes);
 end
@@ -421,8 +421,8 @@ for e=first_loop
         arrangement       =   keys.arrangement(1:3);
         hand_labels{1}    =   '_';
         parameters        =   {};
-        epochs              =   {};
-        arrangements        =   {};
+        epochs            =   {};
+        arrangements      =   {};
         
         switch keys.CC.plot_type
             case 'per_task'
@@ -463,10 +463,10 @@ for e=first_loop
                 parameters{2}='_hands_';
                 hand_labels{2}='_';
             case 'space_hand'
-                    hand_labels{1}='_CH_';
-                    hand_labels{2}='_IH_';
-                    hand_labels{3}='_CS_';
-                    hand_labels{4}='_IS_';
+                hand_labels{1}='_CH_';
+                hand_labels{2}='_IH_';
+                hand_labels{3}='_CS_';
+                hand_labels{4}='_IS_';
                 parameters{1}='_hemifield_';
                 parameters{2}='_hemifield_';
                 parameters{3}='_hands_';
@@ -492,14 +492,14 @@ for e=first_loop
             case 'space_x_hand'
                 parameters{1}='_SxH_';
             case 'SH_as_enhancement'
-                    hand_labels{1}='_CH_CS_';
-                    hand_labels{2}='_CH_IS_';
-                    hand_labels{3}='_IH_CS_';
-                    hand_labels{4}='_IH_IS_';
-                    parameters{1}='_epoch_';
-                    parameters{2}='_epoch_';
-                    parameters{3}='_epoch_';
-                    parameters{4}='_epoch_';
+                hand_labels{1}='_CH_CS_';
+                hand_labels{2}='_CH_IS_';
+                hand_labels{3}='_IH_CS_';
+                hand_labels{4}='_IH_IS_';
+                parameters{1}='_epoch_';
+                parameters{2}='_epoch_';
+                parameters{3}='_epoch_';
+                parameters{4}='_epoch_';
             case 'hands_inactivation'
                 parameters{1}='_PT_';
                 parameters{2}='_PT_';
@@ -606,22 +606,12 @@ switch keys.CC.factor
         EF2=ismember(table(2:end,index.(tuning_variables{1})),keys.CC.tasktypes{2});
         NA=ismember(table(2:end,index.(tuning_variables{1})),'-');
         
-        clear read_out
         read_out(EF1)                =1;
         read_out(EF2)                =2;
         read_out(~EF1 & ~EF2  &  ~NA)=3;
         read_out(NA)                 =4;
+        
     case 'space_hand'
-%         CH_IS=ismember(table(2:end,index.(tuning_variables{1})),'IS');
-%         CH_CS=ismember(table(2:end,index.(tuning_variables{1})),'CS');
-%         IH_IS=ismember(table(2:end,index.(tuning_variables{2})),'IS');
-%         IH_CS=ismember(table(2:end,index.(tuning_variables{2})),'CS');
-%         CS_IH=ismember(table(2:end,index.(tuning_variables{3})),'IH');
-%         CS_CH=ismember(table(2:end,index.(tuning_variables{3})),'CH');
-%         IS_IH=ismember(table(2:end,index.(tuning_variables{4})),'IH');
-%         IS_CH=ismember(table(2:end,index.(tuning_variables{4})),'CH');
-        
-        
         CH_IS=ismember(table(2:end,index.(tuning_variables{1})),'IS');
         CH_CS=ismember(table(2:end,index.(tuning_variables{1})),'CS');
         IH_IS=ismember(table(2:end,index.(tuning_variables{2})),'IS');
@@ -642,22 +632,20 @@ switch keys.CC.factor
         CHCS=(CH & CS);
         
         incongruent= (IH_IS & CH_CS) | (CH_IS & IH_CS) | (CS_CH & IS_IH) | (CS_IH & IS_CH);
-        
-        
         na=~CH_IS &~CH_CS &~IH_IS &~IH_CS &~CS_IH &~CS_CH &~IS_IH &~IS_CH;
         %rest=~IS &~CS &~IH &~CH &~IHIS &~IHCS &~CHIS &~CHCS&~na&~incongruent;
         
         read_out(IS)            =mod(0+keys.SxH_mod_index,8)+1;
-        read_out(IH)            =mod(2+keys.SxH_mod_index,8)+1;
-        read_out(CS)            =mod(4+keys.SxH_mod_index,8)+1;
-        read_out(CH)            =mod(6+keys.SxH_mod_index,8)+1;
         read_out(IHIS)          =mod(1+keys.SxH_mod_index,8)+1;
+        read_out(IH)            =mod(2+keys.SxH_mod_index,8)+1;
         read_out(IHCS)          =mod(3+keys.SxH_mod_index,8)+1;
+        read_out(CS)            =mod(4+keys.SxH_mod_index,8)+1;
         read_out(CHCS)          =mod(5+keys.SxH_mod_index,8)+1;
+        read_out(CH)            =mod(6+keys.SxH_mod_index,8)+1;
         read_out(CHIS)          =mod(7+keys.SxH_mod_index,8)+1;
-        read_out(incongruent)          =9;
-        read_out(na)            =10;        
-                
+        read_out(incongruent)   =9;
+        read_out(na)            =10;
+        
     case 'space_and_hand'
         IStuning=ismember(table(2:end,index.(tuning_variables{1})),'IS');
         CStuning=ismember(table(2:end,index.(tuning_variables{1})),'CS');
@@ -681,6 +669,7 @@ switch keys.CC.factor
         read_out(CHIS)          =mod(7+keys.SxH_mod_index,8)+1;
         read_out(~IHtuning & ~CHtuning & ~IStuning & ~CStuning)=9;
         %read_out(na)            =10;
+        
     case 'SH_as_enhancement'
         CS_CH_en=ismember(table(2:end,index.(tuning_variables{1})),'en');
         IS_CH_en=ismember(table(2:end,index.(tuning_variables{2})),'en');
@@ -690,7 +679,7 @@ switch keys.CC.factor
         IS_CH_su=ismember(table(2:end,index.(tuning_variables{2})),'su');
         CS_IH_su=ismember(table(2:end,index.(tuning_variables{3})),'su');
         IS_IH_su=ismember(table(2:end,index.(tuning_variables{4})),'su');
-                
+        
         IHIS=( IS_IH_en &~IS_CH_en &~CS_IH_en &~CS_CH_en) | (~IS_IH_su & IS_CH_su & CS_IH_su & CS_CH_su);
         IHCS=(~IS_IH_en &~IS_CH_en & CS_IH_en &~CS_CH_en) | ( IS_IH_su & IS_CH_su &~CS_IH_su & CS_CH_su);
         CHIS=(~IS_IH_en & IS_CH_en &~CS_IH_en &~CS_CH_en) | ( IS_IH_su &~IS_CH_su & CS_IH_su & CS_CH_su);
@@ -729,16 +718,15 @@ switch keys.CC.factor
         read_out(CHCSsu)          =11;
         read_out(CHISsu)          =12;
         read_out(CR)            =13;
-        read_out(UN)            =14;    
+        read_out(UN)            =14;
         read_out(EN)            =15;
-        read_out(SU)            =16;         
+        read_out(SU)            =16;
         read_out(rest)          =17;
-        read_out(na)            =18;        
+        read_out(na)            =18;
         
     case 'hand'
         IH=ismember(table(2:end,index.(tuning_variables{1})),'IH') ;
         CH=ismember(table(2:end,index.(tuning_variables{1})),'CH') ;
-        clear read_out
         read_out(CH)                =1;
         read_out(IH)                =2;
         read_out(~IH & ~CH)   =3;
@@ -746,7 +734,6 @@ switch keys.CC.factor
     case 'space'
         IS=ismember(table(2:end,index.(tuning_variables{1})),'IS');
         CS=ismember(table(2:end,index.(tuning_variables{1})),'CS');
-        clear read_out
         read_out(CS)                =1;
         read_out(IS)                =2;
         read_out(~IS & ~CS)   =3;
@@ -755,7 +742,6 @@ switch keys.CC.factor
         en=ismember(table(2:end,index.(tuning_variables{1})),'en');
         su=ismember(table(2:end,index.(tuning_variables{1})),'su');
         bi=ismember(table(2:end,index.(tuning_variables{1})),'bi');
-        clear read_out
         read_out(en)                =1;
         read_out(bi)                =2;
         read_out(su)                =3;
@@ -764,7 +750,6 @@ switch keys.CC.factor
     case 'epoch_all'
         en=ismember(table(2:end,index.(tuning_variables{1})),'en');
         su=ismember(table(2:end,index.(tuning_variables{1})),'su');
-        clear read_out
         read_out(en)                =1;
         read_out(su)                =2;
         read_out(na)                =4;
@@ -772,7 +757,6 @@ switch keys.CC.factor
     case 'choice1'
         IN=ismember(table(2:end,index.(tuning_variables{1})),'IN');
         CH=ismember(table(2:end,index.(tuning_variables{1})),'CH');
-        clear read_out
         read_out(IN)                =1;
         read_out(CH)                =2;
         read_out(~IN & ~CH)         =3;
@@ -780,16 +764,14 @@ switch keys.CC.factor
     case 'space_x_hand'
         CR=ismember(table(2:end,index.(tuning_variables{1})),'CR');
         UC=ismember(table(2:end,index.(tuning_variables{1})),'UC');
-        clear read_out
         read_out(UC)                =1;
         read_out(CR)                =2;
         read_out(~CR & ~UC)         =3;
         
     case 'fixation_x_position'
-        %indexfnS=fixaion, indexfnH=position, indexfnX=pxF
-        fixtuning=ismember(table(2:end,index.(tuning_variables{1})),'true'); 
-        postuning=ismember(table(2:end,index.(tuning_variables{2})),'true'); 
-        fxptuning=ismember(table(2:end,index.(tuning_variables{3})),'true'); 
+        fixtuning=ismember(table(2:end,index.(tuning_variables{1})),'YE');
+        postuning=ismember(table(2:end,index.(tuning_variables{2})),'YE');
+        fxptuning=ismember(table(2:end,index.(tuning_variables{3})),'YE');
         Pos= ~fixtuning  & postuning  & ~fxptuning;
         Fix=  fixtuning  & ~postuning & ~fxptuning;
         FnP=  fixtuning  &  postuning & ~fxptuning;
@@ -809,10 +791,9 @@ switch keys.CC.factor
         read_out(Na)           =8;
         
     case 'eccentricity_x_angle'
-        %indexfnS=fixaion, indexfnH=position, indexfnX=pxF
-        ecctuning=ismember(table(2:end,index.(tuning_variables{1})),'true');
-        angtuning=ismember(table(2:end,index.(tuning_variables{2})),'true');
-        exatuning=ismember(table(2:end,index.(tuning_variables{3})),'true');
+        ecctuning=ismember(table(2:end,index.(tuning_variables{1})),'YE');
+        angtuning=ismember(table(2:end,index.(tuning_variables{2})),'YE');
+        exatuning=ismember(table(2:end,index.(tuning_variables{3})),'YE');
         All=  ecctuning  &  angtuning &  exatuning;
         EnA=  ecctuning  &  angtuning & ~exatuning;
         EnX=  ecctuning  & ~angtuning &  exatuning;
@@ -832,8 +813,6 @@ switch keys.CC.factor
         read_out(Na)           =8;
         
     case 'fixation_x_position_CI'
-        %indexfnS=fixaion, indexfnH=position, indexfnX=pxF
-        
         fixtuning=ismember(table(2:end,index.(tuning_variables{1})),'IS') | ismember(table(2:end,index.(tuning_variables{1})),'CS');
         postuning=ismember(table(2:end,index.(tuning_variables{2})),'IS') | ismember(table(2:end,index.(tuning_variables{2})),'CS');
         %CStuning=ismember(table(2:end,index.(indexfnS)),'CS');
@@ -848,21 +827,20 @@ switch keys.CC.factor
         read_out(Na)           =4;
         
     case 'gaze'
-        %indexfnS=fixaion, indexfnH=position, indexfnX=pxF
-        fixtuning=ismember(table(2:end,index.(tuning_variables{1})),'true');
-        tartuning=ismember(table(2:end,index.(tuning_variables{2})),'true');
+        fixtuning=ismember(table(2:end,index.(tuning_variables{1})),'YE');
+        tartuning=ismember(table(2:end,index.(tuning_variables{2})),'YE');
         
         Tar= ~fixtuning  &  tartuning;
         Fix=  fixtuning  & ~tartuning;
         FnT=  fixtuning  &  tartuning;
         Na = ~fixtuning  & ~tartuning;
-        
         read_out(Tar)          =1;
         read_out(FnT)          =2;
         read_out(Fix)          =3;
         read_out(Na)           =4;
+        
     case 'gaze_interaction';
-        interaction=ismember(table(2:end,index.(tuning_variables{1})),'true');
+        interaction=ismember(table(2:end,index.(tuning_variables{1})),'YE');
         read_out(interaction)          =1;
         read_out(~interaction)         =2;
         
@@ -870,7 +848,6 @@ switch keys.CC.factor
         vis=cell2mat(table(2:end,index.(tuning_variables{1})));
         mot=cell2mat(table(2:end,index.(tuning_variables{2})));
         vmt=cell2mat(table(2:end,index.(tuning_variables{3})));
-        clear read_out
         read_out(vis)                =1;
         read_out(vmt)                =2;
         read_out(mot)                =3;
@@ -893,10 +870,9 @@ switch keys.CC.factor
         read_out(~CS_EN & ~CS_SU & ~IS_SU & ~IS_EN)     =9;
         
     case 'space_position'
-        
-        CS=ismember(table(2:end,index.(tuning_variables{1})),'CS'); 
+        CS=ismember(table(2:end,index.(tuning_variables{1})),'CS');
         IS=ismember(table(2:end,index.(tuning_variables{1})),'IS');
-        PO=ismember(table(2:end,index.(tuning_variables{2})),'true');
+        PO=ismember(table(2:end,index.(tuning_variables{2})),'YE');
         clear read_out
         read_out(CS)                =1;
         read_out(IS)                =2;
@@ -904,15 +880,14 @@ switch keys.CC.factor
         read_out(~IS & ~CS & ~PO)   =4;
         
     case 'position_space'
-        
         CS=ismember(table(2:end,index.(tuning_variables{1})),'CS');
         IS=ismember(table(2:end,index.(tuning_variables{1})),'IS');
-        PO=ismember(table(2:end,index.(tuning_variables{2})),'true');
+        PO=ismember(table(2:end,index.(tuning_variables{2})),'YE');
         clear read_out
-        read_out(CS & PO)                =1;
-        read_out(IS & PO)                =2;
+        read_out(CS & PO)           =1;
+        read_out(IS & PO)           =2;
         read_out(~IS & ~CS & PO)    =3;
-        read_out(~PO)   =4;
+        read_out(~PO)               =4;
         
 end
 
@@ -952,7 +927,8 @@ keys.all_titles=keys.CC.epochs;
 if strcmp(keys.CC.plot_type,'per_epoch_2levels')
     keys.CC.plot_type=[keys.CC.first_level_factor '_' keys.CC.first_level_epochs{1} ' and '];
 end
+condition_title=ph_get_condition_title(keys);
 
 export_fig(gcf, [folder_to_save filesep keys.subfolder_to_save filesep keys.monkey ' ' [keys.CC.tasktypes{:}] ' '  keys.arrangement(1:3) ' ' keys.CC.IC_to_plot ...
-    ' hnd ' num2str(keys.tt.hands) ' ch ' num2str(keys.tt.choices) ' ' keys.selection_title{:} ' ' [keys.CC.plot_type]  ' ' keys.CC.factor ', ' keys.title_part], '-pdf','-transparent') % pdf by run
+    ' ' condition_title ' ' keys.selection_title{:} ' ' [keys.CC.plot_type]  ' ' keys.CC.factor ', ' keys.title_part], '-pdf','-transparent') % pdf by run
 close(gcf);

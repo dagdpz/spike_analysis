@@ -1,5 +1,6 @@
 function o=ph_run_state_alignment_per_trial(MA_out,keys)
 global MA_STATES
+
 %% Defining maximum number of units
 n_trials=numel(MA_out.physiology);
 tr_in=[MA_out.physiology];
@@ -47,6 +48,7 @@ for t=1:n_trials
     %%W:\Data\Linus_phys_combined_monkeypsych_TDT\20150521\Lincombined2015-05-21_03_block_01.mat
     if isempty(trial_states_onset) || (t==n_trials && trial_states(end)~=1) || (t==n_trials-1 && trial_states(end)~=1) || (trial_states(end)~=90 && trial_states(end)~=99 && trial_states(end)~=1)%% Curius 20150603 block 4 trial 166
         %&& (t==n_trials-1 || t==n_trials) % last trial bug that should get fixed in TDT_trial_struct_working  line 30
+                                           % if trial_states(end) is 99, this can be fixed here! no need to  discard those trials
         trials_wo_phys=[trials_wo_phys t];
         continue;
     end
@@ -142,11 +144,20 @@ for t=1:n_trials
     trial(t).states         =trial_states(sort(tr_state_idx));
     trial(t).states_onset   =trial_states_onset(sort(tr_state_idx));
     
-    %% excluding unwanted trials from the beginning... this is actually sort of problematic
-    if ~ismember(trial(t).type,keys.cal.types) || ~ismember(trial(t).effector,keys.cal.effectors) || ~ismember(trial(t).reach_hand,keys.cal.reach_hand)
-        trials_wo_cond=[trials_wo_cond t];
-        continue;
-    end
+
+
+
+
+%     %% excluding unwanted trials from the beginning... this is actually sort of problematic
+%     if ~ismember(trial(t).type,keys.cal.types) || ~ismember(trial(t).effector,keys.cal.effectors) %|| ~ismember(trial(t).reach_hand,keys.cal.reach_hand)
+%         trials_wo_cond=[trials_wo_cond t];
+%         continue;
+%     end
+
+
+
+
+
     
     %     %% for several movements per trial
     %     mov_idx=~isnan(Movement.ini_all) & Movement.ini_all>=MA_out.states(t).start_obs;

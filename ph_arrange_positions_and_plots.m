@@ -25,19 +25,19 @@ end
 
 %% DEFINITION OF CONDITION INDICES TO PLOT, CURRENTLY TARGET LOCATION, FIXATION LOCATION, MOVEMENT VECTORS, CHOICE, HANDS
 [~, displacement_types] = center_displacement_working(o,keys);
-all_val=displacement_types(:,1:4);
+all_val=displacement_types(:,[1,2,5,6]);
 fix_val=displacement_types(:,1:2);
-tar_val=displacement_types(:,3:4);
-cue_val=displacement_types(:,5:6);
-mov_val=displacement_types(:,3:4) - displacement_types(:,1:2);
-stm_val=displacement_types(:,7:8);
+mov_val=displacement_types(:,3:4);
+tar_val=displacement_types(:,5:6);
+cue_val=displacement_types(:,7:8);
+stm_val=displacement_types(:,9:10);
 
-all_idx=displacement_types(:,9);
-fix_idx=displacement_types(:,10);
-mov_idx=displacement_types(:,11);
-tar_idx=displacement_types(:,12);
-cue_idx=displacement_types(:,13);
-stm_idx=displacement_types(:,14);
+all_idx=displacement_types(:,11);
+fix_idx=displacement_types(:,12);
+mov_idx=displacement_types(:,13);
+tar_idx=displacement_types(:,14);
+cue_idx=displacement_types(:,15);
+stm_idx=displacement_types(:,16);
 non_idx=ones(size(displacement_types,1),1);
 
 [~,u_all_idx_idx]=unique(all_idx);
@@ -363,7 +363,7 @@ function [s_c, displacement_types] = center_displacement_working(trial,keys)
 Prec_fix=keys.cal.precision_fix;
 Prec_pos=keys.cal.precision_tar;
 
-movement_direction  =NaN(size(trial'));
+movement            =NaN(size(trial'));
 fixation            =NaN(size(trial'));
 target              =NaN(size(trial'));
 cuepos              =NaN(size(trial'));
@@ -378,37 +378,59 @@ if isfield(trial,'stm_pos')
 else
     s_e=s_d;
 end
-for t=1:numel(trial)
-    for k=1:numel(s_a)
-        if abs(trial(t).fix_pos - s_a(k)) < Prec_fix
-            fixation(t)=s_a(k);
-        end
-    end
-    for k=1:numel(s_b)
-        if abs(trial(t).tar_pos - trial(t).fix_pos - s_b(k)) < Prec_pos
-            movement_direction(t)=k;
-        end
-    end
-    for k=1:numel(s_c)
-        if abs(trial(t).tar_pos - s_c(k)) < Prec_fix
-            target(t)=s_c(k);
-        end
-    end
-    for k=1:numel(s_d)
-        if abs(trial(t).cue_pos - s_d(k)) < Prec_pos
-            cuepos(t)=s_d(k);
-        end
-    end
-    for k=1:numel(s_e)
-        if abs(trial(t).stm_pos - s_e(k)) < Prec_pos
-            stmpos(t)=s_e(k);
-        end
-    end
+% for t=1:numel(trial)
+%     for k=1:numel(s_a)
+%         if abs(trial(t).fix_pos - s_a(k)) < Prec_fix
+%             fixation(t)=s_a(k);
+%         end
+%     end
+%     for k=1:numel(s_b)
+%         if abs(trial(t).tar_pos - trial(t).fix_pos - s_b(k)) < Prec_pos
+%             movement_direction(t)=s_b(k);
+%         end
+%     end
+%     for k=1:numel(s_c)
+%         if abs(trial(t).tar_pos - s_c(k)) < Prec_fix
+%             target(t)=s_c(k);
+%         end
+%     end
+%     for k=1:numel(s_d)
+%         if abs(trial(t).cue_pos - s_d(k)) < Prec_pos
+%             cuepos(t)=s_d(k);
+%         end
+%     end
+%     for k=1:numel(s_e)
+%         if abs(trial(t).stm_pos - s_e(k)) < Prec_pos
+%             stmpos(t)=s_e(k);
+%         end
+%     end
+% end
+
+for k=1:numel(s_a)
+    t=abs([trial.fix_pos] - s_a(k)) < Prec_fix;
+    fixation(t)=s_a(k);
 end
+for k=1:numel(s_b)
+    t=abs([trial.tar_pos] - [trial.fix_pos] - s_b(k)) < Prec_pos;
+    movement(t)=s_b(k);
+end
+for k=1:numel(s_c)
+    t= abs([trial.tar_pos] - s_c(k)) < Prec_fix;
+    target(t)=s_c(k);
+end
+for k=1:numel(s_d)
+    t=abs([trial.cue_pos] - s_d(k)) < Prec_pos;
+    cuepos(t)=s_d(k);
+end
+for k=1:numel(s_e)
+    t=abs([trial(t).stm_pos] - s_e(k)) < Prec_pos;
+    stmpos(t)=s_e(k);
+end
+
 
 [~,~,unique_condition]      =unique([real(fixation),imag(fixation),real(target),imag(target)],'rows');
 [~,~,fixation_location]     =unique([real(fixation),imag(fixation)],'rows');
-[~,~,movement_direction]    =unique([real(movement_direction),imag(movement_direction)],'rows');
+[~,~,movement_direction]    =unique([real(movement),imag(movement)],'rows');
 [~,~,target_location]       =unique([real(target),imag(target)],'rows');
 [~,~,cue_location]          =unique([real(cuepos),imag(cuepos)],'rows');
 [~,~,stimulus_location]     =unique([real(stmpos),imag(stmpos)],'rows');
@@ -417,11 +439,11 @@ fix_y=imag(nanmean(fixation));
 fixation=fixation-1i*fix_y;
 target=target-1i*fix_y;
 
-displacement_types=[real(fixation) imag(fixation) real(target) imag(target) real(cuepos) imag(cuepos), real(stmpos) imag(stmpos),...
+displacement_types=[real(fixation) imag(fixation) real(movement) imag(movement) real(target) imag(target) real(cuepos) imag(cuepos), real(stmpos) imag(stmpos),...
     unique_condition fixation_location movement_direction target_location, cue_location, stimulus_location]; 
 
 if numel(trial)==0
-    displacement_types=NaN(1,14);
+    displacement_types=NaN(1,16);
 end
 end
 

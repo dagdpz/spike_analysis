@@ -44,8 +44,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
             
             clear tuning_per_unit_table
             %% LS has this line, MP kept it?:
-            population = ph_accept_trials_per_unit(population,keys); % dont think actually that it's a good idea to re-assign accepted trials here, 
-            %but i left it for now, because it seems like this might solve a problem for not rerunning everything when the wrong ph_accept was used....
+            population = ph_accept_trials_per_unit(population,keys); 
             population = ph_assign_perturbation_group(keys,population); %% MP removed this line (hmm... what do we actually store as perutrbation ??)
             
             population = ph_epochs(population,keys);
