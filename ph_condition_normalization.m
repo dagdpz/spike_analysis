@@ -213,7 +213,7 @@ for u=1:numel(population)
                 fn=CP_out{par};
                 trpar(par,:)=[pop.trial.(fn)]==conditions_out(c,par);
             end
-            trpar(end+1,:)=trtyp;
+            trpar(end+1,:)=trtyp; %% comment this line to see where it leads??
             tr_con=all(trpar,1);
             per_epoch=get_per_epoch(pop.trial(tr_con));% take already normalized values
             for ep=1:size(per_epoch,2)

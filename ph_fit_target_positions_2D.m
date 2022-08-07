@@ -68,7 +68,11 @@ for f=1:numel(fitfuns)
                 UB=[max(z)      inf       max(x)-dx          max(y)-dy               1.5*zscaling     sd_max                       sd_max                           ];
                 fitT=fittype(['ph_2D_fit_gaussian_1_RF( x, y, bl, phi, xmax, ymax, zmax, sx, sy, ' num2str(fitsettings.sd_xy_min_ratio) ' )'],'dependent',{'z'},'independent',{'x','y'},'coefficients',{'bl', 'phi', 'xmax', 'ymax', 'zmax', 'sx', 'sy'});
             else
-                start_pos_xy=[mean(x(sign(z)==zscaling_sign)) mean(y(sign(z)==zscaling_sign))];  
+                %start_pos_xy=[mean(x(sign(z)==zscaling_sign)) mean(y(sign(z)==zscaling_sign))]; 
+%                 sign_idx=sign(z)==zscaling_sign & ~isnan(z);
+%                 start_pos_xy=[nanmean(x(sign_idx).*abs(z(sign_idx)))/nanmean(abs(z(sign_idx))) nanmean(y(sign_idx).*abs(z(sign_idx)))/nanmean(abs(z(sign_idx)))];
+%                 
+                start_pos_xy=[nanmean(xin(~isnan(Z)).*abs(Z))/nanmean(abs(Z)) nanmean(yin(~isnan(Z)).*abs(Z))/nanmean(abs(Z))]; 
                 %rotation    x0                 y0                      peak                    sx                           sy
                 LB=[-inf     min(x)+dx          min(y)+dy               -1.5*zscaling           sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
                 X0=[0        start_pos_xy(1)    start_pos_xy(2)         zscaling_sign*zscaling  sd_max                       sd_max                           ];
