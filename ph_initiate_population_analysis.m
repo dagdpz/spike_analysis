@@ -34,7 +34,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
         keys.anova_table_file=[keys.basepath_to_save keys.project_version filesep 'tuning_table_combined_CI.mat'];
-        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','hst','reg','rtc','prf'}))
+        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','hst','reg','rtc','prf','ndt'}))
             population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
             population=ph_assign_perturbation_group(keys,population);
             population=ph_epochs(population,keys);
@@ -116,6 +116,9 @@ for P=population_analysis_to_perform
         for fn=FN'
             if ~isempty(keys_in.(ana)(cc).(fn{:}))
                 keys.(AN).(fn{:})=keys_in.(ana)(cc).(fn{:});
+                if strcmp(fn{:},'condition_parameters')
+                keys.(fn{:})=keys_in.(ana)(cc).(fn{:});
+                end
             end
         end
         if isfield(keys_in.(ana)(cc),'tt') && isstruct(keys_in.(ana)(cc).tt)
@@ -220,6 +223,10 @@ for P=population_analysis_to_perform
                     case 'cpy'
                         keys=ph_make_subfolder(keys.CP.foldername,keys);
                         ph_copy_single_units(keys); 
+                    case 'ndt'
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'decoding'],keys);
+                        keys=ph_make_subfolder('decoding',keys);
+                        ph_decoding(population,keys); 
                 end
             end
         end

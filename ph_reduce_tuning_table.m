@@ -1,13 +1,12 @@
 function [TT Sel_for_title]=ph_reduce_tuning_table(TT,keys)
-
 %% monkey
 idx_unitID=DAG_find_column_index(TT,'unit_ID');
 if numel(keys.monkey)>3
     TT=TT([true; ~cellfun(@isempty,strfind(TT(2:end,idx_unitID),keys.monkey(1:3)))],:);
 end
 
-%% overlapping tasktypes_hands_choices
-tasktypes_hands_choices=combvec((1:numel(keys.tt.tasktypes)),keys.tt.hands,keys.tt.choices,keys.tt.perturbations); % what is going on here???
+%% overlapping tasktypes_hands_choices - trial criterion exclusion
+tasktypes_hands_choices=combvec((1:numel(keys.tt.tasktypes)),keys.tt.hands,keys.tt.choices,keys.tt.perturbations);
 row_index=true(size(TT,1)-1,1);
 for t=1:size(tasktypes_hands_choices,2) %% crashes for not existing monkey
     tasktype=tasktypes_hands_choices(1,t);
@@ -20,13 +19,12 @@ for t=1:size(tasktypes_hands_choices,2) %% crashes for not existing monkey
         row_index=row_index & cell2mat(TT(2:end,column_index));
     else
         disp(['combination of tasktype ' keys.tt.tasktypes{tasktype} ',hands ' keys.labels.handsIC{hand} 'and choices ' keys.labels.choices{choice} 'not existing'])
-        if ~strfind(tasktype,'_')
+        if ~strfind(keys.tt.tasktypes{tasktype},'_')
             disp('tasktype needs to contain arrangement as well to work properly, f.e.: Ddre_han')
         end
     end
 end
 TT=TT([true;row_index],:);
-
 
 %% selection (pick only specific entries)
 if size(TT,1)>1
@@ -64,11 +62,9 @@ if size(TT,1)>1
         end
     end
     TT=TT([true;row_index],:);
-    
     if ~isempty(keys.tt.unselected_list)
-        load([keys.tt.unselected_list{:} filesep 'list']); 
+        load([keys.tt.unselected_list{:} filesep 'list']);
         TT=TT([true; ~ismember(TT(2:end,idx_unitID),example_list)],:);
-        
     end
 end
 
@@ -83,28 +79,5 @@ if ~isempty(keys.tt.unselect)
     Sel_for_title=[Sel_for_title, [keys.tt.unselect(:,1) repmat({' ~= '},size(keys.tt.unselect(:,1)))...
         cellfun(@num2str,keys.tt.unselect(:,2),'uniformoutput',false)  repmat({', '},size(keys.tt.unselect(:,1)))]'];
 end;
-
-
-
-
-% if keys.FR_subtract_baseline
-%     Sel_for_title =[Sel_for_title,{'base';'=';'INI';', '}];
-% end
-
-
-% if ~isempty(keys.tt.selection)
-%     Sel_for_title=[keys.tt.selection(:,1) repmat({' = '},size(keys.tt.selection(:,1)))...
-%         cellfun(@num2str,keys.tt.selection(:,2),'uniformoutput',false)  repmat({', '},size(keys.tt.selection(:,1)))]';
-% else
-%     Sel_for_title={'';'';'';''};
-% end;
-
-% selected=cellfun(@num2str,keys.tt.selection(:,2),'Uniformoutput',false);
-% if ~isempty(keys.tt.selection)
-%     Selection=strcat(keys.tt.selection(:,1),'= ', selected, ',')';
-% else
-%     Selection={};
-% end
-
 
 end

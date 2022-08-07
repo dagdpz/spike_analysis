@@ -100,33 +100,5 @@ for u=1:numel(population)
 %         end
     end
         population(u).FR                =nanmean([population(u).trial.FR]);
-        
-        if keys.FR_subtract_baseline
-            population(u)=ph_FR_subtract_baseline(population(u),keys);
-        end
-        if keys.cal.divide_baseline_for_ANOVA
-            population(u)=ph_divide_by_baseline_FR(population(u),keys);
-        end
-end
-end
-
-
-function [unit_out]=ph_FR_subtract_baseline(unit_in,keys)
-unit_out=unit_in;
-for t=1:numel(unit_in.trial)
-    for s=1:numel(unit_in.trial(t).epoch)
-        b=ismember(keys.EPOCHS(:,1),keys.EPOCHS(s,5));
-        unit_out.trial(t).epoch(s).FR=unit_in.trial(t).epoch(s).FR - unit_in.trial(t).epoch(b).FR;
-    end
-end
-end
-
-function [unit_out]=ph_divide_by_baseline_FR(unit_in,keys)
-unit_out=unit_in;
-for t=1:numel(unit_in.trial)
-    for s=1:numel(unit_in.trial(t).epoch)
-        b=ismember(keys.EPOCHS(:,1),keys.EPOCHS(s,5));
-        unit_out.trial(t).epoch(s).FR=unit_in.trial(t).epoch(s).FR/(max([unit_in.trial(t).epoch(b).FR 1]));
-    end
 end
 end

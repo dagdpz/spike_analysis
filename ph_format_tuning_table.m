@@ -144,16 +144,18 @@ end
 
 function completed_table=format_excel_tuning_table(tuning_per_unit_table,tasks,keys)
 cases=keys.position_and_plotting_arrangements;
-N_columns_unchanged=12;
+N_columns_unchanged=12; %% 
 in_or_ch={'in','ch'};
 hands={'AH','IH','CH'}; %%!!!
 sides={'IS','CS'}; %%!!!
 general_factors_per_hand={'position_main'};
 %factors_per_hand={'epoch','epoch_ES','epoch_IX','position','position_ES','position_IX'}; %position independently for both hands somehow
 factors_per_hand={'epoch','epoch_ES','epoch_IX','position','position_PV','fixation','fixation_PV','fixation','fixation_PV','PxF','PxF_PV','RF_shift','gaze_modulation_x','gaze_modulation_y','RF_choice1','RF_choice2'}; %position independently for both hands somehow
-general_factors={'epoch_main','spaceLR_main','hands_main','ExS','ExH','SxH','ExSxH'};
+general_factors={'epoch_main','spaceLR_main','hands_main','ExS','ExH','SxH','ExSxH'}; %factor for ANOVA: epoch*hand*space
 factors={'epoch','spaceLR','spaceLR_ES','spaceLR_IX','hands','hands_ES','hands_IX','SxH','SxH_ES','SxH_IX'}; %position independently for both hands somehow
 general_factors_per_hand_space={'PT_main','ExP','epoch_main'}; %position independently for both hands somehow
+factors_per_space={'Difficulty_Easy', 'Difficulty_Diff', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
+
 
 idx_subregion   =DAG_find_column_index(tuning_per_unit_table,'Subregion');
 temp_table=[tuning_per_unit_table(:,1:N_columns_unchanged) tuning_per_unit_table(:,idx_subregion)];
@@ -175,7 +177,11 @@ for t=1:numel(tasks)
         
         temp_table3=[temp_table2 vertcat({'case'},repmat({current_case},size(tuning_per_unit_table,1)-1,1)) temp_table_IN temp_table_CH];
         
-        unique_epoch_title_indxes=~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'in_'))    & ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_epoch_')) &...
+        
+        %'ch_epoch_main_Vsac_Sti',  'in_AH_trials_total_Vsac_Sti' ,  'in_AH_trials_per_condition_Vsac_Sti'
+       % which epoch was used? 
+        unique_epoch_title_indxes=(~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'in_')) | ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'ch_'))) &...
+            ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_epoch_')) &...
             ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_AH_')) &...
             cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_main_')) & ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),tasks{t})) &...
             cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_DF_'))   & cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_IX_')) &...
@@ -183,8 +189,9 @@ for t=1:numel(tasks)
             cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_CS_'))   & cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_IS_')) &...
             cellfun(@isempty,strfind(tuning_per_unit_table(1,:),'_bilateral')) &...
             ~cellfun(@isempty,strfind(tuning_per_unit_table(1,:),current_case));
-        epochs_tmp=tuning_per_unit_table(1,unique_epoch_title_indxes);
-        epoch_string_end=cell2mat(strfind(epochs_tmp,'_epoch_'))-1;
+        epochs=tuning_per_unit_table(1,unique_epoch_title_indxes);
+        epochs=cellfun(@(x) x(7:strfind(x,'_epoch_')-1),epochs,'UniformOutput',false);
+        %epoch_string_end=cell2mat(strfind(epochs_tmp,'_epoch_'))-1;
         
         for ic=1:numel(in_or_ch)
             current_INORCH=in_or_ch{ic};
@@ -216,9 +223,9 @@ for t=1:numel(tasks)
                 end
             end
             
-            for e=1:numel(epochs_tmp)
+            for e=1:numel(epochs)
                 n_table=n_table+1;
-                epoch=epochs_tmp{e}(7:epoch_string_end(e));
+                epoch=epochs{e};
                 temp_table7=[temp_table6 vertcat({'epoch'},repmat({epoch},size(tuning_per_unit_table,1)-1,1))];
                 for f=1:numel(factors)
                     current_factor=factors{f};
@@ -226,6 +233,18 @@ for t=1:numel(tasks)
                     if isempty(idx); continue; end;
                     temp_table7=[temp_table7 vertcat({[current_factor  '_tuning']},tuning_per_unit_table(2:end,idx))];
                 end
+                
+               for s=1:numel(sides)
+                    for f=1:numel(factors_per_space)
+                        idx=DAG_find_column_index(tuning_per_unit_table,[current_INORCH '_' sides{s} '_' epoch '_' factors_per_space{f} '_' current_task '_' current_case]);
+                        if isempty(idx); continue; end;
+                        temp_table7=[temp_table7 vertcat({[sides{s} '_' factors_per_space{f} '_tuning']},tuning_per_unit_table(2:end,idx))];
+                    end
+                end
+      
+                
+                
+                
                 for h=1:numel(hands)
                     for f=1:numel(factors_per_hand)
                         idx=DAG_find_column_index(tuning_per_unit_table,[current_INORCH '_' hands{h} '_' epoch '_' factors_per_hand{f} '_' current_task '_' current_case]);

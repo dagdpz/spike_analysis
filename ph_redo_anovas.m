@@ -24,6 +24,14 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     population=ph_load_population([keys.basepath_to_save keys.project_version],['population_']);
     if ~isempty(population); population(arrayfun(@(x) isempty(x.unit_ID),population))=[]; end;
     if ~isempty(population)
+        seed_filename=[keys.basepath_to_save keys.project_version filesep 'seed.mat'];
+        if exist(seed_filename,'file');
+            load(seed_filename);
+            rng(seed);
+        else
+            seed=rng;
+            save(seed_filename,'seed');
+        end
         if exist([keys.tuning_table_foldername filesep keys.tuning_table_filename '.mat'],'file')
             load([keys.tuning_table_foldername filesep keys.tuning_table_filename '.mat']);
             keys.tuning_per_unit_table=tuning_per_unit_table;
@@ -32,7 +40,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         end
         if redo_anovas
             clear tuning_per_unit_table
-            population = ph_accept_trials_per_unit(population);
+%             population = ph_accept_trials_per_unit(population); % dont think actually that it's a good idea to re-assign accepted trials here
             population = ph_assign_perturbation_group(keys,population);
             population = ph_epochs(population,keys);
             tuning_per_unit_table=ph_ANOVAS(population,keys); % main function

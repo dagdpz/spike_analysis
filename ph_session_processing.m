@@ -152,7 +152,7 @@ for current_date = sessions(:)'
         if ~isempty(pop_resorted)
             pop_resorted=ph_epochs(pop_resorted,keys);
             [pop_resorted.monkey]=deal(keys.monkey);
-            %keys.tuning_per_unit_table=ph_ANOVAS(pop_resorted,keys);
+            keys.tuning_per_unit_table=ph_ANOVAS(pop_resorted,keys);
             
             %% plotting single cells per session
             if keys.plot.single_cells && ~isempty(pop_resorted)
@@ -175,7 +175,6 @@ for current_date = sessions(:)'
             sites(~ismember({sites.site_ID},all_site_IDs))=[];
         end
         
-        
         if ~isempty(sites)      %% Save by site mat file per session
             save([keys.population_foldername filesep keys.sites_filename '_' current_date{1} '.mat'],'sites');
         end
@@ -191,10 +190,9 @@ end
 %% date block trial N ??
 
 function pop_resorted = sort_by_site_ID(o_t)
-%pop_resorted.site_ID='';
 pop_resorted=struct('site_ID',{});
 site_index=0;
-fields_to_remove={'unit','channel','x_eye','y_eye','x_hnd','y_hnd','TDT_LFPx',...
+fields_to_remove={'unit','channel','x_eye','y_eye','x_hnd','y_hnd',...
     'TDT_CAP1','TDT_CAP1_SR','TDT_CAP1_tStart',...
     'TDT_ECG1','TDT_ECG1_SR','TDT_ECG1_tStart',...
     'TDT_POX1','TDT_POX1_SR','TDT_POX1_tStart'};
@@ -207,37 +205,31 @@ for b=1:size(o_t,2)
         end
         for c=1:n_chans_s
             current_site_already_processed=ismember({pop_resorted.site_ID},{o_t(b).trial(t).channel(c).site_ID});
+            
+            %% take over channel information to trial structure directly
+            o_t(b).trial(t).dataset                         =o_t(b).trial(t).channel(c).dataset;
+            o_t(b).trial(t).perturbation                    =o_t(b).trial(t).channel(c).perturbation;
+            o_t(b).trial(t).LFP                             =o_t(b).trial(t).TDT_LFPx(c,:);
+            
             if any(current_site_already_processed)
-                % append to existing site
-                site_index_processed=find(current_site_already_processed);
-                n_trial(site_index_processed)                   =n_trial(site_index_processed)+1;
-                
-                o_t(b).trial(t).dataset                         =o_t(b).trial(t).channel(c).dataset;
-                o_t(b).trial(t).perturbation                    =o_t(b).trial(t).channel(c).perturbation;
-                o_t(b).trial(t).LFP                             =o_t(b).trial(t).TDT_LFPx(c,:);
-                
-                trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
-                tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
-                pop_resorted(site_index_processed).trial(n_trial(site_index_processed))=tmp;
+                %% append to existing site
+                s=find(current_site_already_processed);
+                n_trial(s)                   =n_trial(s)+1;
             else
-                %create new site
+                %% create new site
                 site_index=site_index+1;
-                n_trial(site_index)=1;
-                pop_resorted(site_index).site_ID          =o_t(b).trial(t).channel(c).site_ID;
-                pop_resorted(site_index).target           =o_t(b).trial(t).channel(c).target;
-                pop_resorted(site_index).perturbation_site=o_t(b).trial(t).channel(c).perturbation_site;
-                pop_resorted(site_index).grid_x           =o_t(b).trial(t).channel(c).grid_x;
-                pop_resorted(site_index).grid_y           =o_t(b).trial(t).channel(c).grid_y;
-                pop_resorted(site_index).electrode_depth  =o_t(b).trial(t).channel(c).electrode_depth;
-                
-                o_t(b).trial(t).dataset                   =o_t(b).trial(t).channel(c).dataset;
-                o_t(b).trial(t).perturbation              =o_t(b).trial(t).channel(c).perturbation;
-                o_t(b).trial(t).LFP                             =o_t(b).trial(t).TDT_LFPx(c,:);
-                
-                trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
-                tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
-                pop_resorted(site_index).trial(n_trial(site_index))=tmp;
+                s=site_index;
+                n_trial(s)=1;
+                pop_resorted(s).site_ID          =o_t(b).trial(t).channel(c).site_ID;
+                pop_resorted(s).target           =o_t(b).trial(t).channel(c).target;
+                pop_resorted(s).perturbation_site=o_t(b).trial(t).channel(c).perturbation_site;
+                pop_resorted(s).grid_x           =o_t(b).trial(t).channel(c).grid_x;
+                pop_resorted(s).grid_y           =o_t(b).trial(t).channel(c).grid_y;
+                pop_resorted(s).electrode_depth  =o_t(b).trial(t).channel(c).electrode_depth;
             end
+            trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
+            tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
+            pop_resorted(s).trial(n_trial(s))=tmp;
         end
     end
 end
@@ -245,73 +237,60 @@ end
 end
 
 function pop_resorted = sort_by_unit_ID(o_t)
-% pop_resorted.unit_ID='';
-% pop_resorted=struct([]);
 pop_resorted=struct('unit_ID',{});
 unit_index=0;
 fields_to_remove={'unit','channel',...
     'TDT_CAP1','TDT_CAP1_SR','TDT_CAP1_tStart',...
-    'TDT_ECG1','TDT_ECG1_SR','TDT_ECG1_tStart',...
     'TDT_POX1','TDT_POX1_SR','TDT_POX1_tStart',...
+    'TDT_ECG1','TDT_ECG1_SR','TDT_ECG1_tStart',...
     'TDT_LFPx','TDT_LFPx_SR','TDT_LFPx_tStart'};
+
 for b=1:size(o_t,2)
     for t=1:size(o_t(b).trial,2)
         for c=1:size(o_t(b).trial(t).unit,1)
             for u=1:size(o_t(b).trial(t).unit,2)
                 current_unit_already_processed=ismember({pop_resorted.unit_ID},{o_t(b).trial(t).unit(c,u).unit_ID});
+                
+                o_t(b).trial(t).waveforms                 =o_t(b).trial(t).unit(c,u).waveforms;
+                o_t(b).trial(t).stability_rating          =o_t(b).trial(t).unit(c,u).stability_rating;
+                o_t(b).trial(t).arrival_times             =o_t(b).trial(t).unit(c,u).arrival_times;
+                o_t(b).trial(t).dataset                   =o_t(b).trial(t).unit(c,u).dataset;
+                o_t(b).trial(t).perturbation              =o_t(b).trial(t).unit(c,u).perturbation;
+                o_t(b).trial(t).FR_average                =o_t(b).trial(t).unit(c,u).FR_average;
+                
                 if any(current_unit_already_processed)
-                    % append to existing unit
-                    unit_index_processed=find(current_unit_already_processed);
-                    if ~ismember(num2str(o_t(b).block),[pop_resorted(unit_index_processed).block_unit{1,:}])
-                        pop_resorted(unit_index_processed).block_unit       =[pop_resorted(unit_index_processed).block_unit,{num2str(o_t(b).block);char(96+u);' '}];
-                        pop_resorted(unit_index_processed).SNR_rating       =[pop_resorted(unit_index_processed).SNR_rating o_t(b).trial(t).unit(c,u).SNR_rating];
-                        pop_resorted(unit_index_processed).Single_rating    =[pop_resorted(unit_index_processed).Single_rating o_t(b).trial(t).unit(c,u).Single_rating];
-                        pop_resorted(unit_index_processed).stability_rating =[pop_resorted(unit_index_processed).stability_rating o_t(b).trial(t).unit(c,u).stability_rating];
+                    %% append to existing unit
+                    U=find(current_unit_already_processed);
+                    if ~ismember(num2str(o_t(b).block),[pop_resorted(U).block_unit{1,:}])
+                        pop_resorted(U).block_unit       =[pop_resorted(U).block_unit,{num2str(o_t(b).block);char(96+u);' '}];
+                        pop_resorted(U).SNR_rating       =[pop_resorted(U).SNR_rating o_t(b).trial(t).unit(c,u).SNR_rating];
+                        pop_resorted(U).Single_rating    =[pop_resorted(U).Single_rating o_t(b).trial(t).unit(c,u).Single_rating];
+                        pop_resorted(U).stability_rating =[pop_resorted(U).stability_rating o_t(b).trial(t).unit(c,u).stability_rating];
                     end
-                    n_trial(unit_index_processed)                   =n_trial(unit_index_processed)+1;
-                    o_t(b).trial(t).waveforms                       =o_t(b).trial(t).unit(c,u).waveforms;
-                    o_t(b).trial(t).stability_rating                =o_t(b).trial(t).unit(c,u).stability_rating;
-                    o_t(b).trial(t).arrival_times                   =o_t(b).trial(t).unit(c,u).arrival_times;
-                    o_t(b).trial(t).dataset                         =o_t(b).trial(t).unit(c,u).dataset;
-                    o_t(b).trial(t).perturbation                    =o_t(b).trial(t).unit(c,u).perturbation;
-                    o_t(b).trial(t).FR_average                      =o_t(b).trial(t).unit(c,u).FR_average;
-                    %o_t(b).trial(t).stability_auto                =o_t(b).trial(t).unit(c,u).stability_auto;
-                    
-                    trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
-                    tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
-                    pop_resorted(unit_index_processed).trial(n_trial(unit_index_processed))=tmp;
-                    pop_resorted(unit_index_processed).n_waveforms =pop_resorted(unit_index_processed).n_waveforms + size(o_t(b).trial(t).unit(c,u).waveforms,1);
+                    n_trial(U)                   =n_trial(U)+1;
                 else
-                    %create new unit
+                    %% create new unit
                     unit_index=unit_index+1;
-                    n_trial(unit_index)=1;
-                    pop_resorted(unit_index).channel          =c;
-                    pop_resorted(unit_index).block_unit       ={num2str(o_t(b).block);char(96+u);' '};
-                    pop_resorted(unit_index).unit_ID          =o_t(b).trial(t).unit(c,u).unit_ID;
-                    pop_resorted(unit_index).SNR_rating       =o_t(b).trial(t).unit(c,u).SNR_rating;
-                    pop_resorted(unit_index).Single_rating    =o_t(b).trial(t).unit(c,u).Single_rating;
-                    pop_resorted(unit_index).stability_rating =o_t(b).trial(t).unit(c,u).stability_rating;
-                    
-                    pop_resorted(unit_index).site_ID          =o_t(b).trial(t).unit(c,u).site_ID;
-                    pop_resorted(unit_index).target           =o_t(b).trial(t).unit(c,u).target;
-                    pop_resorted(unit_index).perturbation_site=o_t(b).trial(t).unit(c,u).perturbation_site;
-                    pop_resorted(unit_index).grid_x           =o_t(b).trial(t).unit(c,u).grid_x;
-                    pop_resorted(unit_index).grid_y           =o_t(b).trial(t).unit(c,u).grid_y;
-                    pop_resorted(unit_index).electrode_depth  =o_t(b).trial(t).unit(c,u).electrode_depth;
-                    o_t(b).trial(t).waveforms                 =o_t(b).trial(t).unit(c,u).waveforms;
-                    o_t(b).trial(t).stability_rating          =o_t(b).trial(t).unit(c,u).stability_rating;
-                    o_t(b).trial(t).arrival_times             =o_t(b).trial(t).unit(c,u).arrival_times;
-                    o_t(b).trial(t).dataset                   =o_t(b).trial(t).unit(c,u).dataset;
-                    o_t(b).trial(t).perturbation              =o_t(b).trial(t).unit(c,u).perturbation;
-                    o_t(b).trial(t).FR_average                =o_t(b).trial(t).unit(c,u).FR_average;
-                    %o_t(b).trial(t).stability_auto                =o_t(b).trial(t).unit(c,u).stability_auto;
-                    
-                    trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
-                    tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
-                    pop_resorted(unit_index).trial(n_trial(unit_index))=tmp;
-                    pop_resorted(unit_index).n_waveforms      =size(o_t(b).trial(t).unit(c,u).waveforms,1);
+                    U=unit_index;
+                    n_trial(U)=1;
+                    pop_resorted(U).channel          =c;
+                    pop_resorted(U).block_unit       ={num2str(o_t(b).block);char(96+u);' '};
+                    pop_resorted(U).unit_ID          =o_t(b).trial(t).unit(c,u).unit_ID;
+                    pop_resorted(U).SNR_rating       =o_t(b).trial(t).unit(c,u).SNR_rating;
+                    pop_resorted(U).Single_rating    =o_t(b).trial(t).unit(c,u).Single_rating;
+                    pop_resorted(U).stability_rating =o_t(b).trial(t).unit(c,u).stability_rating;
+                    pop_resorted(U).site_ID          =o_t(b).trial(t).unit(c,u).site_ID;
+                    pop_resorted(U).target           =o_t(b).trial(t).unit(c,u).target;
+                    pop_resorted(U).perturbation_site=o_t(b).trial(t).unit(c,u).perturbation_site;
+                    pop_resorted(U).grid_x           =o_t(b).trial(t).unit(c,u).grid_x;
+                    pop_resorted(U).grid_y           =o_t(b).trial(t).unit(c,u).grid_y;
+                    pop_resorted(U).electrode_depth  =o_t(b).trial(t).unit(c,u).electrode_depth;
                 end
                 
+                trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
+                tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
+                pop_resorted(U).trial(n_trial(U))=tmp;
+                pop_resorted(U).n_waveforms      =size(o_t(b).trial(t).unit(c,u).waveforms,1);
             end
         end
     end
@@ -361,7 +340,6 @@ end
 %% data path functions
 
 function [filelist_complete, filelist_formatted, filelist_session] = get_filelist_from_folder_run_block(keys,main_folder,dates)
-
 dir_main=dir(main_folder); % dir
 session_folders=[];
 ctr=1;
@@ -442,7 +420,6 @@ end
 xlswrite([keys.tuning_table_foldername filesep keys.sorted_neurons_filename],sorting_table);
 end
 
-
 %% plot functions
 
 function plot_FR_across_time(o,keys,title_part)
@@ -475,8 +452,6 @@ for u=units
         else
             col='r';
         end
-        
-        
         plot([start_block end_block],[FR_mean FR_mean],col,'linewidth',4)
         plot([start_block start_block],[0 FR_mean],col,'linewidth',4)
         plot([end_block end_block],[0 FR_mean],col,'linewidth',4)
@@ -493,9 +468,6 @@ end
 function plot_sorted_waveforms(o,keys,title_part)
 fig_title=sprintf('%s, session %s, %s',keys.monkey,keys.date,title_part);
 WF_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',fig_title);
-
-
-
 for n_unit=1:numel(o)
     n_columns_rows=ceil(numel(o)^(1/2));
     subplot(n_columns_rows,n_columns_rows,n_unit)
@@ -585,17 +557,12 @@ end
 title_and_save(ISI_summary_handle,fig_title,keys)
 end
 
-
-
 function title_and_save(figure_handle,plot_title,keys)
-
 mtit(figure_handle,  plot_title, 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
 stampit;
 if keys.plot.export
     wanted_size=[50 30];
     set(figure_handle, 'Paperunits','centimeters','PaperSize', wanted_size,'PaperPositionMode', 'manual','PaperPosition', [0 0 wanted_size]);
-    %     wanted_size=[21 29.7];
-    % set(figure_handle, 'Paperunits','centimeters','PaperType', 'A4','PaperPositionMode', 'manual','PaperPosition', [0 0 wanted_size])
     export_fig([keys.path_to_save 'spike_shapes' filesep plot_title], '-pdf','-transparent') % pdf by run
     close all
 end
