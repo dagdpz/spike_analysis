@@ -155,6 +155,7 @@ for P=population_analysis_to_perform
         end
         
         population = ph_accept_trials_per_unit(population_full,keys);
+        %population=population_full;
         
         for a=1:numel(keys.(AN).position_and_plotting_arrangements)            
             keys.arrangement= keys.(AN).position_and_plotting_arrangements{a};  

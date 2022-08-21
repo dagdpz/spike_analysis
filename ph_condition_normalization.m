@@ -15,7 +15,6 @@ CP_out                      = [{'effector'},keys.condition_parameters];
 conditions_out              = combvec(UC.effector,CM')';
 
 %% define normalization matrix
-CM      =1;
 CM      ={};
 CP      ={'completed'};
 switch K.normalization
@@ -146,18 +145,23 @@ for u=1:numel(population)
         end
         
         %% this line here, what to do with it?
-        %norm_factor(t,:)=deal(max([norm_factor(t,:) 0])); % now we always normalize to maximum condition, 0 makes sure some value is there..
+        %norm_factor(:)=deal(max([norm_factor 0])); % now we always normalize to maximum condition, 0 makes sure some value is there..
         %% correct normalization factors if they are too low  --> still normalize differently in different trials, or in general add 1 ?
         if any(norm_factor(:)<1)
-            %baseline=baseline+1-nanmean(norm_factor(t,:)); %when we use both baseline and norm_factor, cant simply only saturate norm_factor
+            %%%baseline=baseline+1-nanmean(norm_factor(t,:)); %when we use both baseline and norm_factor, cant simply only saturate norm_factor
+            %baseline=baseline+1-nanmean(norm_factor); %when we use both baseline and norm_factor, cant simply only saturate norm_factor
+            %norm_factor(:)=deal(1);
+        end
+        norm_factor(norm_factor==0)=1;
+        if any(norm_factor==0)
             norm_factor(:)=deal(1);
         end
-        
         clear per_epoch_FR
         per_epoch=vertcat(pop.trial(trtyp).epoch)';
         per_epoch_FR=NaN(size(per_epoch));
+        %% try double here!
         for e=1:size(per_epoch,1) %% looping may not be elegant, but at least confusions are avoided
-            per_epoch_FR(e,:)=([per_epoch(e,:).FR]-baseline(trtyp))./norm_factor(trtyp); %not sure if dimension is correct here!!!!!!!!!!!!
+            per_epoch_FR(e,:)=([per_epoch(e,:).FR]-double(baseline(trtyp)))./norm_factor(trtyp); %not sure if dimension is correct here!!!!!!!!!!!!
         end
         per_epoch_FR=num2cell(per_epoch_FR);
         tr_typ=find(trtyp);
@@ -340,6 +344,12 @@ for u=1:numel(population)
             zin=vertcat(per_epoch(:,RF_epoch{t}).FR);
             
             %%double because single in Linus/Curius Pulvinar gaze ?
+                %nonanidx=~isnan(zin_per_pos);
+
+                %FR_tmp=struct('FR',num2cell(zin_per_pos(nonanidx)),'x',num2cell(positions(nonanidx,1)),'y',num2cell(positions(nonanidx,2)));
+
+                
+                
             FR_tmp=struct('FR',num2cell(zin_per_pos),'x',num2cell(UC.position(:,1)),'y',num2cell(UC.position(:,2)));
             condition(t,c).fitting.unit(u).positions =FR_tmp;
             

@@ -33,6 +33,7 @@ UC.type     =unique(type_effectors(:,1))';
 UC.effector =unique(type_effectors(:,2))';
 UC.type_effector=type_effectors;
 UC.type_effector_labels=type_effector_short;
+UC.completed=unique([trials.completed]);
 
 
 

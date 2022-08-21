@@ -10,10 +10,10 @@ keys.PO.FR_subtract_baseline=~strcmp(keys.PO.epoch_BL,'none');
 %% gaussian fit settings
 fitsettings.sd_max_x=12; 
 fitsettings.sd_x_min_ratio=0.125;
-fitsettings.sd_max_y=fitsettings.sd_max_x; %8?
+%fitsettings.sd_max_y=8; %fitsettings.sd_max_x; %8?
 fitsettings.sd_xy_min_ratio=0.25;
-fitsettings.sd_xy_max_ratio=1;
-fitsettings.sd_y_min_ratio=fitsettings.sd_x_min_ratio;
+%fitsettings.sd_xy_max_ratio=1;
+%fitsettings.sd_y_min_ratio=fitsettings.sd_x_min_ratio;
 fitsettings.xout=[-30:30]; 
 fitsettings.yout=[-15:15]; 
 %fitsettings.range_factor=1;
@@ -40,8 +40,11 @@ group_values=group_values(cell_in_any_group);
 complete_unit_list={population.unit_ID}';
 population=population(ismember(complete_unit_list,tuning_per_unit_table(:,idx_unitID)));
 
+population_all_tr = ph_accept_trials_per_unit(population,keys);
 all_trialz=[population.trial];
-[UC, CM, labels]=ph_get_condition_matrix(all_trialz,keys);
+all_trialz2=[population_all_tr.trial];
+
+[UC, CM, labels]=ph_get_condition_matrix(all_trialz2,keys);
 
 %% fix labels --> and with labels colors!
 legend_labels_hem={};
