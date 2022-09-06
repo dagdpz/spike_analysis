@@ -160,7 +160,7 @@ conditions_hf               = combvec(u_hemifields,conditions_out')';
 conditions_hf_complete      = combvec(u_hemifields,conditions_out')';
 conditions_pref             = combvec([1 0],conditions_out')';
 
-if any(u_hands~=0) && any(u_perturbation==1) %splitting to all 4 hand space conditions if hands are involved
+if any(u_hands~=0) && any(u_perturbation==1)  && ~strcmp(keys.position_and_plotting_arrangements,'eye') %splitting to all 4 hand space conditions if hands are involved
     [~,~,columns_hf] = unique(conditions_hf(:,[1,3]),'rows');
     [~,~,columns_pref] = unique(conditions_pref(:,[1,3]),'rows');
 else

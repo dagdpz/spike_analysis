@@ -283,6 +283,12 @@ end
 keys.title_part='complete';
 title_and_save(keys);
 
+if keys.CC.plot_as_pie && keys.CC.percent% bar or pie
+    percent_to_save=cellfun(@(x) x/max([n_cells 1])*100, pie_data,'UniformOutput',false);
+    folder_to_save=[keys.basepath_to_save keys.project_version];
+   save([folder_to_save filesep keys.subfolder_to_save filesep   keys.CC.IC_to_plot ...
+    '_hnd_' num2str(keys.tt.hands) '_ch_' num2str(keys.tt.choices) '_' [keys.CC.plot_type]  '_' keys.CC.factor '_' keys.selection_title{:} '.mat'],'percent_to_save')
+end
 
 %% plot similarity matrix
 if ~(strcmp(keys.CC.plot_type,'per_epoch') || strcmp(keys.CC.plot_type,'per_task'))

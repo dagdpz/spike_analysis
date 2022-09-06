@@ -235,6 +235,20 @@ switch keys.arrangement
         pop.PSTH_summary_colors    = [keys.hnd_eff_colors_L(color_idx,:); keys.hnd_eff_colors_R(color_idx,:)] ;
         pop.line_labels            = hand_eff_labels(ismember(hand_eff_color_combination,hnd_eff_values,'rows'));
         
+        case 'eye'
+        con_for_figure          = eff_idx;
+        con_for_row             = ones(size(con_for_figure));
+        con_for_line            = hef_idx;
+        con_for_trial_crit      = con_for_line;
+        fig_title               = 'eye ';
+        sub_title               = 'movement vector ';   
+        val_for_figure          = num2cell(eff_values);
+        [~,~,con_for_column]    = unique([eff_idx],'rows');
+        color_idx=ismember(hand_eff_color_combination(:,1),hnd_values) & ismember(hand_eff_color_combination(:,2),eff_values);     
+        pop.PSTH_perpos_colors     = keys.hnd_eff_colors(color_idx,:);
+        pop.PSTH_summary_colors    = [keys.hnd_eff_colors_L(color_idx,:); keys.hnd_eff_colors_R(color_idx,:)] ;
+        pop.line_labels            = hand_eff_labels(ismember(hand_eff_color_combination,hnd_eff_values,'rows'));
+        
     case 'fixation'
         con_for_row             = eff_idx;
         con_for_line            = non_idx;
