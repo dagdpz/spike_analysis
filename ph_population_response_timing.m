@@ -5,10 +5,13 @@ warning('off','MATLAB:catenate:DimensionMismatch');
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
-keys.n_consecutive_bins_significant=1; %%!
 keys.PSTH_binwidth=keys.ON.PSTH_binwidth;
+
 keys.gaussian_kernel=keys.ON.gaussian_kernel;
-keys.kernel_type                        ='gaussian'; %'box'; % we take box kernel here!!
+%keys.gaussian_kernel=keys.PSTH_binwidth/2; %% we need to make sure that bins are indeed independent (?!)
+keys.gaussian_kernel=keys.PSTH_binwidth; %% we need to make sure that bins are indeed independent (?!)
+keys.n_consecutive_bins_significant=1; %%!
+keys.kernel_type='box'; %'gaussian'; % we take box kernel here!!
 
 %% tuning table preparation and grouping
 keys.normalization_field='ON';
@@ -407,35 +410,44 @@ function h=do_stats(Amat,Bmat,keys,paired)
 % with baseline per trial we can always do paired stats!
 
 if keys.ON.permutation_tests
-    confidence_criterion=0.95;
-    Dav=abs(nanmean(Amat)-nanmean(Bmat));
-    P_all=[Amat;Bmat];
+%     confidence_criterion=0.95;
+%     Dav=abs(nanmean(Amat)-nanmean(Bmat));
+%     P_all=[Amat;Bmat];
+%     
+%     na=size(Amat,1);
+%     nb=size(Bmat,1);    
+%     N=na+nb;
+%     n_permutations=1000;
+%     n_for_sig=n_permutations*confidence_criterion;
+%     
+%     if paired
+%         for p=1:n_permutations
+%             to_switch=randi([0 1], na,1)==1;
+%             Ap=Amat;
+%             Bp=Bmat;
+%             Ap(to_switch,:)=Bmat(to_switch,:);
+%             Bp(to_switch,:)=Amat(to_switch,:);
+%             Pav=abs(nanmean(Ap)-nanmean(Bp));
+%             Pwrong(p,:)=Dav>Pav;
+%         end
+%         h=sum(Pwrong)>=n_for_sig;
+%     else
+%         for p=1:n_permutations
+%             p_idx=randsample(1:N,N);
+%             Pav=abs(nanmean(P_all(p_idx(1:na),:))-nanmean(P_all(p_idx(na+1:N),:)));
+%             Pwrong(p,:)=Dav>Pav;
+%         end
+%         h=sum(Pwrong)>=n_for_sig;
+%     end
     
-    na=size(Amat,1);
-    nb=size(Bmat,1);    
-    N=na+nb;
+    
     n_permutations=1000;
-    n_for_sig=n_permutations*confidence_criterion;
+    [clusters, p_values, ~, ~] = permutest( Amat', Bmat', 0, 0.05, 1000, true);
+    %[clusters, p_values, t_sums, permutation_distribution ] = permutest( Amat', Bmat', 0, 0.05, 1000, true);
+    indexes_sig=[clusters{p_values<0.05}]; %% p_values<??  --> what is p_crit?
+    h=false(1,size(Amat,2));
+    h(indexes_sig)=true;
     
-    if paired
-        for p=1:n_permutations
-            to_switch=randi([0 1], na,1)==1;
-            Ap=Amat;
-            Bp=Bmat;
-            Ap(to_switch,:)=Bmat(to_switch,:);
-            Bp(to_switch,:)=Amat(to_switch,:);
-            Pav=abs(nanmean(Ap)-nanmean(Bp));
-            Pwrong(p,:)=Dav>Pav;
-        end
-        h=sum(Pwrong)>=n_for_sig;
-    else
-        for p=1:n_permutations
-            p_idx=randsample(1:N,N);
-            Pav=abs(nanmean(P_all(p_idx(1:na),:))-nanmean(P_all(p_idx(na+1:N),:)));
-            Pwrong(p,:)=Dav>Pav;
-        end
-        h=sum(Pwrong)>=n_for_sig;
-    end
 else
     for k=1:size(Amat,2)
         A=Amat(:,k);

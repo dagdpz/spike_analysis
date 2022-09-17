@@ -531,13 +531,15 @@ for ch=1:numel(conditions.choice)
                     end
                     
                     if sum(idx_IN_prefHI_ch)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefHI_ch)>=keys.cal.min_trials_per_condition
-                        h=do_stats(FR(idx_IN_prefHI_ch),FR(idx_CH_prefHI_ch),keys,0);
+                        [h,n]=do_stats(FR(idx_IN_prefHI_ch),FR(idx_CH_prefHI_ch),keys,0);
                         DF=nanmean(FR(idx_CH_prefHI_ch))-nanmean(FR(idx_IN_prefHI_ch));
                         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
                         anova_struct.([IN '_' LHRH '_' s{:} '_prefHch'])       =labels.choices{labelindex};
                         anova_struct.([CH '_' LHRH '_' s{:} '_prefHch'])       =labels.choices{labelindex};
                         anova_struct.([IN '_' LHRH '_' s{:} '_prefHch_FR'])    =nanmean(FR(idx_IN_prefHI_ch));
                         anova_struct.([CH '_' LHRH '_' s{:} '_prefHch_FR'])    =nanmean(FR(idx_CH_prefHI_ch));
+                        anova_struct=add_normality_results(anova_struct,[IN '_' LHRH '_' s{:} '_prefHch'],keys,n);
+                        anova_struct=add_normality_results(anova_struct,[CH '_' LHRH '_' s{:} '_prefHch'],keys,n);
                     end
                     if sum(idx_CH_prefHI_ch)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefHO_ch)>=keys.cal.min_trials_per_condition
                         anova_struct.([CH '_' LHRH '_' s{:}  '_prefHIch_FR'])   =nanmean(FR(idx_CH_prefHI_ch));
@@ -564,11 +566,13 @@ for ch=1:numel(conditions.choice)
                     
                     %% here, the trial criterion was awkward, because > instead of >=
                     if sum(idx_IN_prefPI_in)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPI_in)>=keys.cal.min_trials_per_condition
-                        h=do_stats(FR(idx_IN_prefPI_in),FR(idx_CH_prefPI_in),keys,0);
+                        [h,n]=do_stats(FR(idx_IN_prefPI_in),FR(idx_CH_prefPI_in),keys,0);
                         DF=nanmean(FR(idx_CH_prefPI_in))-nanmean(FR(idx_IN_prefPI_in));
                         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
                         anova_struct.([IN '_' LHRH '_' s{:}  '_prefP'])      =labels.choices{labelindex};
                         anova_struct.([CH '_' LHRH '_' s{:}  '_prefP'])      =labels.choices{labelindex};
+                        anova_struct=add_normality_results(anova_struct,[IN '_' LHRH '_' s{:}  '_prefP'],keys,n);
+                        anova_struct=add_normality_results(anova_struct,[CH '_' LHRH '_' s{:}  '_prefP'],keys,n);
                     end
                     
                     if sum(idx_IN_prefPI_in)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPI_in)>=keys.cal.min_trials_per_condition &&...
@@ -605,11 +609,13 @@ for ch=1:numel(conditions.choice)
                     idxb_CH_prefPO_ch  =idx.ch & idx.hands(:,hn) & ismember(epochs,b) & idx.opp==RF_position_index_CH;
                     %% here, the trial criterion was awkward, because > instead of >=
                     if sum(idx_IN_prefPI_ch)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPI_ch)>=keys.cal.min_trials_per_condition
-                        h=do_stats(FR(idx_IN_prefPI_ch),FR(idx_CH_prefPI_ch),keys,0);
+                        [h,n]=do_stats(FR(idx_IN_prefPI_ch),FR(idx_CH_prefPI_ch),keys,0);
                         DF=nanmean(FR(idx_CH_prefPI_ch))-nanmean(FR(idx_IN_prefPI_ch));
                         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
                         anova_struct.([IN '_' LHRH '_' s{:}  '_prefPch'])      =labels.choices{labelindex};
                         anova_struct.([CH '_' LHRH '_' s{:}  '_prefPch'])      =labels.choices{labelindex};
+                        anova_struct=add_normality_results(anova_struct,[IN '_' LHRH '_' s{:}  '_prefPch'],keys,n);
+                        anova_struct=add_normality_results(anova_struct,[CH '_' LHRH '_' s{:}  '_prefPch'],keys,n);
                     end
                     
                     if sum(idx_IN_prefPI_ch)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPI_ch)>=keys.cal.min_trials_per_condition &&...
@@ -686,12 +692,12 @@ for ch=1:numel(conditions.choice)
                 idx2b  = idx.tr_PT==1     & idx_con & idxB;
                 
                 if sum(idx1)>0 && sum(idx2)>0
-                    h=do_stats(FR(idx1)-FR(idx1b),FR(idx2)-FR(idx2b),keys,0);
+                    [h,n]=do_stats(FR(idx1)-FR(idx1b),FR(idx2)-FR(idx2b),keys,0);
                     DFPT = nanmean(FR(idx2)-FR(idx2b));
                     DFCT = nanmean(FR(idx1)-FR(idx1b));
                     DF=DFPT-DFCT;
                 else
-                    h=false;
+                    h=false; n=NaN;
                     DFPT=single(NaN);
                     DFCT=single(NaN);
                     DF=single(NaN);
@@ -702,6 +708,8 @@ for ch=1:numel(conditions.choice)
                 anova_struct.([INCH '_' CON '_' s{:} '_PTbl_DF']) = DF; %
                 anova_struct.([INCH '_' CON '_' s{:} '_PT_epoch_DF']) = DFPT; %
                 anova_struct.([INCH '_' CON '_' s{:} '_CT_epoch_DF']) = DFCT; %
+                prefix=[INCH '_' CON '_' s{:}];
+                anova_struct=add_normality_results(anova_struct,prefix,keys,n);
             end
             
             
@@ -768,14 +776,15 @@ for  c=1:size(idx.conditions,2)
     for s=multicomp_epochs(:)'
         idxS=ismember(epochs,s)  & idx.conditions(:,c);
         if any(idx1 & idxS) && any(idx2 & idxS)
-            h=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0); %not paired
+            [h,n]=do_stats(FR(idx1 & idxS),FR(idx2 & idxS),keys,0);
             DF=nanmean(FR(idx2 & idxS))-nanmean(FR(idx1 & idxS));
             labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
-            anova_struct.([INCH '_' COND{c} SEP s{:} '_' fieldnamepart ])=label{labelindex};
-            anova_struct.([INCH '_' COND{c} SEP s{:} '_' fieldnamepart '_DF'])=DF;
-            anova_struct.([INCH '_' COND{c} SEP s{:} '_' fieldnamepart '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
-            if ~isempty(labels.control_test)
-                
+            prefix=[INCH '_' COND{c} SEP s{:} '_' fieldnamepart ];
+            anova_struct.(prefix)=label{labelindex};
+            anova_struct.([prefix '_DF'])=DF;
+            anova_struct.([prefix '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
+            anova_struct=add_normality_results(anova_struct,prefix,keys,n);
+            if ~isempty(labels.control_test)                
                 anova_struct.([INCH '_' COND{c} SEP s{:} '_' labels.control_test{1} '_FR']) = nanmean(FR(idx1));
                 anova_struct.([INCH '_' COND{c} SEP s{:} '_' labels.control_test{2} '_FR']) = nanmean(FR(idx2));
             end
@@ -797,12 +806,12 @@ for row=1:size(multicomp_epochs,1)
     s=multicomp_epochs(row,2);
     b=multicomp_epochs(row,1);
     for  c=1:size(idx.conditions,2)
-        idx1=ismember(epochs,b) & idx.conditions(:,c); %% & tr ???
+        idx1=ismember(epochs,b) & idx.conditions(:,c); 
         idx2=ismember(epochs,s) & idx.conditions(:,c);
         if sum(idx1)>1 && sum(idx2)>1
-            h=do_stats(FR(idx1),FR(idx2),keys,0); %%unpaired ?? ttest versus baseline
+            [h,n]=do_stats(FR(idx1),FR(idx2),keys,0); %%unpaired ?? 
         else
-            h=false;
+            h=false; n=NaN;
         end
         DF=(nanmean(FR(idx2))-nanmean(FR(idx1)));
         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
@@ -814,12 +823,13 @@ for row=1:size(multicomp_epochs,1)
         anova_struct.([prefix '_FR'])=nanmean(FR(idx2));
         anova_struct.([prefix '_DF'])= DF;
         anova_struct.(prefix)        = label{labelindex};
+        anova_struct=add_normality_results(anova_struct,prefix,keys,n);
     end
 end
 end
 
 %% embedded test selection
-function h=do_stats(A,B,keys,paired)
+function [h,n]=do_stats(A,B,keys,paired)
 switch keys.AN.test_types
     case 'parametric'
         if paired
@@ -849,6 +859,31 @@ switch keys.AN.test_types
                 h=0;
             end
         end
+    case 'permutations'
+%     [p] = permtest(A,B,1000,'conservative');    
+%     h=p<0.05;
+    [h,~]=DAG_permutation_test(A,B,1000);
+end
+if keys.AN.check_normality && numel(A)>4 && numel(B)>4
+    %[H,pValue,KSstatistic,criticalValue] = lillietest(x,alpha,distr,mctol)
+    n=lillietest(A)==0 && lillietest(B)==0;
+else
+    n=1;
+end
+end
+
+%% normality subfunction
+
+function anova_struct=add_normality_results(anova_struct,prefix,keys,n)
+if keys.AN.check_normality
+    if isnan(n)
+        entry='NA';
+    elseif n==1
+        entry='YE';
+    elseif n==0
+        entry='NO';
+    end
+    anova_struct.([prefix '_NM'])=entry;
 end
 end
 

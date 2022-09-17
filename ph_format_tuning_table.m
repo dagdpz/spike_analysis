@@ -206,7 +206,7 @@ sides={'IS','CS'};
 general_factors={'epoch_main','hemifield_main','hands_main','ExS','ExH','SxH','ExSxH'}; %factor for ANOVA: epoch*hand*space
 general_factors_per_hand={'position_main'};
 general_factors_per_hand_space={'PT_main','ExP','epoch_main'}; 
-factors={'epoch','hemifield','hemifield_ES','hemifield_IX','hands','hands_ES','hands_IX','SxH','SxH_ES','SxH_IX'};
+factors={'epoch','hemifield','hemifield_ES','hemifield_IX','hands','hands_ES','hands_IX','SxH','SxH_ES','SxH_IX','epoch_NM','hemifield_NM'};
 factors_per_hand={'epoch','epoch_ES','epoch_IX','position','position_PV','fixation','fixation_PV','fixation','fixation_PV','PxF','PxF_PV','RF_shift','gaze_modulation_x','gaze_modulation_y','RF_choice1','RF_choice2'}; 
 factors_per_space={'Difficulty_Easy', 'Difficulty_Diff', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
 

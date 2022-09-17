@@ -11,6 +11,8 @@ switch keys.normalization_field
 end
 K=keys.(keys.normalization_field);
 
+
+K.FR_subtract_baseline=~strcmp(K.epoch_BL,'none');
 CP_out                      = [{'effector'},keys.condition_parameters];
 conditions_out              = combvec(UC.effector,CM')';
 
@@ -44,7 +46,11 @@ pref_valid=false(numel(UC.type),numel(population));
 for u=1:numel(population)
     clear trcon tr
     tr_con=ismember([population(u).trial.completed],keys.cal.completed) & [population(u).trial.accepted];
-    [pop]=ph_arrange_positions_and_plots(keys,population(u).trial(tr_con),population(u));
+    [pop]=ph_arrange_positions_and_plots(keys,population(u).trial(tr_con),population(u)); %% idea here: remove this one :D
+    
+%     %% oculomotor - we want positions to be defined by all trials, then accept only relevant ones
+%     pop=ph_accept_trials_per_unit(pop,keys);
+%     pop.trial([pop.trial.accepted]==0)=[];
     
     [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{1})).perturbation]=deal(0);
     [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{2})).perturbation]=deal(1);
@@ -76,7 +82,6 @@ for u=1:numel(population)
         
         %% normalization factor (condition wise)
         for n=1:size(CM,2)
-            %clear trpar
             for p=1:size(CM,1)
                 fn=CP{p};
                 trcon(p,:)=[pop.trial.(fn)]==CM(p,n);
@@ -110,10 +115,6 @@ for u=1:numel(population)
         if (~K.FR_subtract_baseline  || sum(BL_epoch{t})==0) && ~strcmp(K.normalization,'percent_change') % 20211102 percent_change has subtract baseline included basically
             baseline(:)=0;
         end
-        %% not sure how (and why) to implement this
-        %         if all(isnan(norm_factor(t,:))) &&  all(all(isnan(baseline)))
-        %             continue
-        %         end
         
         %% z-scoring (way too complicated implementation)
         if strcmp(K.normalization,'z_score')
@@ -152,10 +153,7 @@ for u=1:numel(population)
             %baseline=baseline+1-nanmean(norm_factor); %when we use both baseline and norm_factor, cant simply only saturate norm_factor
             %norm_factor(:)=deal(1);
         end
-        norm_factor(norm_factor==0)=1;
-        if any(norm_factor==0)
-            norm_factor(:)=deal(1);
-        end
+        
         clear per_epoch_FR
         per_epoch=vertcat(pop.trial(trtyp).epoch)';
         per_epoch_FR=NaN(size(per_epoch));

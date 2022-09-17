@@ -79,14 +79,13 @@ keys.cal.perturbation_groups            ={0,[2,3,4,5,6,7,8]};       % which pert
 
 %% ANOVA normalization
 keys.AN.normalization='none';
-keys.AN.epoch_for_normalization='INI';
+keys.AN.epoch_DN='none';
 keys.AN.epoch_RF='INI';
-keys.AN.epoch_BL='INI';
+keys.AN.epoch_BL='none';
 keys.AN.epoch_PF='INI';
-keys.AN.epoch_GB='INI';
 keys.AN.baseline_per_trial=0;
-keys.AN.FR_subtract_baseline=0;
 keys.AN.test_types='parametric'; %% as opposed to 'nonparametric'
+keys.AN.check_normality=0;
 
 %% folders and filenames
 keys.filelist_as_blocks     =0;
