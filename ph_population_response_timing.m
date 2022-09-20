@@ -5,13 +5,15 @@ warning('off','MATLAB:catenate:DimensionMismatch');
 for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
-keys.PSTH_binwidth=keys.ON.PSTH_binwidth;
+% keys.PSTH_binwidth=keys.ON.PSTH_binwidth;
+% keys.gaussian_kernel=keys.ON.gaussian_kernel;
+% keys.n_consecutive_bins_significant=1; %%!
+% keys.kernel_type='gaussian'; % we take box kernel here!!
 
-keys.gaussian_kernel=keys.ON.gaussian_kernel;
-%keys.gaussian_kernel=keys.PSTH_binwidth/2; %% we need to make sure that bins are indeed independent (?!)
-keys.gaussian_kernel=keys.PSTH_binwidth; %% we need to make sure that bins are indeed independent (?!)
+keys.PSTH_binwidth=0.02; %keys.ON.PSTH_binwidth;
+keys.gaussian_kernel=keys.PSTH_binwidth/2;
 keys.n_consecutive_bins_significant=1; %%!
-keys.kernel_type='box'; %'gaussian'; % we take box kernel here!!
+keys.kernel_type='box'; % we take box kernel here!!
 
 %% tuning table preparation and grouping
 keys.normalization_field='ON';
@@ -442,9 +444,9 @@ if keys.ON.permutation_tests
     
     
     n_permutations=1000;
-    [clusters, p_values, ~, ~] = permutest( Amat', Bmat', 0, 0.05, 1000, true);
+    [clusts, p_values, ~, ~] = permutest( Amat', Bmat', 0, 0.05, 1000, true);
     %[clusters, p_values, t_sums, permutation_distribution ] = permutest( Amat', Bmat', 0, 0.05, 1000, true);
-    indexes_sig=[clusters{p_values<0.05}]; %% p_values<??  --> what is p_crit?
+    indexes_sig=[clusts{p_values<0.05}]; %% p_values<??  --> what is p_crit?
     h=false(1,size(Amat,2));
     h(indexes_sig)=true;
     
