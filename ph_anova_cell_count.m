@@ -4,6 +4,20 @@ for fn=fieldnames(modified_keys)'
 end
 [tuning_per_unit_table]=ph_load_extended_tuning_table(keys);
 [tuning_per_unit_table, keys.selection_title]=ph_reduce_tuning_table(tuning_per_unit_table,keys);
+
+%% here, make sure the epochs match currently checked epochs!
+% 
+% keys.ccs(cc).conditions_to_plot     ={'Msac'};
+% keys.ccs(cc).plot_type              ='visuomotor';
+% keys.ccs(cc).epochs.Msac            ={'INI', 'Fhol','Cue','MemE','MemL','PreS','PeriS','TIhol','Tons','Thol'}';
+
+for t=1:numel(keys.ANOVAS_PER_TYPE)
+    FNs=fieldnames(keys.ANOVAS_PER_TYPE);
+    for f=1:numel(FNs)
+        keys.ANOVAS_PER_TYPE(t).(FNs{f})=keys.CC.epochs;
+    end
+end
+    tuning_per_unit_table=ph_multicomparison_correction(tuning_per_unit_table,keys);
 %tuning_per_unit_table(cellfun(@(x) isempty(x) & ~islogical(x),tuning_per_unit_table))={''};
 
 %% sort of obsolete
@@ -752,7 +766,7 @@ switch keys.CC.factor
         su=ismember(table(2:end,index.(tuning_variables{1})),'su');
         read_out(en)                =1;
         read_out(su)                =2;
-        read_out(na)                =4;
+        read_out(~en & ~su)         =3;
         
     case 'choice1'
         IN=ismember(table(2:end,index.(tuning_variables{1})),'IN');

@@ -10,10 +10,10 @@ end
 % keys.n_consecutive_bins_significant=1; %%!
 % keys.kernel_type='gaussian'; % we take box kernel here!!
 
-keys.PSTH_binwidth=0.02; %keys.ON.PSTH_binwidth;
-keys.gaussian_kernel=keys.PSTH_binwidth/2;
+keys.PSTH_binwidth=0.01; %keys.ON.PSTH_binwidth;
+keys.gaussian_kernel=keys.PSTH_binwidth;
 keys.n_consecutive_bins_significant=1; %%!
-keys.kernel_type='box'; % we take box kernel here!!
+keys.kernel_type='gaussian';%'box'; % we take box kernel here!!
 
 %% tuning table preparation and grouping
 keys.normalization_field='ON';
@@ -443,8 +443,8 @@ if keys.ON.permutation_tests
 %     end
     
     
-    n_permutations=1000;
-    [clusts, p_values, ~, ~] = permutest( Amat', Bmat', 0, 0.05, 1000, true);
+    n_permutations=10000;
+    [clusts, p_values, ~, ~] = permutest( Amat', Bmat', paired, 0.05, 1000, true);
     %[clusters, p_values, t_sums, permutation_distribution ] = permutest( Amat', Bmat', 0, 0.05, 1000, true);
     indexes_sig=[clusts{p_values<0.05}]; %% p_values<??  --> what is p_crit?
     h=false(1,size(Amat,2));

@@ -95,6 +95,6 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     end
      ph_format_tuning_table(tuning_per_unit_table,keys);
 end
- ph_get_filelist(project,versions);
+ %ph_get_filelist(project,versions);
  ph_initiate_population_analysis(project,versions);
 end

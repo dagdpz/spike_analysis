@@ -26,8 +26,11 @@ keys.TTconditions.choice            ={'in','ch'};
 keys.TTconditions.hemifield         ={'LS','RS'};
 keys.TTlabels.UD                    ={'DN','-','UP'};
 keys.TTlabels.CR                    ={'UC','-','CR'};
-keys.TTlabels.choices               ={'in','-','ch'};
-keys.TTlabels.true                  ={'NO','YE'}; %% this should go i think... should be a logical 0 or 1
+keys.TTlabels.choices               ={'in','-','ch'}; %% why choice(S!)
+keys.TTlabels.true                  ={'YE','NO','YE'}; %% this should go i think... should be a logical 0 or 1
+
+
+
 keys.TTlabels.SglTar_Suc            ={'LS','-','RS'};
 keys.TTlabels.Difficulty_Easy       ={'Ta','-','eD'}; %higher FR for T , higher FR for D
 keys.TTlabels.Difficulty_Diff       ={'Ta','-','dD'}; %higher FR for T , higher FR for D

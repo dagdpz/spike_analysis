@@ -44,6 +44,9 @@ TT(R_hem,DF_columns)= cellfun(@(x) x*-1,TT(R_hem,DF_columns),'uniformoutput',fal
 IX_columns=cellfun(@(x) any(strfind(x,'_hemifield_IX')) || any(strfind(x,'_hands_IX')),TT(1,:));
 TT(R_hem,IX_columns)= cellfun(@(x) x*-1,TT(R_hem,IX_columns),'uniformoutput',false);
 
+IX_columns=cellfun(@(x) any(strfind(x,'_hemifield_PV')) || any(strfind(x,'_hands_PV')),TT(1,:));
+TT(R_hem,IX_columns)= cellfun(@(x) x*-1,TT(R_hem,IX_columns),'uniformoutput',false);
+
 %% completing tuning table columns to have both hands for each respective parameter
 TT=create_missing_mirrored_columns(TT,'LH_','RH_');
 %% but we also need to complete for space now :)
@@ -202,13 +205,20 @@ in_or_ch={'in','ch'};
 hands={'AH','IH','CH'}; 
 sides={'IS','CS'}; 
 
-%% these are the ANOVA results we are looking for
-general_factors={'epoch_main','hemifield_main','hands_main','ExS','ExH','SxH','ExSxH'}; %factor for ANOVA: epoch*hand*space
-general_factors_per_hand={'position_main'};
-general_factors_per_hand_space={'PT_main','ExP','epoch_main'}; 
-factors={'epoch','hemifield','hemifield_ES','hemifield_IX','hands','hands_ES','hands_IX','SxH','SxH_ES','SxH_IX','epoch_NM','hemifield_NM'};
-factors_per_hand={'epoch','epoch_ES','epoch_IX','position','position_PV','fixation','fixation_PV','fixation','fixation_PV','PxF','PxF_PV','RF_shift','gaze_modulation_x','gaze_modulation_y','RF_choice1','RF_choice2'}; 
-factors_per_space={'Difficulty_Easy', 'Difficulty_Diff', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
+keys.AN.general_factors={'epoch_main','hemifield_main','hands_main','ExS','ExH','SxH','ExSxH'}; %factor for ANOVA: epoch*hand*space
+keys.AN.general_factors_per_hand={'position_main'};
+keys.AN.general_factors_per_hand_space={'PT_main','ExP','epoch_main'};
+keys.AN.factors={'epoch','hemifield','hands','SxH','SglTar_Suc'};
+%keys.AN.factors_per_hand={'epoch','position','fixation','PxF','RF_shift','gaze_modulation_x','gaze_modulation_y','RF_choice1','RF_choice2'};
+keys.AN.factors_per_hand={'epoch','position','fixation','PxF','distance','angle','DxA','prefH', 'prefP','positionx','positiony','_positionxy','gaze_modulation_x','gaze_modulation_y','gaze_pref_x','gaze_pref_y'};
+keys.AN.factors_per_hemifield={'Difficulty_Easy', 'Difficulty_Diff', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
+keys.AN.factors_per_handhemifield={'epoch','prefH', 'prefP', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
+
+potential_affixes={'','_DF','_IX','_FR','_PV','_NM','_SC'}; %%?????
+factors=create_all_string_combinations(keys.AN.factors,potential_affixes);
+factors_per_hand=create_all_string_combinations(keys.AN.factors_per_hand,potential_affixes);
+factors_per_hemifield=create_all_string_combinations(keys.AN.factors_per_hemifield,potential_affixes);
+
 
 idx_subregion   =DAG_find_column_index(TT,'Subregion');
 temp_table=[TT(:,1:N_columns_unchanged) TT(:,idx_subregion)];
@@ -247,8 +257,8 @@ for t=1:numel(tasks)
             temp_table5=temp_table4;
             
             % general factors
-            for m=1:numel(general_factors)
-                current_factor=general_factors{m};
+            for m=1:numel(keys.AN.general_factors)
+                current_factor=keys.AN.general_factors{m};
                 idx=DAG_find_column_index(TT,[current_INORCH '_' current_factor '_' current_task '_' current_case]);
                 if isempty(idx); continue; end;
                 temp_table5=[temp_table5 vertcat({[current_factor '_general']},TT(2:end,idx))];
@@ -257,17 +267,17 @@ for t=1:numel(tasks)
             
             % per hand & per handspace factors
             for h=1:numel(hands)
-                for m=1:numel(general_factors_per_hand)
-                    current_factor=[hands{h} general_factors_per_hand{m}];
+                for m=1:numel(keys.AN.general_factors_per_hand)
+                    current_factor=[hands{h} keys.AN.general_factors_per_hand{m}];
                     idx=DAG_find_column_index(TT,[current_INORCH '_' current_factor '_' current_task '_' current_case]);
                     if isempty(idx); continue; end;
                     temp_table6=[temp_table6 vertcat({[current_factor '_general']},TT(2:end,idx))];
                 end
                 for s=1:numel(sides)
-                    for f=1:numel(general_factors_per_hand_space)
-                        idx=DAG_find_column_index(TT,[current_INORCH '_' hands{h} '_' sides{s} '_' general_factors_per_hand_space{f} '_' current_task '_' current_case]);
+                    for f=1:numel(keys.AN.general_factors_per_hand_space)
+                        idx=DAG_find_column_index(TT,[current_INORCH '_' hands{h} '_' sides{s} '_' keys.AN.general_factors_per_hand_space{f} '_' current_task '_' current_case]);
                         if isempty(idx); continue; end;
-                        temp_table6=[temp_table6 vertcat({[hands{h} '_' sides{s} '_' general_factors_per_hand_space{f} '_tuning']},TT(2:end,idx))];
+                        temp_table6=[temp_table6 vertcat({[hands{h} '_' sides{s} '_' keys.AN.general_factors_per_hand_space{f} '_tuning']},TT(2:end,idx))];
                     end
                 end
             end
@@ -284,10 +294,10 @@ for t=1:numel(tasks)
                     temp_table7=[temp_table7 vertcat({[current_factor  '_tuning']},TT(2:end,idx))];
                 end
                 for s=1:numel(sides)
-                    for f=1:numel(factors_per_space)
-                        idx=DAG_find_column_index(TT,[current_INORCH '_' sides{s} '_' epoch '_' factors_per_space{f} '_' current_task '_' current_case]);
+                    for f=1:numel(factors_per_hemifield)
+                        idx=DAG_find_column_index(TT,[current_INORCH '_' sides{s} '_' epoch '_' factors_per_hemifield{f} '_' current_task '_' current_case]);
                         if isempty(idx); continue; end;
-                        temp_table7=[temp_table7 vertcat({[sides{s} '_' factors_per_space{f} '_tuning']},TT(2:end,idx))];
+                        temp_table7=[temp_table7 vertcat({[sides{s} '_' factors_per_hemifield{f} '_tuning']},TT(2:end,idx))];
                     end
                 end
                 for h=1:numel(hands)
@@ -319,4 +329,13 @@ for n=1:numel(final_cell_table)
         end
     end
 end
+end
+
+function C=create_all_string_combinations(A,B)
+A=A(:);
+C={};
+for x=1:numel(B)
+    C=[C;strcat(A,B(x))];
+end
+C=C';
 end
