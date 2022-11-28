@@ -4,7 +4,7 @@ function [pop_out, condition, condition_per_trial, pref_valid]=ph_condition_norm
 
 %% placeholders for non-used outputs
 switch keys.normalization_field
-    case {'PO','RE','PR'}
+    case {'PO','RE','PR','RF'}
         condition_per_trial=struct;
     case {'ON','RT'}
         condition=struct;
@@ -151,7 +151,7 @@ for u=1:numel(population)
         if any(norm_factor(:)<1)
             %%%baseline=baseline+1-nanmean(norm_factor(t,:)); %when we use both baseline and norm_factor, cant simply only saturate norm_factor
             %baseline=baseline+1-nanmean(norm_factor); %when we use both baseline and norm_factor, cant simply only saturate norm_factor
-            %norm_factor(:)=deal(1);
+            norm_factor(:)=deal(1);
         end
         
         clear per_epoch_FR
@@ -260,8 +260,8 @@ for u=1:numel(population)
                             %% alternative per trial
                             trials_for_SD=find(tr_con & tr_hemi);
                             temp_window=keys.PSTH_WINDOWS(w,:);
-                            keys.PSTH_WINDOWS{w,3}=keys.PSTH_WINDOWS{w,3}-keys.n_consecutive_bins_significant*keys.PSTH_binwidth;
-                            keys.PSTH_WINDOWS{w,4}=keys.PSTH_WINDOWS{w,4}+keys.n_consecutive_bins_significant*keys.PSTH_binwidth;
+                            keys.PSTH_WINDOWS{w,3}=keys.PSTH_WINDOWS{w,3}-(keys.n_consecutive_bins_significant-1)*keys.PSTH_binwidth; % we need a few more so that first bins are not unsignificant by definition
+                            keys.PSTH_WINDOWS{w,4}=keys.PSTH_WINDOWS{w,4}+(keys.n_consecutive_bins_significant-1)*keys.PSTH_binwidth;
                             condition_per_trial(t,c).per_hemifield(f).unit(u).epoch_FRs=...
                                 reshape([per_epoch(tr_hemi(tr_con),:).FR],size(per_epoch(tr_hemi(tr_con),:)))./repmat(norm_factor(trials_for_SD)',1,size(per_epoch,2));
                             for tr=1:numel(trials_for_SD)

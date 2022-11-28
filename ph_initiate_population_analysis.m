@@ -34,7 +34,8 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
         keys.anova_table_file=[keys.basepath_to_save keys.project_version filesep 'tuning_table_combined_CI.mat'];
-        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','hst','reg','rtc','prf','ndt'}))
+        keys.tuning_table=ph_load_tuning_table(keys); %% load tuning table
+        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','hst','reg','rtc','prf','ndt','uni','rfs'}))
             population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
             population=ph_assign_perturbation_group(keys,population);
             population=ph_epochs(population,keys);
@@ -62,52 +63,21 @@ for P=population_analysis_to_perform
     AN=upper(ana(1:2));
     for cc=1:numel(keys_in.(ana))
         keys=keys_in;        
+        
+        keys.normalization_field=AN;
+        keys.population_field=AN;
+        
+        keys.(AN)=keys_in.population_defaults;
         keys.(AN).position_and_plotting_arrangements=keys_in.position_and_plotting_arrangements;
-        
-        %% DEFAULTS
-        
-        %% PSTH keys and binsize
-
         keys.(AN).PSTH_binwidth=keys.PSTH_binwidth;
         keys.(AN).gaussian_kernel=keys.gaussian_kernel;
         
-        %grouping keys
-        keys.(AN).group_parameter='ungrouped';
-        keys.(AN).group_excluded={'','-'}; 
-        
-        % presets
-        keys.(AN).logarithmic_scale=0;
-        keys.(AN).absolutes=0;                  %%%??????????????????????
-        keys.(AN).VMI='';
-        keys.(AN).hist_column='';
-        keys.(AN).color_option='monkeys_by_color';      
-        keys.(AN).epoch_BL='none';
-        keys.(AN).epoch_PF='none';
-        keys.(AN).epoch_DN='none';
-        keys.(AN).epoch_RF='none';
-        keys.(AN).fittypes={'sigmoidal','linear','gaussian1'}; %,'gaussian2' %,'linear'
-        keys.(AN).baseline_per_trial=0;
-        keys.(AN).normalization='none'; 
-        keys.(AN).unpref_def='horizontally_opposite'; 
-        keys.(AN).permutation_tests=1; 
-        keys.(AN).plot_as_pie=1; %%%%%%%%%%
-        keys.(AN).percent=0;
-        
-        % plotting keys
-        %keys.(AN).plot_RF=0; 
-        keys.(AN).plot_per_position=0;
-        keys.(AN).plot_posneg=0;
-        keys.(AN).y_lim=[]; 
-        keys.(AN).link_y_lim=1; 
-        keys.(AN).IC_to_plot='in';
-        keys.(AN).fontsize_factor=1.5;
-        % keys.(AN).fontsize_factor=4;  %% MP: this should be in the settings file
-        keys.(AN).split_SUs={''};
-        keys.(AN).RF_frame_colors                 	= {};
-        keys.(AN).RF_frame_entries                 	= {};
-        keys.(AN).RF_frame_parameter                = '';
-        keys.(AN).RF_columns                        = [];
-        keys.(AN).RF_rows                           = [];
+        %% DEFAULTS
+        keys.tt.SNR_rating=keys.cal.SNR_rating;
+        keys.tt.stability_rating=keys.cal.stablity; %:(
+        keys.tt.Single_rating=keys.cal.single_rating; %% :(
+
+      
         
         %% key asignment
         FN=fieldnames(keys_in.(ana)(cc));
@@ -121,6 +91,16 @@ for P=population_analysis_to_perform
             end
         end
         
+        if keys.(AN).separate_multicomparison
+            for t=1:numel(keys_in.(ana)(cc).multicomp_epochs)
+                FN=fieldnames(keys_in.(ana)(cc).multicomp_epochs);
+                for f=1:numel(FN)
+                    keys.AN.multicomp_epochs(t).(FN{f})=keys_in.(ana)(cc).multicomp_epochs(t).(FN{f});
+                end
+            end
+        end
+
+
         keys.(AN).FR_subtract_baseline=~strcmp(keys.(AN).epoch_BL,'none');
         if isfield(keys_in.(ana)(cc),'tt') && isstruct(keys_in.(ana)(cc).tt)
             for fn=fieldnames(keys_in.(ana)(cc).tt)'
@@ -148,11 +128,11 @@ for P=population_analysis_to_perform
         
         %% conditions to plot irrelevant for scatter, but still there should be something to be able to loop through
         if ~isfield(keys_in.(ana)(cc),'conditions_to_plot') || numel(keys_in.(ana)(cc).conditions_to_plot)==0;
-            keys_in.(ana)(cc).conditions_to_plot={'ololol'};
+            keys_in.(ana)(cc).conditions_to_plot={'SC'};
         end
         
         population = ph_accept_trials_per_unit(population_full,keys);
-        %population=population_full;
+        
         
         for a=1:numel(keys.(AN).position_and_plotting_arrangements)            
             keys.arrangement= keys.(AN).position_and_plotting_arrangements{a};  
@@ -161,9 +141,11 @@ for P=population_analysis_to_perform
                 keys.(AN).tasktypes=condition_to_plot;
                 if trial_criterion_independently_for_conditions_to_plot
                     keys.tt.tasktypes=strcat(condition_to_plot, ['_' keys.arrangement(1:3)]);
-                    %keys.tt.tasktypes=strcat(condition_to_plot{:}, ['_' keys.arrangement(1:3)]);
                 end
                 
+                keys=ph_tuning_table_correction(keys);
+                
+                %% seed is reloaded for each loop, so plots are reproducable even if the order of plots changed
                 seed_filename=[keys.basepath_to_save keys.project_version filesep 'seed.mat'];
                 if exist(seed_filename,'file');
                     load(seed_filename);
@@ -173,21 +155,17 @@ for P=population_analysis_to_perform
                     save(seed_filename,'seed');
                 end
                 switch ana
-                    case 'rtc'                        
-                        keys=ph_make_subfolder('reaction_time_correlation',keys);
-                        ph_RT_correlation(population,keys);
-                    case 'reg'                        
-                        keys=ph_make_subfolder(['population_meta_data' filesep 'regression'],keys);
-                        keys=ph_make_subfolder('regression',keys);
-                        ph_linear_regression(population,keys);
+                    case 'ccs'
+                        keys=ph_make_subfolder('cell_counts',keys);
+                        temp_epochs=keys.(AN).epochs;
+                        keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{1});
+                        %% missing storing stuff
+                        ph_anova_cell_count(keys);
+                        keys.(AN).epochs=temp_epochs;
                     case 'ons'                        
                         keys=ph_make_subfolder(['population_meta_data' filesep 'response timing'],keys);
                         keys=ph_make_subfolder('response timing',keys);
-                        ph_population_response_timing(population,keys);
-                    case 'beh'
-                        keys=ph_make_subfolder(['population_meta_data' filesep 'behavior'],keys);
-                        keys=ph_make_subfolder('behavior',keys);
-                        ph_ephys_behavior(keys);
+                        ph_population_response_timing(population,keys);                        
                     case 'pop'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'population_analysis'],keys);
                         keys=ph_make_subfolder('population_analysis',keys);
@@ -196,12 +174,21 @@ for P=population_analysis_to_perform
                         keys=ph_make_subfolder(['population_meta_data' filesep 'scatter'],keys);
                         keys=ph_make_subfolder('scatter',keys);
                         ph_scatter(keys);
-                    case 'ccs'
-                        temp_epochs=keys.(AN).epochs;
-                        keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{1});
-                        %% missing storing stuff
-                        ph_anova_cell_count(keys);
-                        keys.(AN).epochs=temp_epochs;
+                    case 'rfs'                        
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'response fields'],keys);
+                        keys=ph_make_subfolder('response fields',keys);
+                        ph_population_RFs(population,keys);
+                    case 'rtc'                        
+                        keys=ph_make_subfolder('reaction_time_correlation',keys);
+                        ph_RT_correlation(population,keys);
+                    case 'reg'                        
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'regression'],keys);
+                        keys=ph_make_subfolder('regression',keys);
+                        ph_linear_regression(population,keys);
+                    case 'beh'
+                        keys=ph_make_subfolder(['population_meta_data' filesep 'behavior'],keys);
+                        keys=ph_make_subfolder('behavior',keys);
+                        ph_ephys_behavior(keys);
                     case 'gaz'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'gaze_analysis'],keys);
                         keys=ph_make_subfolder('gaze_analysis',keys);
@@ -230,12 +217,19 @@ for P=population_analysis_to_perform
                         ph_hand_space_tuning_vector(population,keys); 
                         keys.(AN).epochs=temp_epochs;
                     case 'cpy'
-                        keys=ph_make_subfolder(keys.CP.foldername,keys);
+                        keys=ph_make_subfolder(['single_cells' filesep keys.CP.foldername],keys);
                         ph_copy_single_units(keys); 
                     case 'ndt'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'decoding'],keys);
                         keys=ph_make_subfolder('decoding',keys);
                         ph_decoding(population,keys); 
+                    case 'uni'
+                        keys=rmfield(keys,'conditions_to_plot');
+                        keys=ph_make_subfolder('single_cells',keys);
+                        ph_plot_unit_per_condition(population,keys);
+                    case 'loc'
+                        keys=ph_make_subfolder('localization',keys);
+                        ph_localization(keys);
                 end
             end
         end

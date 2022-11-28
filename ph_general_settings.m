@@ -90,6 +90,14 @@ keys.AN.baseline_per_trial=0;
 keys.AN.test_types='parametric'; %% as opposed to 'nonparametric'
 keys.AN.check_normality=0;
 
+%% multicomparison
+keys.AN.multicomparison='none';
+keys.AN.factors={'epoch','hemifield','hands','SxH','SglTar_Suc'};
+keys.AN.factors_per_hand={'epoch','position','fixation','PxF','distance','angle','DxA','prefH', 'prefP','positionx','positiony','_positionxy','gaze_modulation_x','gaze_modulation_y','gaze_pref_x','gaze_pref_y'};
+keys.AN.factors_per_hemifield={'Difficulty_Easy', 'Difficulty_Diff', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
+keys.AN.factors_per_handhemifield={'epoch','prefH', 'prefP', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'}; %% basically perturbation and effector comparison
+
+
 %% folders and filenames
 keys.filelist_as_blocks     =0;
 keys.drive                  =DAG_get_server_IP;
@@ -121,6 +129,8 @@ keys.Bacchus.marker    ='x';
 
 %% plotting settings
 keys.plot.anova_tables                  ='off';     % display anova result tables for each unit, please keep off, it will get very messy if you turn this on
+
+
 keys.plot.single_trials                 =0;         % not used yet
 keys.plot.single_cells                  =1;         % perform single cell plotting
 keys.plot.waveforms                     =1;         % plot the waveform summary plots per session
@@ -134,23 +144,25 @@ keys.plot.population_PSTH_legends       =1;         % if population legends shou
 keys.plot.cell_count_legends            =1;         % if population legends should be plotted or not
 keys.plot.scatter_legends               =1;         % if population legends should be plotted or not
 
+%% Single cell plot settings
 % ylimits
 %keys.plot.FR_max_for_ylim               =50;
-keys.plot.trials_max_for_ylim           =50;
-keys.plot.excentricity_max_for_ylim     =30;
-keys.plot.eyetrace_factor               =0.5;
-keys.plot.hndtrace_factor               =0.5;
+keys.UN.trials_max_for_ylim           =50;
+keys.UN.excentricity_max_for_ylim     =30;
+keys.UN.eyetrace_factor               =0.5;
+keys.UN.hndtrace_factor               =0.5;
+keys.UN.line_labelling                ='left/right';
 
 % ANOVA labels for single unit plots
-keys.plot.anova_main    ={'E','in_epoch_main','','S','in_hemifield_main','','C','ch_hemifield_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
-keys.plot.anova_effector={'E','in_epoch_main','','S','in_hemifield_main','','C','ch_hemifield_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
-keys.plot.anova_epoch1  ={'E','in_AH','epoch','S','in','hemifield','C','ch','hemifield','H','in','hands','SxH','in','SxH'};
-keys.plot.anova_epoch2  ={'LL','in_LH_LS','PT','RL','in_LH_RS','PT','LR','in_RH_LS','PT','RR','in_RH_RS','PT'};
+keys.UN.anova_main    ={'E','in_epoch_main','','S','in_hemifield_main','','C','ch_hemifield_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
+keys.UN.anova_effector={'E','in_epoch_main','','S','in_hemifield_main','','C','ch_hemifield_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
+keys.UN.anova_epoch1  ={'E','in_AH','epoch','S','in','hemifield','C','ch','hemifield','H','in','hands','SxH','in','SxH'};
+keys.UN.anova_epoch2  ={'LL','in_LH_LS','PT','RL','in_LH_RS','PT','LR','in_RH_LS','PT','RR','in_RH_RS','PT'};
 
 
-keys.plot.PSTH_perpos_width          =0.5;
-keys.plot.raster_width               =0.1;
-keys.plot.PSTH_summary_width         =1;
+keys.UN.PSTH_perpos_width          =0.5;
+keys.UN.raster_width               =0.1;
+keys.UN.PSTH_summary_width         =1;
 
 
 %% colors & legends
@@ -609,6 +621,9 @@ keys.colors.EF_SA   =[0 255  0];
 keys.colors.EF_RE   =[0 255  0];
 keys.colors.EF_FG   =[0 0  255];
 
+keys.colors.in_PF   =keys.colors.EP_EN;
+keys.colors.in_NP   =keys.colors.EP_SU;
+
 %% overlapping tt and cc
 keys.colors.per_monkey          =[0 1 0; 1 0 0];
 
@@ -662,7 +677,7 @@ keys.ANOVAS_PER_TYPE(1).epoch={'INI' 'Facq';...
     'Fhol' 'PeriR';...
     'Fhol' 'Thol'};
 
-keys.ANOVAS_PER_TYPE(1).hemifield            ={'Facq','Fhol','PreS','PeriS','PreR','PeriR','Thol'}';
+keys.ANOVAS_PER_TYPE(1).hemifield          ={'Facq','Fhol','PreS','PeriS','PreR','PeriR','Thol'}';
 keys.ANOVAS_PER_TYPE(1).positions          ={'Facq','Fhol','PreS','PeriS','PreR','PeriR','Thol'}';
 keys.ANOVAS_PER_TYPE(1).hands              ={'Facq','Fhol','PreS','PeriS','PreR','PeriR','Thol'}';
 keys.ANOVAS_PER_TYPE(1).SxH                ={'Facq','Fhol','PreS','PeriS','PreR','PeriR','Thol'}';
@@ -836,4 +851,52 @@ keys.ANOVAS_PER_TYPE(6).positions          ={'Cue','MemE','PeriS','Exp','Thol'}'
 keys.ANOVAS_PER_TYPE(6).hands              ={'Facq','Fhol','Cue','MemE','PeriS','Exp','Thol'}';
 keys.ANOVAS_PER_TYPE(6).SxH                ={'Cue','MemE','PreS','Exp','Thol'}';
 keys.ANOVAS_PER_TYPE(6).main              ={'Facq','Fhol','Cue','MemE','PeriS','Exp','Thol'}';
+
+%% multicomparison
+keys.AN.multicomp_epochs=keys.ANOVAS_PER_TYPE;
+keys.AN.multicomparison='none';
+
+%% general population settings
+  % multicomparison
+  keys.population_defaults.separate_multicomparison=0;
+  
+  %grouping keys
+  keys.population_defaults.group_parameter='ungrouped';
+  keys.population_defaults.group_excluded={'','-'};
+  
+  % presets
+  keys.population_defaults.logarithmic_scale=0;
+  keys.population_defaults.absolutes=0;                  %%%??????????????????????
+  keys.population_defaults.VMI='';
+  keys.population_defaults.hist_column='';
+  keys.population_defaults.color_option='monkeys_by_color';
+  keys.population_defaults.epoch_BL='none';
+  keys.population_defaults.epoch_PF='none';
+  keys.population_defaults.epoch_DN='none';
+  keys.population_defaults.epoch_RF='none';
+  keys.population_defaults.fittypes={'sigmoidal','linear','gaussian1'}; %,'gaussian2' %,'linear'
+  keys.population_defaults.baseline_per_trial=0;
+  keys.population_defaults.normalization='none';
+  keys.population_defaults.unpref_def='horizontally_opposite';
+  keys.population_defaults.permutation_tests=1;
+  keys.population_defaults.plot_as_pie=1; %%%%%%%%%% cell counts
+  
+  % plotting keys
+  keys.population_defaults.unique_title='';
+  keys.population_defaults.plot_per_position=0;
+  keys.population_defaults.plot_posneg=0;
+  keys.population_defaults.y_lim=[];
+  keys.population_defaults.link_y_lim=1;
+  keys.population_defaults.IC_to_plot='in';
+  keys.population_defaults.fontsize_factor=1.5;
+  keys.population_defaults.link_y_lim                        = 1;
+  % keys.population_defaults.fontsize_factor=4;  %% MP: this should be in the settings file
+  keys.population_defaults.split_SUs={''};            %% ??
+  keys.population_defaults.RF_frame_colors                 	= {};
+  keys.population_defaults.RF_frame_entries                 	= {};
+  keys.population_defaults.RF_frame_parameter                = '';
+  keys.population_defaults.RF_columns                        = [];
+  keys.population_defaults.RF_rows                           = [];
+  
+
 

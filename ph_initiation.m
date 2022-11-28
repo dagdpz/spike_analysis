@@ -84,12 +84,12 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         keys.filelist_formatted         =keys.(monkey).filelist_formatted;
         if exist([keys.tuning_table_foldername keys.tuning_table_filename '.mat'],'file')
             load([keys.tuning_table_foldername keys.tuning_table_filename '.mat']);
-            keys.tuning_per_unit_table=tuning_per_unit_table;
+            keys.tuning_table=tuning_per_unit_table;
         else
-            keys.tuning_per_unit_table= {'unit_ID'};
+            keys.tuning_table= {'unit_ID'};
         end
         keys_out                        =ph_session_processing(keys); %% error here for flaff?
-        tuning_per_unit_table           =keys_out.tuning_per_unit_table;
+        tuning_per_unit_table           =keys_out.tuning_table;
          save([keys.basepath_to_save keys.project_version filesep 'keys_' monkey],'keys_out');
          save([keys.tuning_table_foldername keys.tuning_table_filename],'tuning_per_unit_table');
     end

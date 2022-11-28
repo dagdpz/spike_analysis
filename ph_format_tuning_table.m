@@ -240,7 +240,7 @@ for t=1:numel(tasks)
         temp_table3=[temp_table2 vertcat({'case'},repmat({current_case},size(TT,1)-1,1)) temp_table_IN temp_table_CH];
         unique_epoch_title_indxes=(~cellfun(@isempty,strfind(TT(1,:),'in_')) | ~cellfun(@isempty,strfind(TT(1,:),'ch_'))) &...
             ~cellfun(@isempty,strfind(TT(1,:),'_epoch_')) &...
-            ~cellfun(@isempty,strfind(TT(1,:),'_AH_')) &...
+            cellfun(@isempty,strfind(TT(1,:),'_AH_')) &... %% not there any more!
             cellfun(@isempty,strfind(TT(1,:),'_main_')) & ~cellfun(@isempty,strfind(TT(1,:),tasks{t})) &...
             cellfun(@isempty,strfind(TT(1,:),'_DF_'))   & cellfun(@isempty,strfind(TT(1,:),'_IX_')) &...
             cellfun(@isempty,strfind(TT(1,:),'_EN_'))   & cellfun(@isempty,strfind(TT(1,:),'_SC_')) &...
@@ -248,7 +248,7 @@ for t=1:numel(tasks)
             cellfun(@isempty,strfind(TT(1,:),'_bilateral')) &...
             ~cellfun(@isempty,strfind(TT(1,:),current_case));
         epochs=TT(1,unique_epoch_title_indxes);
-        epochs=cellfun(@(x) x(7:strfind(x,'_epoch_')-1),epochs,'UniformOutput',false);
+        epochs=cellfun(@(x) x(4:strfind(x,'_epoch_')-1),epochs,'UniformOutput',false);
         epochs=unique(epochs);
         
         for ic=1:numel(in_or_ch)
@@ -268,7 +268,7 @@ for t=1:numel(tasks)
             % per hand & per handspace factors
             for h=1:numel(hands)
                 for m=1:numel(keys.AN.general_factors_per_hand)
-                    current_factor=[hands{h} keys.AN.general_factors_per_hand{m}];
+                    current_factor=[hands{h} '_' keys.AN.general_factors_per_hand{m}];
                     idx=DAG_find_column_index(TT,[current_INORCH '_' current_factor '_' current_task '_' current_case]);
                     if isempty(idx); continue; end;
                     temp_table6=[temp_table6 vertcat({[current_factor '_general']},TT(2:end,idx))];

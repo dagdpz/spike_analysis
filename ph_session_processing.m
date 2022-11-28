@@ -126,7 +126,7 @@ for current_date = sessions(:)'
     
     if keys.cal.process_spikes
         pop_resorted(ismember({pop_resorted.unit_ID},{'no unit'}))=[];              %% remove units that were not taken over from excel sheet (??)
-        pop_resorted = ph_accept_trials_per_unit(pop_resorted,keys);                     %% add field accepted for each trial per unit
+        pop_resorted = ph_accept_trials_per_unit(pop_resorted,keys);                %% add field accepted for each trial per unit
         
         % plot the cells not meeting criteria
         idx_Neuron_ID=DAG_find_column_index(keys.sorting_table,'Neuron_ID');
@@ -152,10 +152,11 @@ for current_date = sessions(:)'
         if ~isempty(pop_resorted)
             pop_resorted=ph_epochs(pop_resorted,keys);
             [pop_resorted.monkey]=deal(keys.monkey);
-            keys.tuning_per_unit_table=ph_ANOVAS(pop_resorted,keys);
+            keys.tuning_table=ph_ANOVAS(pop_resorted,keys);
             
             %% plotting single cells per session
             if keys.plot.single_cells && ~isempty(pop_resorted)
+                keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'single_cell_examples' filesep];
                 ph_plot_unit_per_condition(pop_resorted,keys);
             end
             
@@ -238,12 +239,6 @@ function pop_resorted = sort_by_unit_ID(o_t)
 pop_resorted=struct('unit_ID',{});
 unit_index=0;
 fields_to_remove={'unit','channel','TDT_CAP1','TDT_POX1','TDT_ECG1','TDT_ECG4','TDT_LFPx'};
-% fields_to_remove={'unit','channel',...
-%     'TDT_CAP1','TDT_CAP1_SR','TDT_CAP1_tStart',...
-%     'TDT_POX1','TDT_POX1_SR','TDT_POX1_tStart',...
-%     'TDT_ECG1','TDT_ECG1_SR','TDT_ECG1_tStart',...
-%     'TDT_ECG4','TDT_ECG4_SR','TDT_ECG4_tStart',...
-%     'TDT_LFPx','TDT_LFPx_SR','TDT_LFPx_tStart'};
 
 for b=1:size(o_t,2)
     for t=1:size(o_t(b).trial,2)

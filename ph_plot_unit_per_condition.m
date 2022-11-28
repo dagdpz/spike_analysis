@@ -1,9 +1,8 @@
 function ph_plot_unit_per_condition(population,keys)
 %tuning_per_unit_table=keys.tuning_per_unit_table;
-keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'single_cell_examples' filesep];
 %% colors and ylim preparation
-eye_offset  =   -keys.plot.trials_max_for_ylim-keys.plot.excentricity_max_for_ylim*keys.plot.eyetrace_factor;
-hnd_offset  =   eye_offset-keys.plot.excentricity_max_for_ylim*keys.plot.eyetrace_factor*2;
+eye_offset  =   -keys.UN.trials_max_for_ylim-keys.UN.excentricity_max_for_ylim*keys.UN.eyetrace_factor;
+hnd_offset  =   eye_offset-keys.UN.excentricity_max_for_ylim*keys.UN.eyetrace_factor*2;
 eye_col_v   =   keys.colors.eye_ver;
 eye_col_h   =   keys.colors.eye_hor;
 
@@ -11,7 +10,10 @@ for unit=1:numel(population)
     types       =[population(unit).trial.type];
     effectors   =[population(unit).trial.effector];
     hands       =[population(unit).trial.reach_hand];
-    current_unit_tuning= [keys.tuning_per_unit_table(1,:); keys.tuning_per_unit_table(ismember(keys.tuning_per_unit_table(:,1), population(unit).unit_ID),:)];
+    current_unit_tuning= [keys.tuning_table(1,:); keys.tuning_table(ismember(keys.tuning_table(:,1), population(unit).unit_ID),:)];
+    if size(current_unit_tuning,1)<2
+        continue;
+    end
     for a=1:numel(keys.position_and_plotting_arrangements)
         keys.arrangement=keys.position_and_plotting_arrangements{a};
         for type=unique(types)
@@ -33,11 +35,17 @@ for unit=1:numel(population)
                 continue;
             end
             o=ph_arrange_positions_and_plots(keys,population(unit).trial(o_index),population(unit));
+
+            
+            if strcmp(keys.UN.line_labelling,'contra/ipsi')
+                o=ph_LR_to_CI(keys,o); % Convert to ipsi/contra? not sure if necessary here
+            end
+
             T=o.trial;
             if any(hands(o_index)>0)
-                y_lim_PSTH=hnd_offset-keys.plot.excentricity_max_for_ylim*keys.plot.eyetrace_factor;
+                y_lim_PSTH=hnd_offset-keys.UN.excentricity_max_for_ylim*keys.UN.eyetrace_factor;
             else
-                y_lim_PSTH=eye_offset-keys.plot.excentricity_max_for_ylim*keys.plot.eyetrace_factor;
+                y_lim_PSTH=eye_offset-keys.UN.excentricity_max_for_ylim*keys.UN.eyetrace_factor;
             end
             unique_figures=unique([T.figure]);
             for fig=unique_figures
@@ -65,15 +73,27 @@ for unit=1:numel(population)
                     line_idx(end+1,:)=true(1,size(fig_idx,2));
                     labels{end+1}='AV';
                 end
-                legend_labels=strrep(labels,'IH','LH');
-                legend_labels=strrep(labels,'CH','RH');
                 n_lines=size(line_idx,1);
                 
-                side_labels={'L','R'};
-                side_labels_col={'IS','CS'};
-                if any(UC.hemifield==0) %&& fig==unique_figures(1)% vertical targets, KK uncomment, why figure and whz colors?
-                    side_labels={'L','V','R'};
-                    side_labels_col={'IS','VS','CS'};
+                %% here basically decide about labels dependent on L/R or C/I plotting
+                
+                if strcmp(keys.UN.line_labelling,'contra/ipsi')
+                    legend_labels=labels;
+                    side_labels={'I','C'};
+                    side_labels_col={'IS','CS'};
+                    if any(UC.hemifield==0) %&& fig==unique_figures(1)% vertical targets, KK uncomment, why figure and whz colors?
+                        side_labels={'I','V','R'};
+                        side_labels_col={'IS','VS','CS'};
+                    end
+                else
+                    legend_labels=strrep(labels,'IH','LH');
+                    legend_labels=strrep(legend_labels,'CH','RH');
+                    side_labels={'L','R'};
+                    side_labels_col={'IS','CS'};
+                    if any(UC.hemifield==0) %&& fig==unique_figures(1)% vertical targets, KK uncomment, why figure and whz colors?
+                        side_labels={'L','V','R'};
+                        side_labels_col={'IS','VS','CS'};
+                    end
                 end
                 
                 effectors_on_figure=effectors_effector_loop(ismember(effectors_effector_loop,eff_for_typ(fig_idx)));
@@ -83,7 +103,7 @@ for unit=1:numel(population)
                     [type_effector_full, type_effector_short type_string] = MPA_get_type_effector_name(type,effector);
                     
                     %% ANOVA results to print
-                    anova_title_part=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.plot.anova_main,'');
+                    anova_title_part=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.UN.anova_main,'');
                     fig_title=sprintf('%s, %s, %s, %s %s %s',population(unit).unit_ID, population(unit).target, type_effector_full, keys.arrangement, title_part, title_value);
                     fig_title_part=sprintf(', Stability %d, SNR %d, Single %d Grid: %d/%d Depth %.2f ANOVA %s Channel: %d Blocks&Units: %s ', ...
                         population(unit).stability_rating, population(unit).SNR_rating, population(unit).Single_rating, population(unit).grid_x, population(unit).grid_y,...
@@ -121,7 +141,7 @@ for unit=1:numel(population)
                                 %% PSTH
                                 [histo(lin,:), bins, ~, SEM]=ph_spike_density(line_struct,w,keys,zeros(numel(line_struct),1),ones(numel(line_struct),1));
                                 bins=bins+state_shift;
-                                lineProps={'color',col,'linewidth',keys.plot.PSTH_perpos_width};
+                                lineProps={'color',col,'linewidth',keys.UN.PSTH_perpos_width};
                                 shadedErrorBar(bins,histo(lin,:),SEM,lineProps,1);
                                 
                                 %% skipping average raster
@@ -143,18 +163,20 @@ for unit=1:numel(population)
                                         hnd_col_h=[1 1 1];
                                     end
                                     trial_state_onset=line_struct(t).states_onset(line_struct(t).states==sta);
-                                    time_axis=line_struct(t).time_axis-trial_state_onset+state_shift;
-                                    t_idx=line_struct(t).time_axis-trial_state_onset>=t_before_state &...
-                                        line_struct(t).time_axis-trial_state_onset<=t_after_state;
                                     at_idx=line_struct(t).arrival_times-trial_state_onset>=t_before_state &...
                                         line_struct(t).arrival_times-trial_state_onset<=t_after_state;
-                                    if keys.plot.eye_hand_traces
-                                        line(time_axis(t_idx),line_struct(t).x_eye(t_idx)*keys.plot.eyetrace_factor + eye_offset,'color',eye_col_h);
-                                        line(time_axis(t_idx),line_struct(t).y_eye(t_idx)*keys.plot.eyetrace_factor + eye_offset,'color',eye_col_v);
-                                        line(time_axis(t_idx),line_struct(t).x_hnd(t_idx)*keys.plot.hndtrace_factor + hnd_offset,'color',hnd_col_h);
-                                        line(time_axis(t_idx),line_struct(t).y_hnd(t_idx)*keys.plot.hndtrace_factor + hnd_offset,'color',hnd_col_v);
+                                    if ~strcmp(keys.UN.line_labelling,'contra/ipsi')
+                                        time_axis=line_struct(t).time_axis-trial_state_onset+state_shift;
+                                        t_idx=line_struct(t).time_axis-trial_state_onset>=t_before_state &...
+                                            line_struct(t).time_axis-trial_state_onset<=t_after_state;
+                                        if keys.plot.eye_hand_traces
+                                            line(time_axis(t_idx),line_struct(t).x_eye(t_idx)*keys.UN.eyetrace_factor + eye_offset,'color',eye_col_h);
+                                            line(time_axis(t_idx),line_struct(t).y_eye(t_idx)*keys.UN.eyetrace_factor + eye_offset,'color',eye_col_v);
+                                            line(time_axis(t_idx),line_struct(t).x_hnd(t_idx)*keys.UN.hndtrace_factor + hnd_offset,'color',hnd_col_h);
+                                            line(time_axis(t_idx),line_struct(t).y_hnd(t_idx)*keys.UN.hndtrace_factor + hnd_offset,'color',hnd_col_v);
+                                        end
                                     end
-                                    ig_make_raster([line_struct(t).arrival_times(at_idx)]'+state_shift-trial_state_onset,raster_y-t,1,0,'Color',col,'LineWidth',keys.plot.raster_width);
+                                    ig_make_raster([line_struct(t).arrival_times(at_idx)]'+state_shift-trial_state_onset,raster_y-t,1,0,'Color',col,'LineWidth',keys.UN.raster_width);
                                 end
                                 line([state_shift+t_before_state state_shift+t_after_state],[raster_y-t raster_y-t],'Color',col,'LineWidth',0.5);
                                 
@@ -307,7 +329,7 @@ for unit=1:numel(population)
                                         continue;
                                     end
                                     [PSTH,~,~,SEM]=ph_spike_density(T(tr_index),w,keys,zeros(sum(tr_index),1),ones(sum(tr_index),1));
-                                    lineProps={'color',col,'linewidth',keys.plot.PSTH_summary_width};
+                                    lineProps={'color',col,'linewidth',keys.UN.PSTH_summary_width};
                                     shadedErrorBar(bins,PSTH,SEM,lineProps,1);
                                     hs_ylim=max(hs_ylim,max(PSTH));
                                 end
@@ -349,8 +371,8 @@ for unit=1:numel(population)
                             hb(sta+numel(all_sta)*(e-1))=subplot_assignment(keys,'Bars',n_states,n_lines,sta,lin,r,c,unique_rows,unique_columns,er,numel(effectors_in_row));
                             %% get title
                             state_label =keys.EPOCHS{sta,1};
-                            anova_title_part1=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.plot.anova_epoch1,['_' state_label '_']);
-                            anova_title_part2=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.plot.anova_epoch2,['_' state_label '_']);
+                            anova_title_part1=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.UN.anova_epoch1,['_' state_label '_']);
+                            anova_title_part2=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.UN.anova_epoch2,['_' state_label '_']);
                             title({state_label;anova_title_part1;anova_title_part2},'fontsize',8);
                             hold on
                             for b=1:size(FR_summ,3)
@@ -369,7 +391,7 @@ for unit=1:numel(population)
                             
                             %% vertical titles per row
                             if sta==1
-                                anova_title_part=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.plot.anova_effector,'');
+                                anova_title_part=get_anova_results(keys,current_unit_tuning,type_effector_short,keys.UN.anova_effector,'');
                                 ytitle={type_effector_full; anova_title_part};
                                 text(-2,0,ytitle,'rotation',90,'interpreter','none');
                                 yticks=get(gca,'Ytick');
@@ -411,7 +433,7 @@ for unit=1:numel(population)
                                     for t=1:numel(line_struct)
                                         trial_state_onset=line_struct(t).states_onset(line_struct(t).states==sta);
                                         at_idx=line_struct(t).arrival_times-trial_state_onset>=t_before_state & line_struct(t).arrival_times-trial_state_onset<=t_after_state;
-                                        ig_make_raster([line_struct(t).arrival_times(at_idx)]'+state_shift-trial_state_onset,raster_y-t*spike_length,spike_length,0,'Color',col,'LineWidth',keys.plot.raster_width);
+                                        ig_make_raster([line_struct(t).arrival_times(at_idx)]'+state_shift-trial_state_onset,raster_y-t*spike_length,spike_length,0,'Color',col,'LineWidth',keys.UN.raster_width);
                                     end
                                     
                                     line([state_shift+t_before_state state_shift+t_after_state],[raster_y-t*spike_length raster_y-t*spike_length],'Color',col,'LineWidth',0.5);
