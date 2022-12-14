@@ -691,6 +691,46 @@ for ch=1:numel(INCHnamepart)
             
             
         end
+        
+        
+%       here calculate space tuning for control and perturbation
+       
+        for ep=1:size(epoch_multicomp,1)
+                idxS= ismember(epochs,epoch_multicomp(ep,2));
+                idx1=idx.tr_PT==0    & idxS;
+                idx2=idx.tr_PT==1    & idxS;
+                
+                idxSCT = idx1 & idxS;
+                idxSPT = idx2 & idxS;
+                
+                
+            if any(~isnan(FR(idxSCT))) && any(idx.tr_LS(idxSCT)) && any(idx.tr_RS(idxSCT))
+                [anova_outs.p,anova_outs.table,anova_outs.stats,anova_outs.terms] = anovan(FR(idxSCT),double([idx.tr_RS(idxSCT)]),'model','full','varnames',{'space'},'display',keys.plot.anova_tables);
+                
+                %% replacing hand and space tuning with anova per epoch !! control
+                h=anova_outs.p(1)<0.05;
+                DF=nanmean(FR(idx.tr_RS & idxSCT))-nanmean(FR(idx.tr_LS & idxSCT));
+                labelindexsp=h*sign(DF)+2; labelindexsp(isnan(labelindexsp))=2;
+                anova_struct.([INCHnamepart{ch} '_' epoch_multicomp{ep,2} '_spaceLR_CT'])= labelsp{labelindexsp}; %
+                anova_struct.([INCHnamepart{ch} '_' epoch_multicomp{ep,2} '_spaceLR_DF_CT'])= DF; %
+               
+                
+            end
+            if any(~isnan(FR(idxSPT))) && any(idx.tr_LS(idxSPT)) && any(idx.tr_RS(idxSPT)) 
+                [anova_outs.p,anova_outs.table,anova_outs.stats,anova_outs.terms] = anovan(FR(idxSPT),double([idx.tr_RS(idxSPT)]),'model','full','varnames',{'space'},'display',keys.plot.anova_tables);
+                
+                %% replacing hand and space tuning with anova per epoch !! perturbation
+                h=anova_outs.p(1)<0.05;
+                DF=nanmean(FR(idx.tr_RS & idxSPT))-nanmean(FR(idx.tr_LS & idxSPT));
+                labelindexsp=h*sign(DF)+2; labelindexsp(isnan(labelindexsp))=2;
+                anova_struct.([INCHnamepart{ch} '_' epoch_multicomp{ep,2} '_spaceLR_PT'])= labelsp{labelindexsp}; %
+                anova_struct.([INCHnamepart{ch} '_' epoch_multicomp{ep,2} '_spaceLR_DF_PT'])= DF; %
+                
+                
+            end
+        end
+       
+                
         %         labelindexcr=(anova_out.p(k)<0.05) *sign(nanmean(FR(tr & idx.tr_CR))-nanmean(FR(tr & idx.tr_UC)))+2; labelindexcr(isnan(labelindexcr))=2;% 3 crossed>uncrossed ,1 crossed<uncrossed
         %         anova_struct.([INCHnamepart{ch} '_SxH'])=labelcr{labelindexcr};
         %         anova_struct.([INCHnamepart{ch} '_ExSxH'])=anova_out.p(7)<0.05;

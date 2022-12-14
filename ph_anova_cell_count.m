@@ -52,6 +52,7 @@ if strcmp(keys.CC.factor,'hand')
 elseif strcmp(keys.CC.factor,'space')
     keys.all_colors{1}   =[cols.CS_IN; cols.IS_IN; cols.NO_TU; cols.NO_AN]/255;
     legend1=spacelegend;
+    
 elseif strcmp(keys.CC.factor,'space_and_hand')
     keys.all_colors{1}   =[cols.IS_IN; cols.IH_IS_IN; cols.IH_IN; cols.IH_CS_IN;...
         cols.CS_IN; cols.CH_CS_IN; cols.CH_IN; cols.CH_IS_IN; cols.NO_TU; cols.NO_AN]/255;
@@ -85,7 +86,7 @@ elseif strcmp(keys.CC.plot_type,'hemi_and_epoch')
     keys.all_colors{2}   =[cols.CS_IN; cols.IS_IN; cols.NO_TU; cols.NO_AN]/255;
     legend1=epochlegend;
     legend2=spacelegend;
-
+    
 elseif strcmp(keys.CC.plot_type,'space_and_epoch')
     x_labels={'space','epoch'};
     keys.all_colors{1}   =[cols.EP_EN; cols.EP_BI; cols.EP_SU; cols.NO_TU; cols.NO_AN]/255;
@@ -117,16 +118,35 @@ elseif strcmp(keys.CC.plot_type,'space_x_hand')
     legend2=crossed_uncrossed_legend;
 elseif strcmp(keys.CC.plot_type,'hands_inactivation')
     x_labels={'Contra hand','Ipsi hand'};
-%     keys.all_colors{1}   =[cols.CS_IN; (cols.CS_IN+cols.IS_IN)/2; cols.IS_IN; (255-cols.CS_IN+cols.IS_IN)/2;...
-%         255-cols.CS_IN; (510-cols.CS_IN-cols.IS_IN)/2; 255-cols.IS_IN;(255+cols.CS_IN-cols.IS_IN)/2; cols.NO_TU]/255;
-%     keys.all_colors{2}   =[cols.CS_IN; (cols.CS_IN+cols.IS_IN)/2; cols.IS_IN; (255-cols.CS_IN+cols.IS_IN)/2;...
-%         255-cols.CS_IN; (510-cols.CS_IN-cols.IS_IN)/2; 255-cols.IS_IN;(255+cols.CS_IN-cols.IS_IN)/2; cols.NO_TU]/255;
+    %     keys.all_colors{1}   =[cols.CS_IN; (cols.CS_IN+cols.IS_IN)/2; cols.IS_IN; (255-cols.CS_IN+cols.IS_IN)/2;...
+    %         255-cols.CS_IN; (510-cols.CS_IN-cols.IS_IN)/2; 255-cols.IS_IN;(255+cols.CS_IN-cols.IS_IN)/2; cols.NO_TU]/255;
+    %     keys.all_colors{2}   =[cols.CS_IN; (cols.CS_IN+cols.IS_IN)/2; cols.IS_IN; (255-cols.CS_IN+cols.IS_IN)/2;...
+    %         255-cols.CS_IN; (510-cols.CS_IN-cols.IS_IN)/2; 255-cols.IS_IN;(255+cols.CS_IN-cols.IS_IN)/2; cols.NO_TU]/255;
     keys.all_colors{1}   =[255 0 0; 255 77 10; 255 153 20; 255 255 0;...
         0 255 178; 0 178 166; 0 100 255;128 50 205; cols.NO_TU]/255;
     keys.all_colors{2}   =[255 0 0; 255 77 10; 255 153 20; 255 255 0;...
         0 255 178; 0 178 166; 0 100 255;128 50 205; cols.NO_TU]/255;
     legend1=inactivation_legend;
     legend2=inactivation_legend;
+elseif strcmp(keys.CC.plot_type,'space_inactivation') || strcmp(keys.CC.plot_type,'space_inactivation_baseline')
+    x_labels={'inactivation effect'};
+    %     keys.all_colors{1}   =[cols.CS_IN; (cols.CS_IN+cols.IS_IN)/2; cols.IS_IN; (255-cols.CS_IN+cols.IS_IN)/2;...
+    %         255-cols.CS_IN; (510-cols.CS_IN-cols.IS_IN)/2; 255-cols.IS_IN;(255+cols.CS_IN-cols.IS_IN)/2; cols.NO_TU]/255;
+    %     keys.all_colors{2}   =[cols.CS_IN; (cols.CS_IN+cols.IS_IN)/2; cols.IS_IN; (255-cols.CS_IN+cols.IS_IN)/2;...
+    %         255-cols.CS_IN; (510-cols.CS_IN-cols.IS_IN)/2; 255-cols.IS_IN;(255+cols.CS_IN-cols.IS_IN)/2; cols.NO_TU]/255;
+    keys.all_colors{1}   =[255 0 0; 255 77 10; 255 153 20; 255 255 0;...
+        0 255 178; 0 178 166; 0 100 255;128 50 205; cols.NO_TU]/255;
+    keys.all_colors{2}   =[255 0 0; 255 77 10; 255 153 20; 255 255 0;...
+        0 255 178; 0 178 166; 0 100 255;128 50 205; cols.NO_TU]/255;
+    legend1=inactivation_legend;
+    
+    elseif strcmp(keys.CC.plot_type,'space_tuning_inactivation') || strcmp(keys.CC.factor,'space_tuning_inactivation_baseline')
+x_labels={'pre_inj','post_inj'};   
+        keys.all_colors{1}   =[cols.CS_IN; cols.IS_IN; cols.NO_TU; cols.NO_AN]/255;
+    keys.all_colors{2}   =[cols.CS_IN; cols.IS_IN; cols.NO_TU; cols.NO_AN]/255;
+    legend1=spacelegend;
+    legend2=spacelegend;
+    
 elseif strcmp(keys.CC.plot_type,'fixation_x_position_comb') %% something strange
     x_labels={''}; %%?
     keys.all_colors{1}   =[247 148 30; 238 43 123; 159 31 99; 199 45 196; 255 255 255]/255;
@@ -140,23 +160,23 @@ elseif strcmp(keys.CC.plot_type,'fixation_x_position') %% something strange
     keys.all_colors{1}   =[222 220 0; 255 150 0; 255 0 0; 255 0 150; 171 0 252; 0 0 255; 125 130 255; 255 255 255]/255;
     keys.all_colors{2}   =[0 255 0; 255 255 255]/255;
     legend1=fixation_x_position_legend;
-    legend2={'None','Gaze Fhol'}; %% CHECK 
+    legend2={'None','Gaze Fhol'}; %% CHECK
 elseif strcmp(keys.CC.plot_type,'eccentricity_x_angle') %% something strange
     x_labels={''}; %%?
     keys.all_colors{1}   =[222 220 0; 255 150 0; 255 0 0; 255 0 150; 171 0 252; 0 0 255; 125 130 255; 255 255 255]/255;
     legend1=eccentricity_x_angle_legend;
-elseif strcmp(keys.CC.plot_type,'gaze_and_fixation_x_position') 
+elseif strcmp(keys.CC.plot_type,'gaze_and_fixation_x_position')
     x_labels={'Retinotopic','Object centered'};
     keys.all_colors{1}   =[22 220 0; 255 150 0; 255 0 0; 255 0 150; 171 0 252; 0 0 255; 125 130 255; 255 255 255]/255;
     keys.all_colors{2}   =[127 127 0; 0 255 0;0 127 127;255 255 255]/255;
     legend1=gaze_and_fixation_x_position_legend;
     legend2=gaze_legend;
 elseif strcmp(keys.CC.plot_type,'gaze')
-    x_labels={'Retinotopic','Object centered'}; 
+    x_labels={'Retinotopic','Object centered'};
     keys.all_colors{1}   =[222 220 0; 255 150 0; 255 0 0; 255 255 255]/255;
     keys.all_colors{2}   =[0 255 0; 255 255 255]/255;
     legend1=gaze_legend;
-    legend2={'Interaction','None'}; %% CHECK 
+    legend2={'Interaction','None'}; %% CHECK
 elseif strcmp(keys.CC.plot_type,'visuomotor')
     x_labels={''}; %%?
     all_titles={'category'};
@@ -209,14 +229,16 @@ for sub= 1:size(pie_data,1)
             ylim_bar=max([size(keys.tuning_table,1)-1 1]);
         end
         if strcmp(keys.CC.plot_type,'per_epoch') || strcmp(keys.CC.plot_type,'per_task') || ...
-                strcmp(keys.CC.plot_type,'visuomotor')
+                strcmp(keys.CC.plot_type,'visuomotor') || strcmp(keys.CC.plot_type,'space_tuning_inactivation_baseline') || strcmp(keys.CC.plot_type,'space_tuning_inactivation')
             current_colors=repmat(keys.all_colors{1},numel(x)/(size(keys.all_colors{1},1)),1);
         elseif strcmp(keys.CC.plot_type,'space_and_epoch') || strcmp(keys.CC.plot_type,'hemi_and_epoch') || strcmp(keys.CC.plot_type,'space_x_hand') ||...
                 strcmp(keys.CC.plot_type,'space_and_hand') || strcmp(keys.CC.plot_type,'hand_and_epoch') ||...
                 strcmp(keys.CC.plot_type,'fixation_x_position') || strcmp(keys.CC.plot_type,'gaze_and_fixation_x_position') ||...
                 strcmp(keys.CC.plot_type,'fixation_x_position_comb') || strcmp(keys.CC.plot_type,'gaze') ||...
                 strcmp(keys.CC.plot_type,'fixation_x_position_CI') ||  strcmp(keys.CC.plot_type,'eccentricity_x_angle')  ||...
-                strcmp(keys.CC.plot_type,'space_and_bilateral') || strcmp(keys.CC.plot_type,'hands_inactivation')
+                strcmp(keys.CC.plot_type,'space_and_bilateral') || strcmp(keys.CC.plot_type,'hands_inactivation') ...
+                || strcmp(keys.CC.plot_type,'space_inactivation') || strcmp(keys.CC.plot_type,'space_inactivation_baseline') 
+                
             current_colors=repmat(keys.all_colors{level},numel(x)/(size(keys.all_colors{level},1)),1);
         end
         x_as_labels=num2cell(x(:));
@@ -276,9 +298,9 @@ end
 %% legends
 if keys.plot.cell_count_legends
     legend(piechart(1,1).handle(1+(0:keys.n1-1)*hstepsize),legend1,'location','best','fontsize',3);
-if keys.n2>0
-    legend(piechart(2,2).handle(1+(0:keys.n2-1)*hstepsize),legend2,'location','best','fontsize',3);
-end
+    if keys.n2>0
+        legend(piechart(2,2).handle(1+(0:keys.n2-1)*hstepsize),legend2,'location','best','fontsize',3);
+    end
 end
 keys.title_part='complete';
 title_and_save(keys);
@@ -286,8 +308,8 @@ title_and_save(keys);
 if keys.CC.plot_as_pie && keys.CC.percent% bar or pie
     percent_to_save=cellfun(@(x) x/max([n_cells 1])*100, pie_data,'UniformOutput',false);
     folder_to_save=[keys.basepath_to_save keys.project_version];
-   save([folder_to_save filesep keys.subfolder_to_save filesep   keys.CC.IC_to_plot ...
-    '_hnd_' num2str(keys.tt.hands) '_ch_' num2str(keys.tt.choices) '_' [keys.CC.plot_type]  '_' keys.CC.factor '_' keys.selection_title{:} '.mat'],'percent_to_save')
+    save([folder_to_save filesep keys.subfolder_to_save filesep   keys.CC.IC_to_plot ...
+        '_hnd_' num2str(keys.tt.hands) '_ch_' num2str(keys.tt.choices) '_' [keys.CC.plot_type]  '_' keys.CC.factor '_' keys.selection_title{:} '.mat'],'percent_to_save')
 end
 
 %% plot similarity matrix
@@ -444,7 +466,7 @@ switch keys.CC.plot_type
             pie_tmp=get_pie_two_levels(keys,pie_tmp,tuninge,tunings);
             multilevel_data(e,:)=pie_tmp;
         end
-
+        
     case 'hemi_and_epoch'
         for e=1:numel(keys.CC.epochs)
             d=1;
@@ -489,7 +511,7 @@ switch keys.CC.plot_type
             keys.CC.factor='epoch';
             keys.n=keys.n1;
             tuning_variables{1}= [keys.CC.IC_to_plot '_AH_' keys.CC.epochs{e} '_epoch_'   keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
-            tuninge{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);            
+            tuninge{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
             
             keys.CC.factor='hand';
             keys.n=keys.n2;
@@ -556,6 +578,71 @@ switch keys.CC.plot_type
             pie_tmp=get_pie_two_levels(keys,pie_tmp,tuningh,tuninge);
             multilevel_data(e,:)=pie_tmp;
         end
+    case 'space_inactivation'
+        for e=1:numel(keys.CC.epochs)
+            d=1;
+            keys.CC.factor='inactivation_per_hand';
+            keys.n=keys.n1;
+            tuning_variables{1}= [keys.CC.IC_to_plot '_CS_' keys.CC.epochs{e} '_PT_' keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
+            tuning_variables{2}= [keys.CC.IC_to_plot '_IS_' keys.CC.epochs{e} '_PT_' keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
+            tuning{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
+            pie_tmp=[];
+            pie_tmp=get_pie_multilevel(keys,pie_tmp,tuning);
+            multilevel_data(e,:)=pie_tmp;
+         
+        end
+        
+         case 'space_inactivation_baseline'
+        for e=1:numel(keys.CC.epochs)
+            d=1;
+            keys.CC.factor='inactivation_per_hand';
+            keys.n=keys.n1;
+            tuning_variables{1}= [keys.CC.IC_to_plot '_CS_' keys.CC.epochs{e} '_PTbl_' keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
+            tuning_variables{2}= [keys.CC.IC_to_plot '_IS_' keys.CC.epochs{e} '_PTbl_' keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
+            tuning{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
+            pie_tmp=[];
+            pie_tmp=get_pie_multilevel(keys,pie_tmp,tuning);
+            multilevel_data(e,:)=pie_tmp;
+         
+        end
+       
+         case 'space_tuning_inactivation'
+        for e=1:numel(keys.CC.epochs)
+            d=1;
+            keys.CC.factor='space';
+            keys.n=keys.n1;
+            tuning_variables{1}= [keys.CC.IC_to_plot '_' keys.CC.epochs{e} '_spaceLR_CT_' keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
+            tunings{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
+            
+            keys.CC.factor='space';
+            keys.n=keys.n2;
+            tuning_variables{1}= [keys.CC.IC_to_plot '_' keys.CC.epochs{e} '_spaceLR_PT_'   keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
+            tuningh{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
+            
+            pie_tmp=[];
+            pie_tmp=get_pie_two_levels_inde(keys,pie_tmp,tunings,tuningh);
+         
+            multilevel_data(e,:)=pie_tmp;
+        end
+        
+    case 'space_tuning_inactivation_baseline'
+        for e=1:numel(keys.CC.epochs)
+            d=1;
+            keys.CC.factor='space';
+            keys.n=keys.n1;
+            tuning_variables{1}= [keys.CC.IC_to_plot '_' keys.CC.epochs{e} '_spaceLR_CTbl_' keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
+            tunings{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
+            
+            keys.CC.factor='space';
+            keys.n=keys.n2;
+            tuning_variables{1}= [keys.CC.IC_to_plot '_' keys.CC.epochs{e} '_spaceLR_PTbl_'   keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
+            tuningh{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
+            
+            pie_tmp=[];
+            pie_tmp=get_pie_two_levels_inde(keys,pie_tmp,tunings,tuningh);
+            multilevel_data(e,:)=pie_tmp;
+            
+        end
         
     case 'fixation_x_position_comb'
         for e=1:numel(keys.CC.epochs)
@@ -570,7 +657,7 @@ switch keys.CC.plot_type
             pie_tmp=get_pie_multilevel(keys,pie_tmp,tuning);
             multilevel_data(e,:)=pie_tmp;
         end
-     
+        
     case 'fixation_x_position_CI'
         for e=1:numel(keys.CC.epochs)
             d=1;
@@ -583,22 +670,22 @@ switch keys.CC.plot_type
             pie_tmp=get_pie_multilevel(keys,pie_tmp,tuning);
             multilevel_data(e,:)=pie_tmp;
         end
-    
-     
+        
+        
     case 'eccentricity_x_angle'
         for e=1:numel(keys.CC.epochs)
             d=1;
             keys.CC.factor='eccentricity_x_angle';
             keys.n=keys.n1;
-            tuning_variables{1}= [keys.CC.IC_to_plot '_AH_' keys.CC.epochs{e} '_distance_'   keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ]; 
-            tuning_variables{2}= [keys.CC.IC_to_plot '_AH_' keys.CC.epochs{e} '_angle_'   keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ]; 
-            tuning_variables{3}= [keys.CC.IC_to_plot '_AH_' keys.CC.epochs{e} '_DxA_'   keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ]; 
+            tuning_variables{1}= [keys.CC.IC_to_plot '_AH_' keys.CC.epochs{e} '_distance_'   keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
+            tuning_variables{2}= [keys.CC.IC_to_plot '_AH_' keys.CC.epochs{e} '_angle_'   keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
+            tuning_variables{3}= [keys.CC.IC_to_plot '_AH_' keys.CC.epochs{e} '_DxA_'   keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
             tuning{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
             pie_tmp=[];
             pie_tmp=get_pie_multilevel(keys,pie_tmp,tuning);
             multilevel_data(e,:)=pie_tmp;
         end
-    
+        
     case 'gaze_and_fixation_x_position'
         for e=1:numel(keys.CC.epochs)
             %for d=1:numel(keys.CC.tasktypes)
@@ -623,10 +710,10 @@ switch keys.CC.plot_type
         end
         
     case 'gaze'
-            keys.n=keys.n1;
+        keys.n=keys.n1;
         for e=1:numel(keys.CC.epochs)
             %for d=1:numel(keys.CC.tasktypes)
-                
+            
             d=1;
             keys.CC.factor='gaze';
             keys.n=keys.n1;
@@ -636,7 +723,7 @@ switch keys.CC.plot_type
             
             clear tuning_variables
             keys.CC.factor='gaze_interaction';
-            keys.n=keys.n2; 
+            keys.n=keys.n2;
             tuning_variables{1}= [keys.CC.IC_to_plot '_AH_' keys.CC.epochs{e} '_PxF_'   keys.CC.tasktypes{d} '_' 'tar' ]; % hardcoded here
             tuningi{d}=read_table_column_detail(keys,xlsx_table,idx,tuning_variables);
             %end
@@ -645,9 +732,9 @@ switch keys.CC.plot_type
             pie_tmp=[];
             pie_tmp=get_pie_two_levels(keys,pie_tmp,tuningm,tuningi);
             multilevel_data(e,:)=pie_tmp;
-%             pie_tmp=[];
-%             pie_tmp=get_pie_multilevel(keys,pie_tmp,tuning);
-%             multilevel_data(e,:)=pie_tmp;
+            %             pie_tmp=[];
+            %             pie_tmp=get_pie_multilevel(keys,pie_tmp,tuning);
+            %             multilevel_data(e,:)=pie_tmp;
             
             %% ?? not sure this is correct here
             for d1=1:numel(tuningm)
@@ -662,7 +749,7 @@ switch keys.CC.plot_type
         end
         
     case 'visuomotor'
-            keys.n=keys.n1;
+        keys.n=keys.n1;
         keys.CC.factor='visuomotor'; % overwrite...
         for d=1:numel(keys.CC.tasktypes)
             tuning_variables{1}= ['visual_'   keys.CC.tasktypes{d} '_' keys.arrangement(1:3) ];
@@ -806,31 +893,31 @@ switch keys.CC.factor
         read_out(FnX)          =6;
         read_out(FxP)          =7;
         read_out(Na)           =8;
-
-
-%     case 'fixation_x_position'
-%         %indexfnS=fixaion, indexfnH=position, indexfnX=pxF
-%         fixtuning=ismember(table(2:end,index.(tuning_variables{1})),'true'); %& keys.hands_or_interaction; %% anova criterion for this one doesnt make much sense, does it??
-%         postuning=ismember(table(2:end,index.(tuning_variables{2})),'true'); %& keys.hands_or_interaction;
-%         fxptuning=ismember(table(2:end,index.(tuning_variables{3})),'true'); %& keys.space_or_interaction;
-%         %CStuning=ismember(table(2:end,index.(indexfnS)),'CS') & keys.space_or_interaction;
-%         Pos= ~fixtuning  & postuning  & ~fxptuning;
-%         Fix=  fixtuning  & ~postuning & ~fxptuning;
-%         FnP=  fixtuning  &  postuning & ~fxptuning;
-%         All=  fixtuning  &  postuning &  fxptuning;
-%         PnX= ~fixtuning  &  postuning &  fxptuning;
-%         FnX=  fixtuning  & ~postuning &  fxptuning;
-%         FxP= ~fixtuning  & ~postuning &  fxptuning;
-%         Na = ~fixtuning  & ~postuning & ~fxptuning;
-%         
-%         read_out(Pos)          =1;
-%         read_out(Fix)          =2;
-%         read_out(FnP)          =3;
-%         read_out(All)          =4;
-%         read_out(PnX)          =5;
-%         read_out(FnX)          =6;
-%         read_out(FxP)          =7;
-%         read_out(Na)           =8;
+        
+        
+        %     case 'fixation_x_position'
+        %         %indexfnS=fixaion, indexfnH=position, indexfnX=pxF
+        %         fixtuning=ismember(table(2:end,index.(tuning_variables{1})),'true'); %& keys.hands_or_interaction; %% anova criterion for this one doesnt make much sense, does it??
+        %         postuning=ismember(table(2:end,index.(tuning_variables{2})),'true'); %& keys.hands_or_interaction;
+        %         fxptuning=ismember(table(2:end,index.(tuning_variables{3})),'true'); %& keys.space_or_interaction;
+        %         %CStuning=ismember(table(2:end,index.(indexfnS)),'CS') & keys.space_or_interaction;
+        %         Pos= ~fixtuning  & postuning  & ~fxptuning;
+        %         Fix=  fixtuning  & ~postuning & ~fxptuning;
+        %         FnP=  fixtuning  &  postuning & ~fxptuning;
+        %         All=  fixtuning  &  postuning &  fxptuning;
+        %         PnX= ~fixtuning  &  postuning &  fxptuning;
+        %         FnX=  fixtuning  & ~postuning &  fxptuning;
+        %         FxP= ~fixtuning  & ~postuning &  fxptuning;
+        %         Na = ~fixtuning  & ~postuning & ~fxptuning;
+        %
+        %         read_out(Pos)          =1;
+        %         read_out(Fix)          =2;
+        %         read_out(FnP)          =3;
+        %         read_out(All)          =4;
+        %         read_out(PnX)          =5;
+        %         read_out(FnX)          =6;
+        %         read_out(FxP)          =7;
+        %         read_out(Na)           =8;
         
     case 'eccentricity_x_angle'
         %indexfnS=fixaion, indexfnH=position, indexfnX=pxF
@@ -839,12 +926,12 @@ switch keys.CC.factor
         exatuning=ismember(table(2:end,index.(tuning_variables{3})),'true'); %& keys.space_or_interaction;
         %CStuning=ismember(table(2:end,index.(indexfnS)),'CS') & keys.space_or_interaction;
         All=  ecctuning  &  angtuning &  exatuning;
-        EnA=  ecctuning  &  angtuning & ~exatuning;  
-        EnX=  ecctuning  & ~angtuning &  exatuning;  
+        EnA=  ecctuning  &  angtuning & ~exatuning;
+        EnX=  ecctuning  & ~angtuning &  exatuning;
         Ecc=  ecctuning  & ~angtuning & ~exatuning;
-        AnX= ~ecctuning  &  angtuning &  exatuning; 
-        Ang= ~ecctuning  &  angtuning & ~exatuning;     
-        ExA= ~ecctuning  & ~angtuning &  exatuning;   
+        AnX= ~ecctuning  &  angtuning &  exatuning;
+        Ang= ~ecctuning  &  angtuning & ~exatuning;
+        ExA= ~ecctuning  & ~angtuning &  exatuning;
         Na=  ~ecctuning  & ~angtuning & ~exatuning;
         
         read_out(All)          =1;
@@ -858,13 +945,13 @@ switch keys.CC.factor
         
     case 'fixation_x_position_CI'
         %indexfnS=fixaion, indexfnH=position, indexfnX=pxF
-                
+        
         fixtuning=ismember(table(2:end,index.(tuning_variables{1})),'IS') | ismember(table(2:end,index.(tuning_variables{1})),'CS');
         postuning=ismember(table(2:end,index.(tuning_variables{2})),'IS') | ismember(table(2:end,index.(tuning_variables{2})),'CS');
         %CStuning=ismember(table(2:end,index.(indexfnS)),'CS') & keys.space_or_interaction;
         Pos= ~fixtuning  & postuning  ;
         Fix=  fixtuning  & ~postuning ;
-        FnP=  fixtuning  &  postuning ;  
+        FnP=  fixtuning  &  postuning ;
         Na = ~fixtuning  & ~postuning ;
         
         read_out(Pos)          =1;
@@ -917,25 +1004,25 @@ switch keys.CC.factor
         read_out(IS_SU & ~(CS_EN | CS_SU))              =7;
         read_out(CS_EN & IS_SU)                         =8;
         read_out(~CS_EN & ~CS_SU & ~IS_SU & ~IS_EN)     =9;
-
+        
     case 'space_position'
-
+        
         CS=ismember(table(2:end,index.(tuning_variables{1})),'CS') ; % & keys.space_or_interaction;
         IS=ismember(table(2:end,index.(tuning_variables{1})),'IS') ; % & keys.space_or_interaction;
         PO=ismember(table(2:end,index.(tuning_variables{2})),'true') ; % & keys.space_or_interaction;
-%         na=~keys.space_or_interaction; %% not ideal either!
+        %         na=~keys.space_or_interaction; %% not ideal either!
         clear read_out
         read_out(CS)                =1;
         read_out(IS)                =2;
         read_out(~IS & ~CS & PO)    =3;
         read_out(~IS & ~CS & ~PO)   =4;
-
+        
     case 'position_space'
-
+        
         CS=ismember(table(2:end,index.(tuning_variables{1})),'CS') ; % & keys.space_or_interaction;
         IS=ismember(table(2:end,index.(tuning_variables{1})),'IS') ; % & keys.space_or_interaction;
         PO=ismember(table(2:end,index.(tuning_variables{2})),'true') ; % & keys.space_or_interaction;
-%         na=~keys.space_or_interaction; %% not ideal either!
+        %         na=~keys.space_or_interaction; %% not ideal either!
         clear read_out
         read_out(CS & PO)                =1;
         read_out(IS & PO)                =2;
@@ -972,6 +1059,17 @@ for n1=1:keys.n1
     for n2=1:keys.n2
         pie{2}(end+1)=sum(tuning1{1}(:)==n1 & tuning2{1}(:)==n2);
     end
+end
+
+function pie=get_pie_two_levels_inde(keys,pie,tuning1,tuning2)
+pie{1}=[];
+pie{2}=[];
+for n1=1:keys.n1
+    pie{1}(end+1)=sum(tuning1{1}==n1);
+    
+end
+for n2=1:keys.n2
+        pie{2}(end+1)=sum(tuning2{1}(:)==n2);
 end
 
 function title_and_save(keys)
