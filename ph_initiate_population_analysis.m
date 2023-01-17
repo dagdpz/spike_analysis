@@ -34,8 +34,12 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
         keys.anova_table_file=[keys.basepath_to_save keys.project_version filesep 'tuning_table_combined_CI.mat'];
-        keys.tuning_table=ph_load_tuning_table(keys); %% load tuning table
-        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','hst','reg','rtc','prf','ndt','uni','rfs'}))
+        if exist(keys.anova_table_file,'file')
+            keys.tuning_table=ph_load_tuning_table(keys); %% load tuning table
+        else
+            keys.tuning_table={'unit_ID'};
+        end
+        if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','hst','reg','rtc','prf','ndt','uni','rfs','tun','beh'}))
             population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
             population=ph_assign_perturbation_group(keys,population);
             population=ph_epochs(population,keys);
@@ -43,12 +47,12 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
             population=[];
         end
         for t=1:numel(keys.batching.targets)
-            target=keys.batching.targets{t};            
+            keys.target=keys.batching.targets{t};            
             for subregion=1:keys.batching.n_Subregions
                 if keys.batching.Subregions_separately
-                    population_selection            = {'target',target;'Subregion', subregion};
+                    population_selection            = {'target',keys.target;'Subregion', subregion};
                 else
-                    population_selection            = {'target',target};
+                    population_selection            = {'target',keys.target};
                 end
                     loop_through_plots(population,keys,population_selection,population_analysis_to_perform);            
             end
@@ -143,6 +147,10 @@ for P=population_analysis_to_perform
                     keys.tt.tasktypes=strcat(condition_to_plot, ['_' keys.arrangement(1:3)]);
                 end
                 
+%                 if strcmp(ana,'tun')
+%                     
+%                     
+%                 end
                 keys=ph_tuning_table_correction(keys);
                 
                 %% seed is reloaded for each loop, so plots are reproducable even if the order of plots changed
@@ -188,6 +196,7 @@ for P=population_analysis_to_perform
                     case 'beh'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'behavior'],keys);
                         keys=ph_make_subfolder('behavior',keys);
+                        ph_get_filelists(population,keys);
                         ph_ephys_behavior(keys);
                     case 'gaz'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'gaze_analysis'],keys);
@@ -230,6 +239,8 @@ for P=population_analysis_to_perform
                     case 'loc'
                         keys=ph_make_subfolder('localization',keys);
                         ph_localization(keys);
+                    case 'tun'
+                        ph_redo_tuning_table(population,keys);
                 end
             end
         end

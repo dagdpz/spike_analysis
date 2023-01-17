@@ -864,7 +864,8 @@ for c=1:n_conditions
 end
 
 function title_and_save(keys)
-mtit(gcf,[keys.monkey ' ' [keys.CC.tasktypes{:}] ' ' [keys.CC.plot_type] ' ' [keys.CC.factor{:}] ' ' keys.CC.IC_to_plot ' ' keys.arrangement(1:3) ' ' keys.selection_title{:} ' N: ' num2str(size(keys.tuning_table,1)-1) ' ' keys.title_part], 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
+[fig_title,filename]=ph_figure_titles(keys);
+mtit(gcf,[[keys.CC.tasktypes{:}] ' ' [keys.CC.plot_type] ' ' [keys.CC.factor{:}] ' ' keys.CC.IC_to_plot ' ' fig_title ' N: ' num2str(size(keys.tuning_table,1)-1) ' ' keys.title_part], 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
 
 wanted_size=[50 30];
 set(gcf, 'Paperunits','centimeters','PaperSize', wanted_size,'PaperPositionMode', 'manual','PaperPosition', [0 0 wanted_size])
@@ -874,8 +875,5 @@ keys.all_titles=keys.CC.epochs;
 if strcmp(keys.CC.plot_type,'per_epoch_2levels')
     keys.CC.plot_type=[keys.CC.first_level_factor '_' keys.CC.first_level_epochs{1} ' and '];
 end
-condition_title=ph_get_condition_title(keys);
-
-export_fig(gcf, [keys.path_to_save filesep keys.monkey ' ' [keys.CC.tasktypes{:}] ' '  keys.arrangement(1:3) ' ' keys.CC.IC_to_plot ...
-    ' ' condition_title ' ' keys.selection_title{:} ' ' [keys.CC.plot_type]  ' ' [keys.CC.factor{:}] ', ' keys.title_part], '-pdf','-transparent') % pdf by run
+export_fig(gcf, [keys.path_to_save filesep [keys.CC.tasktypes{:}] '_' [keys.CC.plot_type] '_' [keys.CC.factor{:}] '_' keys.CC.IC_to_plot  filename ', ' keys.title_part], '-pdf','-transparent') % pdf by run
 close(gcf);

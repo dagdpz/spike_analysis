@@ -109,25 +109,25 @@ for t=1:numel(tasktypes)
                     current_titles_l =[INCH '_' LHRH '_' sides{1} '_' s{:} '_epoch_DF_' affix];
                     current_titles_r =[INCH '_' LHRH '_' sides{2} '_' s{:} '_epoch_DF_' affix];
                     current_titles_C =[INCH '_' LHRH '_' s{:} '_epoch_' affix];
-                    current_titles_B =[INCH '_' LHRH '_' s{:} '_epoch_bilateral_' affix];
+                    %current_titles_B =[INCH '_' LHRH '_' s{:} '_epoch_bilateral_' affix]; %% what was this even supposed to be?
                     [~,idx_L]=ismember(current_titles_L,all_titles);
                     [~,idx_R]=ismember(current_titles_R,all_titles);
                     [~,idx_l]=ismember(current_titles_l,all_titles);
                     [~,idx_r]=ismember(current_titles_r,all_titles);
                     [~,idx_C]=ismember(current_titles_C,all_titles);
-                    [~,idx_B]=ismember(current_titles_B,all_titles);
-                    if ~all([idx_L idx_R idx_C idx_B])
+                    %[~,idx_B]=ismember(current_titles_B,all_titles);
+                    if ~all([idx_L idx_R]) %%~all([idx_L idx_R idx_C idx_B])
                         continue;
                     end
-                    if isempty(idx_C) && isempty(idx_B) %% either both are there (legacy) or not there yet
-                       idx_C=size(TT,2)+1;idx_B=size(TT,2)+2;
+                    if idx_C==0 %&& idx_B==0 %%%%isempty(idx_C) && isempty(idx_B) %% either both are there (legacy) or not there yet
+                       idx_C=size(TT,2)+1;%idx_B=size(TT,2)+2;
                     end
                         
                     table_entries_L=TT(2:end,idx_L);
                     table_entries_R=TT(2:end,idx_R);
                     table_entries_l=[TT{2:end,idx_l}];
                     table_entries_r=[TT{2:end,idx_r}];
-                    [~,max_diff_idx]=max([table_entries_l;table_entries_r]);
+                    [~,max_diff_idx]=max(abs([table_entries_l;table_entries_r])); %% had forgotten absolute here... -_-
                     table_entry_LR=[table_entries_L,table_entries_R];
                     table_entry_D=table_entry_LR([1:numel(max_diff_idx)]+(max_diff_idx-1)*numel(max_diff_idx))';
                     [~,labelindex_D]=ismember(table_entry_D,{'su','-','en'});
@@ -144,11 +144,11 @@ for t=1:numel(tasktypes)
                     
                     TT{1,idx_C}=current_titles_C;
                     TT(2:end,idx_C)=keys.TTlabels.epoch(labelindex);
-                    labelindex=2*ones(size(combined_tuning));
-                    labelindex(ismember(combined_tuning,{'susu'}))=1;
-                    labelindex(ismember(combined_tuning,{'enen'}))=3;
-                    TT{1,idx_B}=current_titles_B;
-                    TT(2:end,idx_B)=keys.TTlabels.epoch(labelindex);
+%                     labelindex=2*ones(size(combined_tuning));
+%                     labelindex(ismember(combined_tuning,{'susu'}))=1;
+%                     labelindex(ismember(combined_tuning,{'enen'}))=3;
+%                     TT{1,idx_B}=current_titles_B;
+%                     TT(2:end,idx_B)=keys.TTlabels.epoch(labelindex);
                     
                     if strcmp(LHRH,'AH')
                         
@@ -475,6 +475,16 @@ else
 end
 TT(:,end+1)=combined_column;
 
+
+for props=1:size(keys.tt.replace_tuning,1)
+    column_index=DAG_find_column_index(TT,keys.tt.replace_tuning{props,1});
+    if isempty(column_index)
+        disp(['column not found: ' keys.tt.replace_tuning{props,1}]);
+        continue;
+    end
+    to_replace=cellfun(@(x) strcmp(num2str(x),num2str(keys.tt.replace_tuning{props,2})),TT(:,column_index));
+    TT(to_replace,column_index)=repmat({num2str(keys.tt.replace_tuning{props,3})},sum(to_replace),1);
+end
 end
 
 function TT=get_VM(TT,idx1,idx2,modulation,field_name)
@@ -552,6 +562,7 @@ for c=1:numel(keys.condition_parameters)
     CM_cell{c}=keys.tt.(keys.condition_parameters{c});
 end
 CM=combvec(CM_cell{:})';
+labels={};
 for t=1:numel(keys.tt.tasktypes)
     tasktype=keys.tt.tasktypes{t};
     if ~strfind(tasktype,'_')

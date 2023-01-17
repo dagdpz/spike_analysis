@@ -11,16 +11,16 @@ if size(TT,1)==1
     return;
 end
 
-%% ANOVA cirterions readout
-criterions={'space_or_interaction','epoch_or_interaction','hands_or_interaction','SXH_or_interaction'};
-for c=1:numel(criterions)
-    parameter_criterion_columns=~cellfun(@isempty,strfind(TT(1,:),criterions{c}));
-    for t=1:numel(keys.tt.tasktypes)
-        task_criterion_columns(t,:)=~cellfun(@isempty,strfind(TT(1,:),keys.tt.tasktypes{t}));
-    end
-    criterion_columns=parameter_criterion_columns & any(task_criterion_columns,1);
-    keys.(criterions{c})=any(cell2mat(TT(2:end,criterion_columns)),2);
-end
+% %% ANOVA cirterions readout
+% criterions={'space_or_interaction','epoch_or_interaction','hands_or_interaction','SXH_or_interaction'};
+% for c=1:numel(criterions)
+%     parameter_criterion_columns=~cellfun(@isempty,strfind(TT(1,:),criterions{c}));
+%     for t=1:numel(keys.tt.tasktypes)
+%         task_criterion_columns(t,:)=~cellfun(@isempty,strfind(TT(1,:),keys.tt.tasktypes{t}));
+%     end
+%     criterion_columns=parameter_criterion_columns & any(task_criterion_columns,1);
+%     keys.(criterions{c})=any(cell2mat(TT(2:end,criterion_columns)),2);
+% end
 
 %% row indexes
 x_label=keys.SC.X;
@@ -33,8 +33,8 @@ cs_y   =DAG_find_column_index(TT,keys.SC.Y_sig);
 c_VM   =DAG_find_column_index(TT,keys.SC.VMI);
 c_h    =DAG_find_column_index(TT,keys.SC.hist_column);
 
-rs_x   =[false; cellfun(@(x) ~strcmp(x,'-') && ~strcmp(x,'false'),TT(2:end,cs_x))];
-rs_y   =[false; cellfun(@(x) ~strcmp(x,'-') && ~strcmp(x,'false'),TT(2:end,cs_y))];
+rs_x   =[false; cellfun(@(x) ~strcmp(x,'-') && ~strcmp(x,'--') &&  ~strcmp(x,'false'),TT(2:end,cs_x))];
+rs_y   =[false; cellfun(@(x) ~strcmp(x,'-') && ~strcmp(x,'--') &&  ~strcmp(x,'false'),TT(2:end,cs_y))];
 
 
 row_valid=cellfun(@(x) ~isempty(x) && ~isnan(x),TT(2:end,c_x)) & cellfun(@(x) ~isempty(x) && ~isnan(x),TT(2:end,c_y));
@@ -43,12 +43,6 @@ row_valid=[false;row_valid];
 %% monkey per unit readout
 col_unit_ID=DAG_find_column_index(TT,'unit_ID');
 monkeys=cellfun(@(x) x(1:3),TT(2:end,col_unit_ID),'uniformoutput',false);
-% if keys.batching.combine_monkeys
-%     [monkeys{:}]=deal(monkeys{1});
-% else
-% row_valid=cellfun(@(x) ~isempty(x) && ~isnan(x),TT(2:end,c_x)) & cellfun(@(x) ~isempty(x) && ~isnan(x),TT(2:end,c_y)) & cellfun(@(x) strcmp(x,keys.monkey(1:3)),monkeys);
-%     [monkeys{:}]=deal(monkeys{1});
-% end
 unique_monkeys=unique(monkeys);
 monkeys=['___'; monkeys];
 
@@ -100,19 +94,9 @@ end
 
 
 %% monkey markers and columns assignment
-% monkey_colors=repmat(0,size(TT,1),1);
-% monkey_markers=repmat('d',size(TT,1),1);
 for m=1:numel(unique_monkeys)
-    %     if keys.batching.combine_monkeys %% what was this used for??? in  gaze??
-    %
-    %     row_monkey{m}=row_valid;
-    %     else
     row_monkey{m}=ismember(monkeys,unique_monkeys{m})& row_valid;
-    
-    %    end
-    %     row_monkey_all{m}=ismember(monkeys,unique_monkeys{m});
 end
-%monkey_colormap=vertcat(monkey_colors_unique{:});
 
 %% figure 1
 fig_title=ph_figure_titles(keys);
@@ -120,22 +104,18 @@ fig_title=ph_figure_titles(keys);
 plot_1_title            = [fig_title  y_label '__vs__' x_label];
 FR_index_handle = figure('units','normalized','outerposition',[0 0 1 1],'name',plot_1_title);
 
-
 if keys.SC.logarithmic_scale%%% transform to logarithmic scale
     temp_x_nonempty=TT(row_valid,c_x);
     temp_y_nonempty=TT(row_valid,c_y);
     TT(row_valid,c_x)=num2cell(sign([TT{row_valid,c_x}]).*log(abs([TT{row_valid,c_x}])+1));
     TT(row_valid,c_y)=num2cell(sign([TT{row_valid,c_y}]).*log(abs([TT{row_valid,c_y}])+1));
 end
-
 if keys.SC.absolutes%%% transform to logarithmic scale
     temp_x_nonempty=TT(row_valid,c_x);
     temp_y_nonempty=TT(row_valid,c_y);
     TT(row_valid,c_x)=num2cell(abs([TT{row_valid,c_x}]));
     TT(row_valid,c_y)=num2cell(abs([TT{row_valid,c_y}]));
 end
-
-
 
 SC.markers={};
 SC.filled={};
@@ -284,6 +264,50 @@ switch keys.SC.color_option
         SC.d_values{3}= [{[TT{rs_xy & rE_x & rS_y,c_x}]}  {[TT{rs_xy & rE_x & rS_y,c_y}]}];
         SC.d_values{4}= [{[TT{rs_xy & rS_x & rE_y,c_x}]}  {[TT{rs_xy & rS_x & rE_y,c_y}]}];
         SC.d_values{5}= [{[TT{rs_nn,c_x}]}  {[TT{rs_nn,c_y}]}];
+        
+    case 'ENSU_all_separated'
+        ensu_x=TT(:,cs_x);ensu_x(~row_valid)={''};
+        ensu_y=TT(:,cs_y);ensu_y(~row_valid)={''};
+        rE_x=ismember(ensu_x,'en') & row_valid;
+        rE_y=ismember(ensu_y,'en')  & row_valid;
+        rS_x=ismember(ensu_x,'su')  & row_valid;
+        rS_y=ismember(ensu_y,'su')  & row_valid;
+        
+        SC.markers={'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o', 'o'};
+        SC.colors={'r', 'c', [0.5 0 0], 'c', 'b', [0 0.5 0], 'm', 'g', [0.5 0.5 0.5]};
+        SC.filled={'filled', 'filled', 'filled', 'filled', 'filled', 'filled', 'filled', 'filled', ''};
+        
+        SC.hist_colors{1}={'r', 'b', [0.5 0.5 0.5]};
+        SC.hist_colors{2}={'r', 'b', [0.5 0.5 0.5]};
+        %SC.hist_colors{3}={'r', 'b', 'm', 'c', [0.5 0.5 0.5]};
+        SC.hist_colors{3}={'r', 'c', [0.5 0 0], 'c', 'b', [0 0.5 0], 'm', 'g', [0.5 0.5 0.5]};
+        
+        SC.x_values(:,1) =[{{[TT{rs_xy & rE_x & rE_y,c_x}]}} {{[TT{rs_xy & rE_x & rS_y,c_x}]}} {{[TT{rs_xn & rE_x,c_x}]}}]; % x red (y red/blue/black)
+        SC.x_values(:,2) =[{{[TT{rs_xy & rS_x & rE_y,c_x}]}} {{[TT{rs_xy & rS_x & rS_y,c_x}]}} {{[TT{rs_xn & rS_x,c_x}]}}]; % x blue (y red/blue/black)
+        SC.x_values(:,3) =[{{[TT{rs_ny & rE_y,c_x}]}}        {{[TT{rs_ny & rS_y,c_x}]}}        {{[TT{rs_nn,c_x}]}}]; % x black (y red/blue/black)
+        SC.y_values(1,:)=[{{[TT{rs_xy & rE_x & rE_y,c_y}]}} {{[TT{rs_xy & rS_x & rE_y,c_y}]}} {{[TT{rs_ny & rE_y,c_y}]}}]; % y red (x red/blue/black)
+        SC.y_values(2,:)=[{{[TT{rs_xy & rE_x & rS_y,c_y}]}} {{[TT{rs_xy & rS_x & rS_y,c_y}]}} {{[TT{rs_ny & rS_y,c_y}]}}]; % x blue (x red/blue/black)
+        SC.y_values(3,:)=[{{[TT{rs_xn & rE_x,c_y}]}}        {{[TT{rs_xn & rS_x,c_y}]}}        {{[TT{rs_nn,c_y}]}}]; % x black (x red/blue/black)
+        
+        r_any_EN=rs_xy & rE_x & rE_y | rs_xn & rE_x | rs_ny & rE_y;
+        r_any_SU=rs_xy & rS_x & rS_y | rs_xn & rS_x | rs_ny & rS_y;
+        SC.d_values{1}= [{[TT{rs_xy & rE_x & rE_y,c_x}]}  {[TT{rs_xy & rE_x & rE_y,c_y}]}];
+        SC.d_values{2}= [{[TT{rs_xy & rE_x & rS_y,c_x}]}  {[TT{rs_xy & rE_x & rS_y,c_y}]}];
+        SC.d_values{3}= [{[TT{rs_xn & rE_x,c_x}]}  {[TT{rs_xn & rE_x,c_y}]}];
+        SC.d_values{4}= [{[TT{rs_xy & rS_x & rE_y,c_x}]}  {[TT{rs_xy & rS_x & rE_y,c_y}]}];
+        SC.d_values{5}= [{[TT{rs_xy & rS_x & rS_y,c_x}]}  {[TT{rs_xy & rS_x & rS_y,c_y}]}];
+        SC.d_values{6}= [{[TT{rs_xn & rS_x,c_x}]}  {[TT{rs_xn & rS_x,c_y}]}];
+        SC.d_values{7}= [{[TT{rs_ny & rE_y,c_x}]}  {[TT{rs_ny & rE_y,c_y}]}];
+        SC.d_values{8}= [{[TT{rs_ny & rS_y,c_x}]}  {[TT{rs_ny & rS_y,c_y}]}];
+        SC.d_values{9}= [{[TT{rs_nn,c_x}]}  {[TT{rs_nn,c_y}]}];
+        
+        
+%         
+%         
+%         SC.d_values{2}= [{[TT{r_any_SU,c_x}]}  {[TT{r_any_SU,c_y}]}];
+%         SC.d_values{3}= [{[TT{rs_xy & rE_x & rS_y,c_x}]}  {[TT{rs_xy & rE_x & rS_y,c_y}]}];
+%         SC.d_values{4}= [{[TT{rs_xy & rS_x & rE_y,c_x}]}  {[TT{rs_xy & rS_x & rE_y,c_y}]}];
+%         SC.d_values{5}= [{[TT{rs_nn,c_x}]}  {[TT{rs_nn,c_y}]}];
         
 end
 

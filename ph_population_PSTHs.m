@@ -9,19 +9,6 @@ end
 % keys.normalization_field='PO';
 
 keys.PO.FR_subtract_baseline=~strcmp(keys.PO.epoch_BL,'none'); %% this one we should not need here any more !?
-
-% TT=keys.tuning_table;
-% Sel_for_title=keys.selection_title;
-% idx.group_parameter=DAG_find_column_index(TT,keys.PO.group_parameter);
-% idx.unitID=DAG_find_column_index(TT,'unit_ID');
-% idx.RF_frame=DAG_find_column_index(TT,keys.PO.RF_frame_parameter);
-% group_values=TT(:,idx.group_parameter);
-% group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
-% cell_in_any_group=[false; ~ismember(group_values(2:end),keys.PO.group_excluded)];
-% unique_group_values=unique(group_values(cell_in_any_group));
-% TT=TT(cell_in_any_group,:);
-% group_values=group_values(cell_in_any_group);
-
 [TT,idx,group_values,unique_group_values]=ph_readout_tuning_table(keys);
 
 if isempty(unique_group_values)
@@ -33,11 +20,7 @@ complete_unit_list={population.unit_ID}';
 population=population(unit_valid);
 complete_unit_list={population.unit_ID}';
 population_group=group_values(TM(unit_valid));
-
-%population_all_tr = ph_accept_trials_per_unit(population,keys);
 all_trialz=[population.trial];
-%all_trialz2=[population_all_tr.trial];
-
 [UC, CM, labels]=ph_get_condition_matrix(all_trialz,keys);
 
 %% fix labels --> and with labels colors!
@@ -58,25 +41,6 @@ legend_labels_hem=repmat(reshape(legend_labels_hem,numel(legend_labels_hem),1),n
 legend_labels_prf=repmat(reshape(legend_labels_prf,numel(legend_labels_prf),1),numel(UC.effector),1);
 legend_labels_pos=repmat(reshape(legend_labels_pos,numel(legend_labels_pos),1),numel(UC.effector),1);
 
-% % reduce trials to only valid .... this is somewhat redundant (?)
-% unit_valid=true(size(population));
-% for u=1:numel(population)
-%     poptr=population(u).trial;
-%     valid=ismember([poptr.effector],UC.effector) & ismember([poptr.type],UC.type);
-%     for c=1:numel(keys.condition_parameters)
-%         valid=valid & ismember([poptr.(keys.condition_parameters{c})],UC.(keys.condition_parameters{c}));
-%     end
-%     population(u).trial=population(u).trial(valid);
-%     if sum(valid)==0
-%         unit_valid(u)=false;
-%     end
-% end
-% population=population(unit_valid);
-% complete_unit_list={population.unit_ID}';
-% unit_valid=ismember(TT(:,idx.unitID),complete_unit_list);
-% group_values=group_values(unit_valid);
-% TT=TT(unit_valid,:);
-
 conditions_out              = combvec(UC.effector,CM')';
 conditions_hf               = combvec(UC.hemifield,conditions_out')';
 conditions_pref             = combvec([0 1],conditions_out')';
@@ -89,8 +53,6 @@ else
     columns_pref        = ones(size(conditions_pref,1),1);
 end
 
-
-%
 % if any(UC.perturbation==1) % temporary, better solution
 %     if strcmp(keys.arrangement,'hands_inactivation_in_ch')
 %         [~,~,columns_hf] = unique(conditions_hf(:,[1,3]),'rows');

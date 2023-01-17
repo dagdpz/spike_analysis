@@ -46,8 +46,8 @@ keys.path_to_save=[keys.basepath_to_save keys.project_version filesep];
 if ~exist(keys.path_to_save,'dir')
     mkdir([keys.basepath_to_save], keys.project_version);
 end
-if ~exist([keys.path_to_save 'single_cell_examples'],'dir')
-    mkdir(keys.path_to_save, 'single_cell_examples');
+if ~exist([keys.path_to_save 'single_cells'],'dir')
+    mkdir(keys.path_to_save, 'single_cells');
 end
 if ~exist([keys.path_to_save 'spike_shapes'],'dir')
     mkdir(keys.path_to_save, 'spike_shapes');
@@ -132,6 +132,7 @@ for current_date = sessions(:)'
         idx_Neuron_ID=DAG_find_column_index(keys.sorting_table,'Neuron_ID');
         all_unit_IDs=keys.sorting_table_units(:,idx_Neuron_ID);
         if keys.plot.waveforms && any(~ismember({pop_resorted.unit_ID},all_unit_IDs))
+            keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'spike_shapes' filesep];
             plot_sorted_waveforms(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria');
             plot_FR_across_time(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria FR over time');
         end
@@ -144,6 +145,7 @@ for current_date = sessions(:)'
         
         % plot the cells used for further processing
         if keys.plot.waveforms
+            keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'spike_shapes' filesep];
             plot_sorted_waveforms(pop_resorted,keys,'analyzed units');
             plot_sorted_ISI(pop_resorted,keys,'analyzed units ISI');
             plot_FR_across_time(pop_resorted,keys,'analyzed units FR over time');
@@ -156,7 +158,7 @@ for current_date = sessions(:)'
             
             %% plotting single cells per session
             if keys.plot.single_cells && ~isempty(pop_resorted)
-                keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'single_cell_examples' filesep];
+                keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'single_cells' filesep];
                 ph_plot_unit_per_condition(pop_resorted,keys);
             end
             
@@ -457,7 +459,7 @@ for u=units
         sprintf(['ch/De: %d/%.2f b&u: %s' ],o(u).channel,o(u).electrode_depth,[o(u).block_unit{:}])}; %MP add number of spikes
     title(unit_title,'interpreter','none');
 end
-title_and_save(FR_summary_handle,fig_title,keys)
+ph_title_and_save(FR_summary_handle,fig_title,fig_title,keys)
 end
 
 function plot_sorted_waveforms(o,keys,title_part)
@@ -491,7 +493,7 @@ for n_unit=1:numel(o)
         [min(min(all_spikes_wf(1:50:n_sel_spike_wf*50,:)')) max(max(all_spikes_wf(1:50:n_sel_spike_wf*50,:)'))]);          %MP remove X-axis keep Y-axis to have scale and show max/min values on Y axis
     end
 end
-title_and_save(WF_summary_handle,fig_title,keys)
+ph_title_and_save(WF_summary_handle,fig_title,fig_title,keys)
 end
 
 function plot_sorted_ISI(o,keys,title_part)
@@ -550,17 +552,18 @@ for n_unit=1:numel(o)
     
     
 end
-title_and_save(ISI_summary_handle,fig_title,keys)
+ph_title_and_save(ISI_summary_handle,fig_title,fig_title,keys)
 end
 
-function title_and_save(figure_handle,plot_title,keys)
-mtit(figure_handle,  plot_title, 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
-stampit;
-if keys.plot.export
-    wanted_size=[50 30];
-    set(figure_handle, 'Paperunits','centimeters','PaperSize', wanted_size,'PaperPositionMode', 'manual','PaperPosition', [0 0 wanted_size]);
-    export_fig([keys.path_to_save 'spike_shapes' filesep plot_title], '-pdf','-transparent') % pdf by run
-    close all
-end
-end
+% function title_and_save(figure_handle,plot_title,keys)
+% mtit(figure_handle,  plot_title, 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
+% stampit;
+% if keys.plot.export
+%     wanted_size=[50 30];
+%     set(figure_handle, 'Paperunits','centimeters','PaperSize', wanted_size,'PaperPositionMode', 'manual','PaperPosition', [0 0 wanted_size]);
+%     export_fig([keys.path_to_save filesep plot_title], '-pdf','-transparent') % pdf by run
+%     close all
+% end
+% end
+
 

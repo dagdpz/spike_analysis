@@ -143,6 +143,8 @@ keys.plot.events                        =1:100;     % select events that should 
 keys.plot.population_PSTH_legends       =1;         % if population legends should be plotted or not
 keys.plot.cell_count_legends            =1;         % if population legends should be plotted or not
 keys.plot.scatter_legends               =1;         % if population legends should be plotted or not
+keys.plot.rotate_epoch_labels           =0;
+keys.plot.rotate_time_labels            =0;
 
 %% Single cell plot settings
 % ylimits
@@ -630,6 +632,7 @@ keys.colors.per_monkey          =[0 1 0; 1 0 0];
 
 %% tuning table readout options (excluding particular subsets)
 keys.tt.combine_tuning_properties   ={'place_name_here'}; %% additional table entry from combining columns
+keys.tt.replace_tuning              ={}; %% additional table entry from combining columns
 keys.tt.perturbations               = 0;
 keys.tt.choices                     = 0;
 keys.tt.hands                       = 0;
@@ -899,4 +902,5 @@ keys.AN.multicomparison='none';
   keys.population_defaults.RF_rows                           = [];
   
 
+  keys.population_defaults.redo_statistics                   = 0; %% maybe even put 1 here
 

@@ -67,9 +67,13 @@ keys.normalization_field='RF';
 
 %% plots
 
-logscale_127=(1:127)'*255/127;
+%logscale_127=(1:127)'*255/127;
+logscale_127=(0:126)'/127;
+
 if keys.RF.FR_subtract_baseline
-    RF_colormap=[logscale_127 logscale_127 ones(127,1)*255; 255 255 255; ones(127,1)*255 flipud(logscale_127) flipud(logscale_127)]/256;
+    RF_colormap=[logscale_127*([255 255 255]-keys.colors.EP_SU)+repmat(keys.colors.EP_SU,size(logscale_127)); 255 255 255;...
+          flipud(logscale_127*([255 255 255]-keys.colors.EP_EN)+repmat(keys.colors.EP_EN,size(logscale_127)))]/255;
+    %RF_colormap=[logscale_127 logscale_127 ones(127,1)*255; 255 255 255; ones(127,1)*255 flipud(logscale_127) flipud(logscale_127)]/256;
 else
     RF_colormap=[255*ones(1,255);255:-1:1;255:-1:1]'/255;
 end
@@ -85,7 +89,7 @@ for t=1:size(condition,1)
     unique_group_values_tmp=unique_group_values;
     for gt=1:numel(unique_group_values_tmp)
         unique_group_values=unique_group_values_tmp(gt);
-        group_units=find(ismember(population_group,unique_group_values));
+        group_units=find(ismember(population_group,unique_group_values))';
         RF_frame_entries=population_RF_frames(group_units);
 %         unitidx=ismember(complete_unit_list,TT(ismember(group_values,unique_group_values_tmp(gt)),idx.unitID));
 %         group_units=find(all(unitidx,2))';
@@ -189,7 +193,7 @@ for t=1:size(condition,1)
         
 %         unique_group_values=unique_group_values_tmp(gt);
 %         g_idx=ismember(population_group,unique_group_values(1));
-%         g=1;
+         g=1;
 %         unitidx=ismember(complete_unit_list,TT(ismember(group_values,unique_group_values(g)),idx.unitID));
 %         group_units=find(all(unitidx,2))';
         if isempty(keys.RF.RF_columns) || isempty(keys.RF.RF_rows)
@@ -314,7 +318,7 @@ for t=1:size(condition,1)
                 axis equal
                 set(gca,'Ydir','normal','Xtick',[],'Ytick',[],'xlim',[min(fitsettings.xout) max(fitsettings.xout)],'ylim',[min(fitsettings.yout) max(fitsettings.yout)]);
             end
-            subplot(RF_rows,RF_columns,numel(group_units)+1);
+            subplot(RF_rows,RF_columns,RF_rows*RF_columns);
             colorbar;
             ph_title_and_save(f_handle,  [filename plot_title_part],[fig_title plot_title_part],keys);
             
@@ -445,9 +449,9 @@ for t=1:size(condition,1)
                     current_monkey=Allmonkeys{cellfun(@(x) any(strfind(x,population(u).unit_ID(1:3))),Allmonkeys)};
                     
                     if sign(zmax)==1
-                        col='r';
+                        col=keys.colors.EP_EN/255;
                     elseif sign(zmax)==-1
-                        col='b';
+                        col=keys.colors.EP_SU/255;
                     else
                         col='k';
                     end

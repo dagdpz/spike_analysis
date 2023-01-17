@@ -15,8 +15,9 @@ TT(:,end+1)=num2cell(repmat('Y',size(TT,1),1));
 TT(1,end)={'ungrouped'};
 
 %% add trial criterion column (exisiting_tasktype)
-if ~all(cellfun(@isempty,strfind(TT(1,:),'_trials_per_position'))) %~isempty(taskcaseexistingindex)
-    %taskcases={};
+% if ~all(cellfun(@isempty,strfind(TT(1,:),'_trials_per_position'))) %~isempty(taskcaseexistingindex)
+%     %taskcases={};
+%if ~ keys.ignore_trial_criterion
     for criterium={'in','ch'}
         crit=criterium{:};
         switch keys.tt.(['trial_criterion_' crit])
@@ -39,4 +40,4 @@ if ~all(cellfun(@isempty,strfind(TT(1,:),'_trials_per_position'))) %~isempty(tas
         end
     end
 end
-end
+%end

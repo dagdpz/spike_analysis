@@ -1,4 +1,4 @@
-function [fig_title,filename]=ph_figure_titles(keys)
+function [fig_title,filename,condition_title]=ph_figure_titles(keys)
 
 PF=keys.normalization_field;
 Sel_for_title=keys.selection_title;

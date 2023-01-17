@@ -42,7 +42,7 @@ switch analysis_type
                end
             end
             if u==1
-                table(1,2:3)={[label '_' keys.RF.epoch_RF '_center_x_' typ_eff '_' keys.arrangement],[label '_' keys.RF.epoch_RF '_size_x_' typ_eff '_' keys.arrangement]}; %% add RF epoch
+                table(1,2:3)={[label '_' keys.RF.epoch_RF '_center_x_' typ_eff '_' keys.arrangement(1:3)],[label '_' keys.RF.epoch_RF '_size_x_' typ_eff '_' keys.arrangement(1:3)]}; %% add RF epoch
             end
             if any(strcmp(fieldnames(RFstruct),'sx'))
                 RFstruct.xsize=max(abs(RFstruct.sx*cos(RFstruct.phi)),abs(RFstruct.sy*sin(RFstruct.phi)));
