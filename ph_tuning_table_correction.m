@@ -211,7 +211,7 @@ if ~isempty(idx_p) && ~isempty(idx_h)
     for u=2:size(TT,1)
         empties=cellfun(@isempty,TT(u,idx_p));
         pvals=[TT{u,idx_p}];
-        if ~isempty(pvals)
+        if ~isempty(pvals) && ~all(isnan(pvals))
             if (any(isnan(pvals)) || any(empties)) && ~message_sent                
                 to_display=[to_display, {['found NAN or empty values for factor:' factor ', excluding them from multicomparison correction']}];
                 message_sent=1;
