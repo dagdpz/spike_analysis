@@ -481,7 +481,7 @@ for ch=1:numel(conditions.choice)
                     p= sum([bootstrapped.ch_prefHI_FR]-[bootstrapped.in_prefHI_FR]<0)/n_boots;
                     p(p>0.5)=p-1;p=p*2;
                     %h= prctile([bootstrapped.ch_prefHI_FR]-[bootstrapped.in_prefHI_FR],2.5) >0 | prctile([bootstrapped.ch_prefHI_FR]-[bootstrapped.in_prefHI_FR],97.5) <0;
-                    h= p<0.05;
+                    h= abs(p)<0.05;
                     DF=nanmean([bootstrapped.ch_prefHI_FR]-[bootstrapped.in_prefHI_FR]);
                     labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
                     anova_struct.([IN '_' LHRH '_' s{:} '_prefH'])       =labels.choices{labelindex};
@@ -796,13 +796,13 @@ switch keys.AN.test_types
     case 'parametric'
         if paired
             if any(~isnan(A)&~isnan(B))
-                h = ttest(A,B);
+                [h,p] = ttest(A,B);
             else
                 h=0;
             end
         else
             if any(~isnan(A)) && any (~isnan(B))
-                h = ttest2(A,B);
+                [h,p] =  ttest2(A,B);
             else
                 h=0;
             end
