@@ -231,6 +231,8 @@ pval_abs=abs(pval);
 pval_sign=sign(pval);
 alpha=0.05;
 switch keys.AN.multicomparison
+    case 'none'
+        new_sig=abs(pval)<alpha;
     case 'bonferoni'
         new_sig=pval*numel(pval)<alpha;
     case 'FDR' % Benjamini-Hochberg FDR algorithm
