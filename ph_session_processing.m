@@ -144,7 +144,7 @@ for current_date = sessions(:)'
         end
         
         % plot the cells used for further processing
-        if keys.plot.waveforms
+        if keys.plot.waveforms && ~isempty(pop_resorted)
             keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'spike_shapes' filesep];
             plot_sorted_waveforms(pop_resorted,keys,'analyzed units');
             plot_sorted_ISI(pop_resorted,keys,'analyzed units ISI');

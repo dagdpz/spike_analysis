@@ -4,54 +4,36 @@ for fn=fieldnames(modified_keys)'
     keys.(fn{:})=modified_keys.(fn{:});
 end
 
-%% tuning table preparation and grouping
-[tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
-[tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
-if keys.CL.FR_subtract_baseline
-    Sel_for_title =[Sel_for_title,{'base';'=';keys.GF.epoch_BL;', '}];
-end
-idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.CL.group_parameter);
-group_values=tuning_per_unit_table(:,idx_group_parameter);
-group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
-cell_in_any_group=[false; ~ismember(group_values(2:end),keys.CL.group_excluded)];
-unique_group_values=unique(group_values(cell_in_any_group));
+[TT,idx,group_values,unique_group_values]=ph_readout_tuning_table(keys);
 if isempty(unique_group_values)
     disp('no relevant groups found');
     return;
 end
 complete_unit_list={population.unit_ID}';
-%
-idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
-
 
 for g=1:numel(unique_group_values)
     clear suindexes
-    unitidx=ismember(complete_unit_list,tuning_per_unit_table(ismember(group_values,unique_group_values(g)),idx_unitID));
+    unitidx=ismember(complete_unit_list,TT(ismember(group_values,unique_group_values(g)),idx.unitID));
     units=find(all(unitidx,2))';
-    onerunonly=arrayfun(@(x) numel(x.block_unit)==3,population(units));
-    IDS={population(units).unit_ID};
-    IDS_multirun=IDS(~onerunonly);
-    multirun_index=ismember(IDS,IDS_multirun);
+        
     singlerating=[population(units).Single_rating];
-    stabilityrating=[population(units).stability_rating];
+    stabilityrating=[population(units).stability_rating]; % all of them are supposed to be stable
     snrrating=[population(units).SNR_rating];
     
+    suindexes(1,:)=singlerating==1 & snrrating<=2;
+    suindexes(2,:)=(singlerating>1 | snrrating>=2);
 
     FR=[population(units).FR];
     bins=2.5:5:ceil(max(FR)*10)/10;
 
-    %% figure 1 ONLY ginle ranking ,
+    %% figure 1 ONLY single ranking ,
     
-    suindexes(1,:)=singlerating==1 & snrrating<3;
-    suindexes(2,:)=singlerating>1 | snrrating>=3;
-    %suindexes(3,:)=singlerating==3;
-    
-    plot_title=[keys.tt.tasktypes{:}  ' FR dependent on Su ranking only'];
+    plot_title=[keys.tt.tasktypes{:}  ' FR dependent on Su ranking'];
     filename=plot_title;
     figure_handle= figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
     histoindex= suindexes ;
+    colormap(jet(size(histoindex,1)));
     histoindex(end+1,:)=true([1 size(histoindex,2)]);
-    colormap(jet(size(histoindex,2)))
     for h=1:size(histoindex,1)
         histo(:,h)=hist(FR(histoindex(h,:)),bins);
         means(h)=nanmean(FR(histoindex(h,:)));
@@ -59,39 +41,26 @@ for g=1:numel(unique_group_values)
         stds(h)=nanstd(FR(histoindex(h,:)));
     end
     bar(bins,histo(:,1:end-1),'stacked');
-    cols=colormap;
+    cols=[jet(size(suindexes,1)); 0 0 0];
     y_lim=get(gca,'ylim');
     x_lim=get(gca,'xlim');
     for h=1:size(histoindex,1)
-        texttoplot=['M:' num2str(means(h)) ' +' num2str(stds(h)) ', med:'  num2str(medians(h)) ];
-        text(x_lim(1)+diff(x_lim)/20,y_lim(2)-diff(y_lim)/40*h,texttoplot,'color',cols(h,:));
+        texttoplot=['Mean:' num2str(means(h)) ' +' num2str(stds(h)) ', med:'  num2str(medians(h)) ];
+        text(x_lim(2)-diff(x_lim)/2,y_lim(2)-diff(y_lim)/40*h,texttoplot,'color',cols(h,:));
     end
-    legend({'SU','Su+','MU'})
+    legend({'SU','MU'})
     xlabel('Firing rate')
     ylabel('N units');
     ph_title_and_save(figure_handle,filename,plot_title,keys)
 
-
-
-    suindexes(1,:)=singlerating==1 & stabilityrating==1;
-    suindexes(2,:)=singlerating==2 | (singlerating==1 & stabilityrating<1) & ~ multirun_index;
-    suindexes(3,:)=singlerating>2;
-    multirun_index=multirun_index & ~suindexes(3,:) & ~suindexes(1,:);
     
-    notenoughtrials_forsingle_idx=ismember(IDS,keys.CL.split_SUs); % excluded from singleunitanalysis
-    suindexes(1,:)= suindexes(1,:) | (multirun_index &~ notenoughtrials_forsingle_idx);
-    suindexes(2,:)=suindexes(2,:) | notenoughtrials_forsingle_idx;
+    %% figure 2 SU/SU+/MU thiss is same as 1 - i guess the idea was to split furter...??
     
-    
-    
-    
-    
-    %% figure 2 SU/SU+/MU + six units,
-    
-    plot_title=[keys.tt.tasktypes{:} ' FR SU_SU+_MU with torn units'];
+    plot_title=[keys.tt.tasktypes{:} ' FR SU_MU'];
     filename=plot_title;
     figure_handle= figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
     histoindex= suindexes ;
+    cols=[jet(size(histoindex,1)); 0 0 0];
     histoindex(end+1,:)=true([1 size(histoindex,2)]);
     
     for h=1:size(histoindex,1)
@@ -101,7 +70,6 @@ for g=1:numel(unique_group_values)
         stds(h)=nanstd(FR(histoindex(h,:)));
     end
     %bar(bins,histo,'stacked');
-    cols=colormap;
     for h=1:size(histoindex,1)
         subplot(size(histoindex,1),1,h)
         bar(bins,histo(:,h));
@@ -110,42 +78,10 @@ for g=1:numel(unique_group_values)
         texttoplot=['M:' num2str(means(h)) ' +' num2str(stds(h)) ', med:'  num2str(medians(h)) ];
         text(x_lim(1)+diff(x_lim)/20,y_lim(2)-diff(y_lim)/40*h,texttoplot,'color',cols(h,:));
     end
-    legend({'SU','SU+','MU'})
+    legend({'SU','MU'})
     xlabel('Firing rate')
     ylabel('N units');
     ph_title_and_save(figure_handle,filename,plot_title,keys)
-    
-    %% figure 3 SU + multirun_units,
-    
-    suindexes(3,:)=suindexes(2,:) | suindexes(3,:);
-    suindexes(2,:)=multirun_index &~ notenoughtrials_forsingle_idx;
-    suindexes(1,:)=singlerating==1 & stabilityrating==1;
-    
-    plot_title=[keys.tt.tasktypes{:}  ' FR SU_MU with torn units'];
-    filename=plot_title;
-    figure_handle= figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
-    histoindex= suindexes ;
-    histoindex(end+1,:)=true([1 size(histoindex,2)]);
-    colormap(jet(size(histoindex,2)))
-    for h=1:size(histoindex,1)
-        histo(:,h)=hist(FR(histoindex(h,:)),bins);
-        means(h)=nanmean(FR(histoindex(h,:)));
-        medians(h)=nanmedian(FR(histoindex(h,:)));
-        stds(h)=nanstd(FR(histoindex(h,:)));
-    end
-    bar(bins,histo(:,1:end-1),'stacked');
-    cols=colormap;
-    y_lim=get(gca,'ylim');
-    x_lim=get(gca,'xlim');
-    for h=1:size(histoindex,1)
-        texttoplot=['M:' num2str(means(h)) ' +' num2str(stds(h)) ', med:'  num2str(medians(h)) ];
-        text(x_lim(1)+diff(x_lim)/20,y_lim(2)-diff(y_lim)/40*h,texttoplot,'color',cols(h,:));
-    end
-    legend({'SU','torn','MU'})
-    xlabel('Firing rate')
-    ylabel('N units');
-    ph_title_and_save(figure_handle,filename,plot_title,keys)
-    
     
     %% figure 3 SU/MU with gain field units,
     if false ; %exist()
@@ -158,11 +94,11 @@ for g=1:numel(unique_group_values)
         RF_per_epoch=vertcat(population.RF_per_epoch); % cue
         RF_per_epoch_cue=RF_per_epoch(units,e);
         
-        positionanovaindex=DAG_find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_position_' keys.tt.tasktypes{:}]);
-        gazeanovaindex=DAG_find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_fixation_' keys.tt.tasktypes{:}]);
-        interactionanovaindex=DAG_find_column_index(tuning_per_unit_table,['in_AH_' EPOCHS{e,1} '_PxF_' keys.tt.tasktypes{:}]);
-        unit_IDs_over_all_position_effect=tuning_per_unit_table(strcmp(['false'; tuning_per_unit_table(2:end,positionanovaindex)],'true'),1);
-        unit_IDs_gazedependence=tuning_per_unit_table(strcmp(['false'; tuning_per_unit_table(2:end,gazeanovaindex)],'true') | strcmp(['false'; tuning_per_unit_table(2:end,interactionanovaindex)],'true'),1);
+        positionanovaindex=DAG_find_column_index(TT,['in_AH_' EPOCHS{e,1} '_position_' keys.tt.tasktypes{:}]);
+        gazeanovaindex=DAG_find_column_index(TT,['in_AH_' EPOCHS{e,1} '_fixation_' keys.tt.tasktypes{:}]);
+        interactionanovaindex=DAG_find_column_index(TT,['in_AH_' EPOCHS{e,1} '_PxF_' keys.tt.tasktypes{:}]);
+        unit_IDs_over_all_position_effect=TT(strcmp(['false'; TT(2:end,positionanovaindex)],'true'),1);
+        unit_IDs_gazedependence=TT(strcmp(['false'; TT(2:end,gazeanovaindex)],'true') | strcmp(['false'; TT(2:end,interactionanovaindex)],'true'),1);
         
         ANOVA_position_effect=ismember(IDS,unit_IDs_over_all_position_effect);
         gaze_dependence=ismember(IDS,unit_IDs_gazedependence)';
@@ -214,8 +150,24 @@ for g=1:numel(unique_group_values)
     
     %% figure 4 number of trials
     
-    N_trials_indx=DAG_find_column_index(tuning_per_unit_table,['in_AH_' 'trials_per_condition_' keys.tt.tasktypes{:} ]);
-    N_per_condition=[tuning_per_unit_table{2:end,N_trials_indx}];
+     for criterium={'in','ch'}
+        crit=criterium{:};
+        switch keys.tt.(['trial_criterion_' crit])
+            case 'per_hemifield_and_perturbation'
+                strtofind='trials_per_hemifield'; %% ??? - there will be a problem with perturbation stuff !!
+                disp(['per_hemifield_and_perturbation not supported as trial criterion' ]);
+        end
+        
+        strtofind=['trials_' keys.tt.(['trial_criterion_' crit])]; %% why this needed to be a cell here but not in load_tuning_table
+        N_trial_idx.(crit)=find(~cellfun(@isempty,strfind(keys.tuning_table(1,:),strtofind)));
+        N_titles=keys.tuning_table(1,N_trial_idx.(crit));
+        tmp_idx=find(~cellfun(@isempty,strfind(N_titles,crit)));
+         N_trial_idx.(crit)= N_trial_idx.(crit)(tmp_idx);
+     end
+    
+    instructed_N_titles=keys.tuning_table(1,N_trial_idx.in);
+        tmp_idx=find(~cellfun(@isempty,strfind(instructed_N_titles,keys.tt.tasktypes{:})));
+    N_per_condition=[TT{:,N_trial_idx.in(tmp_idx)}];
     n_total=arrayfun(@(x) sum([x.trial.accepted] & [x.trial.success]),population);
     
     plot_title=[keys.tt.tasktypes{:} ' number of trials'];
@@ -230,8 +182,9 @@ for g=1:numel(unique_group_values)
     
     texttoplot=['M:' num2str(mean(N_per_condition)) ' +' num2str(std(N_per_condition)) ', med:'  num2str(median(N_per_condition)) ', range:'  num2str(min(N_per_condition)) ' to ' num2str(max(N_per_condition))];
     text(x_lim(1)+diff(x_lim)/20,y_lim(2)-diff(y_lim)/40,texttoplot);
-    xlabel('MMinimum trials per condition')
+    xlabel('Minimum trials per condition')
     ylabel('N units');
+    title('Minimum N trials per condition');
     
     subplot(3,1,2)
     bins=0:5:ceil(max(n_total(units))*10)/10;
@@ -242,6 +195,7 @@ for g=1:numel(unique_group_values)
     text(x_lim(1)+diff(x_lim)/20,y_lim(2)-diff(y_lim)/40,texttoplot);
     xlabel('Total trials per condition')
     ylabel('N units');
+    title('total N trials per condition');
     
     
     n_total=n_total/24;
@@ -254,6 +208,7 @@ for g=1:numel(unique_group_values)
     text(x_lim(1)+diff(x_lim)/20,y_lim(2)-diff(y_lim)/40,texttoplot);
     xlabel('Average trials per condition')
     ylabel('N units');
+    title('Minimum N trials per condition');
     ph_title_and_save(figure_handle,filename,plot_title,keys)
 end
 

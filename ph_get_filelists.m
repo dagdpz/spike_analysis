@@ -8,31 +8,30 @@ end
 complete_unit_list={population.unit_ID}';
 [unit_valid,TM]=ismember(complete_unit_list,TT(:,idx.unitID));
 population=population(unit_valid);
-complete_unit_list={population.unit_ID}';
-population_group=group_values(TM(unit_valid));
+% complete_unit_list={population.unit_ID}';
+% population_group=group_values(TM(unit_valid));
 all_trialz=[population.trial];
 [UC, CM, labels]=ph_get_condition_matrix(all_trialz,keys);
-
+CP_out                      = [{'type','effector'},keys.condition_parameters];
+conditions_out              = combvec(UC.type,UC.effector,CM')';
 
 pop_monkeys={population.monkey};
 %pop_target={population.target};
 
 %keys.target=keys.batching.targets{1}; %% to_remove...
-CP_out                      = [{'type','effector'},keys.condition_parameters];
-conditions_out              = combvec(UC.type,UC.effector,CM')';
 
-
+%% these here should be inputs
 keys.colors.fix_offset=[keys.colors.IF; keys.colors.MF; keys.colors.IF_CS];
-
-corrective=0;
+corrective=1;
 recalibrated=0;
+toplot=1;
+current_effector='saccades';
+epoch={'Thol',5,	0.2,    0.5}; %% for final precision etc.
+datapath_recalibrated=''; %% data path for recalibrated data
 
+%%% actually the idea of splitting into datasets is kind of obsolete now?
 
-%% if it exists, load!
-%save([keys.path_to_save filesep 'behaviour_filelist.mat'],'filelist','filelist_formatted');
-
-
-
+%% create filelist from population files
 for m=1:numel(keys.monkeys)
     keys.monkey=keys.monkeys{m};
     pop_m=population(ismember(pop_monkeys,[keys.monkey '_phys']));
@@ -47,7 +46,7 @@ for m=1:numel(keys.monkeys)
             keys.tt.(fn)=conditions_out(c,par);
         end
         c_trials=pop_trials(all(trpar,1));
-        [fig_title,filename,condition_title]=ph_figure_titles(keys);
+        [~,~,condition_title]=ph_figure_titles(keys);
         condition_title=strrep(condition_title,' ','_');
         if isempty(c_trials)
             continue;
@@ -60,17 +59,19 @@ for m=1:numel(keys.monkeys)
         end
         if recalibrated==1
             prefix=[prefix '_recal'];
+            base_path=datapath_recalibrated;
         else
             prefix=[prefix '_rawMP'];
+            %base_path=['Y:\Data\' keys.monkey '_phys_combined_monkeypsych_TDT\'];
+            base_path='Y:\Data'; %\' keys.monkey '_phys_combined_monkeypsych_TDT\'];
         end
-
+        
         blocks=unique([[c_trials.date]',[c_trials.block]'],'rows');
         sessions=unique(blocks(:,1));
         for s=1:numel(sessions)
             session=sessions(s);
             idx=blocks(:,1)==session;
-            base_path=['Y:\Data\' keys.monkey '_phys_combined_monkeypsych_TDT\' num2str(session)];
-            runs=run2block(base_path,blocks(idx,2),1);
+            runs=run2block([base_path filesep keys.monkey '_phys_combined_monkeypsych_TDT' filesep num2str(session)],blocks(idx,2),1);
             blocks(idx,3)=runs;
             filelist_formatted.(prefix){s,1}=session;
             filelist_formatted.(prefix){s,2}=runs;
@@ -80,25 +81,36 @@ for m=1:numel(keys.monkeys)
         runs2=arrayfun(@(x) sprintf('%02d',mod(floor(x/100),100)), blocks(:,1),'UniformOutput',false);
         runs3=arrayfun(@(x) sprintf('%02d',mod(x,100)), blocks(:,1),'UniformOutput',false);
         runs4=arrayfun(@(x) sprintf('%02d',x), blocks(:,3),'UniformOutput',false);
-
-        %% here we can make a case for, uhm, corrected data?
-        if corrective==1
-        else
-        current_filelist=strcat(['Y:\Data\' keys.monkey filesep], runs0, keys.monkey(1:3), runs1, '-', runs2, '-', runs3, '_', runs4,'.mat');
-        end
+        
+        %% here we can make a case for, uhm, recalibrated data?
+        current_filelist=strcat([base_path filesep keys.monkey filesep], runs0, keys.monkey(1:3), runs1, '-', runs2, '-', runs3, '_', runs4,'.mat');
         filelist.(prefix)=current_filelist;
     end
 end
-save([keys.path_to_save filesep 'behaviour_filelist.mat'],'filelist','filelist_formatted');
+if exist([keys.path_to_save filesep 'behaviour_filelist.mat'],'file'); % make sure to save filelist without intervening with current plotting
+    filelist_tmp=filelist;
+    filelist_formatted_tmp=filelist_formatted;
+    load([keys.path_to_save filesep 'behaviour_filelist.mat'])
+    FN=fieldnames(filelist_tmp);
+    for f=1:numel(FN)
+        filelist.(FN{f})=filelist_tmp.(FN{f});
+        filelist_formatted.(FN{f})=filelist_formatted_tmp.(FN{f});
+    end
+    save([keys.path_to_save filesep 'behaviour_filelist.mat'],'filelist','filelist_formatted');
+    filelist=filelist_tmp;
+    filelist_formatted=filelist_formatted_tmp;
+    clear filelist_formatted_tmp filelist_tmp
+else
+    
+    save([keys.path_to_save filesep 'behaviour_filelist.mat'],'filelist','filelist_formatted');
+end
 
 
 if corrective==1
-    keys.cal.MA_selection                   ={'correct_offset',0,'success',1,'display',0,'summary',0,'keep_raw_data',1,'saccade_definition',4,'reach_1st_pos',1,'correlation_conditions',{},'nsacc_max', 20, 'sac_ini_t', 20,  'sac_end_t',  10, 'sac_min_dur', 0, 'sac_min_dur', 0, 'which_saccade', 'corrective'};                        % if you want to run MA with specific settings
+    keys.cal.MA_selection                   ={'correct_offset',0,'success',1,'display',0,'summary',0,'keep_raw_data',1,'saccade_definition',11,'reach_1st_pos',1,'correlation_conditions',{},'nsacc_max', 20, 'sac_ini_t', 20,  'sac_end_t',  10, 'sac_min_dur', 0, 'sac_min_dur', 0};                        % if you want to run MA with specific settings
 else
     keys.cal.MA_selection                   ={'correct_offset',0,'success',1,'display',0,'keep_raw_data',1,'saccade_definition',4,'reach_1st_pos',1,'correlation_conditions',{}};                        % if you want to run MA with specific settings
 end
-
-epoch={'Thol',5,	0.2,    0.5};
 
 
 FN=fieldnames(filelist);
@@ -106,81 +118,26 @@ for f=1:numel(FN)
     FN_nomonkey{f}=FN{f}(5:end);
 end
 datasets=unique(FN_nomonkey);
+allmonkeys=[{'All'} keys.monkeys];
 for D=1:numel(datasets)
     dataset=datasets{D};
-    for monkeys=[{'Both'} keys.monkeys]
-        monkey=monkeys{:};
-        if strcmp(monkey,'Both')
-            monkey='Lin';
-            taskfield=[monkey '_' dataset];
-            mainfolder=filelist.(taskfield){1};
-            dashstr=strfind(mainfolder,'\');
-            mainfolder=mainfolder(1:dashstr(end));
-            filelist_in=filelist_formatted.(taskfield);
-            filelist_in(:,1)=cellstr(num2str(vertcat(filelist_in{:,1})));
-            filelist_in(:,1)=strcat(mainfolder, filelist_in(:,1));
-            
-            if recalibrated==1
-                aa=dir([datapath filesep monkey filesep]);
-                sessions={aa([aa.isdir]).name};
-                sessions=sessions(3:end);
-                for s=1:numel(sessions)
-                    filelist_in{s,1}=[datapath filesep monkey filesep sessions{s}];
-                end
+    for m=1:numel(allmonkeys)
+        monkey=allmonkeys{m};
+        if strcmp(monkey,'All')
+            filelist_in={};
+            for M=1:numel(keys.monkeys)
+                monkey=keys.monkeys{M};
+                filelist_in=vertcat(filelist_in,get_filelist_per_session(monkey,dataset,filelist,filelist_formatted,recalibrated,datapath_recalibrated));
             end
-            
-            monkey='Cur';
-            taskfield=[monkey '_' dataset];
-            mainfolder=filelist.(taskfield){1};
-            dashstr=strfind(mainfolder,'\');
-            mainfolder=mainfolder(1:dashstr(end));
-            filelist_in2=filelist_formatted.(taskfield);
-            filelist_in2(:,1)=cellstr(num2str(vertcat(filelist_in2{:,1})));
-            filelist_in2(:,1)=strcat(mainfolder, filelist_in2(:,1));
-            
-            
-            if recalibrated==1
-                aa=dir([datapath filesep monkey filesep]);
-                sessions={aa([aa.isdir]).name};
-                sessions=sessions(3:end);
-                for s=1:numel(sessions)
-                    filelist_in2{s,1}=[datapath filesep monkey filesep sessions{s}];
-                end
-            end
-            
-            filelist_in=vertcat(filelist_in, filelist_in2);
-            monkey='Both';
         else
-            taskfield=[monkey(1:3) '_' dataset];
-            mainfolder=filelist.(taskfield){1};
-            dashstr=strfind(mainfolder,'\');
-            mainfolder=mainfolder(1:dashstr(end));
-            filelist_in=filelist_formatted.(taskfield);
-            filelist_in(:,1)=cellstr(num2str(vertcat(filelist_in{:,1})));
-            filelist_in(:,1)=strcat(mainfolder, filelist_in(:,1));
-            
-            
-            if recalibrated==1
-                aa=dir([datapath filesep monkey filesep]);
-                sessions={aa([aa.isdir]).name};
-                sessions=sessions(3:end);
-                for s=1:numel(sessions)
-                    filelist_in{s,1}=[datapath filesep monkey filesep sessions{s}];
-                end
-            end
+            filelist_in=get_filelist_per_session(monkey,dataset,filelist,filelist_formatted,recalibrated,datapath_recalibrated);
         end
-        %end
         MA_input={};
         for f=1:size(filelist_in,1)
             MA_input=[MA_input, {{filelist_in{f,1}, filelist_in{f,2}}},{keys.cal.MA_selection}];
         end
         data=monkeypsych_analyze_working(MA_input{:});
-        
-        %     condition_parameters  ={'reach_hand','choice','perturbation'};
-        %     u_hemifields=[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
-        %
-        
-        
+                
         all_data=[data{:}];
         all_task=vertcat(all_data.task);
         all_binary=vertcat(all_data.binary);
@@ -189,58 +146,8 @@ for D=1:numel(datasets)
         [all_task.hemifield]=hemifields{:};
         u_hemifields=unique([all_task.hemifield]);
         
-        % conditions_curr              = combvec(u_hemifields,UC.type,UC.effector,CM')';
-        % CP_curr                      = [{'hemifield','type','effector'},keys.condition_parameters];
         
-        
-        
-        conditions_curr              = combvec(UC.type,UC.effector,CM')';
-        CP_curr                      = [{'type','effector'},keys.condition_parameters];
-        
-        
-        
-        
-        
-        %     %all_reaches=vertcat(all_data.reaches);
-        %     u_types     =unique([all_task.type]);
-        %     u_effectors =unique([all_task.effector]);
-        %     all_hands       =[all_task.reach_hand];
-        %     all_hands(isnan(all_hands))=0;
-        %     all_choices       =[all_binary.choice];
-        %
-        %     u_hands     =unique(all_hands);
-        %     u_choice    =unique(all_choices);
-        %     u_hands     =u_hands(ismember(u_hands,keys.tt.hands));
-        %     u_choice    =u_choice(ismember(u_choice,keys.tt.choices));
-        %
-        %     all_type_effectors      = combvec(u_types,u_effectors)';
-        %
-        %     condition_matrix            = combvec(u_hands,u_choice)';%, u_perturbation,u_hemifields)';
-        %     type_effectors =[];
-        %
-        %     for t=1:size(all_type_effectors,1)
-        %         typ=all_type_effectors(t,1);
-        %         eff=all_type_effectors(t,2);
-        %         [~, type_effector_short{t}]=MPA_get_type_effector_name(typ,eff);
-        %         if ~ismember(type_effector_short{t},keys.conditions_to_plot) %|| sum(tr_con)<1
-        %             type_effector_short{t}=[];
-        %             continue;
-        %         end
-        %         type_effectors=[type_effectors; all_type_effectors(t,:)];
-        %     end
-        %     type_effector_short(cellfun(@isempty,type_effector_short))=[];
-        %
-        %
-        %     for te=1:size(type_effectors,1)
-        %         type=type_effectors(te,1);
-        %         effector=type_effectors(te,2);
-        
-        
-        
-        for c= 1:size(conditions_curr,1) %% not sure if dom here is 1
-            
-            
-            current_effector='saccades';
+        for c= 1:size(conditions_out,1) %% not sure if dimension here is 1
             all_saccades=vertcat(all_data.(current_effector));
             positions=unique(round([all_saccades.tar_pos] - [all_saccades.fix_pos]));
             positions(isnan(positions))=[];
@@ -248,12 +155,6 @@ for D=1:numel(datasets)
             distances=abs(positions);
             unique_distances=unique(distances);
             
-            eff=conditions_curr(c,strcmp(CP_curr,'effector'));
-            typ=conditions_curr(c,strcmp(CP_curr,'type'));
-            
-            %             hand=condition_matrix(c,1);
-            %             choice=condition_matrix(c,2);
-            %             condition_title=['hn' num2str(hand) 'ch' num2str(choice)];
             
             clear per_pos per_hemi per_session
             for s=1:numel(data)
@@ -265,23 +166,14 @@ for D=1:numel(datasets)
                 [task.choice]=binary.choice;
                 hemifields=num2cell([binary.eyetar_r]-[binary.eyetar_l]+[binary.hndtar_r]-[binary.hndtar_l]);
                 [task.hemifield]=hemifields{:};
-                
-                
+                                
                 clear trpar
-                for par=1:numel(CP_curr)
-                    fn=CP_curr{par};
-                    trpar(par,:)=[task.(fn)]==conditions_curr(c,par);
-                    keys.tt.(fn)=conditions_curr(c,par);
+                for par=1:numel(CP_out)
+                    fn=CP_out{par};
+                    trpar(par,:)=[task.(fn)]==conditions_out(c,par);
                 end
                 trs=all(trpar,1);
                 
-                
-                [fig_title,filename,condition_title]=ph_figure_titles(keys);
-                condition_title=[monkey(1:3) '_T' num2str(typ) 'E' num2str(eff) '_' keys.arrangement '_' strrep(condition_title,' ','_')];
-                %
-                %                 reach_hand=[task.reach_hand];reach_hand(isnan(reach_hand))=0;
-                %                 binary=[data{s}.binary];
-                %                 trs=[task.type]==type & [task.effector]==effector & [binary.choice]==choice & reach_hand==hand;
                 saccades=saccades(trs);
                 states=states(trs);
                 raw=raw(trs);
@@ -297,10 +189,7 @@ for D=1:numel(datasets)
                 
                 fix_pos=[saccades.fix_pos];
                 for h=1:numel(u_hemifields)
-                    %                     lr=(h-1.5)*2;
-                    %                     tr_idx=sign(real([saccades.tar_pos] - fix_pos))==lr;
                     tr_idx=hemifields==u_hemifields(h);
-                    
                     tr_idx_int=find(tr_idx);
                     if isempty(tr_idx_int)
                         continue;
@@ -316,8 +205,7 @@ for D=1:numel(datasets)
                     end
                     
                     per_hemi(h).sac_end_all{s}=[saccades(tr_idx).endpos]-fix_pos(tr_idx)+real(fix_pos(tr_idx));
-                    per_hemi(h).eye_in_thol_all{s}=av_pos-fix_pos(tr_idx)+real(fix_pos(tr_idx));
-                    
+                    per_hemi(h).eye_in_thol_all{s}=av_pos-fix_pos(tr_idx)+real(fix_pos(tr_idx));                    
                     per_hemi(h).sac_off(s)=nanmean([saccades(tr_idx).accuracy_xy]);
                     per_hemi(h).RTs(s)=nanmean([saccades(tr_idx).lat])*1000;
                     per_hemi(h).dur(s)=nanmean([saccades(tr_idx).dur])*1000;
@@ -329,18 +217,13 @@ for D=1:numel(datasets)
                     per_hemi(h).eye_in_thol(s)=nanmean(av_pos-fix_pos(tr_idx)+real(fix_pos(tr_idx)));
                     per_hemi(h).amp(s)=nanmean(abs([saccades(tr_idx).endpos]-[saccades(tr_idx).startpos]));
                     per_hemi(h).finalamp(s)=nanmean(abs(av_pos-fix_pos(tr_idx)));
-                    per_hemi(h).final_prec(s)=nanstd(av_pos-fix_pos(tr_idx));
-                    
+                    per_hemi(h).final_prec(s)=nanstd(av_pos-fix_pos(tr_idx));                    
                     per_hemi(h).meanRTs= nanmean([per_hemi(h).RTs]);
                     per_hemi(h).meandur= nanmean([per_hemi(h).dur]);
                     per_hemi(h).meanvel= nanmean([per_hemi(h).vel]);
                     per_hemi(h).meanamp= nanmean([per_hemi(h).amp]);
                     per_hemi(h).meanacq_dur= nanmean([per_hemi(h).acq_dur]);
                     per_hemi(h).meanfinalamp= nanmean([per_hemi(h).finalamp]);
-                    %
-                    %                         per_hemi(h).fixation(s)=f;
-                    %                         per_hemi(h).distance(s)=abs(positions(p));
-                    %                         per_hemi(h).position(s)=p;
                     per_hemi(h).percent_sac(s)=sum(~isnan([saccades(tr_idx).lat]))/sum(tr_idx)*100;
                     per_hemi(h).Ntr(s)=sum(tr_idx);
                     per_hemi(h).percent_trials(s)=sum(tr_idx)/per_session.Ntr(s)*100;
@@ -349,8 +232,6 @@ for D=1:numel(datasets)
                 for f=1:numel(fixations)
                     for p=1:numel(positions)
                         tr_idx=(round([saccades.tar_pos] - fix_pos))==positions(p) & real([saccades.fix_pos])==fixations(f);
-                        
-                        
                         tr_idx_int=find(tr_idx);
                         
                         %preallocate...
@@ -370,7 +251,6 @@ for D=1:numel(datasets)
                         per_pos(f,p).amp(s)=NaN;
                         per_pos(f,p).finalamp(s)=NaN;
                         per_pos(f,p).final_prec(s)=NaN;
-                        
                         per_pos(f,p).fixation(s)=NaN;
                         per_pos(f,p).distance(s)=NaN;
                         per_pos(f,p).position(s)=NaN;
@@ -425,8 +305,43 @@ for D=1:numel(datasets)
                 end
             end
             
-            %% plotting
+            %% store here
+            mon(D,m).condition(c).per_session=per_session;
+            mon(D,m).condition(c).per_hemi=per_hemi;
+            mon(D,m).condition(c).per_pos=per_pos;
             
+            
+        end
+    end
+end
+
+%% plotting
+if toplot
+for D=1:numel(datasets)
+    dataset=datasets{D};
+    for m=1:numel(allmonkeys)
+        monkey=allmonkeys{m};
+        for c= 1:size(conditions_out,1) %% not sure if dimension here is 1     
+
+            
+            per_session=mon(D,m).condition(c).per_session;
+            per_hemi=mon(D,m).condition(c).per_hemi;
+            per_pos=mon(D,m).condition(c).per_pos;
+            
+            eff=conditions_out(c,strcmp(CP_out,'effector'));
+            typ=conditions_out(c,strcmp(CP_out,'type'));            
+            for par=1:numel(CP_out)
+                fn=CP_out{par};
+                keys.tt.(fn)=conditions_out(c,par);
+            end
+            [fig_title,filename,condition_title]=ph_figure_titles(keys);
+            condition_title=[monkey(1:3) '_T' num2str(typ) 'E' num2str(eff) '_' keys.arrangement '_' strrep(condition_title,' ','_')];            
+            if corrective
+                condition_title=['Corr ' condition_title];
+            end
+            if recalibrated
+                condition_title=['Recal ' condition_title];
+            end
             
             %% trials per position
             plot_title=[condition_title ' percent saccades detected'];
@@ -478,6 +393,8 @@ for D=1:numel(datasets)
             Colors=keys.colors.fix_offset/256;
             angles=0:pi/180:2*pi;
             
+            
+            
             hold on
             for f=1:numel(fixations)
                 for p=1:numel(positions)
@@ -507,8 +424,6 @@ for D=1:numel(datasets)
                     x0=positions(p)+fixations(f);
                     scatter(real(x0),imag(x0),'+','markeredgecolor','k');
                     plot(real(x0)+r*sin(angles), imag(x0)+r*cos(angles),'k');
-                    
-                    %plot([(nanmean(per_pos(f,p).sac_end)) , nanmean(per_pos(f,p).eye_in_thol)],'color',Colors(f,:));
                     scatter(real([per_pos(f,p).sac_end]),imag([per_pos(f,p).sac_end]),30,Colors(f,:),'filled');
                     nanmean(per_pos(f,p).dur);
                 end
@@ -522,7 +437,7 @@ for D=1:numel(datasets)
             figure_handle= figure('units','normalized','outerposition',[0 0 1 1],'name',plot_title);
             Colors=keys.colors.fix_offset/256;
             angles=0:pi/180:2*pi;
-            
+                        
             hold on
             for f=1:numel(fixations)
                 for p=1:numel(positions)
@@ -530,11 +445,8 @@ for D=1:numel(datasets)
                     x0=positions(p)+fixations(f);
                     scatter(real(x0),imag(x0),'+','markeredgecolor','k');
                     plot(real(x0)+r*sin(angles), imag(x0)+r*cos(angles),'k');
-                    
-                    %plot([(nanmean(per_pos(f,p).sac_end)) , nanmean(per_pos(f,p).eye_in_thol)],'color',Colors(f,:));
                     plot([[per_pos(f,p).sac_end]' , [per_pos(f,p).eye_in_thol]']','color',Colors(f,:));
                     scatter(real([per_pos(f,p).eye_in_thol]),imag([per_pos(f,p).eye_in_thol]),15,Colors(f,:),'filled');
-                    %nanmean(per_pos(f,p).dur);
                 end
             end
             axis equal
@@ -556,11 +468,8 @@ for D=1:numel(datasets)
                             x0=positions(p)+fixations(f);
                             scatter(real(x0),imag(x0),'+','markeredgecolor','k');
                             plot(real(x0)+r*sin(angles), imag(x0)+r*cos(angles),'k');
-                            
-                            %plot([(nanmean(per_pos(f,p).sac_end)) , nanmean(per_pos(f,p).eye_in_thol)],'color',Colors(f,:));
                             plot([[per_pos(f,p).sac_end_all{s}]' , [per_pos(f,p).eye_in_thol_all{s}]']','color',Colors(f,:));
                             scatter(real([per_pos(f,p).eye_in_thol_all{s}]),imag([per_pos(f,p).eye_in_thol_all{s}]),15,Colors(f,:),'filled');
-                            %nanmean(per_pos(f,p).dur);
                         end
                     end
                 end
@@ -588,8 +497,6 @@ for D=1:numel(datasets)
                     r=nanmean([per_pos(f,p).sac_prec]);
                     plot(real(x0)+r*sin(angles), imag(x0)+r*cos(angles),'color',Colors(f,:));
                     drawring([real(x0) imag(x0)],r-sterr([per_pos(f,p).sac_prec]), r+sterr([per_pos(f,p).sac_prec]),angles,Colors(f,:));
-                    %scatter(real([per_pos(f,p).sac_prec]),imag([per_pos(f,p).sac_prec]),30,Colors(f,:),'filled');
-                    %nanmean(per_pos(f,p).dur);
                 end
             end
             axis equal
@@ -610,12 +517,9 @@ for D=1:numel(datasets)
                     x0=positions(p)+fixations(f);
                     scatter(real(x0),imag(x0),'+','markeredgecolor','k');
                     plot(real(x0)+r*sin(angles), imag(x0)+r*cos(angles),'k');
-                    
                     x0=nanmean([per_pos(f,p).sac_end]);
                     r=nanstd([per_pos(f,p).sac_end]);
                     plot(real(x0)+r*sin(angles) , imag(x0)+r*cos(angles),'color',Colors(f,:));
-                    %scatter(real([per_pos(f,p).sac_prec]),imag([per_pos(f,p).sac_prec]),30,Colors(f,:),'filled');
-                    %nanmean(per_pos(f,p).dur);
                 end
             end
             axis equal
@@ -722,9 +626,7 @@ for D=1:numel(datasets)
             plot(bins,histo);
             [~, p_lr]=ttest(per_hemi(1).RTs,per_hemi(2).RTs);
             title([num2str(round(nanmean(per_hemi(1).RTs))) ' + ' num2str(round(sterr(per_hemi(1).RTs))) ' / '...
-                num2str(round(nanmean(per_hemi(2).RTs))) ' + ' num2str(round(sterr(per_hemi(2).RTs)))' ' L/R, p=' num2str(round(p_lr*1000)/1000)]);
-            
-            
+                num2str(round(nanmean(per_hemi(2).RTs))) ' + ' num2str(round(sterr(per_hemi(2).RTs))) ' L/R, p=' num2str(round(p_lr*1000)/1000)]);
             
             subplot(2,1,2)
             bins=min(floor([per_pos.meanRTs])):1:max(ceil([per_pos.meanRTs]));
@@ -917,8 +819,64 @@ for D=1:numel(datasets)
     end
 end
 end
+
+aaa=1;
+%  the idea would be to shorten plotting part substantially
+%     function plot_for_all_positions
+% 
+%             for f=1:numel(fixations)
+%                 for p=1:numel(positions)
+%                     r=5;
+%                     x0=positions(p)+fixations(f);
+%                     scatter(real(x0),imag(x0),'+','markeredgecolor','k');
+%                     plot(real(x0)+r*sin(angles), imag(x0)+r*cos(angles),'k');
+%                     x0=nanmean([per_pos(f,p).(stuct_to_plot)]);
+%                     r=nanstd([per_pos(f,p).(stuct_to_plot)]);
+%                     plot(real(x0)+r*sin(angles) , imag(x0)+r*cos(angles),'color',Colors(f,:));
+%                 end
+%             end
+%     end
+
+%% oculomotor readout 
+% 
+% %curius
+% CHL=mon(2,2).condition(2).per_hemi(1).RTs;
+% CHR=mon(2,2).condition(2).per_hemi(2).RTs;
+% INL=mon(1,2).condition(1).per_hemi(1).RTs;
+% INR=mon(1,2).condition(1).per_hemi(2).RTs;
+% [~,p_cur_L]=ttest(INL,CHL)
+% [~,p_cur_R]=ttest(INR,CHR)
+% 
+% %curius
+% CHL=mon(2,3).condition(2).per_hemi(1).RTs;
+% CHR=mon(2,3).condition(2).per_hemi(2).RTs;
+% INL=mon(1,3).condition(1).per_hemi(1).RTs;
+% INR=mon(1,3).condition(1).per_hemi(2).RTs;
+% [~,p_lin_L]=ttest(INL,CHL)
+% [~,p_lin_R]=ttest(INR,CHR)
+end
 %end
 %end
+
+function filelist_in=get_filelist_per_session(monkey,dataset,filelist,filelist_formatted,recalibrated,datapath_recalibrated)
+taskfield=[monkey(1:3) '_' dataset];
+mainfolder=filelist.(taskfield){1};
+dashstr=strfind(mainfolder,'\');
+mainfolder=mainfolder(1:dashstr(end));
+filelist_in=filelist_formatted.(taskfield);
+filelist_in(:,1)=cellstr(num2str(vertcat(filelist_in{:,1})));
+filelist_in(:,1)=strcat(mainfolder, filelist_in(:,1));
+
+if recalibrated==1
+    aa=dir([datapath_recalibrated filesep monkey filesep]);
+    sessions={aa([aa.isdir]).name};
+    sessions=sessions(3:end);
+    for s=1:numel(sessions)
+        filelist_in{s,1}=[datapath_recalibrated filesep monkey filesep sessions{s}];
+    end
+end
+end
+
 
 function output_blocks_or_runs=run2block(base_path,given_blocks_or_runs,reverse)
 folder_content=dir([base_path filesep '*.mat']);
