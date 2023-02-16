@@ -25,8 +25,7 @@ idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
 
 
 %% som eundefined stuff
-user=getUserName;
-dropboxpath=['C:\Users\' user '\Dropbox'];
+dropboxpath=DAG_get_Dropbox_path;
 keys.batching.monkeys={'Linus','Curius'};
 
 keys.SNR_single=[1,2];
@@ -40,7 +39,7 @@ for m=1:numel(keys.batching.monkeys)
     keys.sorted_neurons_sheetname=keys.(monkey).sorted_neurons_sheetname;
     keys.date=keys.(monkey).date;
     keys.monkey                     =[monkey '_phys'];
-    keys.sorted_neurons_foldername  =[dropboxpath '\DAG\phys\' monkey '_phys_dpz'];
+    keys.sorted_neurons_foldername  =[dropboxpath filesep 'DAG' filesep 'phys' filesep monkey '_phys_dpz'];
     keys.tuning_table_foldername    =[keys.drive filesep keys.basepath_to_save filesep keys.project_version];
     keys.tuning_table_filename      =['tuning_table_combined'];
     keys.population_foldername      =[keys.drive filesep keys.basepath_to_save filesep keys.project_version];

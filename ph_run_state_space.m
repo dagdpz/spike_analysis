@@ -27,7 +27,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     
     for m=1:numel(keys.batching.monkeys)
         keys.monkey=keys.batching.monkeys{m};
-        keys.anova_table_file=[keys.basepath_to_save keys.project_version '\tuning_table_combined_CI.mat'];
+        keys.anova_table_file=[keys.basepath_to_save keys.project_version filesep 'tuning_table_combined_CI.mat'];
         population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
         population=ph_assign_perturbation_group(keys,population);
         population=ph_epochs(population,keys);

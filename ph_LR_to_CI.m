@@ -17,5 +17,19 @@ if strcmpi(target(end-1:end),'_R') || strcmpi(target(end-1:end),'_r')
     hand2=[pop.trial.reach_hand]==1;
     [pop.trial(hand1).reach_hand]=deal(1);
     [pop.trial(hand2).reach_hand]=deal(2);
+    
+    %% fixation index--> temporary solution
+    fixindex=[pop.trial.fix_index];
+    [pop.trial(fixindex==3).fix_index]=deal(1);
+    [pop.trial(fixindex==1).fix_index]=deal(3);
+    
+    % invert recording location if perturbation site is left
+%     if strcmp(keys.contra_ipsi_relative_to,'perturbation_site') & strcmpi(target(end-1:end),'_L')
+%         if strcmpi(pop.target(end-1:end),'_L')
+%             pop.target = [pop.target(1:end-1), 'R'];
+%         elseif strcmpi(pop.target(end-1:end),'_R')
+%             pop.target = [pop.target(1:end-1), 'L'];
+%         end
+%     end
 end
 end

@@ -1,5 +1,6 @@
 function o=ph_run_state_alignment_per_trial(MA_out,keys)
 global MA_STATES
+
 %% Defining maximum number of units
 n_trials=numel(MA_out.physiology);
 tr_in=[MA_out.physiology];
@@ -37,6 +38,7 @@ trial=struct('type',NaNpar,'effector',NaNpar,'reach_hand',NaNpar,'choice',NaNpar
     'time_axis',NaNpar,'x_eye',NaNpar,'y_eye',NaNpar,'x_hnd',NaNpar,'y_hnd',NaNpar,'states_onset',NaNpar); %add all fields of trial(?)
 trials_wo_phys=[];
 trials_wo_cond=[];
+
 %% main loop
 for t=1:n_trials
     trial_states=MA_out.states(t).TDT_states;
@@ -46,6 +48,7 @@ for t=1:n_trials
     %%W:\Data\Linus_phys_combined_monkeypsych_TDT\20150521\Lincombined2015-05-21_03_block_01.mat
     if isempty(trial_states_onset) || (t==n_trials && trial_states(end)~=1) || (t==n_trials-1 && trial_states(end)~=1) || (trial_states(end)~=90 && trial_states(end)~=99 && trial_states(end)~=1)%% Curius 20150603 block 4 trial 166
         %&& (t==n_trials-1 || t==n_trials) % last trial bug that should get fixed in TDT_trial_struct_working  line 30
+                                           % if trial_states(end) is 99, this can be fixed here! no need to  discard those trials
         trials_wo_phys=[trials_wo_phys t];
         continue;
     end
@@ -57,6 +60,22 @@ for t=1:n_trials
     trial(t).effector      = MA_out.task(t).effector;
     trial(t).reach_hand    = MA_out.task(t).reach_hand;
     trial(t).correct_targets    = MA_out.task(t).correct_targets;
+    
+    trial(t).n_nondistractors          = MA_out.task(t).n_nondistractors;
+    trial(t).n_distractors             = MA_out.task(t).n_distractors;
+    trial(t).difficulty                = MA_out.task(t).difficulty;
+    trial(t).stimuli_in_2hemifields    = MA_out.task(t).stimuli_in_2hemifields;
+    
+    if trial(t).n_nondistractors == 0 && trial(t).n_distractors == 2 ||  trial(t).n_nondistractors == 1 && trial(t).n_distractors == 1
+        trial(t).stimulustype = 1; %% single stimulus
+    elseif trial(t).n_nondistractors == 2 || trial(t).n_distractors == 3
+        trial(t).stimulustype = 2; %% TT / DD
+    elseif trial(t).n_nondistractors == 1 && trial(t).n_distractors == 2
+        trial(t).stimulustype = 3; %% target distractor
+    else
+        trial(t).stimulustype = 1;
+    end
+        
     if isnan(trial(t).reach_hand); trial(t).reach_hand=0; end;
     trial(t).choice        = MA_out.binary(t).choice;
     trial(t).success       = MA_out.binary(t).success;
@@ -100,6 +119,18 @@ for t=1:n_trials
     trial(t).col_dim            = Movement.col_dim;
     trial(t).col_bri            = Movement.col_bri;
     trial(t).target_selected    = Movement.target_selected;
+
+    if  numel(trial(t).all_tar_pos) == 1 %% KK NOTLÖSUNG
+    correct_pos = trial(t).all_tar_pos; 
+    else
+    correct_pos=trial(t).all_tar_pos(trial(t).correct_targets);
+    end
+    
+    
+    if correct_pos == trial(t).fix_pos(1) %% distractor only or double_distractor
+        correct_pos=trial(t).all_tar_pos(trial(t).all_tar_pos~=0);
+    end
+    trial(t).stm_pos=correct_pos(1);
     
     MPA_get_expected_states(trial(t).type,trial(t).effector,0);    %% set to 1 to allow later processing
     movement_states       = [MA_STATES.SAC_INI MA_STATES.SAC_END MA_STATES.REA_INI MA_STATES.REA_END MA_STATES.MOV_INI MA_STATES.MOV_END MA_STATES.TRI_END];
@@ -113,11 +144,20 @@ for t=1:n_trials
     trial(t).states         =trial_states(sort(tr_state_idx));
     trial(t).states_onset   =trial_states_onset(sort(tr_state_idx));
     
-    %% excluding unwanted trials from the beginning... this is actually sort of problematic
-    if ~ismember(trial(t).type,keys.cal.types) || ~ismember(trial(t).effector,keys.cal.effectors) || ~ismember(trial(t).reach_hand,keys.cal.reach_hand)
-        trials_wo_cond=[trials_wo_cond t];
-        continue;
-    end
+
+
+
+
+%     %% excluding unwanted trials from the beginning... this is actually sort of problematic
+%     if ~ismember(trial(t).type,keys.cal.types) || ~ismember(trial(t).effector,keys.cal.effectors) %|| ~ismember(trial(t).reach_hand,keys.cal.reach_hand)
+%         trials_wo_cond=[trials_wo_cond t];
+%         continue;
+%     end
+
+
+
+
+
     
     %     %% for several movements per trial
     %     mov_idx=~isnan(Movement.ini_all) & Movement.ini_all>=MA_out.states(t).start_obs;
@@ -176,10 +216,11 @@ for t=1:n_trials
     shift_in_seconds=1;
     stream_fieldnames=fieldnames(tr_in);
     stream_fieldnames=stream_fieldnames(~ismember(stream_fieldnames,{'spike_arrival_times','spike_waveforms','streams_tStart'}));
-    stream_fieldnames=stream_fieldnames(~cellfun(@(x) any(strfind(x,'_SR')),stream_fieldnames))';
+    stream_fieldnames=stream_fieldnames(~cellfun(@(x) any(strfind(x,'_SR')) || any(strfind(x,'_t0_from_rec_start') ),stream_fieldnames))';
     for FN=stream_fieldnames
         trial(t).(FN{:})=tr_in(t).(FN{:});
         trial(t).([FN{:} '_SR'])=tr_in(t).([FN{:} '_SR']);
+        trial(t).([FN{:} '_t0_from_rec_start'])=tr_in(t).([FN{:} '_t0_from_rec_start']);
         shift_n_samples=round(shift_in_seconds*trial(t).([FN{:} '_SR']));
         to_next_trial(t).(FN{:})=trial(t).(FN{:})(:,end-shift_n_samples:end);
         trial(t).(FN{:})(:,end-shift_n_samples:end)=[]; % cut off end of current trial (delta t = shift_in_seconds)            
@@ -198,7 +239,7 @@ for t=1:n_trials
     end
     %trial(t).streams_tStart=tr_in(t).streams_tStart;
     
-    %% unspecific excel table data %% does this mean there are
+    %% unspecific excel table data 
     for c=1:n_chans_s,
         trial(t).channel(c).grid_x               =from_excel_per_channel(c).x{1} ;
         trial(t).channel(c).grid_y               =from_excel_per_channel(c).y{1} ;
@@ -255,7 +296,8 @@ end
 invalid_trials=sort([trials_wo_phys trials_wo_cond]); % important change: differentiation between phys not present and condition mismatches
 trial(invalid_trials)=[];
 
-%% automatic stibility (dependent on fano factor of Frs per trial   
+%% automatic stability (dependent on fano factor of Frs per trial  
+if ~isempty(trial)
 units_cat=cat(3,trial.unit);
 for c=1:n_chans_u,
     for u=1:n_units
@@ -294,7 +336,7 @@ for c=1:n_chans_u,
 end
 
 
-
+end
 o.trial=trial;
 o.block=keys.block;
 end

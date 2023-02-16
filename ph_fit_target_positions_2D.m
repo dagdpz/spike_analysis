@@ -1,21 +1,18 @@
-function Out=ph_fit_target_positions_2D(xin,yin,zin,baseline,fitsettings)
+function Out=ph_fit_target_positions_2D(xin,yin,zin,fitsettings)
 
+baseline_subtracted=fitsettings.baseline_subtracted;
 xout=fitsettings.xout;
 yout=fitsettings.yout;
 Xout=combvec(xout,yout)';
 Z=double(zin(:));
 
 X=[xin(~isnan(Z)),yin(~isnan(Z))];
-baseline=baseline(~isnan(Z));
-Z=Z(~isnan(Z))-double(baseline);
-disregard_baseline=0;
-if any(~isnan(Z) & ~baseline==0)
-    disregard_baseline=1;
-end
+Z=Z(~isnan(Z));
 
-%% temporary part to fit on per position averages instead of single trials
+%% temporary part to fit on per position averages instead of single trials (not used?)
 [unique_positions, ~, pos_idx]=unique(X,'rows');
 Z_mean=NaN(size(unique_positions,1),1);
+Z_weights=NaN(size(unique_positions,1),1);
 for p=1:max(pos_idx)
     Z_mean(p)=mean(Z(pos_idx==p));
     Z_weights(p)=1/var(Z(pos_idx==p));
@@ -25,37 +22,33 @@ Z_weights(isinf(Z_weights))=mean(Z_weights(~isinf(Z_weights))); %% is this corre
 P=unique_positions;
 x=P(:,1);
 y=P(:,2);
-dx=min(diff(unique(x)))/2;
-dy=min(diff(unique(y)))/2;
+dx=min(diff(unique(x)))/2; % used for limits of peak: at least half the minimum target distance inside target array
+dy=min(diff(unique(y)))/2; % used for limits of peak: at least half the minimum target distance inside target array
 
 opts = optimset('lsqcurvefit');
 opts.Display='off';
 
-fitfuns=fitsettings.fittypes; %[FO, G, O] = FIT(P, Y, ...)
+fitfuns=fitsettings.fittypes;
 for f=1:numel(fitfuns)
     fitfun=fitfuns{f};
-    %clear coe
     z=Z_mean;
     switch fitfun
         case 'linear'
-            %  %baseline       %slope         rotation
+            %baseline          %slope         rotation
             LB=[min(Z)         0               -inf         ];
             X0=[0              1               0            ];
-            UB=[max(Z)         inf             inf           ];
-            
+            UB=[max(Z)         inf             inf          ];
             fitT=fittype('ph_2D_fit_linear( x, y, bl, slope, phi )','dependent',{'z'},'independent',{'x','y'},'coefficients',{'bl', 'slope', 'phi'});
         case 'sigmoidal'
-            %  %baseline       %amp           rotation     lambda (min so that 3/4 are covering one target)                     x0                   y0
+            %baseline          %amp           rotation     lambda (min so that 3/4 are covering one target)        x0                y0
             LB=[min(Z)         0               -inf         0                                                      min(x)+dx         min(y)+dy];
-            X0=[0              max(abs(Z))     0            0.5                                                     0                     0];
-            UB=[max(Z)         2*max(abs(Z))   inf          -1*log(1/4)/min([dx,dy])                                max(x)-dx         max(y)-dy];
-            
+            X0=[0              max(abs(Z))     0            0.5                                                    0                         0];
+            UB=[max(Z)         2*max(abs(Z))   inf          -1*log(1/4)/min([dx,dy])                               max(x)-dx         max(y)-dy];
             fitT=fittype('ph_2D_fit_sigmoidal( x, y, bl, amp, phi, lambda, x0, y0 )','dependent',{'z'},'independent',{'x','y'},'coefficients',{'bl', 'amp', 'phi', 'lambda', 'x0', 'y0'});
-            
         case 'gaussian1'
-            range_factor=fitsettings.range_factor;
-            x_range=(max(max(xin))-min(min(xin)))*range_factor; if x_range==0; x_range=1; end;
-            y_range=(max(max(yin))-min(min(yin)))*range_factor; if y_range==0; y_range=1; end;
+%             range_factor=fitsettings.range_factor;
+%             x_range=(max(max(xin))-min(min(xin)))*range_factor; if x_range==0; x_range=1; end;
+%             y_range=(max(max(yin))-min(min(yin)))*range_factor; if y_range==0; y_range=1; end;
             sd_max=fitsettings.sd_max_x;
             zscaling=max(Z)-min(Z);
             zscaling_sign=sign(mean(sign(z)));
@@ -65,64 +58,32 @@ for f=1:numel(fitfuns)
             if zscaling_sign==0
                 zscaling_sign=1;
             end
-            sign_idx=sign(z)==zscaling_sign & ~isnan(z);
-            start_pos_xy_3=[mean(x(sign(z)==zscaling_sign)) mean(y(sign(z)==zscaling_sign))];%[nanmean(xin(~isnan(Z)).*abs(Z))/nanmean(abs(Z)) nanmean(yin(~isnan(Z)).*abs(Z))/nanmean(abs(Z))];
-            %start_pos_xy_3=[nanmean(x(sign_idx).*abs(z(sign_idx)))/nanmean(abs(z(sign_idx))) nanmean(y(sign_idx).*abs(z(sign_idx)))/nanmean(abs(z(sign_idx)))];
             sd_min_ratio=fitsettings.sd_x_min_ratio;
             
-            %
-            %
-            %             if ~disregard_baseline
-            %                 % baseline      rotation x0                 y0                    peak             sx                           sy       sigma x(ratio to sd_max_x)  ratio xy
-            %                 LB=[min([z;0])  -inf        min(x)+dx          min(y)+dy               -1.5*zscaling    sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
-            %                 X0=[0           0        start_pos_xy_3(1)  start_pos_xy_3(2)       zscaling         (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max        ];
-            %                 UB=[max(z)      inf       max(x)-dx          max(y)-dy               1.5*zscaling     sd_max                       sd_max                           ];
-            %
-            %                 fitT=fittype(['ph_2D_fit_gaussian_1_RF( x, y, bl, phi, xmax, ymax, zmax, sx, sy, ' num2str(fitsettings.sd_xy_min_ratio) ' )'],'dependent',{'z'},'independent',{'x','y'},'coefficients',{'bl', 'phi', 'xmax', 'ymax', 'zmax', 'sx', 'sy'});
-            %
-            %             else
-            %                 %rotation x0                 y0                    peak             sx                           sy       sigma x(ratio to sd_max_x)  ratio xy
-            %                 LB=[-inf        min(x)+dx          min(y)+dy               -1.5*zscaling    sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
-            %                 X0=[0        start_pos_xy_3(1)  start_pos_xy_3(2)       0         (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max        ];
-            %                 UB=[inf       max(x)-dx          max(y)-dy               1.5*zscaling     sd_max                       sd_max                           ];
-            %
-            %                 fitT=fittype(['ph_2D_fit_gaussian_1_RF( x, y, 0, phi, xmax, ymax, zmax, sx, sy, ' num2str(fitsettings.sd_xy_min_ratio) ' )'],'dependent',{'z'},'independent',{'x','y'},'coefficients',{'phi', 'xmax', 'ymax', 'zmax', 'sx', 'sy'});
-            %
-            %             end
-            
-            
-            if ~disregard_baseline
-                % baseline      rotation x0                 y0                    peak             sx                           sy       sigma x(ratio to sd_max_x)  ratio xy
-                LB=[min([z;0])  -inf        min(x)+dx          min(y)+dy               -1.5*zscaling    sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
-                X0=[0           0        start_pos_xy_3(1)  start_pos_xy_3(2)       zscaling         (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max        ];
+            if ~baseline_subtracted
+                start_pos_xy=[mean(x) mean(y)];%this line for gaze paper stuff...??? how does this change the goodness of fit in a way that degrees of freedom increase???
+                % baseline      rotation  x0                 y0                      peak             sx                           sy
+                LB=[min([z;0])  -inf      min(x)+dx          min(y)+dy               -1.5*zscaling    sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
+                X0=[0           0         start_pos_xy(1)    start_pos_xy(2)         zscaling         (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max        ];
                 UB=[max(z)      inf       max(x)-dx          max(y)-dy               1.5*zscaling     sd_max                       sd_max                           ];
-                
                 fitT=fittype(['ph_2D_fit_gaussian_1_RF( x, y, bl, phi, xmax, ymax, zmax, sx, sy, ' num2str(fitsettings.sd_xy_min_ratio) ' )'],'dependent',{'z'},'independent',{'x','y'},'coefficients',{'bl', 'phi', 'xmax', 'ymax', 'zmax', 'sx', 'sy'});
-                
             else
-                %rotation x0                 y0                    peak             sx                           sy       sigma x(ratio to sd_max_x)  ratio xy
-                LB=[-inf        min(x)+dx          min(y)+dy               -1.5*zscaling    sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
-                X0=[0        start_pos_xy_3(1)  start_pos_xy_3(2)       zscaling_sign*zscaling                sd_max                       sd_max        ];
-                UB=[inf       max(x)-dx          max(y)-dy               1.5*zscaling     sd_max                       sd_max                           ];
-                
+                start_pos_xy=[mean(x(sign(z)==zscaling_sign)) mean(y(sign(z)==zscaling_sign))]; 
+%                 sign_idx=sign(z)==zscaling_sign & ~isnan(z);
+%                 start_pos_xy=[nanmean(x(sign_idx).*abs(z(sign_idx)))/nanmean(abs(z(sign_idx))) nanmean(y(sign_idx).*abs(z(sign_idx)))/nanmean(abs(z(sign_idx)))];
+%                 
+%                start_pos_xy=[nanmean(xin(~isnan(Z)).*abs(Z))/nanmean(abs(Z)) nanmean(yin(~isnan(Z)).*abs(Z))/nanmean(abs(Z))]; 
+                %rotation    x0                 y0                      peak                    sx                           sy
+                LB=[-inf     min(x)+dx          min(y)+dy               -1.5*zscaling           sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
+                X0=[0        start_pos_xy(1)    start_pos_xy(2)         zscaling_sign*zscaling  sd_max                       sd_max                           ];
+                UB=[inf      max(x)-dx          max(y)-dy               1.5*zscaling            sd_max                       sd_max                           ];
                 fitT=fittype(['ph_2D_fit_gaussian_1_RF( x, y, 0, phi, xmax, ymax, zmax, sx, sy, ' num2str(fitsettings.sd_xy_min_ratio) ' )'],'dependent',{'z'},'independent',{'x','y'},'coefficients',{'phi', 'xmax', 'ymax', 'zmax', 'sx', 'sy'});
-                
             end
             
         case 'gaussian2' %not used currently, cause too many parameters
-            %z=Z_mean-nanmean(Z_mean);
-            range_factor=fitsettings.range_factor;
-            x_range=(max(max(xin))-min(min(xin)))*range_factor; if x_range==0; x_range=1; end;
-            y_range=(max(max(yin))-min(min(yin)))*range_factor; if y_range==0; y_range=1; end;
-            sd_max_x=fitsettings.sd_max_x;
-            sd_max_y=fitsettings.sd_max_y;
-            
-            %             start_pos_xy_1=[mean(x(x>0)) mean(y)];%[18*sign(nanmean(xin(~isnan(Z)).*Z)/nanmean(Z)) 0]; % 18 here is arbitrary though
-            %             start_pos_xy_2=start_pos_xy_1*-1;
-            %             start_pos_xy_1=[mean([x(z<0);0]) mean([y(z<0);0])];%[18*sign(nanmean(xin(~isnan(Z)).*Z)/nanmean(Z)) 0]; % 18 here is arbitrary though
-            %
-            %             start_pos_xy_2=[mean([x(z>0);0]) mean([y(z>0);0])];
-            %start_pos_xy_3=[nanmean(xin(~isnan(Z)).*abs(Z))/nanmean(abs(Z)) nanmean(yin(~isnan(Z)).*abs(Z))/nanmean(abs(Z))];
+%             range_factor=fitsettings.range_factor;
+%             x_range=(max(max(xin))-min(min(xin)))*range_factor; if x_range==0; x_range=1; end;
+%             y_range=(max(max(yin))-min(min(yin)))*range_factor; if y_range==0; y_range=1; end;
             sign_idx=z<0;
             start_pos_xy_1=[0 0];
             start_pos_xy_2=[0 0];
@@ -133,36 +94,28 @@ for f=1:numel(fitfuns)
             if any(sign_idx)
                 start_pos_xy_2=[nanmean(x(sign_idx).*abs(z(sign_idx)))/nanmean(abs(z(sign_idx))) nanmean(y(sign_idx).*abs(z(sign_idx)))/nanmean(abs(z(sign_idx)))];
             end
-            
-            
             sd_min_ratio=fitsettings.sd_x_min_ratio;
             sd_max=fitsettings.sd_max_x;
             
-            if ~disregard_baseline  %% removed baseline from this function, NOT IDEAL!!!
+            if ~baseline_subtracted  %% removed baseline from this function, NOT IDEAL!!!
                 zscaling=max(Z)-min(Z);%
-                % baseline rotation x0                      y0                  peak                sx                           sy                                  igmax(ratio to sd_max_x)  ratio xy
-                LB=[-inf     min(x)+dx             min(y)+dy           -1.5*zscaling       sd_min_ratio*sd_max          sd_min_ratio*sd_max         ...
-                    -inf     min(x)+dx             min(y)+dy           0                   sd_min_ratio*sd_max          sd_min_ratio*sd_max         ];
-                X0=[pi/2  start_pos_xy_1(1)     start_pos_xy_1(2)   -zscaling                   (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max   ...
-                    pi/2  start_pos_xy_2(1)     start_pos_xy_2(2)   zscaling                   (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max   ];
-                UB=[inf    max(x)-dx             max(y)-dy           0                   sd_max                       sd_max                      ...
-                    inf    max(x)-dx             max(y)-dy           1.5*zscaling        sd_max                       sd_max                      ];
-                
+                % rotation  x0                    y0                  peak                sx                           sy
+                LB=[-inf    min(x)+dx             min(y)+dy           -1.5*zscaling       sd_min_ratio*sd_max          sd_min_ratio*sd_max         ...
+                    -inf    min(x)+dx             min(y)+dy           0                   sd_min_ratio*sd_max          sd_min_ratio*sd_max         ];
+                X0=[pi/2    start_pos_xy_1(1)     start_pos_xy_1(2)   -zscaling           (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max   ...
+                    pi/2    start_pos_xy_2(1)     start_pos_xy_2(2)   zscaling            (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max   ];
+                UB=[inf     max(x)-dx             max(y)-dy           0                   sd_max                       sd_max                      ...
+                    inf     max(x)-dx             max(y)-dy           1.5*zscaling        sd_max                       sd_max                      ];
                 fitT=fittype(['ph_2D_fit_gaussian_with_2_opposing_RFs( x, y, phi1, xmax1, ymax1, zmax1, sx1, sy1, phi2, xmax2, ymax2, zmax2, sx2, sy2, ' num2str(fitsettings.sd_xy_min_ratio) ' )'],'dependent',{'z'},'independent',{'x','y'},'coefficients',{'phi1', 'xmax1', 'ymax1', 'zmax1', 'sx1', 'sy1', 'phi2', 'xmax2', 'ymax2', 'zmax2', 'sx2', 'sy2'});
             else
-                %zscaling=max(abs(Z));
-                % baseline rotation x0                      y0                  peak                sx                           sy                                  igmax(ratio to sd_max_x)  ratio xy
-                LB=[-inf     min(x)+dx             min(y)+dy           -1.5*abs(min(Z))       sd_min_ratio*sd_max          sd_min_ratio*sd_max         ...
-                    -inf     min(x)+dx             min(y)+dy           0                   sd_min_ratio*sd_max          sd_min_ratio*sd_max         ];
-                X0=[pi/2  start_pos_xy_1(1)     start_pos_xy_1(2)   -abs(min(Z))                   (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max   ...
-                    pi/2  start_pos_xy_2(1)     start_pos_xy_2(2)   abs(max(Z))                   (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max   ];
+                % rotation x0                    y0                  peak                sx                           sy                                  
+                LB=[-inf   min(x)+dx             min(y)+dy           -1.5*abs(min(Z))    sd_min_ratio*sd_max          sd_min_ratio*sd_max         ...
+                    -inf   min(x)+dx             min(y)+dy           0                   sd_min_ratio*sd_max          sd_min_ratio*sd_max         ];
+                X0=[pi/2   start_pos_xy_1(1)     start_pos_xy_1(2)   -abs(min(Z))        (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max   ...
+                    pi/2   start_pos_xy_2(1)     start_pos_xy_2(2)   abs(max(Z))         (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max   ];
                 UB=[inf    max(x)-dx             max(y)-dy           0                   sd_max                       sd_max                      ...
-                    inf    max(x)-dx             max(y)-dy           1.5*abs(max(Z))        sd_max                       sd_max                      ];
-                
+                    inf    max(x)-dx             max(y)-dy           1.5*abs(max(Z))     sd_max                       sd_max                      ];
                 fitT=fittype(['ph_2D_fit_gaussian_with_2_opposing_RFs( x, y, phi1, xmax1, ymax1, zmax1, sx1, sy1, phi2, xmax2, ymax2, zmax2, sx2, sy2, ' num2str(fitsettings.sd_xy_min_ratio) ' )'],'dependent',{'z'},'independent',{'x','y'},'coefficients',{'phi1', 'xmax1', 'ymax1', 'zmax1', 'sx1', 'sy1', 'phi2', 'xmax2', 'ymax2', 'zmax2', 'sx2', 'sy2'});
-                
-                
-                
             end
         case 'gaussian15'
             %% only works if gaussian1 has been run before!
@@ -184,27 +137,26 @@ for f=1:numel(fitfuns)
             sx1=num2str(Out.gaussian1.sx);
             sy1=num2str(Out.gaussian1.sy);
             
-            %z=Z_mean-Out.gaussian1.z_fit_at_targets;
-            if ~disregard_baseline
-                % baseline      rotation x0                 y0                    peak             sx                           sy       sigma x(ratio to sd_max_x)  ratio xy
-                LB=[min([z;0])  -inf        min(x)+dx          min(y)+dy            peakmin    sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
-                X0=[0           0        -Out.gaussian1.xmax -Out.gaussian1.ymax       peakstart         (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max        ];
-                UB=[max(z)      inf       max(x)-dx          max(y)-dy              peakmax     sd_max                       sd_max                           ];
+            if ~baseline_subtracted
+                % baseline      rotation x0                 y0                    peak       sx                           sy      
+                LB=[min([z;0])  -inf     min(x)+dx           min(y)+dy            peakmin    sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
+                X0=[0           0        -Out.gaussian1.xmax -Out.gaussian1.ymax  peakstart  (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max        ];
+                UB=[max(z)      inf       max(x)-dx          max(y)-dy            peakmax    sd_max                       sd_max                           ];
                 fitT=fittype(['ph_2D_fit_gaussian_2nd_RF( x, y, bl, phi, xmax, ymax, zmax, sx, sy, ' minratio ',' xmax1 ',' ymax1 ',' phi1 ',' sx1 ',' sy1 ' )'],'dependent',{'z'},'independent',{'x','y'},'coefficients',{'bl', 'phi', 'xmax', 'ymax', 'zmax', 'sx', 'sy'});
             else
-                %rotation x0                 y0                         peak             sx                           sy       sigma x(ratio to sd_max_x)  ratio xy
-                LB=[-inf      min(x)+dx          min(y)+dy              peakmin    sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
-                X0=[0        -Out.gaussian1.xmax -Out.gaussian1.ymax    peakstart  (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max        ];
+                %rotation x0                 y0                         peak        sx                           sy       
+                LB=[-inf      min(x)+dx          min(y)+dy              peakmin     sd_min_ratio*sd_max          sd_min_ratio*sd_max              ];
+                X0=[0        -Out.gaussian1.xmax -Out.gaussian1.ymax    peakstart   (sd_min_ratio+1)/2*sd_max    (sd_min_ratio+1)/2*sd_max        ];
                 UB=[inf       max(x)-dx          max(y)-dy              peakmax     sd_max                       sd_max                           ];
                 fitT=fittype(['ph_2D_fit_gaussian_2nd_RF( x, y, 0, phi, xmax, ymax, zmax, sx, sy, ' minratio ',' xmax1 ',' ymax1 ',' phi1 ',' sx1 ',' sy1 ' )'],'dependent',{'z'},'independent',{'x','y'},'coefficients',{'phi', 'xmax', 'ymax', 'zmax', 'sx', 'sy'});
             end
-            
     end
     same_bounds=LB==UB;
     LB(same_bounds)=LB(same_bounds)-0.01;
     UB(same_bounds)=UB(same_bounds)+0.01;
+    %fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB,'Upper',UB,'Start',X0,'Weights',Z_weights);
     fitopts=fitoptions('method','NonlinearLeastSquares','Lower',LB,'Upper',UB,'Start',X0);
-    if sum(~isnan(z)) >= numel(X0)
+    if sum(~isnan(z)) >= numel(X0) 
         [fitobj, Goodness] =fit([x,y],z,fitT,fitopts);
     else
         [fitobj, Goodness] =fit([x,y],zeros(size(X0')),fitT,fitopts);
@@ -215,9 +167,8 @@ for f=1:numel(fitfuns)
     end
     Out.(fitfun).R2=Goodness.rsquare;
     R2_adjusted(f)=Goodness.adjrsquare;
-    %Out.(fitfun).residuals=fitobj(X(:,1),X(:,2))-Z;
     Out.(fitfun).residuals=z-fitobj(x,y);
-    if ~disregard_baseline
+    if ~baseline_subtracted
         [~,~,~,fitfun_valid(f)]=stepwisefit(fitobj(x,y),z,'display','off');
     else
         fitfun_valid(f)=ttest2(abs(z),abs(Out.(fitfun).residuals),0.05,'right');
@@ -276,41 +227,31 @@ for f=1:numel(fitfuns)
             %fitfun_valid(f)=temptemptemp(2);
             %R2_adjusted(f)=fitfun_valid(f)*200-100;
         case 'gaussian15'
-            
-            %             [~,~,~,temptemptemp]=stepwisefit([Out.gaussian1.z_fit_at_targets fitobj(x,y)],Z_mean,'display','off');
-            %
-            %             fitfun_valid(f)=temptemptemp(2);
             Out.(fitfun).residuals=Out.gaussian1.residuals -fitobj(x,y);
             fitfun_valid(f)=ttest2(abs(z),abs(Out.(fitfun).residuals),0.05,'right');
             R2_adjusted(f)=ttest2(abs(Out.gaussian1.residuals),abs(Out.(fitfun).residuals),0.05,'right')*200-100; %% for the sake of taking second gaussian if and only if stewisefit is significant
-            if disregard_baseline
+            if baseline_subtracted
                 Out.(fitfun).bl=0;
             end
             
             Out.(fitfun).consistent_R2_stepwisefit=(fitfun_valid(f) && R2_adjusted(f)>Out.gaussian1.R2_adjusted) || (~fitfun_valid(f) && R2_adjusted(f)<Out.gaussian1.R2_adjusted);
-            
-            
-            
             Out.(fitfun).Zout=Out.(fitfun).Zout+Out.gaussian1.Zout ;
-            minratio=fitsettings.sd_xy_min_ratio;
-            xmax1=Out.gaussian1.xmax;
-            ymax1=Out.gaussian1.ymax;
-            zmax1=Out.gaussian1.zmax;
-            sx1=Out.gaussian1.sx;
-            sy1=Out.gaussian1.sy;
-            phi1=Out.gaussian1.phi;
             
-            
-            xmax2=Out.(fitfun).xmax;
-            ymax2=Out.(fitfun).ymax;
-            zmax2=Out.(fitfun).zmax;
-            sx2=Out.(fitfun).sx;
-            sy2=Out.(fitfun).sy;
-            phi2=Out.(fitfun).phi;
+            minratio=   fitsettings.sd_xy_min_ratio;
+            xmax1=      Out.gaussian1.xmax;
+            ymax1=      Out.gaussian1.ymax;
+            zmax1=      Out.gaussian1.zmax;
+            sx1=        Out.gaussian1.sx;
+            sy1=        Out.gaussian1.sy;
+            phi1=       Out.gaussian1.phi;
+            xmax2=      Out.(fitfun).xmax;
+            ymax2=      Out.(fitfun).ymax;
+            zmax2=      Out.(fitfun).zmax;
+            sx2=        Out.(fitfun).sx;
+            sy2=        Out.(fitfun).sy;
+            phi2=       Out.(fitfun).phi;
             
             vector_between_two_peaks=xmax2+ymax2*1i-xmax1-ymax1*1i;
-            
-            %y_sd_1=sy1 + sx1*((minratio-sy1/sx1)*(sign(minratio-sy1/sx1)+1)/2);
             y_sd_2=sy2 + sx2*((minratio-sy2/sx2)*(sign(minratio-sy2/sx2)+1)/2);
             gaussian1_sd_in_direction=2*sqrt((sx1*cos(angle(vector_between_two_peaks)   -phi1))^2 + (sy1*sin(angle(vector_between_two_peaks)   -phi1))^2);
             gaussian2_sd_in_direction=2*sqrt((sx2*cos(angle(vector_between_two_peaks*-1)-phi2))^2 + (y_sd_2*sin(angle(vector_between_two_peaks*-1)-phi2))^2);
@@ -337,36 +278,26 @@ for f=1:numel(fitfuns)
             Out.(fitfun).ymax2=ymax2;
             Out.(fitfun).zmax2=zmax2;
     end
-    
-    %fitfun_valid(f)=true;
     Out.(fitfun).R2_adjusted=R2_adjusted(f);
     Out.(fitfun).fitfun_valid=fitfun_valid(f);
     Out.(fitfun).z_fit_at_targets=fitobj(x,y);
 end
 
-
-
-Out.bestfit='none';
-Out.secondbestfit='none';
+Out.bestfit         ='none';
+Out.secondbestfit   ='none';
 Zout=NaN(size(P));
 R2_a=0;
 if any(fitfun_valid)
-    %     best_R2_index=R2_adjusted==max(R2_adjusted(fitfun_valid));
-    %     secondbest_R2_index=R2_adjusted==max(R2_adjusted(~best_R2_index));
-    %     R2_a=max(R2_adjusted(fitfun_valid));
-    
-    best_R2_index=R2_adjusted==max(R2_adjusted);
+    best_R2_index=      R2_adjusted==max(R2_adjusted);
     secondbest_R2_index=R2_adjusted==max(R2_adjusted(~best_R2_index));
-    R2_a=max(R2_adjusted);
-    
-    Out.bestfit=fitfuns{best_R2_index};
+    R2_a=max(R2_adjusted);    
+        Out.bestfit         =fitfuns{best_R2_index};
     if any(secondbest_R2_index)
-    Out.secondbestfit=fitfuns{secondbest_R2_index};
+        Out.secondbestfit   =fitfuns{secondbest_R2_index};
     end
-    %R2_a=Out.(Out.bestfit).R2;
     Zout=Out.(Out.bestfit).Zout;
 end
-Out.R2_adjusted=R2_a;
-Out.Zout=Zout;
-Out.none=struct;
+Out.R2_adjusted     =R2_a;
+Out.Zout            =Zout;
+Out.none            =struct;
 end

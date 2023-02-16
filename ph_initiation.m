@@ -27,19 +27,31 @@ if nargin<3
 end
 keys=struct;
 keys=ph_general_settings(project,keys);
-project_specific_settings=[keys.db_folder project filesep 'ph_project_settings.m'];
+project_specific_settings=[keys.db_folder 'ph_project_settings.m'];
 run(project_specific_settings)
 if nargin>=2
     keys.project_versions=versions;
 end
 for f=1:numel(keys.project_versions) % running multiple versions of the same project at once !
+
     if ~isempty(keys.project_versions{f})
         keys.project_version=keys.project_versions{f};
     end
-    if ~exist([keys.db_folder project filesep keys.project_version filesep],'dir')
-        mkdir([keys.db_folder project], keys.project_version);
+    if ~exist([keys.db_folder keys.project_version filesep],'dir')
+        mkdir([keys.db_folder ], keys.project_version);
     end
-    keys.version_specific_settings=[keys.db_folder project filesep keys.project_version filesep 'ph_project_version_settings.m'];
+    if ~exist([keys.basepath_to_save keys.project_version filesep],'dir')
+        mkdir([keys.basepath_to_save ], keys.project_version);
+    end
+    seed_filename=[keys.basepath_to_save keys.project_version filesep 'seed.mat']; %might not be defined yet
+    if exist(seed_filename,'file');
+        load(seed_filename);
+        rng(seed);
+    else
+        seed=rng;
+        save(seed_filename,'seed');
+    end
+    keys.version_specific_settings=[keys.db_folder keys.project_version filesep 'ph_project_version_settings.m'];
     if keep_version_settings && exist(keys.version_specific_settings,'file')
         run(keys.version_specific_settings)
         keys.project_versions=versions;
@@ -48,22 +60,24 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         delete(keys.version_specific_settings);
         copyfile(project_specific_settings,keys.version_specific_settings);
     end
-    keys.additional_settings=[keys.db_folder project filesep keys.project_version filesep 'ph_additional_settings.m'];
+    keys.additional_settings=[keys.db_folder keys.project_version filesep 'ph_additional_settings.m'];
     if exist(keys.additional_settings,'file')
         run(keys.additional_settings)
     end
     if ~exist([keys.basepath_to_save keys.project_version filesep],'dir')
         mkdir(keys.basepath_to_save, keys.project_version);
     end
-    user=getUserName;
-    dropboxpath=['C:\Users\' user '\Dropbox'];
+    %user=getUserName;
+    %dropboxpath=['C:\Users\' user '\Dropbox'];
     for m=1:numel(keys.batching.monkeys)
         monkey=keys.batching.monkeys{m};
         keys.sorted_neurons_filename =keys.(monkey).sorted_neurons_filename;
         keys.sorted_neurons_sheetname=keys.(monkey).sorted_neurons_sheetname;
         keys.date=keys.(monkey).date;
         keys.monkey                     =[monkey '_phys'];
-        keys.sorted_neurons_foldername  =[dropboxpath '\DAG\phys\' monkey '_phys_dpz'];
+
+        keys.sorted_neurons_foldername  =['Y:\Data\Sorting_tables'  filesep monkey];
+%         keys.sorted_neurons_foldername  =[dropboxpath filesep 'DAG' filesep 'phys' filesep monkey '_phys_dpz'];
         keys.tuning_table_foldername    =[keys.basepath_to_save keys.project_version filesep];
         keys.tuning_table_filename      =['tuning_table_combined'];
         keys.population_foldername      =[keys.basepath_to_save keys.project_version filesep];
@@ -72,17 +86,17 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         keys.filelist_formatted         =keys.(monkey).filelist_formatted;
         if exist([keys.tuning_table_foldername keys.tuning_table_filename '.mat'],'file')
             load([keys.tuning_table_foldername keys.tuning_table_filename '.mat']);
-            keys.tuning_per_unit_table=tuning_per_unit_table;
+            keys.tuning_table=tuning_per_unit_table;
         else
-            keys.tuning_per_unit_table= {'unit_ID'};
+            keys.tuning_table= {'unit_ID'};
         end
         keys_out                        =ph_session_processing(keys); %% error here for flaff?
-        tuning_per_unit_table               =keys_out.tuning_per_unit_table;
-%         save([keys.basepath_to_save keys.project_version filesep 'keys_' monkey],'keys_out');
-%         save([keys.tuning_table_foldername keys.tuning_table_filename],'tuning_per_unit_table');
+        tuning_per_unit_table           =keys_out.tuning_table;
+         save([keys.basepath_to_save keys.project_version filesep 'keys_' monkey],'keys_out');
+         save([keys.tuning_table_foldername keys.tuning_table_filename],'tuning_per_unit_table');
     end
-%     ph_format_tuning_table(tuning_per_unit_table,keys);
+     ph_format_tuning_table(tuning_per_unit_table,keys);
 end
-% ph_get_filelist(project,versions);
-% ph_initiate_population_analysis(project,versions);
+ %ph_get_filelist(project,versions);
+ ph_initiate_population_analysis(project,versions);
 end
