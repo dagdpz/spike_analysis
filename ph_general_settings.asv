@@ -5,7 +5,7 @@ function keys=ph_general_settings(project,keys)
 %% general settings (multi-summary PSTH)
 keys.PSTH_binwidth                      =0.01;                      % resolution of PSTH's (in seconds)
 keys.gaussian_kernel                    =0.02;                      % std for the convolution to derive spie density (in seconds)
-keys.kernel_type                        ='gaussian';                % could also be 'box'
+keys.kernel_type                        ='gaussian';
 keys.FR_at_peak                         =0;                         % currently not used
 keys.position_and_plotting_arrangements ={'hands'};                 % defines position batching and which conditions go into different figures/lines
 keys.condition_parameters={'choice','reach_hand','perturbation'};
@@ -28,7 +28,7 @@ keys.labels.stimuli_in_2hemifields  ={'1H','2H'};
 
 keys.colors=ph_default_color_settings;
 
-%% labels for tuning table significance entries
+%% labels for tuning table entries
 keys.TTconditions.hands             ={'AH','LH','RH'};
 keys.TTconditions.choice            ={'in','ch'};
 keys.TTconditions.hemifield         ={'LS','RS'};
@@ -81,14 +81,14 @@ keys.cal.remove_trials_without_spikes=1;
 keys.cal.precision_fix=4;
 keys.cal.precision_tar=2;
 
-%% ANOVA settings
+%% these are AN keys!
 keys.AN.test_types='parametric'; %% as opposed to 'nonparametric' and 'permutations'
 keys.AN.n_permutations                 = 10000; % in case of permutations test_type
 keys.AN.n_permutations_randanova2      = 1000;
 keys.AN.n_permutations_randanova1      = 1000;
-keys.AN.check_normality=0; %% very time consuming
+keys.AN.check_normality=0; %% very timeconsuming
 
-%%normalization for ANOVAs
+%% normalization for ANOVAs
 keys.AN.normalization='none';
 keys.AN.epoch_DN='none';
 keys.AN.epoch_RF='INI';
@@ -96,7 +96,7 @@ keys.AN.epoch_BL='none';
 keys.AN.epoch_PF='INI';
 keys.AN.baseline_per_trial=0;
 
-% multicomparison - correct p-values on the fly to update significance table entries
+%% multicomparison
 keys.AN.multicomparison='none';
 keys.AN.factors={'epoch','hemifield','hands','SxH','SglTar_Suc'};
 keys.AN.factors_per_hand={'epoch','position','fixation','PxF','distance','angle','DxA','prefH', 'prefP','positionx','positiony','_positionxy','gaze_modulation_x','gaze_modulation_y','gaze_pref_x','gaze_pref_y'};

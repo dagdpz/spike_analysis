@@ -17,9 +17,7 @@ if keys.TU.redo_statistics
     else
         keys.tuning_table={'unit_ID'};
     end
-    %tuning_per_unit_table=ph_ANOVAS(population,keys); % main function
-    tuning_per_unit_table=ph_ANOVAS_tmp(population,keys); % main function
-    
+    tuning_per_unit_table=ph_ANOVAS(population,keys); % main function    
     keys.tuning_table_foldername=[keys.basepath_to_save keys.project_version filesep];
     keys.tuning_table_filename='tuning_table_combined';
     keys.tuning_table=tuning_per_unit_table;

@@ -176,7 +176,7 @@ for ch=1:numel(conditions.choice)
             idxS= tr & ismember(epochs,s);
             if any(~isnan(FR(idxS))) && any(idx.tr_LS(idxS)) && any(idx.tr_RS(idxS)) && any(idx.tr_LH(idxS)) && any(idx.tr_RH(idxS))
                 %[pval,anova_outs.table,anova_outs.stats,anova_outs.terms] = anovan(FR(idxS),double([idx.tr_RS(idxS),idx.tr_RH(idxS)]),'model','full','varnames',{'space';'hands'},'display',keys.plot.anova_tables);
-                pval = randanova2(FR(idxS),{idx.tr_RS(idxS),idx.tr_RH(idxS)},keys.AN.n_permutations_randanova2,1);
+                pval = randanova2(FR(idxS),{idx.tr_RS(idxS),idx.tr_RH(idxS)},keys.cal.n_permutations_randanova2,1);
                 h=pval(1)<0.05;
                 DF=nanmean(FR(idx.tr_RS & idxS))-nanmean(FR(idx.tr_LS & idxS));
                 labelindexsp=h*sign(DF)+2; labelindexsp(isnan(labelindexsp))=2;
@@ -286,7 +286,7 @@ for ch=1:numel(conditions.choice)
         if size(Fixations,1)==1
             %            varnames={'State','position'};
             %[pval,anova_out.table,anova_out.stats,anova_out.terms] = anovan(FR(tr),{epochs(tr),idx.pos(tr)},'model','full','varnames',varnames,'display',keys.plot.anova_tables);
-            pval = randanova2(FR(tr),{epochs(tr),idx.pos(tr)},keys.AN.n_permutations_randanova2,1);
+            pval = randanova2(FR(tr),{epochs(tr),idx.pos(tr)},keys.cal.n_permutations_randanova2,1);
             
         else
             varnames={'State','position','fixation'};
@@ -323,18 +323,18 @@ for ch=1:numel(conditions.choice)
                 FR_temp=FR(tr);
                 if any(pos_fix_valid)
                     %[ptemp] = anovan(FR_temp(pos_fix_valid),pos_fix(pos_fix_valid,:),'model','full','varnames',{'Positions','Fixations'},'display',keys.plot.anova_tables);
-                    ptemp = randanova2(FR_temp(pos_fix_valid),pos_fix(pos_fix_valid,:),keys.AN.n_permutations_randanova2,1);
+                    ptemp = randanova2(FR_temp(pos_fix_valid),pos_fix(pos_fix_valid,:),keys.cal.n_permutations_randanova2,1);
                 else
                     ptemp(2)=NaN;
                     ptemp(3)=NaN;
                 end
                 
                 %pval = anovan(FR(tr),idx.pos(tr),'model','full','varnames',{'Positions'},'display',keys.plot.anova_tables);
-                pval = randanova1(FR(tr),idx.pos(tr),keys.AN.n_permutations_randanova1);
+                pval = randanova1(FR(tr),idx.pos(tr),keys.cal.n_permutations_randanova1);
                 pval(2)=NaN;
                 pval(3)=ptemp(2)>0.05 || ptemp(3)>0.05; % this is not ideal, interaction here only significant if there is a main effect as well....
             else
-                pval= randanova2(FR(tr),{idx.pos(tr),idx.fix(tr)},keys.AN.n_permutations_randanova2,1);
+                pval= randanova2(FR(tr),{idx.pos(tr),idx.fix(tr)},keys.cal.n_permutations_randanova2,1);
             end
             
             h1=pval(1)<0.05;
@@ -350,7 +350,7 @@ for ch=1:numel(conditions.choice)
             
             
             %pecc = anovan(FR(tr),[idx.ecc(tr),idx.ang(tr)],'model','full','varnames',{'Eccentricity','Angle'},'display',keys.plot.anova_tables);
-            pecc = randanova2(FR(tr),{idx.ecc(tr),idx.ang(tr)},keys.AN.n_permutations_randanova2,1);
+            pecc = randanova2(FR(tr),{idx.ecc(tr),idx.ang(tr)},keys.cal.n_permutations_randanova2,1);
             
             h1=pecc(1)<0.05;
             h2=pecc(2)<0.05;
@@ -364,7 +364,7 @@ for ch=1:numel(conditions.choice)
             
             % x and y separately - didnt add p_values here yet!
             %pxy = anovan(FR(tr),[idx.pos_x(tr),idx.pos_y(tr)],'model','full','varnames',{'x','y'},'display',keys.plot.anova_tables);
-            pxy = randanova2(FR(tr),{idx.pos_x(tr),idx.pos_y(tr)},keys.AN.n_permutations_randanova2,1);
+            pxy = randanova2(FR(tr),{idx.pos_x(tr),idx.pos_y(tr)},keys.cal.n_permutations_randanova2,1);
             h1=pxy(1)<0.05;
             h2=pxy(2)<0.05;
             h3=pxy(3)<0.05;
@@ -637,7 +637,7 @@ for ch=1:numel(conditions.choice)
                 %[anova_out.p,anova_out.table,anova_out.stats,anova_out.terms] = anovan(FR(tr_main & idx_con),[epoch_idx(tr_main & idx_con) idx.tr_PT(tr_main & idx_con)],'model','full','varnames',{'epoch', 'perturbation'},'display',keys.plot.anova_tables);
                 m=FR(tr_main & idx_con);
                 group={epoch_idx(tr_main & idx_con) idx.tr_PT(tr_main & idx_con)};
-                pval = randanova2(m,group,keys.AN.n_permutations_randanova2,1);
+                pval = randanova2(m,group,keys.cal.n_permutations_randanova2,1);
                 h1=pval(1)<0.05;
                 h2=pval(2)<0.05;
                 h3=pval(3)<0.05;
@@ -832,7 +832,7 @@ switch keys.AN.test_types
         end
         
         
-        [h,p]=DAG_permutation_test(A,B,keys.AN.n_permutations);
+        [h,p]=DAG_permutation_test(A,B,keys.cal.n_permutations);
 end
 p=single(p);
 if keys.AN.check_normality && numel(A)>4 && numel(B)>4
