@@ -118,6 +118,7 @@ for current_date = sessions(:)'
     end
     if keys.cal.process_spikes
         pop_resorted = sort_by_unit_ID(data_per_block);
+        traces_per_block = sort_traces_by_block(data_per_block);
     end
     if keys.cal.process_by_block
         by_block = sort_by_block(data_per_block);
@@ -136,7 +137,6 @@ for current_date = sessions(:)'
             plot_sorted_waveforms(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria');
             plot_FR_across_time(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria FR over time');
         end
-        %pop_resorted([pop_resorted.n_waveforms]<keys.cal.min_spikes_per_unit)=[];
         
         % Excluding cells that dont match criterions... i.e. pop_resorted.unit_ID wont be assigned
         if keys.cal.units_from_sorting_table
@@ -146,25 +146,40 @@ for current_date = sessions(:)'
         % plot the cells used for further processing
         if keys.plot.waveforms && ~isempty(pop_resorted)
             keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'spike_shapes' filesep];
-            plot_sorted_waveforms(pop_resorted,keys,'analyzed units');
-            plot_sorted_ISI(pop_resorted,keys,'analyzed units ISI');
-            plot_FR_across_time(pop_resorted,keys,'analyzed units FR over time');
+            %% go by channel (?)
+            [channels csortidx]=sort([pop_resorted.channel]);
+            channel_diffs=find([0 diff(channels)]);
+            start_idx=0;
+            while start_idx < numel(channels)
+                end_idx=channel_diffs(find(floor((channel_diffs-start_idx)/37)<1,1,'last'));
+                if isempty(end_idx) % this is the case if theres more than 36 units in one channel!
+                    end_idx=channel_diffs(1);
+                end
+                to_plot=csortidx(start_idx+1:end_idx);
+                ch_start_end=['ch_' num2str(channels(start_idx+1)) '-' num2str(channels(end_idx))];
+                plot_sorted_waveforms(pop_resorted(to_plot),keys,['analyzed units, ' ch_start_end]);
+                plot_sorted_ISI(pop_resorted(to_plot),keys,['analyzed units ISI, ' ch_start_end]);
+                plot_FR_across_time(pop_resorted(to_plot),keys,['analyzed units FR over time, ' ch_start_end]);
+                start_idx=end_idx;
+            end
         end
         
         if ~isempty(pop_resorted)
-            pop_resorted=ph_epochs(pop_resorted,keys);
+%            pop_resorted=ph_epochs(pop_resorted,keys);
             [pop_resorted.monkey]=deal(keys.monkey);
-            keys.tuning_table=ph_ANOVAS(pop_resorted,keys);
-            
-            %% plotting single cells per session
-            if keys.plot.single_cells && ~isempty(pop_resorted)
-                keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'single_cells' filesep];
-                ph_plot_unit_per_condition(pop_resorted,keys);
-            end
+%             keys.tuning_table=ph_ANOVAS(pop_resorted,keys);
+%             
+%             %% plotting single cells per session
+%             if keys.plot.single_cells && ~isempty(pop_resorted)
+%                 keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'single_cells' filesep];
+%                 ph_plot_unit_per_condition(pop_resorted,keys);
+%             end
             
             %% Save population mat file per session and output
-            population=ph_reduce_population(pop_resorted);
+            population=ph_reduce_population_keep_spikes(pop_resorted);
             save([keys.population_foldername filesep keys.population_filename '_' current_date{1} '.mat'],'population');
+            %% Save population mat file per session and output 
+            save([keys.population_foldername filesep keys.traces_filename '_' current_date{1} '.mat'],'traces_per_block');
         end
     end
     
@@ -328,9 +343,28 @@ for b=1:size(o_t,2)
 end
 end
 
-function pop=ph_reduce_population(pop_in)
+function pop_resorted = sort_traces_by_block(o_t)
+fields_to_remove={'unit','channel','TDT_LFPx','TDT_LFPx_SR','TDT_LFPx_tStart','TDT_CAP1','TDT_POX1','TDT_ECG1','TDT_ECG4'};
+for b=1:size(o_t,2)
+    for t=1:size(o_t(b).trial,2)
+        trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
+        tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
+        pop_resorted(b).trial(t)=tmp;
+    end
+end
+end
+
+function pop=ph_reduce_population_keep_spikes(pop_in)
 pop=pop_in;
-fields_to_remove={'waveforms','epoch','x_eye','y_eye','x_hnd','y_hnd','time_axis'};
+fields_to_remove={'waveforms','x_eye','y_eye','x_hnd','y_hnd','time_axis'};
+for u=1:numel(pop)
+    pop(u).trial=rmfield(pop(u).trial,fields_to_remove);
+end
+end
+
+function pop=ph_reduce_population_keep_traces(pop_in)
+pop=pop_in;
+fields_to_remove={'waveforms','arrival_times'};
 for u=1:numel(pop)
     pop(u).trial=rmfield(pop(u).trial,fields_to_remove);
 end
@@ -400,7 +434,7 @@ function keys = get_sorting_table(keys)
 keys.sorting_table_units = {};
 keys.sorting_table_sites = {};
 keys.sorting_table       = {};
-temp_xlsx=dir(fullfile(keys.sorted_neurons_foldername,[keys.sorted_neurons_filename '*.xls*']));
+temp_xlsx=dir(fullfile(keys.sorted_neurons_foldername,[keys.sorted_neurons_filename '.xls*']));
 if ~isempty(temp_xlsx)
     excel_sheet= [keys.sorted_neurons_foldername filesep temp_xlsx(1).name];
     [~,~,sorting_table] = xlsread(excel_sheet,keys.sorted_neurons_sheetname); %sorting_table.NUMM doesnt work properly, because whole columns were missing
@@ -555,15 +589,5 @@ end
 ph_title_and_save(ISI_summary_handle,fig_title,fig_title,keys)
 end
 
-% function title_and_save(figure_handle,plot_title,keys)
-% mtit(figure_handle,  plot_title, 'xoff', 0, 'yoff', 0.05, 'color', [0 0 0], 'fontsize', 12,'Interpreter', 'none');
-% stampit;
-% if keys.plot.export
-%     wanted_size=[50 30];
-%     set(figure_handle, 'Paperunits','centimeters','PaperSize', wanted_size,'PaperPositionMode', 'manual','PaperPosition', [0 0 wanted_size]);
-%     export_fig([keys.path_to_save filesep plot_title], '-pdf','-transparent') % pdf by run
-%     close all
-% end
-% end
 
 

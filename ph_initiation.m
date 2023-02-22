@@ -81,6 +81,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         keys.tuning_table_foldername    =[keys.basepath_to_save keys.project_version filesep];
         keys.tuning_table_filename      =['tuning_table_combined'];
         keys.population_foldername      =[keys.basepath_to_save keys.project_version filesep];
+        keys.traces_filename            =['traces_' monkey];
         keys.population_filename        =['population_' monkey];
         keys.sites_filename             =['sites_' monkey];
         keys.filelist_formatted         =keys.(monkey).filelist_formatted;
@@ -91,11 +92,11 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
             keys.tuning_table= {'unit_ID'};
         end
         keys_out                        =ph_session_processing(keys); %% error here for flaff?
-        tuning_per_unit_table           =keys_out.tuning_table;
+        %tuning_per_unit_table           =keys_out.tuning_table;
          save([keys.basepath_to_save keys.project_version filesep 'keys_' monkey],'keys_out');
-         save([keys.tuning_table_foldername keys.tuning_table_filename],'tuning_per_unit_table');
+         %save([keys.tuning_table_foldername keys.tuning_table_filename],'tuning_per_unit_table');
     end
-     ph_format_tuning_table(tuning_per_unit_table,keys);
+    %ph_format_tuning_table(tuning_per_unit_table,keys);
 end
  %ph_get_filelist(project,versions);
  ph_initiate_population_analysis(project,versions);

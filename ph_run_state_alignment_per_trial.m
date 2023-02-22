@@ -10,7 +10,6 @@ if isfield(tr_in,'TDT_LFPx')
     nonempty=find(arrayfun(@(x) ~isempty(x.TDT_LFPx),tr_in));
     n_chans_s = size(tr_in(nonempty(1)).TDT_LFPx,1);  % first nonempty trial, is this nonempty channels only?
 end
-%n_chans=max([n_chans_u n_chans_s]);
 n_units=0;
 %% unitsperchannelmatrix JUST FOR DEBUGGING PURPOSES
 unitsperchannelmatrix=false(n_chans_u,1);
@@ -46,19 +45,22 @@ for t=1:n_trials
     %% what to do with last trial? is the last state 1?
     %% unit Lin_20150521_02 debug
     %%W:\Data\Linus_phys_combined_monkeypsych_TDT\20150521\Lincombined2015-05-21_03_block_01.mat
-    if isempty(trial_states_onset) || (t==n_trials && trial_states(end)~=1) || (t==n_trials-1 && trial_states(end)~=1) || (trial_states(end)~=90 && trial_states(end)~=99 && trial_states(end)~=1)%% Curius 20150603 block 4 trial 166
+    if isempty(trial_states_onset) ||...
+            (t==n_trials && trial_states(end)~=1) ||...
+            (t==n_trials-1 && trial_states(end)~=1) ||...
+            (trial_states(end)~=90 && trial_states(end)~=99 && trial_states(end)~=1)%% Curius 20150603 block 4 trial 166
         %&& (t==n_trials-1 || t==n_trials) % last trial bug that should get fixed in TDT_trial_struct_working  line 30
-                                           % if trial_states(end) is 99, this can be fixed here! no need to  discard those trials
+        % if trial_states(end) is 99, this can be fixed here! no need to  discard those trials
         trials_wo_phys=[trials_wo_phys t];
         continue;
     end
-    trial(t).date          = str2num(keys.date);
-    trial(t).block         = keys.block;
-    trial(t).run           = MA_out.selected(t).run;
-    trial(t).n             = MA_out.selected(t).trials;
-    trial(t).type          = MA_out.task(t).type;
-    trial(t).effector      = MA_out.task(t).effector;
-    trial(t).reach_hand    = MA_out.task(t).reach_hand;
+    trial(t).date               = str2num(keys.date);
+    trial(t).block              = keys.block;
+    trial(t).run                = MA_out.selected(t).run;
+    trial(t).n                  = MA_out.selected(t).trials;
+    trial(t).type               = MA_out.task(t).type;
+    trial(t).effector           = MA_out.task(t).effector;
+    trial(t).reach_hand         = MA_out.task(t).reach_hand;
     trial(t).correct_targets    = MA_out.task(t).correct_targets;
     
     trial(t).n_nondistractors          = MA_out.task(t).n_nondistractors;
@@ -75,7 +77,7 @@ for t=1:n_trials
     else
         trial(t).stimulustype = 1;
     end
-        
+    
     if isnan(trial(t).reach_hand); trial(t).reach_hand=0; end;
     trial(t).choice        = MA_out.binary(t).choice;
     trial(t).success       = MA_out.binary(t).success;
@@ -83,21 +85,20 @@ for t=1:n_trials
     
     
     %% Saccade or reach positions dependend on effector
-    MA_out.reaches(t).ini_all=MA_out.reaches(t).ini;
-    MA_out.reaches(t).end_all=MA_out.reaches(t).ini+MA_out.reaches(t).dur;
-    MA_out.reaches(t).endpos_all=MA_out.reaches(t).endpos;
-    MA_out.reaches(t).startpos_all=MA_out.reaches(t).startpos;
-    trial(t).sac_off     = MA_out.saccades(t).endpos-MA_out.saccades(t).tar_pos;
-    trial(t).sac_lat     = MA_out.saccades(t).lat;
-    trial(t).rea_off     = MA_out.reaches(t).endpos-MA_out.reaches(t).tar_pos;
-    trial(t).rea_lat     = MA_out.reaches(t).lat;
+    MA_out.reaches(t).ini_all       = MA_out.reaches(t).ini;
+    MA_out.reaches(t).end_all       = MA_out.reaches(t).ini+MA_out.reaches(t).dur;
+    MA_out.reaches(t).endpos_all    = MA_out.reaches(t).endpos;
+    MA_out.reaches(t).startpos_all  = MA_out.reaches(t).startpos;
+    trial(t).sac_off                = MA_out.saccades(t).endpos-MA_out.saccades(t).tar_pos;
+    trial(t).sac_lat                = MA_out.saccades(t).lat;
+    trial(t).rea_off                = MA_out.reaches(t).endpos-MA_out.reaches(t).tar_pos;
+    trial(t).rea_lat                = MA_out.reaches(t).lat;
     
     sac_ini = MA_out.states(t).start_obs + MA_out.saccades(t).lat;
     sac_end = sac_ini + MA_out.saccades(t).dur;
     rea_ini = MA_out.states(t).start_obs + MA_out.reaches(t).lat;
     rea_end = rea_ini + MA_out.reaches(t).dur;
     tri_end = MA_out.states(t).start_end;
-    
     
     if ismember(trial(t).effector,[0,3])
         Movement=MA_out.saccades(t);
@@ -114,19 +115,17 @@ for t=1:n_trials
     trial(t).cue_pos     = Movement.cue_pos;
     trial(t).cue_shape   = Movement.all_convexities(1);
     
-    % for distractor task    
+    % for distractor task
     trial(t).all_tar_pos        = Movement.all_tar_pos;
     trial(t).col_dim            = Movement.col_dim;
     trial(t).col_bri            = Movement.col_bri;
     trial(t).target_selected    = Movement.target_selected;
-
+    
     if  numel(trial(t).all_tar_pos) == 1 %% KK NOTLÖSUNG
-    correct_pos = trial(t).all_tar_pos; 
+        correct_pos = trial(t).all_tar_pos;
     else
-    correct_pos=trial(t).all_tar_pos(trial(t).correct_targets);
+        correct_pos=trial(t).all_tar_pos(trial(t).correct_targets);
     end
-    
-    
     if correct_pos == trial(t).fix_pos(1) %% distractor only or double_distractor
         correct_pos=trial(t).all_tar_pos(trial(t).all_tar_pos~=0);
     end
@@ -144,22 +143,7 @@ for t=1:n_trials
     trial(t).states         =trial_states(sort(tr_state_idx));
     trial(t).states_onset   =trial_states_onset(sort(tr_state_idx));
     
-
-
-
-
-%     %% excluding unwanted trials from the beginning... this is actually sort of problematic
-%     if ~ismember(trial(t).type,keys.cal.types) || ~ismember(trial(t).effector,keys.cal.effectors) %|| ~ismember(trial(t).reach_hand,keys.cal.reach_hand)
-%         trials_wo_cond=[trials_wo_cond t];
-%         continue;
-%     end
-
-
-
-
-
-    
-    %     %% for several movements per trial
+    %     %% for several movements per trial - has to be re-implemented somehow
     %     mov_idx=~isnan(Movement.ini_all) & Movement.ini_all>=MA_out.states(t).start_obs;
     %     trial(t).movement_onsets        =Movement.ini_all(mov_idx);
     %     trial(t).movement_ends          =Movement.end_all(mov_idx);
@@ -187,7 +171,7 @@ for t=1:n_trials
     
     
     %% adding previous trial
-    trial(t).run_onset_time              =MA_out.states(t).run_onset_time;
+    trial(t).run_onset_time          =MA_out.states(t).run_onset_time;
     trial(t).trial_onset_time        =MA_out.states(t).trial_onset_time;
     
     if t>1 % && keys.add_previous_trial_spikes     shift_in_seconds=1;
@@ -203,7 +187,7 @@ for t=1:n_trials
         trial(t).x_hnd = MA_out.raw(t).x_hnd;
         trial(t).y_hnd = MA_out.raw(t).y_hnd;
     end
-    %% resample for speed !!!
+    %% resample traces for speed !!!
     trace_idx=1:MA_out.keys.calc_val.i_sample_rate*keys.PSTH_binwidth:numel(trial(t).time_axis);
     trial(t).time_axis  = trial(t).time_axis(trace_idx);
     trial(t).x_eye      = trial(t).x_eye(trace_idx);
@@ -223,7 +207,7 @@ for t=1:n_trials
         trial(t).([FN{:} '_t0_from_rec_start'])=tr_in(t).([FN{:} '_t0_from_rec_start']);
         shift_n_samples=round(shift_in_seconds*trial(t).([FN{:} '_SR']));
         to_next_trial(t).(FN{:})=trial(t).(FN{:})(:,end-shift_n_samples:end);
-        trial(t).(FN{:})(:,end-shift_n_samples:end)=[]; % cut off end of current trial (delta t = shift_in_seconds)            
+        trial(t).(FN{:})(:,end-shift_n_samples:end)=[]; % cut off end of current trial (delta t = shift_in_seconds)
         if t>1 %% append end of previous trial to the current one (delta t = shift_in_seconds)
             trial(t).(FN{:})=[to_next_trial(t-1).(FN{:}) trial(t).(FN{:})];
             trial(t).([FN{:} '_tStart'])=  tr_in(t).streams_tStart-shift_n_samples/trial(t).([FN{:} '_SR']); %% this might have to depend on sampling rate ideally...
@@ -239,7 +223,7 @@ for t=1:n_trials
     end
     %trial(t).streams_tStart=tr_in(t).streams_tStart;
     
-    %% unspecific excel table data 
+    %% unspecific excel table data
     for c=1:n_chans_s,
         trial(t).channel(c).grid_x               =from_excel_per_channel(c).x{1} ;
         trial(t).channel(c).grid_y               =from_excel_per_channel(c).y{1} ;
@@ -248,7 +232,7 @@ for t=1:n_trials
         trial(t).channel(c).dataset              =from_excel_per_channel(c).dataset{1} ;
         trial(t).channel(c).perturbation         =from_excel_per_channel(c).perturbation{1} ;
         trial(t).channel(c).perturbation_site    =from_excel_per_channel(c).perturbation_site{1} ;
-        trial(t).channel(c).site_ID              =from_excel_per_channel(c).site{1} ;        
+        trial(t).channel(c).site_ID              =from_excel_per_channel(c).site{1} ;
     end
     
     %% SPIKES
@@ -285,57 +269,50 @@ for t=1:n_trials
             trial(t).unit(c,u).arrival_times= tr_in(t).spike_arrival_times{c,u};
             
             %% average firing rate (during task)
-        t1=min(trial(t).states_onset);
-        t2=trial(t).states_onset(end-1);
-        AT=trial(t).unit(c,u).arrival_times;
-        trial(t).unit(c,u).FR_average=sum(AT>t1 & AT<t2)/(t2-t1);   
+            t1=min(trial(t).states_onset);
+            t2=trial(t).states_onset(end-1);
+            AT=trial(t).unit(c,u).arrival_times;
+            trial(t).unit(c,u).FR_average=sum(AT>t1 & AT<t2)/(t2-t1);
         end
     end
-    
 end
-invalid_trials=sort([trials_wo_phys trials_wo_cond]); % important change: differentiation between phys not present and condition mismatches
+invalid_trials=sort([trials_wo_phys trials_wo_cond]); % differentiation between phys not present and condition mismatches (which are NOT excluded at this stage any more !)
 trial(invalid_trials)=[];
 
-%% automatic stability (dependent on fano factor of Frs per trial  
-if ~isempty(trial)
-units_cat=cat(3,trial.unit);
-for c=1:n_chans_u,
-    for u=1:n_units
-        
-        FRs_cat=[units_cat(c,u,:).FR_average];
-        FRs_cat=FRs_cat(FRs_cat~=0);
-        
-        unit_mean=double(nanmedian(FRs_cat));
-        unit_std=double(nanstd(FRs_cat));
-        confidence_interval=3*unit_std; %poisson?
-        %confidence_interval=sqrt(unit_mean)*1.96; %poisson?
-        % here is the actual criterion
-        FRs_cat=FRs_cat(FRs_cat>(log(1+exp(unit_mean-confidence_interval))) & FRs_cat<(log(1+exp(unit_mean+confidence_interval))));
-        
-        FRs_cat=smooth(FRs_cat,10);
-        fano=nanstd(FRs_cat)/nanmean(FRs_cat);
-        if fano < 0.2; %0.05
-            stability=1;
-        elseif fano < 0.4
-            stability=2;
-        else
-            stability=3;
-        end
-        for t=1:numel(trial) % another loop? not so cool
-            if keys.cal.automatic_stablity
-            trial(t).unit(c,u).stability_rating=stability;
+%% automatic stability (dependent on fano factor of Frs per trial
+if ~isempty(trial) && keys.cal.automatic_stablity
+    units_cat=cat(3,trial.unit);
+    for c=1:n_chans_u,
+        for u=1:n_units
+            FRs_cat=[units_cat(c,u,:).FR_average];
+            FRs_cat=FRs_cat(FRs_cat~=0);
+            
+            unit_mean=double(nanmedian(FRs_cat));
+            unit_std=double(nanstd(FRs_cat));
+            confidence_interval=3*unit_std; %poisson?
+            %confidence_interval=sqrt(unit_mean)*1.96; %poisson?
+            % here is the actual criterion
+            FRs_cat=FRs_cat(FRs_cat>(log(1+exp(unit_mean-confidence_interval))) & FRs_cat<(log(1+exp(unit_mean+confidence_interval))));
+            FRs_cat=smooth(FRs_cat,10);
+            fano=nanstd(FRs_cat)/nanmean(FRs_cat);
+            if fano < 0.2; %0.05
+                stability=1;
+            elseif fano < 0.4
+                stability=2;
+            else
+                stability=3;
             end
-            to_exclude_u=~ismember(trial(t).unit(c,u).stability_rating,keys.cal.stablity) ...
-                | ~ismember(trial(t).unit(c,u).Single_rating,keys.cal.single_rating)...
-                | ~ismember(trial(t).unit(c,u).SNR_rating,keys.cal.SNR_rating);
-            if to_exclude_u && ~strcmp(trial(t).unit(c,u).unit_ID,'no unit')
-                trial(t).unit(c,u).unit_ID=from_excel_per_unit(c,u).unit_identifier;
+            for t=1:numel(trial) % another loop? not so cool
+                trial(t).unit(c,u).stability_rating=stability;
+                %             to_exclude_u=~ismember(trial(t).unit(c,u).stability_rating,keys.cal.stablity) ...
+                %                 | ~ismember(trial(t).unit(c,u).Single_rating,keys.cal.single_rating)...
+                %                 | ~ismember(trial(t).unit(c,u).SNR_rating,keys.cal.SNR_rating);
+                %             if to_exclude_u && ~strcmp(trial(t).unit(c,u).unit_ID,'no unit')
+                %                 trial(t).unit(c,u).unit_ID=from_excel_per_unit(c,u).unit_identifier;
+                %             end
             end
         end
     end
-end
-
-
 end
 o.trial=trial;
 o.block=keys.block;
@@ -343,24 +320,24 @@ end
 
 function from_excel = get_sorted_neuron_out_xlsx_from_excel(xlsx_table, keys, unit, channel, unitexistsindata, per_unit)
 
-idx_Date            =DAG_find_column_index(xlsx_table,'Date');
-idx_Run             =DAG_find_column_index(xlsx_table,'Run');
-idx_Block           =DAG_find_column_index(xlsx_table,'Block');
-idx_Channel         =DAG_find_column_index(xlsx_table,'Chan');
-idx_Unit            =DAG_find_column_index(xlsx_table,'Unit');
-idx_Neuron_ID       =DAG_find_column_index(xlsx_table,'Neuron_ID');
-idx_Site_ID         =DAG_find_column_index(xlsx_table,'Site_ID');
-idx_Target          =DAG_find_column_index(xlsx_table,'Target');
-idx_Hemisphere      =DAG_find_column_index(xlsx_table,'Hemisphere');
-idx_Set             =DAG_find_column_index(xlsx_table,'Set');
-idx_Perturbation    =DAG_find_column_index(xlsx_table,'Perturbation');
-idx_Perturbation_site    =DAG_find_column_index(xlsx_table,'Perturbation_site');
-idx_SNR             =DAG_find_column_index(xlsx_table,'SNR_rank');
-idx_Single          =DAG_find_column_index(xlsx_table,'Single_rank');
-idx_x               =DAG_find_column_index(xlsx_table,'x');
-idx_y               =DAG_find_column_index(xlsx_table,'y');
-idx_Electrode_depth =DAG_find_column_index(xlsx_table,'Aimed_electrode_depth');
-idx_Stability       =DAG_find_column_index(xlsx_table,'Stability_rank');
+idx_Date                =DAG_find_column_index(xlsx_table,'Date');
+idx_Run                 =DAG_find_column_index(xlsx_table,'Run');
+idx_Block               =DAG_find_column_index(xlsx_table,'Block');
+idx_Channel             =DAG_find_column_index(xlsx_table,'Chan');
+idx_Unit                =DAG_find_column_index(xlsx_table,'Unit');
+idx_Neuron_ID           =DAG_find_column_index(xlsx_table,'Neuron_ID');
+idx_Site_ID             =DAG_find_column_index(xlsx_table,'Site_ID');
+idx_Target              =DAG_find_column_index(xlsx_table,'Target');
+idx_Hemisphere          =DAG_find_column_index(xlsx_table,'Hemisphere');
+idx_Set                 =DAG_find_column_index(xlsx_table,'Set');
+idx_Perturbation        =DAG_find_column_index(xlsx_table,'Perturbation');
+idx_Perturbation_site   =DAG_find_column_index(xlsx_table,'Perturbation_site');
+idx_SNR                 =DAG_find_column_index(xlsx_table,'SNR_rank');
+idx_Single              =DAG_find_column_index(xlsx_table,'Single_rank');
+idx_x                   =DAG_find_column_index(xlsx_table,'x');
+idx_y                   =DAG_find_column_index(xlsx_table,'y');
+idx_Electrode_depth     =DAG_find_column_index(xlsx_table,'Aimed_electrode_depth');
+idx_Stability           =DAG_find_column_index(xlsx_table,'Stability_rank');
 
 
 r_Date  = DAG_find_row_index(xlsx_table(:,idx_Date),str2double(keys.date));

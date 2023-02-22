@@ -48,10 +48,6 @@ for u=1:numel(population)
     tr_con=ismember([population(u).trial.completed],keys.cal.completed) & [population(u).trial.accepted];
     [pop]=ph_arrange_positions_and_plots(keys,population(u).trial(tr_con),population(u)); %% idea here: remove this one :D
     
-%     %% oculomotor - we want positions to be defined by all trials, then accept only relevant ones
-%     pop=ph_accept_trials_per_unit(pop,keys);
-%     pop.trial([pop.trial.accepted]==0)=[];
-    
     [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{1})).perturbation]=deal(0);
     [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{2})).perturbation]=deal(1);
     pop_out(u)=pop;
@@ -145,12 +141,9 @@ for u=1:numel(population)
             baseline(:)=deal(nanmean(SD));
         end
         
-        %% this line here, what to do with it?
-        %norm_factor(:)=deal(max([norm_factor 0])); % now we always normalize to maximum condition, 0 makes sure some value is there..
         %% correct normalization factors if they are too low  --> still normalize differently in different trials, or in general add 1 ?
         if any(norm_factor(:)<1)
-            %%%baseline=baseline+1-nanmean(norm_factor(t,:)); %when we use both baseline and norm_factor, cant simply only saturate norm_factor
-            %baseline=baseline+1-nanmean(norm_factor); %when we use both baseline and norm_factor, cant simply only saturate norm_factor
+            baseline=baseline+1-nanmean(norm_factor); %when we use both baseline and norm_factor, cant simply only saturate norm_factor
             norm_factor(:)=deal(1);
         end
         
@@ -189,7 +182,7 @@ for u=1:numel(population)
                 FR_for_pref(p)=nanmean((PF_epoch_FR(tr_hemi & trtyp')-baseline(tr_hemi & trtyp'))./norm_factor(tr_hemi & trtyp'));
             end
             [~,pref_idx]=max(FR_for_pref);
-            switch K.unpref_def %% add key here to tak unpreferred either as minimum, opposite location, or diagonally opposite location
+            switch K.unpref_def 
                 case 'minimum'  
                     [~,unpref_idx]=min(FR_for_pref);
                 case 'horizontally_opposite'
@@ -250,7 +243,7 @@ for u=1:numel(population)
                             
                             %% not sure if this makes much sense or if its even correct like this
                             ix = tr_hemi(tr_con);
-                            if any(ix) && any(ttest(PF_epoch_FR(ix), baseline(ix))==1)
+                            if any(ix) && any(ttest(PF_epoch_FR(ix), baseline(ix))==1) %% what what what why ttest here
                                 condition(t,c).per_hemifield(f).sign.unit(u)=sign(mean(PF_epoch_FR(ix) - baseline(ix)));
                             else
                                 condition(t,c).per_hemifield(f).sign.unit(u)=0;
@@ -304,6 +297,7 @@ for u=1:numel(population)
                         condition(t,c).per_position(p).position=UC.position(p,:);
                         condition(t,c).per_position(p).fixation=1;
                         condition(t,c).per_position(p).effector=eff;
+                        
                         % problem here if tr_con is empty (which it can be, because we are not requiring every condition to be valid for all units
                         ix = tr_pos(tr_con);
                         if any(ix) && any(ttest(PF_epoch_FR(ix), baseline(ix))==1)
@@ -328,26 +322,18 @@ for u=1:numel(population)
             
             zin_per_pos=NaN(size(UC.position,1),1);
 
-            %% supposedly matches with target position precision...
+            %% Always compute firing rates per position if theres at least one trial for htis condition (?)
             if sum(tr_con) == 0
                 continue
             end
+            
             for p=1:size(UC.position,1) %for FR plot only
-                
                 tr=all(abs(bsxfun(@minus,vertcat(pop.trial(tr_con).position),UC.position(p,:)))<keys.cal.precision_tar,2);
                 if sum(tr)==0; continue; end
                 zin_per_pos(p)=nanmean(vertcat(per_epoch(tr,RF_epoch{t}).FR));
             end
             RF_positions=vertcat(pop.trial(tr_con).position);
             zin=vertcat(per_epoch(:,RF_epoch{t}).FR);
-            
-            %%double because single in Linus/Curius Pulvinar gaze ?
-                %nonanidx=~isnan(zin_per_pos);
-
-                %FR_tmp=struct('FR',num2cell(zin_per_pos(nonanidx)),'x',num2cell(positions(nonanidx,1)),'y',num2cell(positions(nonanidx,2)));
-
-                
-                
             FR_tmp=struct('FR',num2cell(zin_per_pos),'x',num2cell(UC.position(:,1)),'y',num2cell(UC.position(:,2)));
             condition(t,c).fitting.unit(u).positions =FR_tmp;
             

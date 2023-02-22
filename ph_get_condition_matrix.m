@@ -43,9 +43,9 @@ end
 
 %% this part is not ideal (the perturbation one!)
 perturbation=[trials.perturbation];
-perturbation(ismember(perturbation, keys.cal.perturbation_groups{1}))=0;
-perturbation(ismember(perturbation, keys.cal.perturbation_groups{2}))=1;
-perturbation(isnan(perturbation))=0;
+% perturbation(ismember(perturbation, keys.cal.perturbation_groups{1}))=0;
+% perturbation(ismember(perturbation, keys.cal.perturbation_groups{2}))=1;
+% perturbation(isnan(perturbation))=0;
 UC.perturbation         =unique(perturbation);
 
 %% postitions are defiend by arrangement!

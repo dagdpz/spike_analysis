@@ -139,19 +139,12 @@ for t=1:numel(tasktypes)
                     labelindex(ismember(combined_tuning,{'-su','su-','susu'}))=1;
                     labelindex(ismember(combined_tuning,{'--'}))=2;
                     labelindex(ismember(combined_tuning,{'-en','en-','enen'}))=3;
-                    %labelindex(ismember(combined_tuning,{'suen','ensu'}))=4;
                     labelindex(ismember(combined_tuning,{'suen','ensu'}))=labelindex_D(ismember(combined_tuning,{'suen','ensu'}));
                     
                     TT{1,idx_C}=current_titles_C;
                     TT(2:end,idx_C)=keys.TTlabels.epoch(labelindex);
-%                     labelindex=2*ones(size(combined_tuning));
-%                     labelindex(ismember(combined_tuning,{'susu'}))=1;
-%                     labelindex(ismember(combined_tuning,{'enen'}))=3;
-%                     TT{1,idx_B}=current_titles_B;
-%                     TT(2:end,idx_B)=keys.TTlabels.epoch(labelindex);
                     
                     if strcmp(LHRH,'AH')
-                        
                         current_titles_E =[INCH '_' s{:} '_epoch_' affix];
                         current_titles_H =[INCH '_' s{:} '_hemifield_' affix];
                         [~,idx_E]=ismember(current_titles_E,all_titles);
@@ -305,6 +298,10 @@ for t=1:numel(keys.tt.tasktypes)
     TT=get_VM(TT,idx.Cue,idx.TIhol,'second',['motor_' taskcase]);
     TT=get_VM(TT,idx.Cue,idx.TIhol,'both',['visuomotor_' taskcase]);
     TT=get_VM(TT,idx.Cue,idx.TIhol,'none',['notclassified_' taskcase]);
+        
+    TT=get_VM(TT,idx.Cue,idx.Del,'first',['visual_del_' taskcase]); %% doesnt use suppression though !
+    TT=get_VM(TT,idx.Cue,idx.Del,'both',['visuomotor_del_' taskcase]); %% doesnt use suppression though ! 
+    TT=get_VM(TT,idx.Cue,idx.Del,'second',['motor_del_' taskcase]); %% doesnt use suppression though !
     
     TT=get_VM(TT,idx.Cue,idx.PreS,'first',['visual_preS_' taskcase]);
     TT=get_VM(TT,idx.Cue,idx.PreS,'second',['motor_preS_' taskcase]);
@@ -328,30 +325,7 @@ for t=1:numel(keys.tt.tasktypes)
     TT=get_VMI(TT,idx.TIhol_CS_FR,idx.Cue_CS_FR,['VMI_post_CS_' taskcase],'signed');
     TT=get_VMI(TT,idx.TIhol_IS_EN,idx.Cue_IS_EN,['VMI_postEN_IS_' taskcase],'absolute');
     TT=get_VMI(TT,idx.TIhol_CS_EN,idx.Cue_CS_EN,['VMI_postEN_CS_' taskcase],'absolute');
-    
-    %% MP
-    
-%     TT=get_VM(TT,idx.Cue,idx.Del,'first',['visual_only_' taskcase]); %% doesnt use suppression though !
-%     TT=get_VM(TT,idx.Cue,idx.Del,'both',['visuomotor_' taskcase]); %% doesnt use suppression though ! --> does use it for this one Oo
-%     TT=get_VM(TT,idx.Cue,idx.Del,'second',['motor_only_' taskcase]); %% doesnt use suppression though !
-%     TT=get_VM(TT,idx.Cue,idx.Del,'first',['visual_only_' taskcase]); %% doesnt use suppression though !
-%     TT=get_VM(TT,idx.Cue,idx.Del,'first',['visual_only_' taskcase]); %% doesnt use suppression though !
-    
-    
-    nc=size(TT,2);
-    if any(idx.Cue) % && any(idx.TIhol)
-        nc=nc+1;
-        TT{1,nc}=['visual_en_' taskcase];
-        TT(2:end,nc)=num2cell(ismember(TT(2:end,idx.Cue),{'en','bi'}));% & ~ismember(TT(2:end,idx.TIhol),{'en','su','bi'}));
-    end
-    
-    if  any(idx.Del)
-        nc=nc+1;
-        TT{1,nc}=['motor_en_' taskcase];
-        TT(2:end,nc)=num2cell(ismember(TT(2:end,idx.Del),{'en','bi'})); %& ismember(TT(2:end,idx.Del),{'en','su','bi'}));
-    end
-    %% MP end
-    
+        
     nc=size(TT,2);
     if any(idx.PeriS_IS_EN) && any(idx.Cue_IS_EN) && any(idx.PeriS_CS_EN) && any(idx.Cue_CS_EN)
         nc=nc+1;
@@ -675,13 +649,13 @@ end
 
 %% Selection title (making sure files are named differently)
 if ~isempty(keys.tt.selection)
-    Sel_for_title=[keys.tt.selection(:,1) repmat({' = '},size(keys.tt.selection(:,1)))...
+    Sel_for_title=[keys.tt.selection(:,1) repmat({'='},size(keys.tt.selection(:,1)))...
         cellfun(@num2str,keys.tt.selection(:,2),'uniformoutput',false)  repmat({', '},size(keys.tt.selection(:,1)))]';
 else
     Sel_for_title={'';'';'';''};
 end;
 if ~isempty(keys.tt.unselect)
-    Sel_for_title=[Sel_for_title, [keys.tt.unselect(:,1) repmat({' ~= '},size(keys.tt.unselect(:,1)))...
+    Sel_for_title=[Sel_for_title, [keys.tt.unselect(:,1) repmat({'~='},size(keys.tt.unselect(:,1)))...
         cellfun(@num2str,keys.tt.unselect(:,2),'uniformoutput',false)  repmat({', '},size(keys.tt.unselect(:,1)))]'];
 end;
 

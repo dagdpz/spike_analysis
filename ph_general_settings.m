@@ -13,11 +13,10 @@ keys.contra_ipsi_relative_to='target';
 
 %% labels for conditions to plot - related to colors fieldnames!
 keys.labels.handsIC                 ={'AH','IH','CH'};  %% AH!??
-keys.labels.perturbations           ={'','_PT'};
+keys.labels.perturbation           ={'','PT','PT2','PT3','PT4','PT5','PT6','PT7','PT8'};
 keys.labels.reach_hand              ={'AH','IH','CH'};
 keys.labels.reach_handLR            ={'AH','LH','RH'}; 
 keys.labels.choice                  ={'in','ch'};
-keys.labels.perturbation            ={'','PT'};
 keys.labels.stimulustype            ={'SS','TT','TD'};
 keys.labels.difficulty              ={'TA','D1','D2'};
 keys.labels.success                 ={'ER','SU'};
@@ -26,12 +25,13 @@ keys.labels.fix_index               ={'IF','MF','CF'};
 keys.labels.preferred               ={'NP','PF'};
 keys.labels.stimuli_in_2hemifields  ={'1H','2H'};
 
-keys.colors=ph_default_color_settings;
+[keys.colors,keys.linestyles]=ph_default_color_settings;
 
 %% labels for tuning table significance entries
 keys.TTconditions.hands             ={'AH','LH','RH'};
 keys.TTconditions.choice            ={'in','ch'};
 keys.TTconditions.hemifield         ={'LS','RS'};
+keys.TTconditions.perturbation      ={'','_PT'};
 keys.TTlabels.UD                    ={'DN','-','UP'};
 keys.TTlabels.CR                    ={'UC','-','CR'};
 keys.TTlabels.choices               ={'in','-','ch'}; %% why choice(S!)
@@ -44,7 +44,7 @@ keys.TTlabels.SpatialComp_2HFTar    ={'ST','-','2T'}; %higher FR for single T , 
 keys.TTlabels.epoch                 ={'su','-','en','bi'};
 keys.TTlabels.hemifield             ={'LS','-','RS'}; 
 keys.TTlabels.hands                 ={'LH','-','RH'};
-keys.TTlabels.PT                    ={'SU','-','EN'};
+keys.TTlabels.perturbation          ={'SU','-','EN'};
 
 %% Batching per figure ! subregion keys..?
 keys.batching.monkeys                    ={'Curius','Linus'};       % monkeys on the project
@@ -72,10 +72,14 @@ keys.cal.stablity                       =[0,1];                     % not assign
 keys.cal.single_rating                  =[1,2,3];                   % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl
 keys.cal.automatic_stablity             =0;                         % using automatic stability assessment
 keys.cal.SNR_rating                     =[1,2,3,4];                 % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl
-keys.cal.min_trials_per_condition       =5;                         % minimum trials per conditon (look at ph_arrange_positions to see how conditions are defined)
+%keys.cal.min_trials_per_condition       =5;                         % minimum trials per conditon (look at ph_arrange_positions to see how conditions are defined)
 %keys.cal.min_spikes_per_unit            =50;                        % excluding units that have in total less spikes (workaround for sortcode assignment bug) - to be removed
 keys.cal.perturbation_groups            ={0,[2,3,4,5,6,7,8]};       % which perturbation values from excel table will be assigned to control and perturbation for comparisons and population analysis
 keys.cal.remove_trials_without_spikes=1;
+
+
+keys.cal.min_trials_in                  =5;                   % minimum number of trials instructed
+keys.cal.min_trials_ch                  =5;                   % minimum number of trials choice
 
 %% precision for merging positions (and fixations)
 keys.cal.precision_fix=4;
@@ -136,7 +140,7 @@ keys.Bacchus.marker    ='x';
 %% plotting settings
 keys.plot.anova_tables                  ='off';     % display anova result tables for each unit, please keep off, it will get very messy if you turn this on
 keys.plot.single_trials                 =0;         % not used yet
-keys.plot.single_cells                  =1;         % perform single cell plotting
+%keys.plot.single_cells                  =1;         % perform single cell plotting
 keys.plot.waveforms                     =1;         % plot the waveform summary plots per session
 keys.plot.polars_on_extra_figure        =0;         % recommended if there are too many conditions and the single cell heatmap plots are too small/crowded
 keys.plot.eye_hand_traces               =1;         % Incredible performance booster if turned off
@@ -150,33 +154,14 @@ keys.plot.scatter_legends               =1;         % if population legends shou
 keys.plot.rotate_epoch_labels           =0;
 keys.plot.rotate_time_labels            =0;
 
-%% Single cell plot settings
-% ylimits
-%keys.plot.FR_max_for_ylim               =50;
-keys.UN.trials_max_for_ylim           =50;
-keys.UN.excentricity_max_for_ylim     =30;
-keys.UN.eyetrace_factor               =0.5;
-keys.UN.hndtrace_factor               =0.5;
-keys.UN.line_labelling                ='left/right';
-
-% ANOVA labels for single unit plots
-keys.UN.anova_main    ={'E','in_epoch_main','','S','in_hemifield_main','','C','ch_hemifield_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
-keys.UN.anova_effector={'E','in_epoch_main','','S','in_hemifield_main','','C','ch_hemifield_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
-keys.UN.anova_epoch1  ={'E','in_AH','epoch','S','in','hemifield','C','ch','hemifield','H','in','hands','SxH','in','SxH'};
-keys.UN.anova_epoch2  ={'LL','in_LH_LS','PT','RL','in_LH_RS','PT','LR','in_RH_LS','PT','RR','in_RH_RS','PT'};
-
-
-keys.UN.PSTH_perpos_width          =0.5;
-keys.UN.raster_width               =0.1;
-keys.UN.PSTH_summary_width         =1;
 
 
 %% tuning table readout options (excluding particular subsets)
 keys.tt.combine_tuning_properties   ={'place_name_here'}; %% additional table entry from combining columns
 keys.tt.replace_tuning              ={}; %% additional table entry from combining columns
-keys.tt.perturbations               = 0;
-keys.tt.choices                     = 0;
-keys.tt.hands                       = 0;
+keys.tt.perturbation                = 0;
+keys.tt.choice                      = 0;
+keys.tt.reach_hand                  = 0;
 keys.tt.IC_for_criterion            = 'in';
 keys.tt.trial_criterion_in          ='per_position';
 keys.tt.trial_criterion_ch          ='per_hemifield';
@@ -435,7 +420,7 @@ keys.AN.multicomparison='none';
   keys.population_defaults.fontsize_factor=1.5;
   keys.population_defaults.link_y_lim                        = 1;
   % keys.population_defaults.fontsize_factor=4;  %% MP: this should be in the settings file
-  keys.population_defaults.split_SUs={''};            %% ??
+  %keys.population_defaults.split_SUs={''};            %% ??
   keys.population_defaults.RF_frame_colors                 	= {};
   keys.population_defaults.RF_frame_entries                 	= {};
   keys.population_defaults.RF_frame_parameter                = '';
@@ -444,4 +429,27 @@ keys.AN.multicomparison='none';
   
 
   keys.population_defaults.redo_statistics                   = 0; %% maybe even put 1 here
+
+
+%% Single cell plot settings
+% ylimits
+%keys.plot.FR_max_for_ylim               =50;
+keys.population_defaults.trials_max_for_ylim           =50;
+keys.population_defaults.excentricity_max_for_ylim     =30;
+keys.population_defaults.eyetrace_factor               =0.5;
+keys.population_defaults.hndtrace_factor               =0.5;
+keys.population_defaults.line_labelling                ='left/right';
+
+% ANOVA labels for single unit plots
+keys.population_defaults.anova_main    ={'E','in_epoch_main','','S','in_hemifield_main','','C','ch_hemifield_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
+keys.population_defaults.anova_effector={'E','in_epoch_main','','S','in_hemifield_main','','C','ch_hemifield_main','','H','in_hands_main','','ExS','in_ExS','','ExH','in_ExH','','SxH','in_SxH',''};
+keys.population_defaults.anova_epoch1  ={'E','in_AH','epoch','S','in','hemifield','C','ch','hemifield','H','in','hands','SxH','in','SxH'};
+keys.population_defaults.anova_epoch2  ={'LL','in_LH_LS','PT','RL','in_LH_RS','PT','LR','in_RH_LS','PT','RR','in_RH_RS','PT'};
+
+
+keys.population_defaults.PSTH_perpos_width          =0.5;
+keys.population_defaults.raster_width               =0.1;
+keys.population_defaults.PSTH_summary_width         =1;
+  
+  
 

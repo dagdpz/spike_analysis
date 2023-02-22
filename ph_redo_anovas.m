@@ -45,7 +45,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
             clear tuning_per_unit_table
             %% LS has this line, MP kept it?:
             population = ph_accept_trials_per_unit(population,keys); 
-            population = ph_assign_perturbation_group(keys,population); %% MP removed this line (hmm... what do we actually store as perutrbation ??)
+            %population = ph_assign_perturbation_group(keys,population); %% MP removed this line (hmm... what do we actually store as perutrbation ??)
             
             population = ph_epochs(population,keys);
             tuning_per_unit_table=ph_ANOVAS(population,keys); % main function

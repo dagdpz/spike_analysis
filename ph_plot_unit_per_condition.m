@@ -165,7 +165,7 @@ for unit=1:numel(population)
                                     trial_state_onset=line_struct(t).states_onset(line_struct(t).states==sta);
                                     at_idx=line_struct(t).arrival_times-trial_state_onset>=t_before_state &...
                                         line_struct(t).arrival_times-trial_state_onset<=t_after_state;
-                                    if ~strcmp(keys.UN.line_labelling,'contra/ipsi')
+                                    %if ~strcmp(keys.UN.line_labelling,'contra/ipsi')
                                         time_axis=line_struct(t).time_axis-trial_state_onset+state_shift;
                                         t_idx=line_struct(t).time_axis-trial_state_onset>=t_before_state &...
                                             line_struct(t).time_axis-trial_state_onset<=t_after_state;
@@ -175,7 +175,7 @@ for unit=1:numel(population)
                                             line(time_axis(t_idx),line_struct(t).x_hnd(t_idx)*keys.UN.hndtrace_factor + hnd_offset,'color',hnd_col_h);
                                             line(time_axis(t_idx),line_struct(t).y_hnd(t_idx)*keys.UN.hndtrace_factor + hnd_offset,'color',hnd_col_v);
                                         end
-                                    end
+                                    %end
                                     ig_make_raster([line_struct(t).arrival_times(at_idx)]'+state_shift-trial_state_onset,raster_y-t,1,0,'Color',col,'LineWidth',keys.UN.raster_width);
                                 end
                                 line([state_shift+t_before_state state_shift+t_after_state],[raster_y-t raster_y-t],'Color',col,'LineWidth',0.5);

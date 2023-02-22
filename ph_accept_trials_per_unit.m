@@ -10,9 +10,6 @@ for u=1:numel(pop_resorted)
             correct_task=correct_task & ismember([pop_resorted(u).trial.(par)],keys.cal.(par));
         end
     end
-   % correct_task=true(size([pop_resorted(u).trial.completed])); % to
-   % delete! --> used to (hopefully create exactly same positions for
-   % Pulv_oculomotor)
     FRsT=FRs(correct_task);
     if keys.cal.remove_trials_without_spikes % pulv_oculomotor!!
         FRsT=FRsT(FRsT~=0); 

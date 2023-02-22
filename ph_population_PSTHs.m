@@ -142,42 +142,6 @@ for t=1:size(condition,1)
     unique_group_values_tmp=unique_group_values;
     for gt=1:numel(unique_group_values_tmp)
         unique_group_values=unique_group_values_tmp(gt);
-        
-%         unitidx=ismember(complete_unit_list,TT(ismember(group_values,unique_group_values_tmp(gt)),idx.unitID));
-%         group_units=find(all(unitidx,2))';
-%        group_units=find(ismember(population_group,unique_group_values));
-%         for c=1:size(condition,2)
-%             clear FRmax maxposition
-%             %% typ we know already, this is only for naming!
-%             eff=conditions_out(c,1); % this here be wrong
-%             
-%             per_unit=[condition(t,c).fitting.unit(group_units)];
-%             pos=[per_unit.positions];
-%             
-%             %normalize firing rates?
-%             for u=1:size(pos,2)
-%                 FR=[pos(:,u).FR];
-%                 if keys.PO.FR_subtract_baseline
-%                     [FRmax(u), maxposition(u)]=max([FR(FR>0) 0]);
-%                     FRmin=min([FR(FR<0) 0]);
-%                     FRmax(u)=max([abs(FRmax(u)) abs(FRmin)]);
-%                     FR255=num2cell(round((FR+FRmax(u))/2/FRmax(u)*254)+1);
-%                 else
-%                     [FRmax(u), maxposition(u)]=max(FR);
-%                     FR255=num2cell(round(FR/FRmax(u)*254)+1);
-%                 end
-%                 [pos(:,u).FR255_GAU]=deal(FR255{:});
-%                 [pos(:,u).FR255]=deal(FR255{:});
-%             end
-%             
-%             cond(c).FRmax=FRmax;
-%             cond(c).pos=pos;
-%             cond(c).maxposition=maxposition;
-%             
-%             conditiontitle{c}=['T' num2str(typ) 'E' num2str(eff) ' ' labels{mod(c-1,size(conditions_out,1)/numel(UC.effector))+1}];
-%         end
-%         
-        
         if   keys.PO.plot_per_position
             %% PSTH per position plot
             current=[condition(t,:).per_position]; current=current(:);
@@ -224,16 +188,13 @@ end
             plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
             PSTH_summary_handle(ef)     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_title);
             for g=1:numel(unique_group_values)
-                %%reducing to only units that have at least one condition
-                % KK
                 group_units=find(ismember(population_group,unique_group_values(g)));
-                %unitidx=ismember(complete_unit_list,TT(ismember(group_values,unique_group_values(g)),idx.unitID));
                 
                 current_window=vertcat(current.window);
                 current_units=vertcat(current_window(:,1).unit);
                 
-                %empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density) || all(isnan( x.average_spike_density)),current_units) ; %nans not needed hopefully
-                empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density) ,current_units) ; %nans not needed hopefully, still there in MP mods
+                empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density) || all(isnan( x.average_spike_density)),current_units) ; %nans not needed hopefully
+                %empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density) ,current_units) ; %nans not needed hopefully, still there in MP mods
                 empty_conditions_and_units(:,end+1:numel(group_units))=true; % from the last valid to the end
                 condition_empty=all(empty_conditions_and_units,2);
                 
@@ -260,6 +221,7 @@ end
                     
                     %group_units=find(ismember(population_group,unique_group_values));
                     current_color=keys.colors.(legend_labels{c})/255;
+                    current_line_style=keys.linestyles.(legend_labels{c});
                     column=c; %irrelevant ?
                     
                     if any(strfind(plot_title_part,'per position'))%% still need to fix colors if different conditions are present, AND fix overwriting of different groups.... (how about legends?)
@@ -303,11 +265,7 @@ end
                             t_after_state=keys.PSTH_WINDOWS{w,4};
                             bins=t_before_state:keys.PSTH_binwidth:t_after_state;
                             bins=bins+state_shift-t_before_state;
-                            %                             if strcmp(plot_title_part,' PSTHs')
-                            %                                 props={'color',current_color,'linewidth',3,'LineStyle',current_line_type};
-                            %                             else
-                            props={'color',current_color,'linewidth',3};
-                            %                             end
+                            props={'color',current_color,'linewidth',3,'LineStyle',current_line_style};
                             errorbarhandle=shadedErrorBar(bins,nanmean(vertcat(current(c).window(w).unit(units).average_spike_density),1),...
                                 sterr(vertcat(current(c).window(w).unit(units).average_spike_density),1),props,1); %% STERR!!!!
                             state_shift=state_shift+t_after_state-t_before_state+0.1;
@@ -378,8 +336,6 @@ end
                 plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
                 PSTH_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_title);
                 for g=1:numel(unique_group_values)
-%                     unitidx=ismember(complete_unit_list,TT(ismember(group_values,unique_group_values(g)),idx.unitID));
-%                     group_units=find(all(unitidx,2) & units_valid)';
                     group_units=find(ismember(population_group,unique_group_values(g)) & units_valid)';
                     
                     %%reducing to only units that have at least one condition

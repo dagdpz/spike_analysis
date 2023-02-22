@@ -1,6 +1,6 @@
 function ph_initiate_population_analysis(varargin)
 %ph_initiate_population_analysis('PPC_pulv_eye_hand',{'LIP_dPul_inj_working'},{'pop','ons','sct','ccs'})
-population_analysis_to_perform={'pop','ons','sct','ccs','gaz','ref','gfl','hst','beh'}; 
+population_analysis_to_perform={'tun','uni','ccs','ons','pop'}; 
 
 if nargin>2
     population_analysis_to_perform=varargin{3};
@@ -41,8 +41,10 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         end
         if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','hst','reg','rtc','prf','ndt','uni','rfs','tun','beh'}))
             population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
-            population=ph_assign_perturbation_group(keys,population);
             population=ph_epochs(population,keys);
+            if ismember(population_analysis_to_perform,{'uni'}) %% for single cell plotting, add eye/hand traces
+                population=ph_load_traces([keys.basepath_to_save keys.project_version],['traces_' keys.monkey],population);
+            end
         else
             population=[];
         end
@@ -105,7 +107,7 @@ for P=population_analysis_to_perform
         end
 
 
-        keys.(AN).FR_subtract_baseline=~strcmp(keys.(AN).epoch_BL,'none');
+        keys.(AN).FR_subtract_baseline=~strcmp(keys.(AN).epoch_BL,'none'); %% try to get rid of this
         if isfield(keys_in.(ana)(cc),'tt') && isstruct(keys_in.(ana)(cc).tt)
             for fn=fieldnames(keys_in.(ana)(cc).tt)'
                 keys.tt.(fn{:})=keys_in.(ana)(cc).tt.(fn{:});
@@ -135,7 +137,13 @@ for P=population_analysis_to_perform
             keys_in.(ana)(cc).conditions_to_plot={'SC'};
         end
         
-        population = ph_accept_trials_per_unit(population_full,keys);
+        if strcmp(ana,'uni') %% in this case we want to keep all the possible perturbation entries!
+            keys.cal.perturbation                   =[0:50];
+            population=population_full;
+        else
+            population=ph_assign_perturbation_group(keys,population_full);
+        end
+        population = ph_accept_trials_per_unit(population,keys);
         
         
         for a=1:numel(keys.(AN).position_and_plotting_arrangements)            

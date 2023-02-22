@@ -1,4 +1,4 @@
-function colors=ph_default_color_settings
+function [colors,linestyles]=ph_default_color_settings
 % traces
 colors.eye_ver         =[0.8 0 0];
 colors.eye_hor         =[1 0 0];
@@ -105,20 +105,20 @@ colors.ch_CH_PT_CS=[204 64 0];
 colors.in_CH_PT_IS=[0 204 0];
 colors.ch_CH_PT_IS=[0 204 0];
 
-%% population contra ipsi and vertical PSTH colors -overwriting MP settings for now
-colors.in_AH_CS=[255 0 64];
-colors.ch_AH_CS=[128 0 32];
-colors.in_IH_CS=[255 0 255];
-colors.ch_IH_CS=[128 0 128];
-colors.in_CH_CS=[255 128 0];
-colors.ch_CH_CS=[128 64 0];
-
-colors.in_AH_IS=[0 255 255];
-colors.ch_AH_IS=[0 128 128];
-colors.in_IH_IS=[0 128 255];
-colors.ch_IH_IS=[0 64 128];
-colors.in_CH_IS=[0 255 0];
-colors.ch_CH_IS=[0 128 0];
+% %% population contra ipsi and vertical PSTH colors -overwriting MP settings for now
+% colors.in_AH_CS=[255 0 64];
+% colors.ch_AH_CS=[128 0 32];
+% colors.in_IH_CS=[255 0 255];
+% colors.ch_IH_CS=[128 0 128];
+% colors.in_CH_CS=[255 128 0];
+% colors.ch_CH_CS=[128 64 0];
+% 
+% colors.in_AH_IS=[0 255 255];
+% colors.ch_AH_IS=[0 128 128];
+% colors.in_IH_IS=[0 128 255];
+% colors.ch_IH_IS=[0 64 128];
+% colors.in_CH_IS=[0 255 0];
+% colors.ch_CH_IS=[0 128 0];
 
 colors.in_AH_VS=[150 150 150];
 colors.ch_AH_VS=[80 80 80];
@@ -390,7 +390,7 @@ colors.SS_D2_2H_SU_CS=temp_colors_C(16,:);
 colors.TT_D2_2H_SU_CS=temp_colors_C(17,:);
 colors.TD_D2_2H_SU_CS=temp_colors_C(18,:);
 
-%% preferred and unpreferred same as contra/ipsi
+%% preferred and unpreferred same as contra/ipsi + add different perturbation block colors
 color_fieldnames=fieldnames(colors);
 for fn=1:numel(color_fieldnames)
     switch color_fieldnames{fn}(end-1:end)
@@ -398,6 +398,16 @@ for fn=1:numel(color_fieldnames)
             colors.([color_fieldnames{fn}(1:end-2) 'PF'])=colors.(color_fieldnames{fn});
         case 'IS'
             colors.([color_fieldnames{fn}(1:end-2) 'NP'])=colors.(color_fieldnames{fn});
+    end
+    pt_index=strfind(color_fieldnames{fn},'PT');
+    if any(pt_index)
+        colors.([color_fieldnames{fn}(1:pt_index+1) '2' color_fieldnames{fn}(pt_index+2:end)])=colors.(color_fieldnames{fn})*7/8;
+        colors.([color_fieldnames{fn}(1:pt_index+1) '3' color_fieldnames{fn}(pt_index+2:end)])=colors.(color_fieldnames{fn})*6/8;
+        colors.([color_fieldnames{fn}(1:pt_index+1) '4' color_fieldnames{fn}(pt_index+2:end)])=colors.(color_fieldnames{fn})*5/8;
+        colors.([color_fieldnames{fn}(1:pt_index+1) '5' color_fieldnames{fn}(pt_index+2:end)])=colors.(color_fieldnames{fn})*4/8;
+        colors.([color_fieldnames{fn}(1:pt_index+1) '6' color_fieldnames{fn}(pt_index+2:end)])=colors.(color_fieldnames{fn})*3/8;
+        colors.([color_fieldnames{fn}(1:pt_index+1) '7' color_fieldnames{fn}(pt_index+2:end)])=colors.(color_fieldnames{fn})*2/8;
+        colors.([color_fieldnames{fn}(1:pt_index+1) '8' color_fieldnames{fn}(pt_index+2:end)])=colors.(color_fieldnames{fn})*1/8;
     end
 end
 
@@ -411,4 +421,15 @@ colors.in_NP   =colors.EP_SU;
 
 %% overlapping tt and cc (??)
 colors.per_monkey          =[0 1 0; 1 0 0];
+
+%% linestyles for choices: dotted lines!
+color_fieldnames=fieldnames(colors);
+for fn=1:numel(color_fieldnames)
+    if strcmp(color_fieldnames{fn}(1:2),'ch')        
+        linestyles.(color_fieldnames{fn})=':';    
+    else
+        linestyles.(color_fieldnames{fn})='-';
+    end
+end
+
 end
