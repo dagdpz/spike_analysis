@@ -1,4 +1,4 @@
-function ph_initiation(project,versions,keep_version_settings)
+function ph_initiation(project,versions)
 % Input format: ph_initiation('Pulv_eye_hand',{'20161212'},1)
 % 'Pulv_eye_hand' ... PROJECT FOLDER to save the output on Y:\Projects and
 % to get the settings on Dropbox: \Dropbox\DAG\DAG_toolbox\spike_analysis
@@ -22,16 +22,11 @@ function ph_initiation(project,versions,keep_version_settings)
 % you can also run ph_initiate_cell_count,ph_initiate_population_analysis,
 % ph_initiate_scatter as well as the ANOVAS (ph_initiate_analysis) independently.
 
-if nargin<3
-    keep_version_settings=1;
-end
 keys=struct;
 keys=ph_general_settings(project,keys);
 project_specific_settings=[keys.db_folder 'ph_project_settings.m'];
 run(project_specific_settings)
-if nargin>=2
-    keys.project_versions=versions;
-end
+keys.project_versions=versions;
 for f=1:numel(keys.project_versions) % running multiple versions of the same project at once !
 
     if ~isempty(keys.project_versions{f})
@@ -52,14 +47,10 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         save(seed_filename,'seed');
     end
     keys.version_specific_settings=[keys.db_folder keys.project_version filesep 'ph_project_version_settings.m'];
-    if keep_version_settings && exist(keys.version_specific_settings,'file')
-        run(keys.version_specific_settings)
-        keys.project_versions=versions;
-        keys.project_version=keys.project_versions{f};
-    else
-        delete(keys.version_specific_settings);
-        copyfile(project_specific_settings,keys.version_specific_settings);
-    end
+    
+    run(keys.version_specific_settings)
+    keys.project_versions=versions;
+    keys.project_version=keys.project_versions{f};
     keys.additional_settings=[keys.db_folder keys.project_version filesep 'ph_additional_settings.m'];
     if exist(keys.additional_settings,'file')
         run(keys.additional_settings)
