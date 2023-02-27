@@ -13,7 +13,7 @@ keys.contra_ipsi_relative_to='target';
 
 %% labels for conditions to plot - related to colors fieldnames!
 keys.labels.handsIC                 ={'AH','IH','CH'};  %% AH!??
-keys.labels.perturbation           ={'','PT','PT2','PT3','PT4','PT5','PT6','PT7','PT8'};
+keys.labels.perturbation            ={'','PT','PT2','PT3','PT4','PT5','PT6','PT7','PT8'};
 keys.labels.reach_hand              ={'AH','IH','CH'};
 keys.labels.reach_handLR            ={'AH','LH','RH'}; 
 keys.labels.choice                  ={'in','ch'};

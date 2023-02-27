@@ -129,16 +129,16 @@ for current_date = sessions(:)'
         pop_resorted(ismember({pop_resorted.unit_ID},{'no unit'}))=[];              %% remove units that were not taken over from excel sheet (??)
         pop_resorted = ph_accept_trials_per_unit(pop_resorted,keys);                %% add field accepted for each trial per unit
         
-        % plot the cells not meeting criteria
+        % plot the cells not meeting criteria - not needed any more (?)
         idx_Neuron_ID=DAG_find_column_index(keys.sorting_table,'Neuron_ID');
         all_unit_IDs=keys.sorting_table_units(:,idx_Neuron_ID);
         if keys.plot.waveforms && any(~ismember({pop_resorted.unit_ID},all_unit_IDs))
             keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'spike_shapes' filesep];
-            plot_sorted_waveforms(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria');
-            plot_FR_across_time(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not meeting criteria FR over time');
+            plot_sorted_waveforms(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not found in sorting table');
+            plot_FR_across_time(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not found in sorting table FR over time');
         end
         
-        % Excluding cells that dont match criterions... i.e. pop_resorted.unit_ID wont be assigned
+        % Excluding cells that are not found in the sortign table... i.e. pop_resorted.unit_ID wont be assigned
         if keys.cal.units_from_sorting_table
             pop_resorted(~ismember({pop_resorted.unit_ID},all_unit_IDs))=[];
         end
@@ -146,7 +146,7 @@ for current_date = sessions(:)'
         % plot the cells used for further processing
         if keys.plot.waveforms && ~isempty(pop_resorted)
             keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'spike_shapes' filesep];
-            %% go by channel (?)
+            %% go by channel 
             [channels csortidx]=sort([pop_resorted.channel]);
             channel_diffs=find([0 diff(channels)]);
             start_idx=0;
@@ -165,18 +165,10 @@ for current_date = sessions(:)'
         end
         
         if ~isempty(pop_resorted)
-%            pop_resorted=ph_epochs(pop_resorted,keys);
             [pop_resorted.monkey]=deal(keys.monkey);
-%             keys.tuning_table=ph_ANOVAS(pop_resorted,keys);
-%             
-%             %% plotting single cells per session
-%             if keys.plot.single_cells && ~isempty(pop_resorted)
-%                 keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'single_cells' filesep];
-%                 ph_plot_unit_per_condition(pop_resorted,keys);
-%             end
             
             %% Save population mat file per session and output
-            population=ph_reduce_population_keep_spikes(pop_resorted);
+            population=ph_reduce_population(pop_resorted);
             save([keys.population_foldername filesep keys.population_filename '_' current_date{1} '.mat'],'population');
             %% Save population mat file per session and output 
             save([keys.population_foldername filesep keys.traces_filename '_' current_date{1} '.mat'],'traces_per_block');
@@ -354,7 +346,7 @@ for b=1:size(o_t,2)
 end
 end
 
-function pop=ph_reduce_population_keep_spikes(pop_in)
+function pop=ph_reduce_population(pop_in)
 pop=pop_in;
 fields_to_remove={'waveforms','x_eye','y_eye','x_hnd','y_hnd','time_axis'};
 for u=1:numel(pop)
@@ -362,13 +354,6 @@ for u=1:numel(pop)
 end
 end
 
-function pop=ph_reduce_population_keep_traces(pop_in)
-pop=pop_in;
-fields_to_remove={'waveforms','arrival_times'};
-for u=1:numel(pop)
-    pop(u).trial=rmfield(pop(u).trial,fields_to_remove);
-end
-end
 
 %% data path functions
 
