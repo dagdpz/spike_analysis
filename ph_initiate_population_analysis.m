@@ -91,7 +91,7 @@ for P=population_analysis_to_perform
         for fn=FN'
             if ~isempty(keys_in.(ana)(cc).(fn{:}))
                 keys.(AN).(fn{:})=keys_in.(ana)(cc).(fn{:});
-                if strcmp(fn{:},'condition_parameters')
+                if ismember(fn{:},{'condition_parameters','PSTH_binwidth','gaussian_kernel','kernel_type'})
                 keys.(fn{:})=keys_in.(ana)(cc).(fn{:});
                 end
             end
@@ -155,10 +155,6 @@ for P=population_analysis_to_perform
                     keys.tt.tasktypes=strcat(condition_to_plot, ['_' keys.arrangement(1:3)]);
                 end
                 
-%                 if strcmp(ana,'tun')
-%                     
-%                     
-%                 end
                 keys=ph_tuning_table_correction(keys);
                 
                 %% seed is reloaded for each loop, so plots are reproducable even if the order of plots changed

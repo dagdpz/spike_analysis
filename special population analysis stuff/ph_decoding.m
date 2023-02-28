@@ -2,50 +2,55 @@ function ph_decoding(population,keys)
 %%
 
 
-wn=2;
+% wn=2;
 type=4;
-effector=4;
-choice=0;
-
-keys.PSTH_binwidth=0.001;
-keys.gaussian_kernel=0.001;
-keys.kernel_type='box';
+% effector=4;
+% choice=0;
+% 
+% keys.PSTH_binwidth=0.001;
+% keys.gaussian_kernel=0.001;
+% keys.kernel_type='box';
 
 
 %% define conditions to look at
 all_trialz=[population.trial];
-per_trial.types       =[all_trialz.type];
-per_trial.effectors   =[all_trialz.effector];
+% per_trial.types       =[all_trialz.type];
+% per_trial.effectors   =[all_trialz.effector];
+% per_trial.accepted   =[all_trialz.accepted];
 
-tr_con=ismember([all_trialz.completed],keys.cal.completed);
-[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
+% tr_con=ismember([all_trialz.completed],keys.cal.completed);
+% [whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
 
-per_trial.types       =[all_trialz.type];
-per_trial.effectors   =[all_trialz.effector];
-per_trial.hands       =[all_trialz.reach_hand];
-per_trial.choice      =[all_trialz.choice];
-per_trial.perturbation=[all_trialz.perturbation];
-per_trial.hemifield   =[whatisthis.trial.hemifield];
-per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
-per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
+% per_trial.types       =[all_trialz.type];
+% per_trial.effectors   =[all_trialz.effector];
+% per_trial.hands       =[all_trialz.reach_hand];
+% per_trial.choice      =[all_trialz.choice];
+% per_trial.perturbation=[all_trialz.perturbation];
+% per_trial.hemifield   =[whatisthis.trial.hemifield];
+% per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
+% per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
+% 
+% uq.hemifield=unique(per_trial.hemifield); %[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
+% uq.reach_hand     =unique(per_trial.hands);
+% uq.choice    =unique(per_trial.choice);
+% uq.effector    =unique(per_trial.effectors);
+% uq.perturbation    =unique(per_trial.perturbation);
+% uq.perturbation=uq.perturbation(~isnan(uq.perturbation));
+% uq.handspace    =combvec(uq.reach_hand,uq.hemifield);
+% 
 
-uq.hemifield=unique(per_trial.hemifield); %[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
+% condition_parameters           = {'effector','reach_hand','hemifield','choice','perturbation'};
+% conditions_matrix              = combvec(uq.effector,uq.reach_hand,uq.hemifield,uq.choice, uq.perturbation)';
 
-uq.reach_hand     =unique(per_trial.hands);
-uq.choice    =unique(per_trial.choice);
-uq.effector    =unique(per_trial.effectors);
-uq.perturbation    =unique(per_trial.perturbation);
-uq.perturbation=uq.perturbation(~isnan(uq.perturbation));
+
+condition_parameters=[{'hemifield'} keys.condition_parameters];
+[uq, cm]=ph_get_condition_matrix(all_trialz,keys);
 uq.handspace    =combvec(uq.reach_hand,uq.hemifield);
-
-
-condition_parameters           = {'effector','reach_hand','hemifield','choice','perturbation'};
-conditions_matrix              = combvec(uq.effector,uq.reach_hand,uq.hemifield,uq.choice, uq.perturbation)';
-
+conditions_matrix               = combvec(uq.hemifield,cm')';
 
 keys.PSTH_WINDOWS=keys.WINDOWS_PER_TYPE{type};
 
-for wn= 3:size(keys.PSTH_WINDOWS,1)
+for wn= 1:size(keys.PSTH_WINDOWS,1)
     window_name=keys.PSTH_WINDOWS{wn,1};
     
     path_to_save=[keys.basepath_to_save keys.project_version filesep 'decoding'];
@@ -88,20 +93,16 @@ for wn= 3:size(keys.PSTH_WINDOWS,1)
     step_size = 10;
     binned_data_file_name = create_binned_data_from_raster_data(raster_data_directory_name, save_prefix_name, bin_width, step_size);
     
-    
-    
-    
     %%  5.  Loop through parameters and subsets for each parameter
     %%% here add removing certain trials dependent on what parameters we are
     %%% decoding
-    decoding_parameters={'handspace','reach_hand','hemifield','effector'};
     
     load(binned_data_file_name);  % load the binned data
     all_binned_labels=binned_labels;
     all_binned_data=binned_data;
     FN_labels=fieldnames(all_binned_labels);
     
-    for par=decoding_parameters
+    for par=keys.ND.decoding_parameters
         
         parameter=par{:};
         par_idx=find(~ismember(condition_parameters,parameter));
