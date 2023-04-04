@@ -1,47 +1,10 @@
 function ph_decoding(population,keys)
 %%
 
-
-% wn=2;
 type=4;
-% effector=4;
-% choice=0;
-% 
-% keys.PSTH_binwidth=0.001;
-% keys.gaussian_kernel=0.001;
-% keys.kernel_type='box';
-
 
 %% define conditions to look at
 all_trialz=[population.trial];
-% per_trial.types       =[all_trialz.type];
-% per_trial.effectors   =[all_trialz.effector];
-% per_trial.accepted   =[all_trialz.accepted];
-
-% tr_con=ismember([all_trialz.completed],keys.cal.completed);
-% [whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
-
-% per_trial.types       =[all_trialz.type];
-% per_trial.effectors   =[all_trialz.effector];
-% per_trial.hands       =[all_trialz.reach_hand];
-% per_trial.choice      =[all_trialz.choice];
-% per_trial.perturbation=[all_trialz.perturbation];
-% per_trial.hemifield   =[whatisthis.trial.hemifield];
-% per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
-% per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
-% 
-% uq.hemifield=unique(per_trial.hemifield); %[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
-% uq.reach_hand     =unique(per_trial.hands);
-% uq.choice    =unique(per_trial.choice);
-% uq.effector    =unique(per_trial.effectors);
-% uq.perturbation    =unique(per_trial.perturbation);
-% uq.perturbation=uq.perturbation(~isnan(uq.perturbation));
-% uq.handspace    =combvec(uq.reach_hand,uq.hemifield);
-% 
-
-% condition_parameters           = {'effector','reach_hand','hemifield','choice','perturbation'};
-% conditions_matrix              = combvec(uq.effector,uq.reach_hand,uq.hemifield,uq.choice, uq.perturbation)';
-
 
 condition_parameters=[{'hemifield'} keys.condition_parameters];
 [uq, cm]=ph_get_condition_matrix(all_trialz,keys);
@@ -63,7 +26,7 @@ for wn= 1:size(keys.PSTH_WINDOWS,1)
     for u=1:numel(population)
         clear raster_data raster_labels raster_site_info
         unit=population(u);
-        tr = [unit.trial.completed]==1 ;%&  [unit.trial.effector]==effector &  [unit.trial.choice]==choice ;
+        tr = [unit.trial.accepted]==1 ;%&  [unit.trial.effector]==effector &  [unit.trial.choice]==choice ;
         unit.trial=unit.trial(tr);
         
         [unit]=ph_arrange_positions_and_plots(keys,unit.trial,unit);
