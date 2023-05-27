@@ -71,11 +71,13 @@ keys.cal.choice                         =[0,1];                     % excluding 
 keys.cal.stablity                       =[0,1];                     % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the table
 keys.cal.single_rating                  =[1,2,3];                   % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl
 keys.cal.automatic_stablity             =0;                         % using automatic stability assessment
+keys.cal.automatic_SNR                  =0;                         % using automatic SNR assessment
 keys.cal.SNR_rating                     =[1,2,3,4];                 % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl
 %keys.cal.min_trials_per_condition       =5;                         % minimum trials per conditon (look at ph_arrange_positions to see how conditions are defined)
 %keys.cal.min_spikes_per_unit            =50;                        % excluding units that have in total less spikes (workaround for sortcode assignment bug) - to be removed
 keys.cal.perturbation_groups            ={0,[2,3,4,5,6,7,8]};       % which perturbation values from excel table will be assigned to control and perturbation for comparisons and population analysis
 keys.cal.remove_trials_without_spikes=1;
+keys.cal.remove_trials_with_outlying_FR=1;
 
 
 keys.cal.min_trials_in                  =5;                   % minimum number of trials instructed

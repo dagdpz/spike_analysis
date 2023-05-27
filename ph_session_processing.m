@@ -160,7 +160,7 @@ for current_date = sessions(:)'
                 plot_sorted_waveforms(pop_resorted(to_plot),keys,['analyzed units, ' ch_start_end]);
                 plot_sorted_ISI(pop_resorted(to_plot),keys,['analyzed units ISI, ' ch_start_end]);
                 plot_FR_across_time(pop_resorted(to_plot),keys,['analyzed units FR over time, ' ch_start_end]);
-                start_idx=end_idx;
+                start_idx=find(channels==channels(end_idx),1,'last');
             end
         end
         
@@ -323,15 +323,21 @@ end
 function pop_resorted = sort_by_block(o_t)
 fields_to_remove={'unit','channel','x_eye','y_eye','x_hnd','y_hnd','time_axis',...
     'TDT_LFPx','TDT_LFPx_SR','TDT_LFPx_tStart'};
-
+% need to fix same block issues.. (-_-)
+block=0;
 for b=1:size(o_t,2)
+    if block~=o_t(b).block % new block
+      t_start=0;
+    end
+    block=o_t(b).block;
     for t=1:size(o_t(b).trial,2)
         %o_t(b).trial(t).block=b;
         o_t(b).trial(t).perturbation                    =o_t(b).trial(t).channel(1).perturbation; %%??
         trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
         tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
-        pop_resorted(b).trial(t)=tmp;
+        pop_resorted(block).trial(t_start+t)=tmp;
     end
+    t_start=t_start+t;
 end
 end
 

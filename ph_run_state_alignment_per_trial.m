@@ -23,7 +23,7 @@ for t=1:n_trials
     end
 end
 for c=1:n_chans_s
-    from_excel_per_channel(c) = get_sorted_neuron_out_xlsx_from_excel(keys.sorting_table_sites, keys, 1, c, 1,0);
+    from_excel_per_channel(c) = get_sorted_neuron_out_xlsx_from_excel(keys.sorting_table_sites, keys, 1, c, 0,0);
 end
 for c=1:n_chans_u
     for u=1:n_units
@@ -280,12 +280,19 @@ invalid_trials=sort([trials_wo_phys trials_wo_cond]); % differentiation between 
 trial(invalid_trials)=[];
 
 %% automatic stability (dependent on fano factor of Frs per trial
-if ~isempty(trial) && keys.cal.automatic_stablity
+if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR)
     units_cat=cat(3,trial.unit);
     for c=1:n_chans_u,
         for u=1:n_units
             FRs_cat=[units_cat(c,u,:).FR_average];
-            FRs_cat=FRs_cat(FRs_cat~=0);
+            FRs_cat=FRs_cat(FRs_cat~=0); %% .... hmmmmmmmhmmmmm
+            WFs_cat=vertcat(units_cat(c,u,:).waveforms);
+            
+            waveform_average=mean(WFs_cat,1);
+            waveform_std=std(WFs_cat,0,1);
+            waveform_amplitude=max(waveform_average)-min(waveform_average);
+            snr=waveform_amplitude/mean(waveform_std);
+            
             
             unit_mean=double(nanmedian(FRs_cat));
             unit_std=double(nanstd(FRs_cat));
@@ -303,7 +310,12 @@ if ~isempty(trial) && keys.cal.automatic_stablity
                 stability=3;
             end
             for t=1:numel(trial) % another loop? not so cool
-                trial(t).unit(c,u).stability_rating=stability;
+                if keys.cal.automatic_stablity
+                    trial(t).unit(c,u).stability_rating=stability;
+                end
+                if keys.cal.automatic_SNR
+                    trial(t).unit(c,u).SNR_rating=snr;
+                end
                 %             to_exclude_u=~ismember(trial(t).unit(c,u).stability_rating,keys.cal.stablity) ...
                 %                 | ~ismember(trial(t).unit(c,u).Single_rating,keys.cal.single_rating)...
                 %                 | ~ismember(trial(t).unit(c,u).SNR_rating,keys.cal.SNR_rating);
@@ -314,6 +326,7 @@ if ~isempty(trial) && keys.cal.automatic_stablity
         end
     end
 end
+
 o.trial=trial;
 o.block=keys.block;
 end
