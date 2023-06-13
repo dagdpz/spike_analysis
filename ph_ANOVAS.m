@@ -63,7 +63,7 @@ for unit=1:numel(population)
         rows_to_update=size(TT,1)+1;
     end
     clear unit_table;
-    inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
+    inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','n_spikes','stability_rating','SNR_rating','Single_rating','waveform_width'};
     %inital_fieldnames={'unit_ID','monkey','target','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
     unit_table(1,1:numel(inital_fieldnames))=inital_fieldnames;
     for fn=1:numel(inital_fieldnames)
@@ -155,8 +155,7 @@ for ch=1:numel(conditions.choice)
 % 
 %         %% main effects and general interactions
 %         tr_main=idx.(INCH) & ismember(epochs,keys.anova_epochs.main);
-%         [pval,anova_out.table,anova_out.stats,anova_out.terms] = anovan(FR(tr_main),Par(tr_main,:),'model','full','varnames',anova_varnames,'display',keys.plot.anova_tables);
-%         %pval = randanova1(FR(tr_main),Par(tr_main,:),10000);
+%         pval = ph_anova1(FR(tr_main),Par(tr_main,:),keys);
 %         h=pval<0.05; %main effect on epoch!
 %         anova_struct.([INCH PT '_epoch_main'])=labels.true{h+2};
 %         handindexes=[1,2,3];
@@ -186,8 +185,7 @@ for ch=1:numel(conditions.choice)
             for s=keys.anova_epochs.SxH'
                 idxS= tr & ismember(epochs,s);
                 if any(~isnan(FR(idxS))) && any(idx.tr_LS(idxS)) && any(idx.tr_RS(idxS)) && any(idx.tr_LH(idxS)) && any(idx.tr_RH(idxS))
-                    %[pval,anova_outs.table,anova_outs.stats,anova_outs.terms] = anovan(FR(idxS),double([idx.tr_RS(idxS),idx.tr_RH(idxS)]),'model','full','varnames',{'space';'hands'},'display',keys.plot.anova_tables);
-                    pval = randanova2(FR(idxS),{idx.tr_RS(idxS),idx.tr_RH(idxS)},keys.AN.n_permutations_randanova2,1);
+                    pval = ph_anova2(FR(idxS),{idx.tr_RS(idxS),idx.tr_RH(idxS)},1,keys);
                     h=pval(1)<0.05;
                     DF=nanmean(FR(idx.tr_RS & idxS))-nanmean(FR(idx.tr_LS & idxS));
                     labelindexsp=h*sign(DF)+2; labelindexsp(isnan(labelindexsp))=2;
@@ -295,15 +293,11 @@ for ch=1:numel(conditions.choice)
                 continue
             end
 %             if size(Fixations,1)==1
-%                 %            varnames={'State','position'};
-%                 %[pval,anova_out.table,anova_out.stats,anova_out.terms] = anovan(FR(tr),{epochs(tr),idx.pos(tr)},'model','full','varnames',varnames,'display',keys.plot.anova_tables);
-%                 pval = randanova2(FR(tr),{epochs(tr),idx.pos(tr)},keys.AN.n_permutations_randanova2,1);
+%                 pval = ph_anova2(FR(tr),{epochs(tr),idx.pos(tr)},1,keys);
 %                 
 %             else
 %                 varnames={'State','position','fixation'};
-%                 [pval,anova_out.table,anova_out.stats,anova_out.terms] =...
-%                     anovan(FR(tr),{epochs(tr),idx.pos(tr),idx.fix(tr)},'model','full','varnames',varnames,'display',keys.plot.anova_tables);
-%                 %            pval = randanova1(FR(tr),{epochs(tr),idx.pos(tr),idx.fix(tr)},10000);
+%                 pval = ph_anova1(FR(tr),{epochs(tr),idx.pos(tr),idx.fix(tr)},keys);
 %                 h3=pval(3)<0.05;
 %                 anova_struct.([INCH PT '_' LHRH '_fixation_main'])=labels.true{h3+2}; %main effect on epoch!
 %             end
@@ -333,19 +327,17 @@ for ch=1:numel(conditions.choice)
                     
                     FR_temp=FR(tr);
                     if any(pos_fix_valid)
-                        %[ptemp] = anovan(FR_temp(pos_fix_valid),pos_fix(pos_fix_valid,:),'model','full','varnames',{'Positions','Fixations'},'display',keys.plot.anova_tables);
-                        ptemp = randanova2(FR_temp(pos_fix_valid),pos_fix(pos_fix_valid,:),keys.AN.n_permutations_randanova2,1);
+                        ptemp = ph_anova2(FR_temp(pos_fix_valid),pos_fix(pos_fix_valid,:),1,keys);
                     else
                         ptemp(2)=NaN;
                         ptemp(3)=NaN;
                     end
                     
-                    %pval = anovan(FR(tr),idx.pos(tr),'model','full','varnames',{'Positions'},'display',keys.plot.anova_tables);
-                    pval = randanova1(FR(tr),idx.pos(tr),keys.AN.n_permutations_randanova1);
+                    pval = ph_anova1(FR(tr),idx.pos(tr),keys);
                     pval(2)=NaN;
                     pval(3)=ptemp(2)>0.05 || ptemp(3)>0.05; % this is not ideal, interaction here only significant if there is a main effect as well....
                 else
-                    pval= randanova2(FR(tr),{idx.pos(tr),idx.fix(tr)},keys.AN.n_permutations_randanova2,1);
+                    pval= ph_anova2(FR(tr),{idx.pos(tr),idx.fix(tr)},1,keys);
                 end
                 
                 h1=pval(1)<0.05;
@@ -358,11 +350,8 @@ for ch=1:numel(conditions.choice)
                 anova_struct.([INCH PT '_' LHRH '_' s{:} '_position_PV'])  =single(pval(1));
                 anova_struct.([INCH PT '_' LHRH '_' s{:} '_fixation_PV'])  =single(pval(2));
                 anova_struct.([INCH PT '_' LHRH '_' s{:} '_PxF_PV'])       =single(pval(3));
-                
-                
-                %pecc = anovan(FR(tr),[idx.ecc(tr),idx.ang(tr)],'model','full','varnames',{'Eccentricity','Angle'},'display',keys.plot.anova_tables);
-                pecc = randanova2(FR(tr),{idx.ecc(tr),idx.ang(tr)},keys.AN.n_permutations_randanova2,1);
-                
+                                
+                pecc = ph_anova2(FR(tr),{idx.ecc(tr),idx.ang(tr)},1,keys);                
                 h1=pecc(1)<0.05;
                 h2=pecc(2)<0.05;
                 h3=pecc(3)<0.05;
@@ -374,8 +363,7 @@ for ch=1:numel(conditions.choice)
                 anova_struct.([INCH PT '_' LHRH '_' s{:} '_DxA_PV'])       =single(pecc(3));
                 
                 % x and y separately - didnt add p_values here yet!
-                %pxy = anovan(FR(tr),[idx.pos_x(tr),idx.pos_y(tr)],'model','full','varnames',{'x','y'},'display',keys.plot.anova_tables);
-                pxy = randanova2(FR(tr),{idx.pos_x(tr),idx.pos_y(tr)},keys.AN.n_permutations_randanova2,1);
+                pxy = ph_anova2(FR(tr),{idx.pos_x(tr),idx.pos_y(tr)},1,keys);
                 h1=pxy(1)<0.05;
                 h2=pxy(2)<0.05;
                 h3=pxy(3)<0.05;
@@ -652,7 +640,7 @@ for ch=1:numel(conditions.choice)
         %                 %[anova_out.p,anova_out.table,anova_out.stats,anova_out.terms] = anovan(FR(tr_main & idx_con),[epoch_idx(tr_main & idx_con) idx.tr_PT(tr_main & idx_con)],'model','full','varnames',{'epoch', 'perturbation'},'display',keys.plot.anova_tables);
         %                 m=FR(tr_main & idx_con);
         %                 group={epoch_idx(tr_main & idx_con) idx.tr_PT(tr_main & idx_con)};
-        %                 pval = randanova2(m,group,keys.AN.n_permutations_randanova2,1);
+        %                 pval = ph_anova2(m,group,1,keys);
         %                 h1=pval(1)<0.05;
         %                 h2=pval(2)<0.05;
         %                 h3=pval(3)<0.05;
@@ -828,6 +816,29 @@ else
     n=1;
 end
 end
+
+function p=ph_anova2(FR,idx,interaction,keys)
+switch keys.AN.test_types
+    case 'parametric'
+        p=anovan(FR,idx,'model','full','varnames',{'x','y'},'display',keys.plot.anova_tables);
+    case 'nonparametric'
+        p=anovan(FR,idx,'model','full','varnames',{'x','y'},'display',keys.plot.anova_tables);
+    case 'permutations'
+        p=randanova2(FR,idx,keys.AN.n_permutations_randanova2,interaction);
+end
+end
+
+function p=ph_anova1(FR,idx,keys)
+switch keys.AN.test_types
+    case 'parametric'
+        p=anovan(FR,idx,'model','full','varnames',{'x'},'display',keys.plot.anova_tables);
+    case 'nonparametric'
+        p=anovan(FR,idx,'model','full','varnames',{'x'},'display',keys.plot.anova_tables);
+    case 'permutations'
+        p=randanova1(FR,idx,keys.AN.n_permutations_randanova1);
+end
+end
+
 
 %% normality subfunction
 function anova_struct=add_normality_results(anova_struct,prefix,keys,n)

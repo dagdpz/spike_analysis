@@ -291,37 +291,25 @@ if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR)
             waveform_average=mean(WFs_cat,1);
             waveform_std=std(WFs_cat,0,1);
             waveform_amplitude=max(waveform_average)-min(waveform_average);
-            snr=waveform_amplitude/mean(waveform_std);
+            snr=waveform_amplitude/mean(waveform_std); % redefine "noise" based on broadband (?)
             
             
-            unit_mean=double(nanmedian(FRs_cat));
-            unit_std=double(nanstd(FRs_cat));
+            unit_mean=nanmedian(FRs_cat);
+            unit_std=nanstd(FRs_cat);
             confidence_interval=3*unit_std; %poisson?
             %confidence_interval=sqrt(unit_mean)*1.96; %poisson?
             % here is the actual criterion
             FRs_cat=FRs_cat(FRs_cat>(log(1+exp(unit_mean-confidence_interval))) & FRs_cat<(log(1+exp(unit_mean+confidence_interval))));
             FRs_cat=smooth(FRs_cat,10);
-            fano=nanstd(FRs_cat)/nanmean(FRs_cat);
-            if fano < 0.2; %0.05
-                stability=1;
-            elseif fano < 0.4
-                stability=2;
-            else
-                stability=3;
-            end
+            stability=nanstd(FRs_cat)/nanmean(FRs_cat);
+            
             for t=1:numel(trial) % another loop? not so cool
                 if keys.cal.automatic_stablity
-                    trial(t).unit(c,u).stability_rating=stability;
+                    trial(t).unit(c,u).stability_rating=single(stability);
                 end
                 if keys.cal.automatic_SNR
-                    trial(t).unit(c,u).SNR_rating=snr;
+                    trial(t).unit(c,u).SNR_rating=single(snr);
                 end
-                %             to_exclude_u=~ismember(trial(t).unit(c,u).stability_rating,keys.cal.stablity) ...
-                %                 | ~ismember(trial(t).unit(c,u).Single_rating,keys.cal.single_rating)...
-                %                 | ~ismember(trial(t).unit(c,u).SNR_rating,keys.cal.SNR_rating);
-                %             if to_exclude_u && ~strcmp(trial(t).unit(c,u).unit_ID,'no unit')
-                %                 trial(t).unit(c,u).unit_ID=from_excel_per_unit(c,u).unit_identifier;
-                %             end
             end
         end
     end

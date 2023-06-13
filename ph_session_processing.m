@@ -157,9 +157,9 @@ for current_date = sessions(:)'
                 end
                 to_plot=csortidx(start_idx+1:end_idx);
                 ch_start_end=['ch_' num2str(channels(start_idx+1)) '-' num2str(channels(end_idx))];
-                plot_sorted_waveforms(pop_resorted(to_plot),keys,['analyzed units, ' ch_start_end]);
-                plot_sorted_ISI(pop_resorted(to_plot),keys,['analyzed units ISI, ' ch_start_end]);
-                plot_FR_across_time(pop_resorted(to_plot),keys,['analyzed units FR over time, ' ch_start_end]);
+                plot_sorted_waveforms(pop_resorted(to_plot),keys,['sorted units, ' ch_start_end]);
+                plot_sorted_ISI(pop_resorted(to_plot),keys,['sorted units ISI, ' ch_start_end]);
+                plot_FR_across_time(pop_resorted(to_plot),keys,['sorted units FR over time, ' ch_start_end]);
                 start_idx=find(channels==channels(end_idx),1,'last');
             end
         end
@@ -261,15 +261,17 @@ for b=1:size(o_t,2)
                 o_t(b).trial(t).dataset                   =o_t(b).trial(t).unit(c,u).dataset;
                 o_t(b).trial(t).perturbation              =o_t(b).trial(t).unit(c,u).perturbation;
                 o_t(b).trial(t).FR_average                =o_t(b).trial(t).unit(c,u).FR_average;
+                n_spikes                                  =size(o_t(b).trial(t).unit(c,u).waveforms,1);
                 
                 if any(current_unit_already_processed)
                     %% append to existing unit
                     U=find(current_unit_already_processed);
                     if ~ismember(num2str(o_t(b).block),[pop_resorted(U).block_unit{1,:}])
+                        pop_resorted(U).n_spikes         =pop_resorted(U).n_spikes+n_spikes;
                         pop_resorted(U).block_unit       =[pop_resorted(U).block_unit,{num2str(o_t(b).block);char(96+u);' '}];
-                        pop_resorted(U).SNR_rating       =[pop_resorted(U).SNR_rating o_t(b).trial(t).unit(c,u).SNR_rating];
-                        pop_resorted(U).Single_rating    =[pop_resorted(U).Single_rating o_t(b).trial(t).unit(c,u).Single_rating];
-                        pop_resorted(U).stability_rating =[pop_resorted(U).stability_rating o_t(b).trial(t).unit(c,u).stability_rating];
+                        pop_resorted(U).SNR_rating       =[pop_resorted(U).SNR_rating o_t(b).trial(t).unit(c,u).SNR_rating*n_spikes];
+                        pop_resorted(U).Single_rating    =[pop_resorted(U).Single_rating o_t(b).trial(t).unit(c,u).Single_rating*n_spikes];
+                        pop_resorted(U).stability_rating =[pop_resorted(U).stability_rating o_t(b).trial(t).unit(c,u).stability_rating*n_spikes];
                     end
                     n_trial(U)                   =n_trial(U)+1;
                 else
@@ -277,12 +279,13 @@ for b=1:size(o_t,2)
                     unit_index=unit_index+1;
                     U=unit_index;
                     n_trial(U)=1;
+                    pop_resorted(U).n_spikes      =n_spikes;
                     pop_resorted(U).channel          =c;
                     pop_resorted(U).block_unit       ={num2str(o_t(b).block);char(96+u);' '};
                     pop_resorted(U).unit_ID          =o_t(b).trial(t).unit(c,u).unit_ID;
-                    pop_resorted(U).SNR_rating       =o_t(b).trial(t).unit(c,u).SNR_rating;
-                    pop_resorted(U).Single_rating    =o_t(b).trial(t).unit(c,u).Single_rating;
-                    pop_resorted(U).stability_rating =o_t(b).trial(t).unit(c,u).stability_rating;
+                    pop_resorted(U).SNR_rating       =o_t(b).trial(t).unit(c,u).SNR_rating*n_spikes;
+                    pop_resorted(U).Single_rating    =o_t(b).trial(t).unit(c,u).Single_rating*n_spikes;
+                    pop_resorted(U).stability_rating =o_t(b).trial(t).unit(c,u).stability_rating*n_spikes;
                     pop_resorted(U).site_ID          =o_t(b).trial(t).unit(c,u).site_ID;
                     pop_resorted(U).target           =o_t(b).trial(t).unit(c,u).target;
                     pop_resorted(U).perturbation_site=o_t(b).trial(t).unit(c,u).perturbation_site;
@@ -290,20 +293,19 @@ for b=1:size(o_t,2)
                     pop_resorted(U).grid_y           =o_t(b).trial(t).unit(c,u).grid_y;
                     pop_resorted(U).electrode_depth  =o_t(b).trial(t).unit(c,u).electrode_depth;
                 end
-                
                 trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
                 tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
                 pop_resorted(U).trial(n_trial(U))=tmp;
-                pop_resorted(U).n_waveforms      =size(o_t(b).trial(t).unit(c,u).waveforms,1);
             end
         end
     end
 end
 
 for u=1:numel(pop_resorted)
-    pop_resorted(u).SNR_rating       = round(nanmean(pop_resorted(u).SNR_rating)*10)/10;
-    pop_resorted(u).Single_rating    = round(nanmean(pop_resorted(u).Single_rating)*10)/10;
-    pop_resorted(u).stability_rating = round(nanmean(pop_resorted(u).stability_rating)*10)/10;
+    pop_resorted(u).SNR_rating       = sum(pop_resorted(u).SNR_rating)/pop_resorted(u).n_spikes;
+    pop_resorted(u).Single_rating    = sum(pop_resorted(u).Single_rating)/pop_resorted(u).n_spikes;
+    pop_resorted(u).stability_rating = sum(pop_resorted(u).stability_rating)/pop_resorted(u).n_spikes;
+    
     pop_resorted(u).waveform_average = nanmean(vertcat(pop_resorted(u).trial.waveforms),1);
     pop_resorted(u).waveform_std     = nanstd(vertcat(pop_resorted(u).trial.waveforms),0,1);
     
@@ -312,11 +314,11 @@ for u=1:numel(pop_resorted)
     if ~isempty(wf_minmax) && all(~isnan(wf_minmax))
         pop_resorted(u).waveform_width = sum(abs(pop_resorted(u).waveform_average-pop_resorted(u).waveform_average(end)))/24414.0625/diff(wf_minmax); %% sampling rate hardcoded here
     else
-        pop_resorted(u).waveform_width = -1; %% sampling rate hardcoded here
+        pop_resorted(u).waveform_width = -1; 
     end
     %% compute Signal-to-noice ratio for one unit 
-    pop_resorted(u).waveform_amplitude = abs(min(pop_resorted(u).waveform_average)) + max(pop_resorted(u).waveform_average);  
-    pop_resorted(u).quantSNR =  pop_resorted(u).waveform_amplitude /nanmean(pop_resorted(u).waveform_std); 
+    pop_resorted(u).waveform_amplitude = max(pop_resorted(u).waveform_average)-min(pop_resorted(u).waveform_average);  
+    %pop_resorted(u).quantSNR =  pop_resorted(u).waveform_amplitude /nanmean(pop_resorted(u).waveform_std); 
 end
 end
 
@@ -466,10 +468,10 @@ for u=units
         FR_mean=double(nanmean(FR_smoothed(tr_idx)));
         start_block=o(u).trial(find(tr_idx,1,'first')).run_onset_time-o(u).trial(1).run_onset_time;
         end_block=start_block+o(u).trial(find(tr_idx,1,'last')).trial_onset_time;
-        automatic_stability=trial_stability(tr_idx);automatic_stability=automatic_stability(1);
-        if automatic_stability==1
+        fanoish_factor=trial_stability(tr_idx);fanoish_factor=fanoish_factor(1);
+        if fanoish_factor < 0.2
             col='g';
-        elseif automatic_stability==2
+        elseif fanoish_factor< 0.4
             col='b';
         else
             col='r';
@@ -477,7 +479,7 @@ for u=units
         plot([start_block end_block],[FR_mean FR_mean],col,'linewidth',4)
         plot([start_block start_block],[0 FR_mean],col,'linewidth',4)
         plot([end_block end_block],[0 FR_mean],col,'linewidth',4)
-        text(start_block, FR_mean/2,sprintf('B%d: %0.1f + %0.1f',b,FR_mean,FR_std))
+        text(start_block, FR_mean/2,sprintf('St: %0.1f',fanoish_factor))
         %plot()
     end
     unit_title={sprintf('%s ',o(u).unit_ID),...
@@ -509,9 +511,9 @@ for n_unit=1:numel(o)
         plot(all_spikes_wf(1:50:n_sel_spike_wf*50,:)');
     end
     plot(wf_per_block','-k','linewidth',2);
-    unit_title={sprintf('%s SN/Si/St: %d/%d/%d',o(n_unit).unit_ID,round(o(n_unit).SNR_rating*10)/10,round(o(n_unit).Single_rating*10)/10,round(o(n_unit).stability_rating*10)/10),...
-        sprintf('SNR/Wam/Std: %d/%d/%d',round(o(n_unit).quantSNR),round(o(n_unit).waveform_amplitude),round(nanmean(o(n_unit).waveform_std))),...
+    unit_title={sprintf('%s SN/Si/St: %.1f/%.1f/%.1f',o(n_unit).unit_ID,o(n_unit).SNR_rating,o(n_unit).Single_rating,o(n_unit).stability_rating),...
         sprintf(['spk: %d ch/De: %d/%.2f b&u: %s'],n_sel_spike_wf, o(n_unit).channel,o(n_unit).electrode_depth,[o(n_unit).block_unit{:}])}; %MP add number of spikes
+        %sprintf('SNR/Wam/Std: %%d/%d/%d',round(o(n_unit).quantSNR),round(o(n_unit).waveform_amplitude),round(nanmean(o(n_unit).waveform_std))),... %%KK stuff
     title(unit_title,'interpreter','none','fontsize',6)
     if  max(max(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) > min(min(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) % not sure what this bug is about... Lin 20160303 
     set(gca,'xtick',[],'xcolor',[1 1 1],'FontSize',6,'ytick',...

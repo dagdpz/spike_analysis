@@ -56,6 +56,8 @@ colors.in_IS   =[0 255 255];
 colors.ch_IS   =[0 128 128];
 colors.in_CS   =[255 0 64];
 colors.ch_CS   =[128 0 32];
+colors.in_VS   =[20 20 20];
+colors.ch_VS   =[50 50 50];
  
 %% MP changed colors for choice because he added dotted lines for that
 colors.in_AH=[255 102 0];

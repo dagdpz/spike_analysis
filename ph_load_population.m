@@ -12,11 +12,11 @@ for f=1:numel(allfiles)
 end
 
 %temporary stuff to plot population for pulvinar reach
-for p=1:numel(pop)
-    if isfield(pop(p).trial,'stability_rating')
-        [pop(p).trial]=rmfield(pop(p).trial,'stability_rating');
-    end
-end
+% for p=1:numel(pop)
+%     if isfield(pop(p).trial,'stability_rating')
+%         [pop(p).trial]=rmfield(pop(p).trial,'stability_rating');
+%     end
+% end
 
 if isempty(allfiles)
     pop=struct();

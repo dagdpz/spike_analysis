@@ -181,12 +181,14 @@ end
 
     function plot_PSTH
         %% one figure for each effector, somehting probably does not work here, because (!!) suplots in each figure
+        spf=[];
         for eff=UC.effector 
             ef=find(UC.effector==eff);
             keys=ph_get_epoch_keys(keys,typ,eff,sum(UC.type_effector(:,1)==typ)>1);
             [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
             plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
             PSTH_summary_handle(ef)     = figure('units','normalized','outerposition',[0 0 1 1],'color','w','name',plot_title);
+            eff_empty=1;
             for g=1:numel(unique_group_values)
                 group_units=find(ismember(population_group,unique_group_values(g)));
                 
@@ -197,6 +199,12 @@ end
                 %empty_conditions_and_units=arrayfun(@(x) isempty(x.average_spike_density) ,current_units) ; %nans not needed hopefully, still there in MP mods
                 empty_conditions_and_units(:,end+1:numel(group_units))=true; % from the last valid to the end
                 condition_empty=all(empty_conditions_and_units,2);
+                
+                if all(condition_empty)
+                   continue;
+                else
+                    eff_empty=0;
+                end
                 
                 if any(strfind(plot_title_part,'per position'))
                     [positions, ~,pos_sub_idx]=unique(vertcat(current.position),'rows');
@@ -284,6 +292,9 @@ end
                 y_lim(spn,:)=get(gca,'ylim');
             end
             
+            if eff_empty
+                continue;
+            end
             if keys.plot.population_PSTH_legends
                 LL_to_plot=cellfun(@(x) strrep(x,'_',' '),legend_labels,'uniformoutput',false);
                 LL_to_plot=LL_to_plot(legend_label_indexes);
@@ -291,7 +302,10 @@ end
                 legend(legend_line_handles(uix),LL_to_plot(uix),'location','southwest');
             end
         end
-        
+        if isempty(spf)
+           return;
+        end
+
         %% subplot appearance, and tuning lines
         spf(sph==0)=[];
         sph(sph==0)=[];

@@ -58,8 +58,6 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
     if ~exist([keys.basepath_to_save keys.project_version filesep],'dir')
         mkdir(keys.basepath_to_save, keys.project_version);
     end
-    %user=getUserName;
-    %dropboxpath=['C:\Users\' user '\Dropbox'];
     for m=1:numel(keys.batching.monkeys)
         monkey=keys.batching.monkeys{m};
         keys.sorted_neurons_filename =keys.(monkey).sorted_neurons_filename;
@@ -68,7 +66,6 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         keys.monkey                     =[monkey '_phys'];
 
         keys.sorted_neurons_foldername  =['Y:\Data\Sorting_tables'  filesep monkey];
-%         keys.sorted_neurons_foldername  =[dropboxpath filesep 'DAG' filesep 'phys' filesep monkey '_phys_dpz'];
         keys.tuning_table_foldername    =[keys.basepath_to_save keys.project_version filesep];
         keys.tuning_table_filename      =['tuning_table_combined'];
         keys.population_foldername      =[keys.basepath_to_save keys.project_version filesep];

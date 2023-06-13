@@ -338,7 +338,7 @@ for u=1:numel(population)
             condition(t,c).fitting.unit(u).positions =FR_tmp;
             
             %% gaussian response fields (needs cleanup)
-            if ~strcmp(K.epoch_RF,'none')
+            if strcmp(keys.normalization_field,'RF') && ~strcmp(K.epoch_RF,'none')
                 fitsettings=K.fitsettings;
                 RF_tmp=ph_fit_target_positions_2D(RF_positions(:,1),RF_positions(:,2),zin,fitsettings);
                 condition(t,c).fitting.unit(u).parameters=RF_tmp;
