@@ -70,6 +70,10 @@ keys.cal.perturbation                   =[0,1];                   % excluding tr
 keys.cal.choice                         =[0,1];                     % excluding trials with non-matching chocie
 keys.cal.stablity                       =[0,1];                     % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the table
 keys.cal.single_rating                  =[1,2,3];                   % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl
+
+keys.cal.FR                             =[0,inf];       % min and max value accepted    
+keys.cal.n_spikes                       =[0,inf];       % min and max value accepted
+
 keys.cal.automatic_stablity             =0;                         % using automatic stability assessment
 keys.cal.automatic_SNR                  =0;                         % using automatic SNR assessment
 keys.cal.SNR_rating                     =[1,2,3,4];                 % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl

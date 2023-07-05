@@ -11,7 +11,7 @@ for u=1:numel(population)
         [~,tr_state_idx]                =unique(trial.states,'last');
         trial_states                    =trial.states(tr_state_idx);
         trial_states_onset              =trial.states_onset(tr_state_idx); 
-        trial.FR                        =sum(trial.arrival_times>=0 & trial.arrival_times<=max(trial_states_onset(1:end-1)))/max(trial_states_onset(1:end-1));
+        trial.FR                        =trial.FR_average; % to be removed %sum(trial.arrival_times>=0 & trial.arrival_times<=max(trial_states_onset(1:end-1)))/max(trial_states_onset(1:end-1));
                 
         for s=1:numel(states_for_epochs);
             current_state=states_for_epochs(s);

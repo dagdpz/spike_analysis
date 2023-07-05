@@ -45,6 +45,12 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
             if ismember(population_analysis_to_perform,{'uni'}) %% for single cell plotting, add eye/hand traces
                 population=ph_load_traces([keys.basepath_to_save keys.project_version],['traces_' keys.monkey],population);
             end
+            fields_to_remove={'TDT_CAP1_SR','TDT_CAP1_t0_from_rec_start','TDT_CAP1_tStart','TDT_ECG1_SR','TDT_ECG1_t0_from_rec_start',...
+                    'TDT_ECG1_tStart','TDT_ECG4_SR','TDT_ECG4_t0_from_rec_start','TDT_ECG4_tStart','TDT_LFPx_SR','TDT_LFPx_t0_from_rec_start',...
+                    'TDT_LFPx_tStart','TDT_POX1_SR','TDT_POX1_t0_from_rec_start','TDT_POX1_tStart'};
+            for u=1:numel(population)
+                population(u).trial=rmfield(population(u).trial,fields_to_remove(ismember(fields_to_remove,fieldnames(population(u).trial))));
+            end;
         else
             population=[];
         end
@@ -82,6 +88,8 @@ for P=population_analysis_to_perform
         keys.tt.SNR_rating=keys.cal.SNR_rating;
         keys.tt.stability_rating=keys.cal.stablity; %:(
         keys.tt.Single_rating=keys.cal.single_rating; %% :(
+        keys.tt.FR=keys.cal.FR; %:(
+        keys.tt.n_spikes=keys.cal.n_spikes; %% :(
 
       
         

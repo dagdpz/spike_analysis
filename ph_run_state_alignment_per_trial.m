@@ -56,7 +56,7 @@ for t=1:n_trials
     end
     trial(t).date               = str2num(keys.date);
     trial(t).block              = keys.block;
-    trial(t).run                = MA_out.selected(t).run;
+    trial(t).run                = keys.run;%MA_out.selected(t).run; % cause MW run is wrong, it actually corresponds to block!
     trial(t).n                  = MA_out.selected(t).trials;
     trial(t).type               = MA_out.task(t).type;
     trial(t).effector           = MA_out.task(t).effector;
@@ -137,7 +137,7 @@ for t=1:n_trials
     movement_onsets       = movement_onsets(ismember(movement_states,MA_STATES.all_states));
     movement_states       = movement_states(ismember(movement_states,MA_STATES.all_states));
     
-    trial_states            =[trial_states(1:end-1) movement_states 98]; %MA_STATES.ITI ?
+    trial_states            =[trial_states(1:end-1) movement_states MA_STATES.ITI_END];
     trial_states_onset      =[trial_states_onset(1:end-1) movement_onsets trial_states_onset(end)];
     [~,tr_state_idx]        =unique(trial_states,'last');
     trial(t).states         =trial_states(sort(tr_state_idx));
@@ -258,20 +258,18 @@ for t=1:n_trials
             trial(t).unit(c,u).perturbation_site    =from_excel_per_unit(c,u).perturbation_site{1} ;
             
             % Waveforms (cutting off ITI ??)
-            wf_idx          = tr_in(t).spike_arrival_times{c,u}>0 & tr_in(t).spike_arrival_times{c,u}<MA_out.states(t).TDT_state_onsets(end-1);
-            trial(t).unit(c,u).waveforms            =tr_in(t).spike_waveforms{c,u}(wf_idx,:);
+            t1=min(trial(t).states_onset);
+            t2=trial(t).states_onset(end-1);
+            wf_idx                                = tr_in(t).spike_arrival_times{c,u}>t1 & tr_in(t).spike_arrival_times{c,u}<t2;
+            trial(t).unit(c,u).waveforms          = tr_in(t).spike_waveforms{c,u}(wf_idx,:);
             
             %% ADDING PREVIOUS SPIKES TO CURRENT TRIAL (shift_in_seconds before trial onset)
             if t>1 && ~ismember(t-1,trials_wo_phys)
                 prev_trial_spike_arrival_times = tr_in(t-1).spike_arrival_times{c,u} -(trial(t).trial_onset_time -MA_out.states(t-1).trial_onset_time);
                 tr_in(t).spike_arrival_times{c,u} = [prev_trial_spike_arrival_times(prev_trial_spike_arrival_times>-shift_in_seconds); tr_in(t).spike_arrival_times{c,u}];
             end
-            trial(t).unit(c,u).arrival_times= tr_in(t).spike_arrival_times{c,u};
-            
-            %% average firing rate (during task)
-            t1=min(trial(t).states_onset);
-            t2=trial(t).states_onset(end-1);
-            AT=trial(t).unit(c,u).arrival_times;
+            AT= tr_in(t).spike_arrival_times{c,u};
+            trial(t).unit(c,u).arrival_times=AT;
             trial(t).unit(c,u).FR_average=sum(AT>t1 & AT<t2)/(t2-t1);
         end
     end
@@ -284,31 +282,55 @@ if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR)
     units_cat=cat(3,trial.unit);
     for c=1:n_chans_u,
         for u=1:n_units
-            FRs_cat=[units_cat(c,u,:).FR_average];
-            FRs_cat=FRs_cat(FRs_cat~=0); %% .... hmmmmmmmhmmmmm
-            WFs_cat=vertcat(units_cat(c,u,:).waveforms);
             
+            % stability
+            FRs_cat=[units_cat(c,u,:).FR_average];
+            %FRs_cat=FRs_cat(FRs_cat~=0); %% .... hmmmmmmmhmmmmm
+            %           unit_mean=nanmean(FRs_cat);
+            %           unit_std=nanstd(FRs_cat);
+            %           confidence_interval=3*unit_std;
+            cutoff=FRs_cat<0.5; % | FRs_cat<unit_mean-confidence_interval;
+            cut_diff=diff([true cutoff]);
+            first_valid=1;
+            last_valid=numel(FRs_cat);
+            if cutoff(1)
+                first_valid=find(cut_diff,1,'first');
+            end
+            if cutoff(end)
+                last_valid=find(cut_diff,1,'last')-1;
+            end
+            if all(cutoff)
+                last_valid=1;
+                first_valid=numel(FRs_cat);
+            end
+            
+            %FRs_cat=FRs_cat(FRs_cat>(log(1+exp(unit_mean-confidence_interval))) & FRs_cat<(log(1+exp(unit_mean+confidence_interval))));
+            FRs_cat=FRs_cat(first_valid:last_valid);
+            FRs_cat=smooth(FRs_cat,10);
+            stability=nanmean(FRs_cat)/nanstd(FRs_cat);
+            
+            % SNR
+            WFs_cat=vertcat(units_cat(c,u,first_valid:last_valid).waveforms);
             waveform_average=mean(WFs_cat,1);
             waveform_std=std(WFs_cat,0,1);
             waveform_amplitude=max(waveform_average)-min(waveform_average);
             snr=waveform_amplitude/mean(waveform_std); % redefine "noise" based on broadband (?)
             
             
-            unit_mean=nanmedian(FRs_cat);
-            unit_std=nanstd(FRs_cat);
-            confidence_interval=3*unit_std; %poisson?
-            %confidence_interval=sqrt(unit_mean)*1.96; %poisson?
-            % here is the actual criterion
-            FRs_cat=FRs_cat(FRs_cat>(log(1+exp(unit_mean-confidence_interval))) & FRs_cat<(log(1+exp(unit_mean+confidence_interval))));
-            FRs_cat=smooth(FRs_cat,10);
-            stability=nanstd(FRs_cat)/nanmean(FRs_cat);
-            
             for t=1:numel(trial) % another loop? not so cool
                 if keys.cal.automatic_stablity
-                    trial(t).unit(c,u).stability_rating=single(stability);
+                    if t>=first_valid && t<=last_valid
+                        trial(t).unit(c,u).stability_rating=single(stability);
+                    else
+                        trial(t).unit(c,u).stability_rating=single(NaN);
+                    end
                 end
                 if keys.cal.automatic_SNR
-                    trial(t).unit(c,u).SNR_rating=single(snr);
+                    if ~isempty(snr)
+                        trial(t).unit(c,u).SNR_rating=single(snr);
+                    else
+                        trial(t).unit(c,u).SNR_rating=single(NaN);
+                    end
                 end
             end
         end
