@@ -612,93 +612,6 @@ close(gcf);
 
 end
 
-function plot_SNR_across_time(o,keys,title_part)
-fig_title=sprintf('%s, session %s, %s',keys.monkey,keys.date,title_part);
-FR_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',fig_title);
-
-n_columns_rows=ceil(numel(o)^(1/2));
-units=1:numel(o);
-for u=units
-    subplot(n_columns_rows,n_columns_rows,u);
-    hold on;
-    toplot=[o(u).trial.trialwise_SNR]; 
-    nonanindex=~isnan(toplot);% waveform_amplitude
-    plot([o(u).trial(nonanindex).trial_onset_time]+[o(u).trial(nonanindex).run_onset_time]-o(u).trial(1).run_onset_time,smooth(toplot(nonanindex),10));
-    trial_blocks=[o(u).trial.block];
-    trial_accepted=[o(u).trial.accepted];
-    trial_stability=[o(u).trial.stability_rating];
-    unique_blocks=unique(trial_blocks);
-    for b=unique_blocks
-        tr_idx=trial_blocks==b & ~isnan(trial_stability) ; 
-        if sum(tr_idx)<2; continue; end;            % it can happen that an entire block is not accepted if FR changed drastically
-        %FR_std=double(nanstd(FR_smoothed(tr_idx)));
-        FR_mean=double(nanmean(toplot(tr_idx)));
-        start_block=o(u).trial(find(tr_idx,1,'first')).run_onset_time-o(u).trial(1).run_onset_time+o(u).trial(find(tr_idx,1,'first')).trial_onset_time;
-        end_block=start_block+o(u).trial(find(tr_idx,1,'last')).trial_onset_time-o(u).trial(find(tr_idx,1,'first')).trial_onset_time;
-        fanoish_factor=trial_stability(tr_idx);fanoish_factor=fanoish_factor(1);
-        if fanoish_factor > 5 %% replace with keys
-            col='g';
-        elseif fanoish_factor> 2.5
-            col='b';
-        else
-            col='r';
-        end
-        plot([start_block end_block],[FR_mean FR_mean],col,'linewidth',2)
-        plot([start_block start_block],[0 FR_mean],col,'linewidth',2)
-        plot([end_block end_block],[0 FR_mean],col,'linewidth',2)
-        text(double(start_block), FR_mean/2,sprintf('%0.1f',fanoish_factor))
-        %plot()
-    end
-    unit_title={sprintf('%s ',o(u).unit_ID),...
-        sprintf(['ch/De: %d/%.2f b&u: %s' ],o(u).channel,o(u).electrode_depth,[o(u).block_unit{:}])}; %MP add number of spikes
-    title(unit_title,'interpreter','none');
-end
-ph_title_and_save(FR_summary_handle,fig_title,fig_title,keys)
-end
-
-function plot_FR_across_time(o,keys,title_part)
-fig_title=sprintf('%s, session %s, %s',keys.monkey,keys.date,title_part);
-FR_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',fig_title);
-
-n_columns_rows=ceil(numel(o)^(1/2));
-units=1:numel(o);
-for u=units
-    subplot(n_columns_rows,n_columns_rows,u);
-    hold on;
-        FR_smoothed=smooth([o(u).trial.FR_average],10);
-    plot([o(u).trial.trial_onset_time]+[o(u).trial.run_onset_time]-o(u).trial(1).run_onset_time,FR_smoothed);
-    trial_blocks=[o(u).trial.block];
-    trial_accepted=[o(u).trial.accepted];
-    trial_stability=[o(u).trial.stability_rating];
-    unique_blocks=unique(trial_blocks);
-    for b=unique_blocks
-        tr_idx=trial_blocks==b & ~isnan(trial_stability); 
-        if sum(tr_idx)<2; continue; end;            % it can happen that an entire block is not accepted if FR changed drastically
-        %FR_std=double(nanstd(FR_smoothed(tr_idx)));
-        FR_mean=double(nanmean(FR_smoothed(tr_idx)));
-        start_block=o(u).trial(find(tr_idx,1,'first')).run_onset_time-o(u).trial(1).run_onset_time+o(u).trial(find(tr_idx,1,'first')).trial_onset_time;
-        end_block=start_block+o(u).trial(find(tr_idx,1,'last')).trial_onset_time-o(u).trial(find(tr_idx,1,'first')).trial_onset_time;
-        fanoish_factor=trial_stability(tr_idx);fanoish_factor=fanoish_factor(1);
-        if fanoish_factor > 5 %% replace with keys
-            col='g';
-        elseif fanoish_factor> 2.5
-            col='b';
-        else
-            col='r';
-        end
-        plot([start_block end_block],[FR_mean FR_mean],col,'linewidth',2)
-        plot([start_block start_block],[0 FR_mean],col,'linewidth',2)
-        plot([end_block end_block],[0 FR_mean],col,'linewidth',2)
-        text(double(start_block), FR_mean/2,sprintf('%0.1f',fanoish_factor))
-        %plot()
-    end
-    unit_title={sprintf('%s ',o(u).unit_ID),...
-        sprintf(['ch/De: %d/%.2f b&u: %s' ],o(u).channel,o(u).electrode_depth,[o(u).block_unit{:}])}; %MP add number of spikes
-    title(unit_title,'interpreter','none');
-end
-ph_title_and_save(FR_summary_handle,fig_title,fig_title,keys)
-end
-
 function plot_sorted_waveforms(o,keys,title_part)
 fig_title=sprintf('%s, session %s, %s',keys.monkey,keys.date,title_part);
 WF_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',fig_title);
@@ -791,6 +704,4 @@ for n_unit=1:numel(o)
 end
 ph_title_and_save(ISI_summary_handle,fig_title,fig_title,keys)
 end
-
-
 
