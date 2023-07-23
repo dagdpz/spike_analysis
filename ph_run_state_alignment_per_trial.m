@@ -259,9 +259,9 @@ for t=1:n_trials
             
             % Waveforms (cutting off ITI ??)
             t1=min(trial(t).states_onset);
-            t2=trial(t).states_onset(end-1);
-            wf_idx                                = tr_in(t).spike_arrival_times{c,u}>t1 & tr_in(t).spike_arrival_times{c,u}<t2;
-            trial(t).unit(c,u).waveforms          = tr_in(t).spike_waveforms{c,u}(wf_idx,:);
+            t2=max(trial(t).states_onset(1:end-1));
+            %wf_idx                                = tr_in(t).spike_arrival_times{c,u}>t1 & tr_in(t).spike_arrival_times{c,u}<t2;
+            trial(t).unit(c,u).waveforms          = tr_in(t).spike_waveforms{c,u};%(wf_idx,:);
             
             %% ADDING PREVIOUS SPIKES TO CURRENT TRIAL (shift_in_seconds before trial onset)
             if t>1 && ~ismember(t-1,trials_wo_phys)

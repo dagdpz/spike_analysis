@@ -123,7 +123,7 @@ for current_date = sessions(:)'
     if keys.cal.process_by_block
         by_block = sort_by_block(data_per_run);
     end
-    clear data_per_block;
+    clear data_per_run;
     
     if keys.cal.process_spikes
         pop_resorted(ismember({pop_resorted.unit_ID},{'no unit'}))=[];              %% remove units that were not taken over from excel sheet (??)
@@ -487,7 +487,7 @@ for u=units
         ATt=o(u).trial(t).arrival_times;
         WFt=o(u).trial(t).waveforms;
         AT=vertcat(AT,ATt(ATt>0 & ATt<o(u).trial(t).states_onset(end-1))+o(u).trial(t).trial_onset_time+o(u).trial(t).run_onset_time-firstbin);
-        WF=vertcat(WF,WFt(ATt>0 & ATt<o(u).trial(t).states_onset(end-1),:));
+        WF=vertcat(WF,WFt);%(ATt>0 & ATt<o(u).trial(t).states_onset(end-1),:));
     end
     %bins=(o(u).trial(1).trial_onset_time):binsize:(o(u).trial(end).run_onset_time-o(u).trial(1).run_onset_time+o(u).trial(end).trial_onset_time+max(o(u).trial(end).states_onset));
     bins=0:binsize:(lastbin-firstbin);
@@ -621,7 +621,7 @@ for n_unit=1:numel(o)
     block_trials=[find([true diff([o(n_unit).trial(1:end-1).block])~=0]) numel(o(n_unit).trial)];
     wf_per_block=[];
     for b=1:numel(block_trials)-1
-        meanblockwf=nanmean(cat(1,o(n_unit).trial(block_trials(b):block_trials(b+1)).waveforms));
+        meanblockwf=nanmean(cat(1,o(n_unit).trial(block_trials(b):block_trials(b+1)).waveforms),1);
         if ~isempty(meanblockwf);  wf_per_block(b,:)=meanblockwf; end
     end
     all_spikes_wf = cat(1,o(n_unit).trial.waveforms);
