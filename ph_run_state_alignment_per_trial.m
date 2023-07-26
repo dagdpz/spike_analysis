@@ -11,7 +11,7 @@ if isfield(tr_in,'TDT_LFPx')
     n_chans_s = size(tr_in(nonempty(1)).TDT_LFPx,1);  % first nonempty trial, is this nonempty channels only?
 end
 n_units=0;
-%% unitsperchannelmatrix JUST FOR DEBUGGING PURPOSES
+%% unitsperchannelmatrix 
 unitsperchannelmatrix=false(n_chans_u,1);
 for t=1:n_trials
     if ~isempty(tr_in(t).spike_arrival_times)
@@ -22,21 +22,96 @@ for t=1:n_trials
         n_units = max([n_units size(tr_in(t).spike_arrival_times,2)]);
     end
 end
+
+tix=get_indexes(keys.sorting_table_sites);
 for c=1:n_chans_s
-    from_excel_per_channel(c) = get_sorted_neuron_out_xlsx_from_excel(keys.sorting_table_sites, keys, 1, c, 0,0);
+    from_excel_per_channel(c) = get_recording_info(keys.sorting_table_sites, tix,keys, 1, c, 0,0);
 end
+tix=get_indexes(keys.sorting_table_units);
+cat_wf=cat(3,tr_in.spike_waveforms);
 for c=1:n_chans_u
     for u=1:n_units
-        from_excel_per_unit(c,u) = get_sorted_neuron_out_xlsx_from_excel(keys.sorting_table_units, keys, u, c, unitsperchannelmatrix(c,u),1);
+        from_excel_per_unit(c,u) = get_recording_info(keys.sorting_table_units, tix,keys, u, c, unitsperchannelmatrix(c,u),1);
+        cat_wf_tr=vertcat(cat_wf(c,u,:));
+        if ~any(any(~isnan(vertcat(cat_wf_tr{:}))))
+            from_excel_per_unit(c,u).unit_ID='no unit';
+        end
     end
 end
+
 
 %% Preallocation !?
 NaNpar=num2cell(NaN(1,n_trials));
 trial=struct('type',NaNpar,'effector',NaNpar,'reach_hand',NaNpar,'choice',NaNpar,'success',NaNpar,'fix_pos',NaNpar,'tar_pos',NaNpar,'trial_onset_time',NaNpar,...
-    'time_axis',NaNpar,'x_eye',NaNpar,'y_eye',NaNpar,'x_hnd',NaNpar,'y_hnd',NaNpar,'states_onset',NaNpar); %add all fields of trial(?)
+     'time_axis',NaNpar,'x_eye',NaNpar,'y_eye',NaNpar,'x_hnd',NaNpar,'y_hnd',NaNpar,'states_onset',NaNpar); %add all fields of trial(?)
 trials_wo_phys=[];
 trials_wo_cond=[];
+
+[trial.unit]=deal(from_excel_per_unit);
+[trial.channel]=deal(from_excel_per_channel);
+    
+%% LFPs & other streams??
+shift_in_seconds=1;
+stream_fieldnames=fieldnames(tr_in);
+stream_fieldnames=stream_fieldnames(~ismember(stream_fieldnames,{'spike_arrival_times','spike_waveforms','streams_tStart'}));
+stream_fieldnames=stream_fieldnames(~cellfun(@(x) any(strfind(x,'_SR')) || any(strfind(x,'_t0_from_rec_start') ),stream_fieldnames))';
+
+for FN=stream_fieldnames
+    sr=[tr_in.([FN{:} '_SR'])];
+    shift_n_samples=round(shift_in_seconds*sr)';
+    % adding last second of previous trial to the beginning of the next trial
+    tempstruct=[{tr_in(1).(FN{:})}; arrayfun(@(x,y,z) [x.(FN{:})(:,end-z+1:end) y.(FN{:})(:,1:end-z)],tr_in(1:end-1),tr_in(2:end),shift_n_samples(1:end-1),'UniformOutput',false)];
+    % shorten first trial (remove stuff way before task)
+    n_samples_to_delete=round((shift_in_seconds*-1-tr_in(1).streams_tStart)*sr(1));
+    if n_samples_to_delete>-1
+        trial(1).(FN{:})(:,1:n_samples_to_delete)=[];
+        tstart={tr_in(1).streams_tStart+n_samples_to_delete/sr(1)};
+    else
+        tstart={tr_in(1).streams_tStart};
+    end
+    tstart=[tstart; arrayfun(@(x,y) x.streams_tStart-y,tr_in(2:end),shift_n_samples(2:end)./sr(2:end)','UniformOutput',false)];    
+    [trial.([FN{:} '_tStart'])]=  deal(tstart{:});
+    [trial.(FN{:})]=deal(tempstruct{:});
+    [trial.([FN{:} '_SR'])]=tr_in.([FN{:} '_SR']);
+    [trial.([FN{:} '_t0_from_rec_start'])]=tr_in.([FN{:} '_t0_from_rec_start']);
+end
+%% eye and hand traces
+tempstruct=[{MA_out.raw(1).time_axis}; arrayfun(@(x,y,z,a) [x.time_axis-(y.trial_onset_time-z.trial_onset_time) a.time_axis],...
+             MA_out.raw(1:end-1),MA_out.states(2:end),MA_out.states(1:end-1),MA_out.raw(2:end),'UniformOutput',false)];
+         
+trace_idx=cellfun(@(x) 1:MA_out.keys.calc_val.i_sample_rate*keys.PSTH_binwidth:numel(x),tempstruct,'UniformOutput',false);
+tempstruct=cellfun(@(x,y) x(y),tempstruct,trace_idx,'UniformOutput',false);      
+[trial.time_axis] = deal(tempstruct{:});
+
+trace_fieldnames={'x_eye','y_eye','x_hnd','y_hnd'};
+for FN=trace_fieldnames
+    fn=FN{:};
+    tempstruct=[{MA_out.raw(1).(fn)}; arrayfun(@(x,y,z) [x.(fn) y.(fn)],MA_out.raw(1:end-1),MA_out.raw(2:end),'UniformOutput',false)];    
+    %% resampling    
+    tempstruct=cellfun(@(x,y) x(y),tempstruct,trace_idx,'UniformOutput',false);      
+    [trial.(fn)] = deal(tempstruct{:});
+end
+%% spikes
+
+for t=1:numel(tr_in)
+    
+    t1=min(MA_out.states(t).TDT_state_onsets);
+    t2=max(MA_out.states(t).TDT_state_onsets(1:end-1));
+    unit_wf=cell2struct(tr_in(t).spike_waveforms,'waveforms',3);
+    [trial(t).unit.waveforms]=unit_wf.waveforms;
+    if t>1
+        %% add previous trial's spikes to the beginning
+        prev_t_correction=-(MA_out.states(t).trial_onset_time -MA_out.states(t-1).trial_onset_time);
+        AA=cellfun(@(x,y) [x(x+prev_t_correction>-shift_in_seconds)+prev_t_correction;y],tr_in(t-1).spike_arrival_times,tr_in(t).spike_arrival_times,'Uniformoutput',false);
+        unit_at=cell2struct(AA,'arrival_times',3);
+    else
+        unit_at=cell2struct(tr_in(t).spike_arrival_times,'arrival_times',3);
+    end
+    [trial(t).unit.arrival_times]=unit_at.arrival_times;
+    
+    AA=arrayfun(@(x) sum(x.arrival_times>t1 & x.arrival_times<t2)/(t2-t1),trial(t).unit,'Uniformoutput',false);
+    [trial(t).unit.FR_average]=AA{:};
+end
 
 %% main loop
 for t=1:n_trials
@@ -56,7 +131,7 @@ for t=1:n_trials
     end
     trial(t).date               = str2num(keys.date);
     trial(t).block              = keys.block;
-    trial(t).run                = keys.run;%MA_out.selected(t).run; % cause MW run is wrong, it actually corresponds to block!
+    trial(t).run                = keys.run;%MA_out.selected(t).run; % cause MA run is wrong, it actually corresponds to block!
     trial(t).n                  = MA_out.selected(t).trials;
     trial(t).type               = MA_out.task(t).type;
     trial(t).effector           = MA_out.task(t).effector;
@@ -143,137 +218,111 @@ for t=1:n_trials
     trial(t).states         =trial_states(sort(tr_state_idx));
     trial(t).states_onset   =trial_states_onset(sort(tr_state_idx));
     
-    %     %% for several movements per trial - has to be re-implemented somehow
-    %     mov_idx=~isnan(Movement.ini_all) & Movement.ini_all>=MA_out.states(t).start_obs;
-    %     trial(t).movement_onsets        =Movement.ini_all(mov_idx);
-    %     trial(t).movement_ends          =Movement.end_all(mov_idx);
-    %     trial(t).movement_endpos        =Movement.endpos_all(mov_idx);
-    %     trial(t).movement_startpos      =Movement.startpos_all(mov_idx);
-    %
-    %     state_indexes_start=arrayfun(@(x) find(MA_out.states(t).MP_states_onset>=x,1,'first')-1, trial(t).movement_onsets);
-    %     state_indexes_end=arrayfun(@(x) find(MA_out.states(t).MP_states_onset<=x,1,'last'), trial(t).movement_ends);
-    %
-    %     trial(t).movement_tar_at_start    =MA_out.states(t).MP_states(state_indexes_start)==MA_out.states(t).state_1ao;
-    %     trial(t).movement_tar_at_end      =MA_out.states(t).MP_states(state_indexes_end)==MA_out.states(t).state_1ao;
-    %     trial(t).movement_tar_crossed     =state_indexes_end - state_indexes_start>2; %% works so far, because saccade can only be crossing one target if there are two state transitions within the saccade;
-    %
-    %     tar_ins=arrayfun(@(x) sum(MA_out.states(t).MP_states(1:x)==MA_out.states(t).state_1ao), state_indexes_start);
-    %     tar_ins(tar_ins==0)=1;
-    %     trial(t).movement_shape_at_start    = Movement.all_convexities(Movement.targets_inspected(tar_ins));
-    %     trial(t).movement_shape_crossed    = Movement.all_convexities(Movement.targets_inspected(tar_ins));
-    %     tar_ins=arrayfun(@(x) sum(MA_out.states(t).MP_states(1:x)==MA_out.states(t).state_1ao), state_indexes_end);
-    %     tar_ins(tar_ins==0)=1;
-    %     trial(t).movement_shape_at_end    = Movement.all_convexities(Movement.targets_inspected(tar_ins));
-    %
-    %     trial(t).movement_shape_at_start(~trial(t).movement_tar_at_start)=NaN;
-    %     trial(t).movement_shape_crossed(~trial(t).movement_tar_crossed)=NaN;
-    %     trial(t).movement_shape_at_end(~trial(t).movement_tar_at_end)=NaN;
-    
-    
     %% adding previous trial
     trial(t).run_onset_time          =MA_out.states(t).run_onset_time;
     trial(t).trial_onset_time        =MA_out.states(t).trial_onset_time;
     
-    if t>1 % && keys.add_previous_trial_spikes     shift_in_seconds=1;
-        trial(t).time_axis = [MA_out.raw(t-1).time_axis-(trial(t).trial_onset_time -MA_out.states(t-1).trial_onset_time) MA_out.raw(t).time_axis];
-        trial(t).x_eye = [MA_out.raw(t-1).x_eye MA_out.raw(t).x_eye];
-        trial(t).y_eye = [MA_out.raw(t-1).y_eye MA_out.raw(t).y_eye];
-        trial(t).x_hnd = [MA_out.raw(t-1).x_hnd MA_out.raw(t).x_hnd];
-        trial(t).y_hnd = [MA_out.raw(t-1).y_hnd MA_out.raw(t).y_hnd];
-    else
-        trial(t).time_axis = MA_out.raw(t).time_axis;
-        trial(t).x_eye = MA_out.raw(t).x_eye;
-        trial(t).y_eye = MA_out.raw(t).y_eye;
-        trial(t).x_hnd = MA_out.raw(t).x_hnd;
-        trial(t).y_hnd = MA_out.raw(t).y_hnd;
-    end
-    %% resample traces for speed !!!
-    trace_idx=1:MA_out.keys.calc_val.i_sample_rate*keys.PSTH_binwidth:numel(trial(t).time_axis);
-    trial(t).time_axis  = trial(t).time_axis(trace_idx);
-    trial(t).x_eye      = trial(t).x_eye(trace_idx);
-    trial(t).y_eye      = trial(t).y_eye(trace_idx);
-    trial(t).x_hnd      = trial(t).x_hnd(trace_idx);
-    trial(t).y_hnd      = trial(t).y_hnd(trace_idx);
+%     if t>1 % && keys.add_previous_trial_spikes     shift_in_seconds=1;
+%         trial(t).time_axis = [MA_out.raw(t-1).time_axis-(trial(t).trial_onset_time -MA_out.states(t-1).trial_onset_time) MA_out.raw(t).time_axis];
+%         trial(t).x_eye = [MA_out.raw(t-1).x_eye MA_out.raw(t).x_eye];
+%         trial(t).y_eye = [MA_out.raw(t-1).y_eye MA_out.raw(t).y_eye];
+%         trial(t).x_hnd = [MA_out.raw(t-1).x_hnd MA_out.raw(t).x_hnd];
+%         trial(t).y_hnd = [MA_out.raw(t-1).y_hnd MA_out.raw(t).y_hnd];
+%     else
+%         trial(t).time_axis = MA_out.raw(t).time_axis;
+%         trial(t).x_eye = MA_out.raw(t).x_eye;
+%         trial(t).y_eye = MA_out.raw(t).y_eye;
+%         trial(t).x_hnd = MA_out.raw(t).x_hnd;
+%         trial(t).y_hnd = MA_out.raw(t).y_hnd;
+%     end
+%     %% resample traces for speed !!!
+%     trace_idx=1:MA_out.keys.calc_val.i_sample_rate*keys.PSTH_binwidth:numel(trial(t).time_axis);
+%     trial(t).time_axis  = trial(t).time_axis(trace_idx);
+%     trial(t).x_eye      = trial(t).x_eye(trace_idx);
+%     trial(t).y_eye      = trial(t).y_eye(trace_idx);
+%     trial(t).x_hnd      = trial(t).x_hnd(trace_idx);
+%     trial(t).y_hnd      = trial(t).y_hnd(trace_idx);
     
     
-    %% LFPs & other streams??
-    shift_in_seconds=1;
-    stream_fieldnames=fieldnames(tr_in);
-    stream_fieldnames=stream_fieldnames(~ismember(stream_fieldnames,{'spike_arrival_times','spike_waveforms','streams_tStart'}));
-    stream_fieldnames=stream_fieldnames(~cellfun(@(x) any(strfind(x,'_SR')) || any(strfind(x,'_t0_from_rec_start') ),stream_fieldnames))';
-    for FN=stream_fieldnames
-        trial(t).(FN{:})=tr_in(t).(FN{:});
-        trial(t).([FN{:} '_SR'])=tr_in(t).([FN{:} '_SR']);
-        trial(t).([FN{:} '_t0_from_rec_start'])=tr_in(t).([FN{:} '_t0_from_rec_start']);
-        shift_n_samples=round(shift_in_seconds*trial(t).([FN{:} '_SR']));
-        to_next_trial(t).(FN{:})=trial(t).(FN{:})(:,end-shift_n_samples:end);
-        trial(t).(FN{:})(:,end-shift_n_samples:end)=[]; % cut off end of current trial (delta t = shift_in_seconds)
-        if t>1 %% append end of previous trial to the current one (delta t = shift_in_seconds)
-            trial(t).(FN{:})=[to_next_trial(t-1).(FN{:}) trial(t).(FN{:})];
-            trial(t).([FN{:} '_tStart'])=  tr_in(t).streams_tStart-shift_n_samples/trial(t).([FN{:} '_SR']); %% this might have to depend on sampling rate ideally...
-        else
-            n_samples_to_delete=round((shift_in_seconds*-1-tr_in(t).streams_tStart)*trial(t).([FN{:} '_SR']));
-            if n_samples_to_delete>0
-                trial(t).(FN{:})(:,1:n_samples_to_delete)=[];
-                trial(t).([FN{:} '_tStart'])=tr_in(t).streams_tStart+n_samples_to_delete/trial(t).([FN{:} '_SR']);
-            else
-                trial(t).([FN{:} '_tStart'])=tr_in(t).streams_tStart;
-            end
-        end
-    end
-    %trial(t).streams_tStart=tr_in(t).streams_tStart;
-    
-    %% unspecific excel table data
-    for c=1:n_chans_s,
-        trial(t).channel(c).grid_x               =from_excel_per_channel(c).x{1} ;
-        trial(t).channel(c).grid_y               =from_excel_per_channel(c).y{1} ;
-        trial(t).channel(c).electrode_depth      =from_excel_per_channel(c).electrode_depth{1} ;
-        trial(t).channel(c).target               =from_excel_per_channel(c).target{1} ;
-        trial(t).channel(c).dataset              =from_excel_per_channel(c).dataset{1} ;
-        trial(t).channel(c).perturbation         =from_excel_per_channel(c).perturbation{1} ;
-        trial(t).channel(c).perturbation_site    =from_excel_per_channel(c).perturbation_site{1} ;
-        trial(t).channel(c).site_ID              =from_excel_per_channel(c).site{1} ;
-    end
-    
-    %% SPIKES
-    for c=1:n_chans_u,
-        for u=1:n_units
-            cat_wf=cat(3,tr_in.spike_waveforms);
-            cat_wf_tr=vertcat(cat_wf(c,u,:));
-            if any(any(~isnan(vertcat(cat_wf_tr{:}))))
-                trial(t).unit(c,u).unit_ID=from_excel_per_unit(c,u).unique_neuron{1} ;
-            else
-                trial(t).unit(c,u).unit_ID='no unit';
-            end
-            trial(t).unit(c,u).site_ID              =from_excel_per_unit(c,u).site{1} ;
-            trial(t).unit(c,u).SNR_rating           =from_excel_per_unit(c,u).SNR_rating{1} ;
-            trial(t).unit(c,u).Single_rating        =from_excel_per_unit(c,u).Single_rating{1} ;
-            trial(t).unit(c,u).stability_rating     =from_excel_per_unit(c,u).stability_rating{1} ;
-            trial(t).unit(c,u).grid_x               =from_excel_per_unit(c,u).x{1} ;
-            trial(t).unit(c,u).grid_y               =from_excel_per_unit(c,u).y{1} ;
-            trial(t).unit(c,u).electrode_depth      =from_excel_per_unit(c,u).electrode_depth{1} ;
-            trial(t).unit(c,u).target               =from_excel_per_unit(c,u).target{1} ;
-            trial(t).unit(c,u).dataset              =from_excel_per_unit(c,u).dataset{1} ;
-            trial(t).unit(c,u).perturbation         =from_excel_per_unit(c,u).perturbation{1} ;
-            trial(t).unit(c,u).perturbation_site    =from_excel_per_unit(c,u).perturbation_site{1} ;
-            
-            % Waveforms (cutting off ITI ??)
-            t1=min(trial(t).states_onset);
-            t2=max(trial(t).states_onset(1:end-1));
-            %wf_idx                                = tr_in(t).spike_arrival_times{c,u}>t1 & tr_in(t).spike_arrival_times{c,u}<t2;
-            trial(t).unit(c,u).waveforms          = tr_in(t).spike_waveforms{c,u};%(wf_idx,:);
-            
-            %% ADDING PREVIOUS SPIKES TO CURRENT TRIAL (shift_in_seconds before trial onset)
-            if t>1 && ~ismember(t-1,trials_wo_phys)
-                prev_trial_spike_arrival_times = tr_in(t-1).spike_arrival_times{c,u} -(trial(t).trial_onset_time -MA_out.states(t-1).trial_onset_time);
-                tr_in(t).spike_arrival_times{c,u} = [prev_trial_spike_arrival_times(prev_trial_spike_arrival_times>-shift_in_seconds); tr_in(t).spike_arrival_times{c,u}];
-            end
-            AT= tr_in(t).spike_arrival_times{c,u};
-            trial(t).unit(c,u).arrival_times=AT;
-            trial(t).unit(c,u).FR_average=sum(AT>t1 & AT<t2)/(t2-t1);
-        end
-    end
+%     %% LFPs & other streams??
+%     shift_in_seconds=1;
+%     stream_fieldnames=fieldnames(tr_in);
+%     stream_fieldnames=stream_fieldnames(~ismember(stream_fieldnames,{'spike_arrival_times','spike_waveforms','streams_tStart'}));
+%     stream_fieldnames=stream_fieldnames(~cellfun(@(x) any(strfind(x,'_SR')) || any(strfind(x,'_t0_from_rec_start') ),stream_fieldnames))';
+%     for FN=stream_fieldnames
+%         trial(t).(FN{:})=tr_in(t).(FN{:});
+%         trial(t).([FN{:} '_SR'])=tr_in(t).([FN{:} '_SR']);
+%         trial(t).([FN{:} '_t0_from_rec_start'])=tr_in(t).([FN{:} '_t0_from_rec_start']);
+%         shift_n_samples=round(shift_in_seconds*trial(t).([FN{:} '_SR']));
+%         to_next_trial(t).(FN{:})=trial(t).(FN{:})(:,end-shift_n_samples:end);
+%         trial(t).(FN{:})(:,end-shift_n_samples:end)=[]; % cut off end of current trial (delta t = shift_in_seconds)
+%         if t>1 %% append end of previous trial to the current one (delta t = shift_in_seconds)
+%             trial(t).(FN{:})=[to_next_trial(t-1).(FN{:}) trial(t).(FN{:})];
+%             trial(t).([FN{:} '_tStart'])=  tr_in(t).streams_tStart-shift_n_samples/trial(t).([FN{:} '_SR']); %% this might have to depend on sampling rate ideally...
+%         else
+%             n_samples_to_delete=round((shift_in_seconds*-1-tr_in(t).streams_tStart)*trial(t).([FN{:} '_SR']));
+%             if n_samples_to_delete>0
+%                 trial(t).(FN{:})(:,1:n_samples_to_delete)=[];
+%                 trial(t).([FN{:} '_tStart'])=tr_in(t).streams_tStart+n_samples_to_delete/trial(t).([FN{:} '_SR']);
+%             else
+%                 trial(t).([FN{:} '_tStart'])=tr_in(t).streams_tStart;
+%             end
+%         end
+%     end
+%     %trial(t).streams_tStart=tr_in(t).streams_tStart;
+%     
+%     %% unspecific excel table data
+%     for c=1:n_chans_s,
+%         trial(t).channel(c).grid_x               =from_excel_per_channel(c).x{1} ;
+%         trial(t).channel(c).grid_y               =from_excel_per_channel(c).y{1} ;
+%         trial(t).channel(c).electrode_depth      =from_excel_per_channel(c).electrode_depth{1} ;
+%         trial(t).channel(c).target               =from_excel_per_channel(c).target{1} ;
+%         trial(t).channel(c).dataset              =from_excel_per_channel(c).dataset{1} ;
+%         trial(t).channel(c).perturbation         =from_excel_per_channel(c).perturbation{1} ;
+%         trial(t).channel(c).perturbation_site    =from_excel_per_channel(c).perturbation_site{1} ;
+%         trial(t).channel(c).site_ID              =from_excel_per_channel(c).site{1} ;
+%     end
+%     
+%     %% SPIKES
+%     for c=1:n_chans_u,
+%         for u=1:n_units
+%             cat_wf=cat(3,tr_in.spike_waveforms);
+%             cat_wf_tr=vertcat(cat_wf(c,u,:));
+%             if any(any(~isnan(vertcat(cat_wf_tr{:}))))
+%                 trial(t).unit(c,u).unit_ID=from_excel_per_unit(c,u).unit_ID ;
+%             else
+%                 trial(t).unit(c,u).unit_ID='no unit';
+%             end
+%             trial(t).unit(c,u).site_ID              =from_excel_per_unit(c,u).site{1} ;
+%             trial(t).unit(c,u).SNR_rating           =from_excel_per_unit(c,u).SNR_rating{1} ;
+%             trial(t).unit(c,u).Single_rating        =from_excel_per_unit(c,u).Single_rating{1} ;
+%             trial(t).unit(c,u).stability_rating     =from_excel_per_unit(c,u).stability_rating{1} ;
+%             trial(t).unit(c,u).grid_x               =from_excel_per_unit(c,u).x{1} ;
+%             trial(t).unit(c,u).grid_y               =from_excel_per_unit(c,u).y{1} ;
+%             trial(t).unit(c,u).electrode_depth      =from_excel_per_unit(c,u).electrode_depth{1} ;
+%             trial(t).unit(c,u).target               =from_excel_per_unit(c,u).target{1} ;
+%             trial(t).unit(c,u).dataset              =from_excel_per_unit(c,u).dataset{1} ;
+%             trial(t).unit(c,u).perturbation         =from_excel_per_unit(c,u).perturbation{1} ;
+%             trial(t).unit(c,u).perturbation_site    =from_excel_per_unit(c,u).perturbation_site{1} ;
+%             
+%             % Waveforms (cutting off ITI ??)
+%             t1=min(trial(t).states_onset);
+%             t2=max(trial(t).states_onset(1:end-1));
+%             %wf_idx                                = tr_in(t).spike_arrival_times{c,u}>t1 & tr_in(t).spike_arrival_times{c,u}<t2;
+%             trial(t).unit(c,u).waveforms          = tr_in(t).spike_waveforms{c,u};%(wf_idx,:);
+%             
+%             %% ADDING PREVIOUS SPIKES TO CURRENT TRIAL (shift_in_seconds before trial onset)
+%             if t>1 && ~ismember(t-1,trials_wo_phys)
+%                 prev_trial_spike_arrival_times = tr_in(t-1).spike_arrival_times{c,u} -(trial(t).trial_onset_time -MA_out.states(t-1).trial_onset_time);
+%                 tr_in(t).spike_arrival_times{c,u} = [prev_trial_spike_arrival_times(prev_trial_spike_arrival_times>-shift_in_seconds); tr_in(t).spike_arrival_times{c,u}];
+%             end
+%             AT= tr_in(t).spike_arrival_times{c,u};
+%             trial(t).unit(c,u).arrival_times=AT;
+%             trial(t).unit(c,u).FR_average=sum(AT>t1 & AT<t2)/(t2-t1);
+%         end
+%     end
 end
+
 invalid_trials=sort([trials_wo_phys trials_wo_cond]); % differentiation between phys not present and condition mismatches (which are NOT excluded at this stage any more !)
 trial(invalid_trials)=[];
 
@@ -341,36 +390,38 @@ o.trial=trial;
 o.block=keys.block;
 end
 
-function from_excel = get_sorted_neuron_out_xlsx_from_excel(xlsx_table, keys, unit, channel, unitexistsindata, per_unit)
+function tix=get_indexes(xlsx_table)
 
-idx_Date                =DAG_find_column_index(xlsx_table,'Date');
-idx_Run                 =DAG_find_column_index(xlsx_table,'Run');
-idx_Block               =DAG_find_column_index(xlsx_table,'Block');
-idx_Channel             =DAG_find_column_index(xlsx_table,'Chan');
-idx_Unit                =DAG_find_column_index(xlsx_table,'Unit');
-idx_Neuron_ID           =DAG_find_column_index(xlsx_table,'Neuron_ID');
-idx_Site_ID             =DAG_find_column_index(xlsx_table,'Site_ID');
-idx_Target              =DAG_find_column_index(xlsx_table,'Target');
-idx_Hemisphere          =DAG_find_column_index(xlsx_table,'Hemisphere');
-idx_Set                 =DAG_find_column_index(xlsx_table,'Set');
-idx_Perturbation        =DAG_find_column_index(xlsx_table,'Perturbation');
-idx_Perturbation_site   =DAG_find_column_index(xlsx_table,'Perturbation_site');
-idx_SNR                 =DAG_find_column_index(xlsx_table,'SNR_rank');
-idx_Single              =DAG_find_column_index(xlsx_table,'Single_rank');
-idx_x                   =DAG_find_column_index(xlsx_table,'x');
-idx_y                   =DAG_find_column_index(xlsx_table,'y');
-idx_Electrode_depth     =DAG_find_column_index(xlsx_table,'Aimed_electrode_depth');
-idx_Stability           =DAG_find_column_index(xlsx_table,'Stability_rank');
+tix.Date                =DAG_find_column_index(xlsx_table,'Date');
+tix.Run                 =DAG_find_column_index(xlsx_table,'Run');
+tix.Block               =DAG_find_column_index(xlsx_table,'Block');
+tix.Channel             =DAG_find_column_index(xlsx_table,'Chan');
+tix.Unit                =DAG_find_column_index(xlsx_table,'Unit');
+tix.Neuron_ID           =DAG_find_column_index(xlsx_table,'Neuron_ID');
+tix.Site_ID             =DAG_find_column_index(xlsx_table,'Site_ID');
+tix.Target              =DAG_find_column_index(xlsx_table,'Target');
+tix.Hemisphere          =DAG_find_column_index(xlsx_table,'Hemisphere');
+tix.Set                 =DAG_find_column_index(xlsx_table,'Set');
+tix.Perturbation        =DAG_find_column_index(xlsx_table,'Perturbation');
+tix.Perturbation_site   =DAG_find_column_index(xlsx_table,'Perturbation_site');
+tix.SNR                 =DAG_find_column_index(xlsx_table,'SNR_rank');
+tix.Single              =DAG_find_column_index(xlsx_table,'Single_rank');
+tix.x                   =DAG_find_column_index(xlsx_table,'x');
+tix.y                   =DAG_find_column_index(xlsx_table,'y');
+tix.Electrode_depth     =DAG_find_column_index(xlsx_table,'Aimed_electrode_depth');
+tix.Stability           =DAG_find_column_index(xlsx_table,'Stability_rank');
+end
 
+function from_excel = get_recording_info(xlsx_table, tix, keys, unit, channel, unitexistsindata, per_unit)
 
-r_Date  = DAG_find_row_index(xlsx_table(:,idx_Date),str2double(keys.date));
-r_Block = DAG_find_row_index(xlsx_table(:,idx_Block),keys.block);
-r_Run   = DAG_find_row_index(xlsx_table(:,idx_Run),keys.run);
-r_Unit  = DAG_find_row_index(xlsx_table(:,idx_Unit),char(96+unit));
-r_Chan  = DAG_find_row_index(xlsx_table(:,idx_Channel),channel);
+r_Date  = [0 xlsx_table{2:end,tix.Date}]'   ==str2double(keys.date);
+r_Block = [0 xlsx_table{2:end,tix.Block}]'  ==keys.block;
+r_Run   = [0 xlsx_table{2:end,tix.Run}]'    ==keys.run;
+r_Chan  = [0 xlsx_table{2:end,tix.Channel}]'==channel;
+r_Unit  = ismember(xlsx_table(:,tix.Unit),char(96+unit));
 
-from_excel.unit_identifier=[keys.date '_block_' num2str(keys.block) '_run_' num2str(keys.run) '_ch_' num2str(channel) '_u_' char(96+unit)];
-from_excel.site_identifier=[keys.date '_block_' num2str(keys.block) '_run_' num2str(keys.run) '_ch_' num2str(channel)];
+unit_identifier=[keys.date '_block_' num2str(keys.block) '_run_' num2str(keys.run) '_ch_' num2str(channel) '_u_' char(96+unit)];
+site_identifier=[keys.date '_block_' num2str(keys.block) '_run_' num2str(keys.run) '_ch_' num2str(channel)];
 if per_unit
     row                         =find(r_Date & r_Block & r_Run & r_Chan & r_Unit );
     if numel(row)>1
@@ -380,38 +431,38 @@ else
     row                         =find(r_Date & r_Block & r_Run & r_Chan);
 end
 if isempty(row)
-    from_excel.unique_neuron           = {from_excel.unit_identifier};
-    from_excel.site                    = {from_excel.site_identifier};
-    from_excel.SNR_rating              = {-1};
-    from_excel.Single_rating           = {-1};
-    from_excel.stability_rating        = {-1};
-    from_excel.x                       = {-100};
-    from_excel.y                       = {-100};
-    from_excel.electrode_depth         = {-1};
-    from_excel.target                  = {'unknown'};
-    from_excel.dataset                 = {0};
-    from_excel.perturbation            = {0};
-    from_excel.perturbation_site       = {'NA'};
+    from_excel.unit_ID                 = unit_identifier;
+    from_excel.site_ID                 = site_identifier;
+    from_excel.SNR_rating              = -1;
+    from_excel.Single_rating           = -1;
+    from_excel.stability_rating        = -1;
+    from_excel.grid_x                  = -100;
+    from_excel.grid_y                  = -100;
+    from_excel.electrode_depth         = -1;
+    from_excel.target                  = 'unknown';
+    from_excel.dataset                 = 0;
+    from_excel.perturbation            = 0;
+    from_excel.perturbation_site       = 'NA';
     if unitexistsindata
-        fprintf(2, 'no matching sorting for %s \n', from_excel.unit_identifier);
+        fprintf(2, 'no matching sorting for %s \n', unit_identifier);
     end
 else
     row=row(1);
-    from_excel.unique_neuron           =xlsx_table(row,idx_Neuron_ID);
-    from_excel.site                    =xlsx_table(row,idx_Site_ID);
-    from_excel.SNR_rating              =xlsx_table(row,idx_SNR);
-    from_excel.Single_rating           =xlsx_table(row,idx_Single);
-    from_excel.stability_rating        =xlsx_table(row,idx_Stability);
-    from_excel.x                       =xlsx_table(row,idx_x);
-    from_excel.y                       =xlsx_table(row,idx_y);
-    from_excel.electrode_depth         =xlsx_table(row,idx_Electrode_depth);
-    from_excel.target                  =xlsx_table(row,idx_Target);
-    from_excel.dataset                 =xlsx_table(row,idx_Set);
-    from_excel.perturbation            =xlsx_table(row,idx_Perturbation);
-    from_excel.perturbation_site       =xlsx_table(row,idx_Perturbation_site);
+    from_excel.unit_ID                 =xlsx_table{row,tix.Neuron_ID};
+    from_excel.site_ID                 =xlsx_table{row,tix.Site_ID};
+    from_excel.SNR_rating              =xlsx_table{row,tix.SNR};
+    from_excel.Single_rating           =xlsx_table{row,tix.Single};
+    from_excel.stability_rating        =xlsx_table{row,tix.Stability};
+    from_excel.grid_x                  =xlsx_table{row,tix.x};
+    from_excel.grid_y                  =xlsx_table{row,tix.y};
+    from_excel.electrode_depth         =xlsx_table{row,tix.Electrode_depth};
+    from_excel.target                  =xlsx_table{row,tix.Target};
+    from_excel.dataset                 =xlsx_table{row,tix.Set};
+    from_excel.perturbation            =xlsx_table{row,tix.Perturbation};
+    from_excel.perturbation_site       =xlsx_table{row,tix.Perturbation_site};
     % defining target including hemisphere (in case it wasnt used for target definition in the sorting table already)
-    if ~isempty(idx_Hemisphere) && isempty(strfind(from_excel.target{:},'_')) && numel(xlsx_table{row,idx_Hemisphere})>0
-        from_excel.target = {[from_excel.target{:} '_' upper(xlsx_table{row,idx_Hemisphere}(1))]};
+    if ~isempty(tix.Hemisphere) && isempty(strfind(from_excel.target,'_')) && numel(xlsx_table{row,tix.Hemisphere})>0
+        from_excel.target = [from_excel.target '_' upper(xlsx_table{row,tix.Hemisphere}(1))];
     end
 end
 end
