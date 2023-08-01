@@ -57,7 +57,9 @@ stream_fieldnames=stream_fieldnames(~ismember(stream_fieldnames,{'spike_arrival_
 stream_fieldnames=stream_fieldnames(~cellfun(@(x) any(strfind(x,'_SR')) || any(strfind(x,'_t0_from_rec_start') ),stream_fieldnames))';
 
 for FN=stream_fieldnames
-    sr=[tr_in.([FN{:} '_SR'])];
+    sr={tr_in.([FN{:} '_SR'])};
+    sr(cellfun(@isempty,sr))={0};
+    sr=cell2mat(sr);
     shift_n_samples=round(shift_in_seconds*sr)';
     % adding last second of previous trial to the beginning of the next trial
     tempstruct=[{tr_in(1).(FN{:})}; arrayfun(@(x,y,z) [x.(FN{:})(:,end-z+1:end) y.(FN{:})(:,1:end-z)],tr_in(1:end-1),tr_in(2:end),shift_n_samples(1:end-1),'UniformOutput',false)];
@@ -97,6 +99,7 @@ for t=1:numel(tr_in)
     
     t1=min(MA_out.states(t).TDT_state_onsets);
     t2=max(MA_out.states(t).TDT_state_onsets(1:end-1));
+    if ~isempty(tr_in(t).spike_waveforms)
     unit_wf=cell2struct(tr_in(t).spike_waveforms,'waveforms',3);
     [trial(t).unit.waveforms]=unit_wf.waveforms;
     if t>1
@@ -111,6 +114,9 @@ for t=1:numel(tr_in)
     
     AA=arrayfun(@(x) sum(x.arrival_times>t1 & x.arrival_times<t2)/(t2-t1),trial(t).unit,'Uniformoutput',false);
     [trial(t).unit.FR_average]=AA{:};
+    else
+        
+    end
 end
 
 %% main loop
