@@ -375,6 +375,7 @@ for b=1:size(o_t,2)
         
         trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial)));
         tmp=rmfield(o_t(b).trial,trial_fieldnames_to_remove);
+        [tmp.arrival_times]=current_unit.arrival_times;
         [tmp.waveforms]=current_unit.waveforms;
         [tmp.dataset]=current_unit.dataset;
         [tmp.perturbation]=current_unit.perturbation;
