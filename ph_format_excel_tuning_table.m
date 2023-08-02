@@ -4,15 +4,15 @@ N_columns_unchanged=12;
 in_or_ch={'in','ch'};
 hands={'AH','IH','CH'}; 
 sides={'IS','CS'}; 
-
+% 
 keys.AN.general_factors={'epoch_main','hemifield_main','hands_main','ExS','ExH','SxH','ExSxH'}; %factor for ANOVA: epoch*hand*space
 keys.AN.general_factors_per_hand={'position_main'};
 keys.AN.general_factors_per_hand_space={'PT_main','ExP','epoch_main'};
-keys.AN.factors={'epoch','hemifield','hands','SxH','SglTar_Suc'};
-%keys.AN.factors_per_hand={'epoch','position','fixation','PxF','RF_shift','gaze_modulation_x','gaze_modulation_y','RF_choice1','RF_choice2'};
-keys.AN.factors_per_hand={'epoch','position','fixation','PxF','distance','angle','DxA','prefH', 'prefP','positionx','positiony','_positionxy','gaze_modulation_x','gaze_modulation_y','gaze_pref_x','gaze_pref_y'};
-keys.AN.factors_per_hemifield={'Difficulty_Easy', 'Difficulty_Diff', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
-keys.AN.factors_per_handhemifield={'epoch','prefH', 'prefP', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
+% keys.AN.factors={'epoch','hemifield','hands','SxH','SglTar_Suc'};
+% %keys.AN.factors_per_hand={'epoch','position','fixation','PxF','RF_shift','gaze_modulation_x','gaze_modulation_y','RF_choice1','RF_choice2'};
+% keys.AN.factors_per_hand={'epoch','position','fixation','PxF','distance','angle','DxA','prefH', 'prefP','positionx','positiony','_positionxy','gaze_modulation_x','gaze_modulation_y','gaze_pref_x','gaze_pref_y'};
+% keys.AN.factors_per_hemifield={'Difficulty_Easy', 'Difficulty_Diff', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
+% keys.AN.factors_per_handhemifield={'epoch','prefH', 'prefP', 'SpatialComp_2HFTar', 'SpatialComp_1HFTar'};
 
 potential_affixes={'','_DF','_IX','_FR','_PV','_NM','_SC'}; %%?????
 factors=create_all_string_combinations(keys.AN.factors,potential_affixes);
@@ -82,7 +82,10 @@ for t=1:numel(tasks)
                     end
                 end
             end
-            
+            if isempty(epochs)  
+                n_table=n_table+1;              
+                final_cell_table{n_table}=[temp_table6 vertcat({'epoch'},repmat({'undefined'},size(TT,1)-1,1))];
+            end
             % per epoch factors
             for e=1:numel(epochs)
                 n_table=n_table+1;

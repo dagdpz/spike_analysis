@@ -24,12 +24,12 @@ if keys.TU.redo_statistics
     save([keys.tuning_table_foldername keys.tuning_table_filename],'tuning_per_unit_table');
     ph_format_tuning_table(tuning_per_unit_table,keys);
     excel_table=ph_format_excel_tuning_table(keys.tuning_table,keys.conditions_to_plot,keys);
-    xlswrite([keys.tuning_table_foldername 'tuning_table_' keys.TU.unique_title],excel_table); %not sure why this one would not work...
+    xlswrite([keys.tuning_table_foldername 'tuning_table_' keys.target '_' keys.TU.unique_title],excel_table); %not sure why this one would not work...
     
 end
     
-    excel_table=ph_format_excel_tuning_table(keys.tuning_table,keys.conditions_to_plot,keys);
-    xlswrite([keys.basepath_to_save keys.project_version filesep 'tuning_table_' keys.TU.unique_title],excel_table);
+    excel_table=ph_format_excel_tuning_table(keys.tuning_table,keys.conditions_to_plot(:)',keys);
+    xlswrite([keys.basepath_to_save keys.project_version filesep 'tuning_table_' keys.target '_' keys.TU.unique_title],excel_table);
 
 
 end
