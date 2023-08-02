@@ -105,7 +105,7 @@ for t=1:numel(tr_in)
     if t>1
         %% add previous trial's spikes to the beginning
         prev_t_correction=-(MA_out.states(t).trial_onset_time -MA_out.states(t-1).trial_onset_time);
-        AA=cellfun(@(x,y) single([x(x+prev_t_correction>-shift_in_seconds)+prev_t_correction;y]),tr_in(t-1).spike_arrival_times,tr_in(t).spike_arrival_times,'Uniformoutput',false);
+        AA=cellfun(@(x,y) [x(x+prev_t_correction>-shift_in_seconds)+prev_t_correction;y],tr_in(t-1).spike_arrival_times,tr_in(t).spike_arrival_times,'Uniformoutput',false);
         unit_at=cell2struct(AA,'arrival_times',3);
     else
         unit_at=cell2struct(tr_in(t).spike_arrival_times,'arrival_times',3);
@@ -200,7 +200,7 @@ for t=1:n_trials
 %     trial(t).all_tar_pos        = Movement.all_tar_pos;
 %     trial(t).col_dim            = Movement.col_dim;
 %     trial(t).col_bri            = Movement.col_bri;
- %   trial(t).target_selected    = Movement.target_selected;
+    trial(t).target_selected    = Movement.target_selected;
     
     if  numel(Movement.all_tar_pos) == 1 %% KK NOTLÖSUNG
         correct_pos = Movement.all_tar_pos;
@@ -221,8 +221,8 @@ for t=1:n_trials
     trial_states            =[trial_states(1:end-1) movement_states MA_STATES.ITI_END];
     trial_states_onset      =[trial_states_onset(1:end-1) movement_onsets trial_states_onset(end)];
     [~,tr_state_idx]        =unique(trial_states,'last');
-    trial(t).states         =single(trial_states(sort(tr_state_idx)));
-    trial(t).states_onset   =single(trial_states_onset(sort(tr_state_idx)));
+    trial(t).states         =trial_states(sort(tr_state_idx));
+    trial(t).states_onset   =trial_states_onset(sort(tr_state_idx));
     
     %% adding previous trial
     trial(t).run_onset_time          =MA_out.states(t).run_onset_time;
