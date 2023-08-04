@@ -371,6 +371,13 @@ if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR)
             waveform_amplitude=max(waveform_average)-min(waveform_average);
             snr=waveform_amplitude/mean(waveform_std); % redefine "noise" based on broadband (?)
             
+            % single-unit'ness as it was defined by Kim et al., 2009,
+            % J.Neuro:
+            % "Units with <1% of ISIs <3 ms were classified as single 
+            % units. All others were classified as multiunits."
+            ISI_cat = arrayfun(@(x) diff(x.arrival_times)', units_cat(c,u,:), 'UniformOutput', false);
+            ISI_cat = [ISI_cat{:}];
+            singleunitness = sum(ISI_cat < 0.003)/length(ISI_cat); % fraction of ISIs shorter than 3ms
             
             for t=1:numel(trial) % another loop? not so cool
                 if keys.cal.automatic_stablity
@@ -385,6 +392,13 @@ if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR)
                         trial(t).unit(c,u).SNR_rating=single(snr);
                     else
                         trial(t).unit(c,u).SNR_rating=single(NaN);
+                    end
+                end
+                if keys.cal.automatic_singleunitness
+                    if ~isempty(singleunitness)
+                        trial(t).unit(c,u).Single_rating=single(singleunitness);
+                    else
+                        trial(t).unit(c,u).Single_rating=single(NaN);
                     end
                 end
             end

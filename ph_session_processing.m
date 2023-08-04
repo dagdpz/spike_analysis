@@ -266,6 +266,7 @@ for b=1:size(o_t,2)
                 o_t(b).trial(t).dataset                   =o_t(b).trial(t).unit(c,u).dataset;
                 o_t(b).trial(t).perturbation              =o_t(b).trial(t).unit(c,u).perturbation;
                 o_t(b).trial(t).FR_average                =o_t(b).trial(t).unit(c,u).FR_average;
+                o_t(b).trial(t).Single_rating             =o_t(b).trial(t).unit(c,u).Single_rating;
                 o_t(b).trial(t).stability_rating          =o_t(b).trial(t).unit(c,u).stability_rating;
                 o_t(b).trial(t).SNR_rating                =o_t(b).trial(t).unit(c,u).SNR_rating;
                 n_spikes                                  =size(o_t(b).trial(t).unit(c,u).waveforms,1);
@@ -714,7 +715,7 @@ for n_unit=1:numel(o)
         plot(all_spikes_wf(1:50:n_sel_spike_wf*50,:)');
     end
     plot(wf_per_block','-k','linewidth',2);
-    unit_title={sprintf('%s SN/Si/St: %.1f/%.1f/%.1f',o(n_unit).unit_ID,o(n_unit).SNR_rating,o(n_unit).Single_rating,o(n_unit).stability_rating),...
+    unit_title={sprintf('%s SN/Si/St: %.1f/%.3f/%.1f',o(n_unit).unit_ID,o(n_unit).SNR_rating,o(n_unit).Single_rating,o(n_unit).stability_rating),...
         sprintf(['spk: %d ch/De: %d/%.2f b&u: %s'],n_all_spikes_wf, o(n_unit).channel,o(n_unit).electrode_depth,[o(n_unit).block_unit{:}])}; %MP add number of spikes
         %sprintf('SNR/Wam/Std: %%d/%d/%d',round(o(n_unit).quantSNR),round(o(n_unit).waveform_amplitude),round(nanmean(o(n_unit).waveform_std))),... %%KK stuff
     title(unit_title,'interpreter','none','fontsize',6)
