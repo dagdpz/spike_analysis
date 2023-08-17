@@ -1,12 +1,12 @@
-function ph_redo_tuning_table(population,keys)
+function ph_redo_tuning_table(population,trials,keys)
 
 
 
 if keys.TU.redo_statistics
     %% LS has this line, MP kept it?:
-    population = ph_accept_trials_per_unit(population,keys);
-    %population = ph_assign_perturbation_group(keys,population); %% MP removed this line (hmm... what do we actually store as perutrbation ??)
-    population = ph_epochs(population,keys);
+%     population = ph_accept_trials_per_unit(population,keys);
+%     %population = ph_assign_perturbation_group(keys,population); %% MP removed this line (hmm... what do we actually store as perutrbation ??)
+%     population = ph_epochs(population,keys);
     
     
     %% probably need to make sure we do not have contra-ipsi table loaded (?)
@@ -17,7 +17,7 @@ if keys.TU.redo_statistics
     else
         keys.tuning_table={'unit_ID'};
     end
-    tuning_per_unit_table=ph_ANOVAS(population,keys); % main function    
+    tuning_per_unit_table=ph_ANOVAS(population,trials,keys); % main function    
     keys.tuning_table_foldername=[keys.basepath_to_save keys.project_version filesep];
     keys.tuning_table_filename='tuning_table_combined';
     keys.tuning_table=tuning_per_unit_table;

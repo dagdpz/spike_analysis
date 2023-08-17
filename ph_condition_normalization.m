@@ -1,4 +1,4 @@
-function [pop_out, condition, condition_per_trial, pref_valid]=ph_condition_normalization(population,keys,UC,CM)
+function [pop_out, condition, condition_per_trial, pref_valid]=ph_condition_normalization(population,trials,keys,UC,CM)
 %% assume arrangement was chosen already!
 %% position precision relevant for this part here as well!
 
@@ -45,64 +45,70 @@ CM=combvec(CM{:});
 pref_valid=false(numel(UC.type),numel(population));
 for u=1:numel(population)
     clear trcon tr
-    tr_con=ismember([population(u).trial.completed],keys.cal.completed) & [population(u).trial.accepted];
-    [pop]=ph_arrange_positions_and_plots(keys,population(u).trial(tr_con),population(u)); %% idea here: remove this one :D
+    pt=ph_get_unit_trials(population(u),trials);
+    tr_con=ismember([pt.completed],keys.cal.completed) & [pt.accepted];
+%    [pop]=ph_arrange_positions_and_plots(keys,pt(tr_con),population(u)); %% idea here: remove this one :D
+    pop=population(u);
+    pop.trial=pop.trial(tr_con);
     
     [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{1})).perturbation]=deal(0);
     [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{2})).perturbation]=deal(1);
     pop_out(u)=pop;
     
     %% normalization factor and baseline (per trial!)
-    norm_factor=ones(size(pop.trial));
-    baseline=zeros(size(pop.trial));
-    PF_epoch_FR=NaN(size(pop.trial));
+    norm_factor=ones(size(pt));
+    baseline=zeros(size(pt));
+    PF_epoch_FR=NaN(size(pt));
     
     for t=1:numel(UC.type)
         typ=UC.type(t);
         eff=UC.type_effector(UC.type_effector(:,1)==typ,2);
         keys=ph_get_epoch_keys(keys,typ,eff(1),numel(eff)>1); %taking eff(1) is admittedly sloppy here
-        
-        trtyp=[pop.trial.type]==typ;
-        per_epoch=get_per_epoch(pop.trial(trtyp)); %only current type!
-        present_epochs={per_epoch(1,:).state};
-        
+                
+        present_epochs=keys.EPOCHS_PER_TYPE{typ}(:,1); % now we pretend all epochs are there...        
         DN_epoch{t}    =ismember(present_epochs,K.epoch_DN);
         RF_epoch{t}    =ismember(present_epochs,K.epoch_RF);
         BL_epoch{t}    =ismember(present_epochs,K.epoch_BL);
         PF_epoch{t}    =ismember(present_epochs,K.epoch_PF);
         
-        trpar   =trtyp;
-        if strcmp(K.normalization,'by_all_trials')
+        trtyp=[pt.type]==typ;        
+        trpar   =tr_con(trtyp);
+        
+        %per_epoch=pop.epochs_per_type{typ}(trpar,:); %only current type!        
+        
+        if strcmp(K.normalization,'by_all_trials') %% this one does not work right now
             trpar=true(size([pop.trial]));
         end
+        
+        
         
         %% normalization factor (condition wise)
         for n=1:size(CM,2)
             for p=1:size(CM,1)
                 fn=CP{p};
-                trcon(p,:)=[pop.trial.(fn)]==CM(p,n);
+                trcon(p,:)=[pt.(fn)]==CM(p,n);
             end
-            tr(:,n)=all(trcon,1) & trpar;
+            tr(:,n)=all(trcon,1) & tr_con & trtyp;
             if ~any(tr(:,n)) %
                 continue
             end
-            per_epoch=get_per_epoch(pop.trial(tr(:,n)));
+            per_epoch=pop.epochs_per_type{typ}(tr(trtyp,n),:); 
             if strcmp(K.normalization,'percent_change') %not sure if this really percent change, the scale should be logarithmic?
-                norm_factor(tr(:,n))=nanmean([per_epoch(:,BL_epoch{t}).FR per_epoch(:,DN_epoch{t}).FR NaN])/100;
-                baseline(tr(:,n))   =nanmean([per_epoch(:,BL_epoch{t}).FR per_epoch(:,DN_epoch{t}).FR NaN]);
+                norm_factor(tr(:,n))=nanmean([per_epoch(:,BL_epoch{t}) per_epoch(:,DN_epoch{t}) NaN])/100;
+                baseline(tr(:,n))   =nanmean([per_epoch(:,BL_epoch{t}) per_epoch(:,DN_epoch{t}) NaN]);
             else
-                baseline(tr(:,n))   =nanmean(vertcat(per_epoch(:,BL_epoch{t}).FR));
-                norm_factor(tr(:,n))=nanmean(vertcat(per_epoch(:,DN_epoch{t}).FR));
+                baseline(tr(:,n))   =nanmean(vertcat(per_epoch(:,BL_epoch{t})));
+                norm_factor(tr(:,n))=nanmean(vertcat(per_epoch(:,DN_epoch{t})));
             end
             if any(PF_epoch{t}) %
-                PF_epoch_FR(tr(:,n))   =[per_epoch(:,PF_epoch{t}).FR ];
+                PF_epoch_FR(tr(:,n))   =[per_epoch(:,PF_epoch{t})];
             end
         end
         
         %% per trial baseline/normalization! should divisive be by trial as well?
         if K.baseline_per_trial
-            per_epoch=get_per_epoch(pop.trial(trtyp));
-            baseline(trtyp)=[per_epoch(:,BL_epoch{t}).FR];
+            per_epoch=pop.epochs_per_type{typ}(tr_con(trtyp),:); 
+            baseline(trtyp)=per_epoch(:,BL_epoch{t});
         end
         %% validate
         if strcmp(K.normalization,'none') || sum(DN_epoch{t})==0 
@@ -148,21 +154,23 @@ for u=1:numel(population)
         end
         
         clear per_epoch_FR
-        per_epoch=vertcat(pop.trial(trtyp).epoch)';
-        per_epoch_FR=NaN(size(per_epoch));
-        %% try double here!
-        for e=1:size(per_epoch,1) %% looping may not be elegant, but at least confusions are avoided
-            per_epoch_FR(e,:)=([per_epoch(e,:).FR]-double(baseline(trtyp)))./norm_factor(trtyp); %not sure if dimension is correct here!!!!!!!!!!!!
-        end
-        per_epoch_FR=num2cell(per_epoch_FR);
-        tr_typ=find(trtyp);
-        for trl=1:numel(tr_typ)
-            [pop_out(u).trial(tr_typ(trl)).epoch.FR]=per_epoch_FR{:,trl};
-        end
+        per_epoch=pop.epochs_per_type{typ}(tr_con(trtyp),:); 
+        per_epoch_FR=(per_epoch-repmat(double(baseline(tr_con(trtyp))'),1,size(per_epoch,2)))./repmat(norm_factor(tr_con(trtyp))',1,size(per_epoch,2));
+        pop_out(u).epochs_per_type{typ}=per_epoch_FR;
+        
+%         %% try double here!
+%         for e=1:size(per_epoch,1) %% looping may not be elegant, but at least confusions are avoided
+%             per_epoch_FR(e,:)=([per_epoch(e,:).FR]-double(baseline(trtyp)))./norm_factor(trtyp); %not sure if dimension is correct here!!!!!!!!!!!!
+%         end
+%         per_epoch_FR=num2cell(per_epoch_FR);
+%         tr_typ=find(trtyp);
+%         for trl=1:numel(tr_typ)
+%             [pop_out(u).trial(tr_typ(trl)).epoch.FR]=per_epoch_FR{:,trl};
+%         end
     end
     
     % skip PSTH computation per condition if we are only interested in FR epoch normalization
-    if strcmp(keys.normalization_field,'AN')
+    if strcmp(keys.normalization_field,'AN') || strcmp(keys.normalization_field,'TU')
         continue
     end
         

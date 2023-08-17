@@ -72,6 +72,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         keys.traces_filename            =['traces_' monkey];
         keys.population_filename        =['population_' monkey];
         keys.sites_filename             =['sites_' monkey];
+        keys.trials_filename            =['trials_' monkey];
         keys.filelist_formatted         =keys.(monkey).filelist_formatted;
         if exist([keys.tuning_table_foldername keys.tuning_table_filename '.mat'],'file')
             load([keys.tuning_table_foldername keys.tuning_table_filename '.mat']);

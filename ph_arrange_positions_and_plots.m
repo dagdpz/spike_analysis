@@ -1,4 +1,4 @@
-function [pop]=ph_arrange_positions_and_plots(keys,o,pop_in)
+function [o,info]=ph_arrange_positions_and_plots(keys,o)
 % this nasty piece of code defines positions, single cell plotting appearence (batching in figures/subplots/lines and color), as well as minimum number of trials per condition,
 % all in one defined by keys.arrangement
 % con_for_figure:           which trials to place on the same figure
@@ -18,10 +18,14 @@ function [pop]=ph_arrange_positions_and_plots(keys,o,pop_in)
 % out_analysis.PSTH_summary_colors: colors used in type summary plots
 % out_analysis.line_labels: lables for the different lines in the summary plot legend
 %
-%% taking over per unit informaiton from original pop if applicable
-if nargin>2
-    pop=rmfield(pop_in,'trial');
-end
+% %% taking over per unit information from original pop if applicable
+% if nargin>2
+%     %pop=rmfield(pop_in,'trial');
+%     pop=pop_in;
+%     for fn=fieldnames(o)'
+%        [pop.trial.(fn{:})]=o.(fn{:}); 
+%     end
+% end
 
 %% DEFINITION OF CONDITION INDICES TO PLOT, CURRENTLY TARGET LOCATION, FIXATION LOCATION, MOVEMENT VECTORS, CHOICE, HANDS
 [~, displacement_types] = center_displacement_working(o,keys);
@@ -334,29 +338,54 @@ switch keys.arrangement
 end
 
 %% subplot positions
-[subplot_pos, pop.columns, pop.rows]= DAG_dynamic_positions({val_for_sub_assignment});
+[subplot_pos, info.columns, info.rows]= DAG_dynamic_positions({val_for_sub_assignment});
 
 %% some preallocations
-pop.figure_title_part      =fig_title;
+info.figure_title_part      =fig_title;
 for n=1:numel(val_for_figure)
     temp     =[arrayfun(@num2str, val_for_figure{n}, 'unif', 0)'; repmat({' '},size(val_for_figure{n},1),1)'];
-    pop.figure_title_value{n,1}     =[temp{:}];
+    info.figure_title_value{n,1}     =[temp{:}];
 end
 
 %% Assigning each trial
-pop.trial=o;
-for t=1:numel(o)
-    pop.trial(t).figure         =con_for_figure(t);
-    pop.trial(t).column         =con_for_column(t);
-    pop.trial(t).row            =con_for_row(t);
-    pop.trial(t).fixation       =fixation_per_trial(t,:);
-    pop.trial(t).title_part     =sub_title;
-    pop.trial(t).subplot_pos    =subplot_pos(position_indexes(t));
-    pop.trial(t).pos_index      =position_indexes(t);
-    pop.trial(t).fix_index      =fixation_indexes(t);
-    pop.trial(t).position       =val_for_pos_assignment(position_indexes(t),:);
-    pop.trial(t).hemifield      =-1*(pop.trial(t).position(1)<0)+1*(pop.trial(t).position(1)>0);
-end
+% pop.trial=o;
+% for t=1:numel(o)
+%     pop.trial(t).figure         =con_for_figure(t);
+%     pop.trial(t).column         =con_for_column(t);
+%     pop.trial(t).row            =con_for_row(t);
+%     pop.trial(t).fixation       =fixation_per_trial(t,:);
+%     pop.trial(t).title_part     =sub_title;
+%     pop.trial(t).subplot_pos    =subplot_pos(position_indexes(t));
+%     pop.trial(t).pos_index      =position_indexes(t);
+%     pop.trial(t).fix_index      =fixation_indexes(t);
+%     pop.trial(t).position       =val_for_pos_assignment(position_indexes(t),:);
+%     pop.trial(t).hemifield      =-1*(pop.trial(t).position(1)<0)+1*(pop.trial(t).position(1)>0);
+% end
+
+
+
+position            =num2cell(val_for_pos_assignment(position_indexes,:),2);
+fixation            =num2cell(fixation_per_trial,2);
+hemifield           =num2cell(-1*val_for_pos_assignment(position_indexes,1)<0 + 1*val_for_pos_assignment(position_indexes,1)>0);
+
+con_for_figure      =num2cell(con_for_figure);
+con_for_column      =num2cell(con_for_column);
+con_for_row         =num2cell(con_for_row);
+subplot_pos         =num2cell(subplot_pos(position_indexes));
+position_indexes    =num2cell(position_indexes);
+fixation_indexes    =num2cell(fixation_indexes);
+
+[o.title_part]     =deal(sub_title);
+[o.figure]         =deal(con_for_figure{:});
+[o.column]         =deal(con_for_column{:});
+[o.row]            =deal(con_for_row{:});
+[o.subplot_pos]    =deal(subplot_pos{:});
+[o.pos_index]      =deal(position_indexes{:});
+[o.fix_index]      =deal(fixation_indexes{:});
+
+[o.fixation]       =deal(fixation{:});
+[o.position]       =deal(position{:});
+[o.hemifield]      =deal(hemifield{:});
 end
 
 function [s_c, displacement_types] = center_displacement_working(trial,keys)
@@ -378,34 +407,6 @@ if isfield(trial,'stm_pos')
 else
     s_e=s_d;
 end
-% for t=1:numel(trial)
-%     for k=1:numel(s_a)
-%         if abs(trial(t).fix_pos - s_a(k)) < Prec_fix
-%             fixation(t)=s_a(k);
-%         end
-%     end
-%     for k=1:numel(s_b)
-%         if abs(trial(t).tar_pos - trial(t).fix_pos - s_b(k)) < Prec_pos
-%             movement_direction(t)=s_b(k);
-%         end
-%     end
-%     for k=1:numel(s_c)
-%         if abs(trial(t).tar_pos - s_c(k)) < Prec_fix
-%             target(t)=s_c(k);
-%         end
-%     end
-%     for k=1:numel(s_d)
-%         if abs(trial(t).cue_pos - s_d(k)) < Prec_pos
-%             cuepos(t)=s_d(k);
-%         end
-%     end
-%     for k=1:numel(s_e)
-%         if abs(trial(t).stm_pos - s_e(k)) < Prec_pos
-%             stmpos(t)=s_e(k);
-%         end
-%     end
-% end
-
 for k=1:numel(s_a)
     t=abs([trial.fix_pos] - s_a(k)) < Prec_fix;
     fixation(t)=s_a(k);

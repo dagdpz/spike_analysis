@@ -1,4 +1,4 @@
-function ph_population_PSTHs(population,modified_keys)
+function ph_population_PSTHs(population,trials,modified_keys)
 warning('off','MATLAB:catenate:DimensionMismatch');
 
 for fn=fieldnames(modified_keys)'
@@ -21,7 +21,8 @@ population=population(unit_valid);
 complete_unit_list={population.unit_ID}';
 population_group=group_values(TM(unit_valid));
 all_trialz=[population.trial];
-[UC, CM, labels]=ph_get_condition_matrix(all_trialz,keys);
+[trials.accepted]=deal(true);
+[UC, CM, labels]=ph_get_condition_matrix(trials,keys);
 
 %% fix labels --> and with labels colors!
 legend_labels_hem={};

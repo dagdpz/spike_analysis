@@ -598,7 +598,8 @@ if size(TT,1)>1
     row_index=true(size(TT,1)-1,1);
     
     % ratings
-    selection_criteria={'stability_rating','SNR_rating','Single_rating','FR','n_spikes'};
+    %selection_criteria={'stability_rating','SNR_rating','Single_rating','FR','n_spikes'};
+    selection_criteria={'avg_stability','avg_SNR','avg_single_rating','FR','n_spikes'};
     for sel=1:numel(selection_criteria)
         criterion=selection_criteria{sel};
         crit_min=min(keys.tt.(criterion));

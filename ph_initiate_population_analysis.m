@@ -41,16 +41,16 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
         end
         if any(ismember(population_analysis_to_perform,{'ons','pop','gaz','ref','gfl','clf','hst','reg','rtc','prf','ndt','uni','rfs','tun','beh'}))
             population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
-            population=ph_epochs(population,keys);
+            trials=ph_load_population([keys.basepath_to_save keys.project_version],['trials_' keys.monkey]);
+            % ph_epochs takes a bit too long for comfort, think about
+            % saving epochs (?)
+            population=ph_epochs(population,trials,keys);
             if ismember(population_analysis_to_perform,{'uni'}) %% for single cell plotting, add eye/hand traces
                 population=ph_load_traces([keys.basepath_to_save keys.project_version],['traces_' keys.monkey],population);
             end
-            fields_to_remove={'TDT_CAP1_SR','TDT_CAP1_t0_from_rec_start','TDT_CAP1_tStart','TDT_ECG1_SR','TDT_ECG1_t0_from_rec_start',...
-                    'TDT_ECG1_tStart','TDT_ECG4_SR','TDT_ECG4_t0_from_rec_start','TDT_ECG4_tStart','TDT_LFPx_SR','TDT_LFPx_t0_from_rec_start',...
-                    'TDT_LFPx_tStart','TDT_POX1_SR','TDT_POX1_t0_from_rec_start','TDT_POX1_tStart'};
-            for u=1:numel(population)
-                population(u).trial=rmfield(population(u).trial,fields_to_remove(ismember(fields_to_remove,fieldnames(population(u).trial))));
-            end;
+%             for u=1:numel(population)
+%                 population(u).trial=rmfield(population(u).trial,fields_to_remove(ismember(fields_to_remove,fieldnames(population(u).trial))));
+%             end;
         else
             population=[];
         end
@@ -62,14 +62,14 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
                 else
                     population_selection            = {'target',keys.target};
                 end
-                    loop_through_plots(population,keys,population_selection,population_analysis_to_perform);            
+                    loop_through_plots(population,trials,keys,population_selection,population_analysis_to_perform);            
             end
         end
     end
 end
 end
 
-function loop_through_plots(population_full,keys_in,population_selection,population_analysis_to_perform)
+function loop_through_plots(population_full,trials,keys_in,population_selection,population_analysis_to_perform)
 for P=population_analysis_to_perform
     ana=P{:};
     AN=upper(ana(1:2));
@@ -151,10 +151,10 @@ for P=population_analysis_to_perform
         else
             population=ph_assign_perturbation_group(keys,population_full);
         end
-        population = ph_accept_trials_per_unit(population,keys);
+        population = ph_accept_trials_per_unit(population,trials,keys);
         
         
-        for a=1:numel(keys.(AN).position_and_plotting_arrangements)            
+        for a=1:numel(keys.(AN).position_and_plotting_arrangements)    %% how NOT to loop through arrangements for tuning table calculation?        
             keys.arrangement= keys.(AN).position_and_plotting_arrangements{a};  
             for condition_to_plot=keys_in.(ana)(cc).conditions_to_plot
                 keys.conditions_to_plot=condition_to_plot;
@@ -185,11 +185,11 @@ for P=population_analysis_to_perform
                     case 'ons'                        
                         keys=ph_make_subfolder(['population_meta_data' filesep 'response timing'],keys);
                         keys=ph_make_subfolder('response timing',keys);
-                        ph_population_response_timing(population,keys);                        
+                        ph_population_response_timing(population,trials,keys);                        
                     case 'pop'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'population_analysis'],keys);
                         keys=ph_make_subfolder('population_analysis',keys);
-                        ph_population_PSTHs(population,keys);
+                        ph_population_PSTHs(population,trials,keys);
                     case 'sct'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'scatter'],keys);
                         keys=ph_make_subfolder('scatter',keys);
@@ -197,45 +197,45 @@ for P=population_analysis_to_perform
                     case 'rfs'                        
                         keys=ph_make_subfolder(['population_meta_data' filesep 'response fields'],keys);
                         keys=ph_make_subfolder('response fields',keys);
-                        ph_population_RFs(population,keys);
+                        ph_population_RFs(population,trials,keys);
                     case 'rtc'                        
                         keys=ph_make_subfolder('reaction_time_correlation',keys);
-                        ph_RT_correlation(population,keys);
+                        ph_RT_correlation(population,trials,keys);
                     case 'reg'                        
                         keys=ph_make_subfolder(['population_meta_data' filesep 'regression'],keys);
                         keys=ph_make_subfolder('regression',keys);
-                        ph_linear_regression(population,keys);
+                        ph_linear_regression(population,trials,keys);
                     case 'beh'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'behavior'],keys);
                         keys=ph_make_subfolder('behavior',keys);
-                        ph_get_filelists(population,keys);
+                        ph_get_filelists(population,trials,keys);
                         ph_ephys_behavior(keys);
                     case 'gaz'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'gaze_analysis'],keys);
                         keys=ph_make_subfolder('gaze_analysis',keys);
-                        ph_gaze(population,keys);
+                        ph_gaze(population,trials,keys);
                     case 'ref'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'scatter'],keys);
                         keys=ph_make_subfolder('scatter',keys);
-                        ph_reference_frame(population,keys); 
+                        ph_reference_frame(population,trials,keys); 
                     case 'prf'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'target_preference'],keys);
                         keys=ph_make_subfolder('target_preference',keys);
-                        ph_target_preference(population,keys); 
+                        ph_target_preference(population,trials,keys); 
                     case 'gfl'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'tuning_curves'],keys);
                         keys=ph_make_subfolder('tuning_curves',keys);
-                        ph_gainfields(population,keys); 
+                        ph_gainfields(population,trials,keys); 
                     case 'clf'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'classification'],keys);
                         keys=ph_make_subfolder('classification',keys);
-                        ph_classification(population,keys); 
+                        ph_classification(population,trials,keys); 
                     case 'hst'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'hand_space'],keys);
                         keys=ph_make_subfolder('hand_space',keys);
                         temp_epochs=keys.(AN).epochs;
                         keys.(AN).epochs=keys.(AN).epochs.(condition_to_plot{:});
-                        ph_hand_space_tuning_vector(population,keys); 
+                        ph_hand_space_tuning_vector(population,trials,keys); 
                         keys.(AN).epochs=temp_epochs;
                     case 'cpy'
                         keys=ph_make_subfolder(['single_cells' filesep keys.CP.foldername],keys);
@@ -243,16 +243,16 @@ for P=population_analysis_to_perform
                     case 'ndt'
                         keys=ph_make_subfolder(['population_meta_data' filesep 'decoding'],keys);
                         keys=ph_make_subfolder('decoding',keys);
-                        ph_decoding(population,keys); 
+                        ph_decoding(population,trials,keys); 
                     case 'uni'
                         keys=rmfield(keys,'conditions_to_plot');
                         keys=ph_make_subfolder('single_cells',keys);
-                        ph_plot_unit_per_condition(population,keys);
+                        ph_plot_unit_per_condition(population,trials,keys);
                     case 'loc'
                         keys=ph_make_subfolder('localization',keys);
                         ph_localization(keys);
                     case 'tun'
-                        ph_redo_tuning_table(population,keys);
+                        ph_redo_tuning_table(population,trials,keys);
                 end
             end
         end

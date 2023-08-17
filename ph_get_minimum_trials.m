@@ -1,24 +1,24 @@
 function trial_criterion=ph_get_minimum_trials(keys,o,CM,UC,labels)
 %% assign position indexes...
-UC.pos_idx=1:max([o.trial.pos_index]);
+UC.pos_idx=1:max([o.pos_index]);
 
 %% gotta find if and where reach hand condition is present, because of _trials_per_congruent_hand_hemifield
 [~,reach_hand_idx]=ismember(keys.condition_parameters,'reach_hand');
 reach_hand_idx=find(reach_hand_idx);
 
 for hf=1:numel(UC.hemifield)
-    trhf(hf,:)=[o.trial.hemifield]==UC.hemifield(hf);
+    trhf(hf,:)=[o.hemifield]==UC.hemifield(hf);
 end
 
 for p=1:numel(UC.pos_idx)
-    trpos(p,:)=[o.trial.pos_index]==UC.pos_idx(p);
+    trpos(p,:)=[o.pos_index]==UC.pos_idx(p);
 end
 
 for c=1:size(CM,1)
     clear trpar 
     for par=1:numel(keys.condition_parameters)
         fn=keys.condition_parameters{par};
-        trpar(par,:)=[o.trial.(fn)]==CM(c,par);
+        trpar(par,:)=[o.(fn)]==CM(c,par);
     end
     namepart=labels{c};
     

@@ -112,7 +112,7 @@ for current_date = sessions(:)'
     end
     
     %% Sorting by unit/site/block ID & plotting waveform/spikesorting overview
-    Trial = sort_by_trial(data_per_run);
+    trials = sort_by_trial(data_per_run);
     if keys.cal.process_sites
         sites = sort_by_site_ID(data_per_run);
     end
@@ -120,7 +120,7 @@ for current_date = sessions(:)'
         tic
         pop_resorted = sort_by_unit_ID_temp(data_per_run);
         toc
-        pop_resorted = sort_by_unit_ID(data_per_run);
+        %pop_resorted = sort_by_unit_ID(data_per_run);
         traces_per_block = sort_traces_by_block(data_per_run);
     end
     if keys.cal.process_by_block
@@ -255,96 +255,11 @@ end
 
 end
 
-function pop_resorted = sort_by_unit_ID_old(o_t)
-pop_resorted=struct('unit_ID',{});
-unit_index=0;
-fields_to_remove={'unit','channel','TDT_CAP1','TDT_POX1','TDT_ECG1','TDT_ECG4','TDT_LFPx'};
-
-for b=1:size(o_t,2)
-    for t=1:size(o_t(b).trial,2)
-        for c=1:size(o_t(b).trial(t).unit,1)
-            for u=1:size(o_t(b).trial(t).unit,2)
-                current_unit_already_processed=ismember({pop_resorted.unit_ID},{o_t(b).trial(t).unit(c,u).unit_ID});
-                
-                o_t(b).trial(t).waveforms                 =o_t(b).trial(t).unit(c,u).waveforms;
-                o_t(b).trial(t).stability_rating          =o_t(b).trial(t).unit(c,u).stability_rating;
-                o_t(b).trial(t).arrival_times             =o_t(b).trial(t).unit(c,u).arrival_times;
-                o_t(b).trial(t).dataset                   =o_t(b).trial(t).unit(c,u).dataset;
-                o_t(b).trial(t).perturbation              =o_t(b).trial(t).unit(c,u).perturbation;
-                o_t(b).trial(t).FR_average                =o_t(b).trial(t).unit(c,u).FR_average;
-                o_t(b).trial(t).stability_rating          =o_t(b).trial(t).unit(c,u).stability_rating;
-                o_t(b).trial(t).SNR_rating                =o_t(b).trial(t).unit(c,u).SNR_rating;
-                n_spikes                                  =size(o_t(b).trial(t).unit(c,u).waveforms,1);
-                av_waveform=mean(o_t(b).trial(t).waveforms,1);
-                std_waveform=std(o_t(b).trial(t).waveforms,1);
-                o_t(b).trial(t).waveform_amplitude=max(av_waveform)-min(av_waveform);
-                o_t(b).trial(t).waveform_std=nanmean(std_waveform);
-                o_t(b).trial(t).trialwise_SNR=(max(av_waveform)-min(av_waveform))/nanmean(std_waveform);
-
-                if any(current_unit_already_processed)
-                    %% append to existing unit
-                    U=find(current_unit_already_processed);
-                    pop_resorted(U).n_spikes         =pop_resorted(U).n_spikes+n_spikes;
-                    pop_resorted(U).SNR_rating       =[pop_resorted(U).SNR_rating o_t(b).trial(t).unit(c,u).SNR_rating*n_spikes];
-                    pop_resorted(U).Single_rating    =[pop_resorted(U).Single_rating o_t(b).trial(t).unit(c,u).Single_rating*n_spikes];
-                    pop_resorted(U).stability_rating =[pop_resorted(U).stability_rating o_t(b).trial(t).unit(c,u).stability_rating*n_spikes];
-                    if ~ismember(num2str(o_t(b).block),[pop_resorted(U).block_unit{1,:}])
-                        pop_resorted(U).block_unit       =[pop_resorted(U).block_unit,{num2str(o_t(b).block);char(96+u);' '}];
-                    end
-                    n_trial(U)                   =n_trial(U)+1;
-                else
-                    %% create new unit
-                    unit_index=unit_index+1;
-                    U=unit_index;
-                    n_trial(U)=1;
-                    pop_resorted(U).n_spikes      =n_spikes;
-                    pop_resorted(U).channel          =c;
-                    pop_resorted(U).block_unit       ={num2str(o_t(b).block);char(96+u);' '};
-                    pop_resorted(U).unit_ID          =o_t(b).trial(t).unit(c,u).unit_ID;
-                    pop_resorted(U).SNR_rating       =o_t(b).trial(t).unit(c,u).SNR_rating*n_spikes;
-                    pop_resorted(U).Single_rating    =o_t(b).trial(t).unit(c,u).Single_rating*n_spikes;
-                    pop_resorted(U).stability_rating =o_t(b).trial(t).unit(c,u).stability_rating*n_spikes;
-                    pop_resorted(U).site_ID          =o_t(b).trial(t).unit(c,u).site_ID;
-                    pop_resorted(U).target           =o_t(b).trial(t).unit(c,u).target;
-                    pop_resorted(U).perturbation_site=o_t(b).trial(t).unit(c,u).perturbation_site;
-                    pop_resorted(U).grid_x           =o_t(b).trial(t).unit(c,u).grid_x;
-                    pop_resorted(U).grid_y           =o_t(b).trial(t).unit(c,u).grid_y;
-                    pop_resorted(U).electrode_depth  =o_t(b).trial(t).unit(c,u).electrode_depth;
-                end
-                trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
-                tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
-                pop_resorted(U).trial(n_trial(U))=tmp;
-            end
-        end
-    end
-end
-
-for u=1:numel(pop_resorted)
-    pop_resorted(u).SNR_rating       = nansum(pop_resorted(u).SNR_rating)/pop_resorted(u).n_spikes;
-    pop_resorted(u).Single_rating    = nansum(pop_resorted(u).Single_rating)/pop_resorted(u).n_spikes;
-    pop_resorted(u).stability_rating = nansum(pop_resorted(u).stability_rating)/pop_resorted(u).n_spikes;
+function Trial = sort_by_trial(data_per_run)
+fieldnames_to_remove={'time_axis','x_eye','y_eye','x_hnd','y_hnd','unit','channel','TDT_CAP1','TDT_ECG1','TDT_ECG4','TDT_POX1'};
     
-    pop_resorted(u).waveform_average = nanmean(vertcat(pop_resorted(u).trial.waveforms),1);
-    pop_resorted(u).waveform_std     = nanstd(vertcat(pop_resorted(u).trial.waveforms),0,1);
-    %% compute waveform_width (should work both for positive and negative spikes)
-    resampling_factor=10;
-    resampled_wf=resample(double(pop_resorted(u).waveform_average),resampling_factor,1);
-    wf_minmax=[min(resampled_wf) max(resampled_wf)];
-    [~,peaklocation]=max(abs(resampled_wf));
-    peaksign=sign(resampled_wf(peaklocation));
-    %t1
-    t1=find(resampled_wf(1:peaklocation)*peaksign<(diff(wf_minmax)/2),1,'last');
-    t2=peaklocation-1+find(resampled_wf(peaklocation:end)*peaksign<(max(abs(wf_minmax))-diff(wf_minmax)/2),1,'first');
-    if ~isempty(wf_minmax) && all(~isnan(wf_minmax))
-        %pop_resorted(u).waveform_width = sum(abs(pop_resorted(u).waveform_average-pop_resorted(u).waveform_average(end)))/24414.0625/diff(wf_minmax); %% sampling rate hardcoded here
-        pop_resorted(u).waveform_width = (t2-t1)/24414.0625/resampling_factor; %% sampling rate hardcoded here
-    else
-        pop_resorted(u).waveform_width = -1; 
-    end
-    %% compute Signal-to-noice ratio for one unit 
-    pop_resorted(u).waveform_amplitude = diff(wf_minmax);  
-    %pop_resorted(u).quantSNR =  pop_resorted(u).waveform_amplitude /nanmean(pop_resorted(u).waveform_std); 
-end
+Trial=[data_per_run.trial];
+Trial=rmfield(Trial,fieldnames_to_remove(ismember(fieldnames_to_remove,fieldnames(Trial))));
 end
 
 function pop_resorted = sort_by_unit_ID(o_t)
@@ -464,12 +379,9 @@ end
 
 function pop=ph_reduce_population(pop_in)
 pop=pop_in;
-pop=pop_resorted;
 fields_to_keep={'arrival_times'};
-fields_to_remove={'waveforms','x_eye','y_eye','x_hnd','y_hnd','time_axis'};
 for u=1:numel(pop)
     trial_fields=fieldnames(pop(u).trial);
-    %pop(u).trial=rmfield(pop(u).trial,fields_to_remove);
     pop(u).trial=rmfield(pop(u).trial,trial_fields(~ismember(trial_fields,fields_to_keep)));
 end
 end

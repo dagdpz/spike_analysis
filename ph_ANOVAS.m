@@ -1,31 +1,45 @@
-function TT=ph_ANOVAS(population,keys)
+function TT=ph_ANOVAS(population,trials,keys)
 TT=keys.tuning_table;
 for unit=1:numel(population)
-    display(['anovas for unit: ' num2str(unit)]);
+    display(['anovas for: ' population(unit).unit_ID]);
     anova_struct_current_unit=struct();
-    if sum([population(unit).trial.accepted]==1 & [population(unit).trial.completed]==1)>0 % temporary? for pulv_oculomotor_dataset
-        for a=1:numel(keys.position_and_plotting_arrangements) % arrangement defines poaitions, therefore also hemifield (which is part of conditions)
+    pop=population(unit);
+    pt=ph_get_unit_trials(pop,trials);
+    valid_trials=[pt.accepted]==1 & [pt.completed]==1;
+    if sum(valid_trials)>0 % temporary? for pulv_oculomotor_dataset
+    pop.trial=pop.trial(valid_trials);
+    
+    pt=pt(valid_trials);
+    %overwrite 
+    %fn=fieldnames(pop);fn=fn(ismember(fn,fieldnames(pt)))';
+    fn={'perturbation','accepted','block','n','run'};
+    for f=fn
+        pop.(f{:})=[pt.(f{:})];
+    end
+        for a=1:numel(keys.position_and_plotting_arrangements) % arrangement defines positions, therefore also hemifield (which is part of conditions)
             keys.arrangement=keys.position_and_plotting_arrangements{a};
-            %o=ph_arrange_positions_and_plots(keys,population(unit).trial(tr_considered)); % arrangement
+            pta=ph_arrange_positions_and_plots(keys,pt); % arrangement
             keys.labels.reach_hand=keys.labels.reach_handLR ;
-            [UC, CM, lables]=ph_get_condition_matrix(population(unit).trial,keys);%% brakes if not all tasktypes are defined
+            [UC, CM, lables]=ph_get_condition_matrix(pta,keys);%% brakes if not all tasktypes are defined
             keys.normalization_field='AN';
-            o=ph_condition_normalization(population(unit),keys,UC,CM); %condition wise normalization (also reduces conditions!???)
-            
+            o=ph_condition_normalization(pop,pta,keys,UC,CM); %condition wise normalization (also reduces conditions!???)
+            %pta=pt([pt.accepted]==1 & [pt.completed]==1);
             for type=UC.type
                 keys.anova_epochs=keys.ANOVAS_PER_TYPE(type); %% this here should eventually replace having to repeat the above
                 for effector=UC.effector
                     keys=ph_get_epoch_keys(keys,type,effector,sum(UC.type_effector(:,1)==type)>1);
                     [~, condition_fieldname_part]=MPA_get_type_effector_name(type,effector);
-                    tr_index= [o.trial.effector]==effector & [o.trial.type]==type ;
+                    tr_index= [pta.effector]==effector & [pta.type]==type ;
                     if sum(tr_index)==0;
                         fprintf('no trials for effector %.0f type %.0f \n',effector,type);continue;
                     end
                     o_e=o;
                     o_e.trial=o.trial(tr_index);
+                    o_e.EPOCH=o.epochs_per_type{type};
                     
-                    trial_criterion=ph_get_minimum_trials(keys,o_e,CM,UC,lables);
-                    [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o_e,keys);
+                    [UCt, CMt, lables]=ph_get_condition_matrix(pta(tr_index),keys); % this is to make sure we are only taking present conditions for trial criterion
+                    trial_criterion=ph_get_minimum_trials(keys,pta(tr_index),CMt,UCt,lables);
+                    [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o_e,pta(tr_index),keys);
                     [anova_struct]=n_way_anova(keys,epochs,FR,idx,u_pos,u_fix);
                     anova_struct_current_unit.([condition_fieldname_part '_'  keys.arrangement(1:3)])=anova_struct; clear anova_struct
                     FN_crit=fieldnames(trial_criterion);
@@ -63,7 +77,7 @@ for unit=1:numel(population)
         rows_to_update=size(TT,1)+1;
     end
     clear unit_table;
-    inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','n_spikes','stability_rating','SNR_rating','Single_rating','waveform_width'};
+    inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','n_spikes','avg_stability','avg_SNR','avg_single_rating','waveform_width'};
     %inital_fieldnames={'unit_ID','monkey','target','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
     unit_table(1,1:numel(inital_fieldnames))=inital_fieldnames;
     for fn=1:numel(inital_fieldnames)
@@ -766,16 +780,17 @@ end
 
 %% embedded test selection
 function [h,p,n]=do_stats(A,B,keys,paired)
+p=1;
 switch keys.AN.test_types
     case 'parametric'
         if paired
-            if any(~isnan(A)&~isnan(B))
+            if sum(~isnan(A)&~isnan(B))>1
                 [h,p] = ttest(A,B);
             else
                 h=0;
             end
         else
-            if any(~isnan(A)) && any (~isnan(B))
+            if sum(~isnan(A))>1 && sum(~isnan(B))>1
                 [h,p] =  ttest2(A,B);
             else
                 h=0;
@@ -783,13 +798,13 @@ switch keys.AN.test_types
         end
     case 'nonparametric'
         if paired
-            if any(~isnan(A)&~isnan(B))
+            if sum(~isnan(A)&~isnan(B))>1
                 [p, h] = signrank(A,B);
             else
                 h=0;
             end
         else
-            if any(~isnan(A)) && any (~isnan(B))
+            if sum(~isnan(A))>1 && sum(~isnan(B))>1
                 [p, h] = ranksum(A,B);
             else
                 h=0;

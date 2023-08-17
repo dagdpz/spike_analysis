@@ -50,11 +50,11 @@ UC.perturbation         =unique(perturbation);
 
 %% postitions are defiend by arrangement!
 [whatisthis]=ph_arrange_positions_and_plots(keys,trials);
-UC.position             =unique(vertcat(whatisthis.trial.position),'rows');
-UC.hemifield            =unique([whatisthis.trial.hemifield]);
-UC.fix_index            =unique([whatisthis.trial.fix_index]);
-UC.pos_index            =unique([whatisthis.trial.pos_index]);
-fixations_temp=unique(vertcat(whatisthis.trial.fixation),'rows');
+UC.position             =unique(vertcat(whatisthis.position),'rows');
+UC.hemifield            =unique([whatisthis.hemifield]);
+UC.fix_index            =unique([whatisthis.fix_index]);
+UC.pos_index            =unique([whatisthis.pos_index]);
+fixations_temp=unique(vertcat(whatisthis.fixation),'rows');
 fix_temp_idx=true(size(fixations_temp,1),1);
 for x=1:size(fixations_temp,1)-1
     if any(all(abs(bsxfun(@minus,fixations_temp(x+1:end,:),fixations_temp(x,:)))<keys.cal.precision_fix,2))
