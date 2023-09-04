@@ -7,70 +7,65 @@ for unit=1:numel(population)
     pt=ph_get_unit_trials(pop,trials);
     valid_trials=[pt.accepted]==1 & [pt.completed]==1;
     if sum(valid_trials)>0 % temporary? for pulv_oculomotor_dataset
-    pop.trial=pop.trial(valid_trials);
-    
-    pt=pt(valid_trials);
-    %overwrite 
-    %fn=fieldnames(pop);fn=fn(ismember(fn,fieldnames(pt)))';
-    fn={'perturbation','accepted','block','n','run'};
-    for f=fn
-        pop.(f{:})=[pt.(f{:})];
-    end
-        for a=1:numel(keys.position_and_plotting_arrangements) % arrangement defines positions, therefore also hemifield (which is part of conditions)
-            keys.arrangement=keys.position_and_plotting_arrangements{a};
-            pta=ph_arrange_positions_and_plots(keys,pt); % arrangement
-            keys.labels.reach_hand=keys.labels.reach_handLR ;
-            [UC, CM, lables]=ph_get_condition_matrix(pta,keys);%% brakes if not all tasktypes are defined
-            keys.normalization_field='AN';
-            o=ph_condition_normalization(pop,pta,keys,UC,CM); %condition wise normalization (also reduces conditions!???)
-            %pta=pt([pt.accepted]==1 & [pt.completed]==1);
-            for type=UC.type
-                keys.anova_epochs=keys.ANOVAS_PER_TYPE(type); %% this here should eventually replace having to repeat the above
-                for effector=UC.effector
-                    keys=ph_get_epoch_keys(keys,type,effector,sum(UC.type_effector(:,1)==type)>1);
-                    [~, condition_fieldname_part]=MPA_get_type_effector_name(type,effector);
-                    tr_index= [pta.effector]==effector & [pta.type]==type ;
-                    if sum(tr_index)==0;
-                        fprintf('no trials for effector %.0f type %.0f \n',effector,type);continue;
-                    end
-                    o_e=o;
-                    o_e.trial=o.trial(tr_index);
-                    o_e.EPOCH=o.epochs_per_type{type};
-                    
-                    [UCt, CMt, lables]=ph_get_condition_matrix(pta(tr_index),keys); % this is to make sure we are only taking present conditions for trial criterion
-                    trial_criterion=ph_get_minimum_trials(keys,pta(tr_index),CMt,UCt,lables);
-                    [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o_e,pta(tr_index),keys);
-                    [anova_struct]=n_way_anova(keys,epochs,FR,idx,u_pos,u_fix);
-                    anova_struct_current_unit.([condition_fieldname_part '_'  keys.arrangement(1:3)])=anova_struct; clear anova_struct
-                    FN_crit=fieldnames(trial_criterion);
-                    for f=1:numel(FN_crit)
-                        anova_struct_current_unit.([condition_fieldname_part '_'  keys.arrangement(1:3)]).(FN_crit{f})= trial_criterion.(FN_crit{f});
-                    end
+        pop.trial=pop.trial(valid_trials);        
+        pt=pt(valid_trials);
+        fn={'perturbation','accepted','block','n','run'};
+        for f=fn
+            pop.(f{:})=[pt.(f{:})];
+        end
+        keys.labels.reach_hand=keys.labels.reach_handLR ;
+        [UC, CM, lables]=ph_get_condition_matrix(pt,keys);%% brakes if not all tasktypes are defined
+        keys.normalization_field='AN';
+        o=ph_condition_normalization(pop,pt,keys,UC,CM); %condition wise normalization (also reduces conditions!???)
+        for type=UC.type
+            keys.anova_epochs=keys.ANOVAS_PER_TYPE(type); %% this here should eventually replace having to repeat the above
+            
+            %% within effectors comparison
+            for effector=UC.effector
+                keys=ph_get_epoch_keys(keys,type,effector,sum(UC.type_effector(:,1)==type)>1);
+                [~, condition_fieldname_part]=MPA_get_type_effector_name(type,effector);
+                tr_index= [pt.effector]==effector & [pt.type]==type ;
+                if sum(tr_index)==0;
+                    fprintf('no trials for effector %.0f type %.0f \n',effector,type);continue;
                 end
+                o_e=o;
+                o_e.trial=o.trial(tr_index);
+                o_e.EPOCH=o.epochs_per_type{type};
                 
-                %% effector comparison !
-                effectors_for_this_type=UC.type_effector(UC.type_effector(:,1)==type,2)';
-                effectors_to_compare=combvec(effectors_for_this_type,effectors_for_this_type);
-                effectors_to_compare=effectors_to_compare(:,effectors_to_compare(1,:)<effectors_to_compare(2,:));
-                for comp=1:size(effectors_to_compare,2)
-                    comp_eff=effectors_to_compare(:,comp);
-                    keys=ph_get_epoch_keys(keys,type,comp_eff,1);
-                    [~, condition_fieldname_part1]=MPA_get_type_effector_name(type,comp_eff(1));
-                    [~, condition_fieldname_part2]=MPA_get_type_effector_name(type,comp_eff(2));
-                    condition_fieldname_part=[condition_fieldname_part1 '_vs_' condition_fieldname_part2];
-                    tr_index= ismember([o.trial.effector],comp_eff) & [o.trial.type] == type & ismember([o.trial.perturbation],keys.cal.perturbation_groups{1});
-                    if sum(tr_index)==0;
-                        fprintf('no trials for effectors %s type %.0f perturbation %s \n',mat2str(comp_eff'),type,mat2str(keys.cal.perturbation_groups{1}));continue;
-                    end
-                    o_e=o;
-                    o_e.trial=o.trial(tr_index);
-                    keys.TTlabels.effector={condition_fieldname_part1 '-' condition_fieldname_part2};
-                    [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o_e,keys);
-                    [anova_struct]=effector_comparison_anova(keys,epochs,FR,idx,u_pos,u_fix);
-                    anova_struct_current_unit.([condition_fieldname_part '_'  keys.arrangement(1:3)])=anova_struct; clear anova_struct
+                [UCt, CMt, lables]=ph_get_condition_matrix(pt(tr_index),keys); % this is to make sure we are only taking present conditions for trial criterion
+                trial_criterion=ph_get_minimum_trials(keys,pt(tr_index),CMt,UCt,lables);
+                [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o_e,pt(tr_index),keys);
+                [anova_struct]=n_way_anova(keys,epochs,FR,idx,u_pos,u_fix);
+                anova_struct_current_unit.([condition_fieldname_part '_'  keys.arrangement(1:3)])=anova_struct; clear anova_struct
+                FN_crit=fieldnames(trial_criterion);
+                for f=1:numel(FN_crit)
+                    anova_struct_current_unit.([condition_fieldname_part '_'  keys.arrangement(1:3)]).(FN_crit{f})= trial_criterion.(FN_crit{f});
                 end
             end
+            
+            %% effector comparison !
+            effectors_for_this_type=UC.type_effector(UC.type_effector(:,1)==type,2)';
+            effectors_to_compare=combvec(effectors_for_this_type,effectors_for_this_type);
+            effectors_to_compare=effectors_to_compare(:,effectors_to_compare(1,:)<effectors_to_compare(2,:));
+            for comp=1:size(effectors_to_compare,2)
+                comp_eff=effectors_to_compare(:,comp);
+                keys=ph_get_epoch_keys(keys,type,comp_eff,1);
+                [~, condition_fieldname_part1]=MPA_get_type_effector_name(type,comp_eff(1));
+                [~, condition_fieldname_part2]=MPA_get_type_effector_name(type,comp_eff(2));
+                condition_fieldname_part=[condition_fieldname_part1 '_vs_' condition_fieldname_part2];
+                tr_index= ismember([o.trial.effector],comp_eff) & [o.trial.type] == type & ismember([o.trial.perturbation],keys.cal.perturbation_groups{1});
+                if sum(tr_index)==0;
+                    fprintf('no trials for effectors %s type %.0f perturbation %s \n',mat2str(comp_eff'),type,mat2str(keys.cal.perturbation_groups{1}));continue;
+                end
+                o_e=o;
+                o_e.trial=o.trial(tr_index);
+                keys.TTlabels.effector={condition_fieldname_part1 '-' condition_fieldname_part2};
+                [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o_e,keys);
+                [anova_struct]=effector_comparison_anova(keys,epochs,FR,idx,u_pos,u_fix);
+                anova_struct_current_unit.([condition_fieldname_part '_'  keys.arrangement(1:3)])=anova_struct; clear anova_struct
+            end
         end
+        %         end
     end
     rows_to_update=find(ismember(TT(:,DAG_find_column_index(TT,'unit_ID')),{population(unit).unit_ID}));
     if isempty(rows_to_update)
@@ -78,7 +73,6 @@ for unit=1:numel(population)
     end
     clear unit_table;
     inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','n_spikes','avg_stability','avg_SNR','avg_single_rating','waveform_width'};
-    %inital_fieldnames={'unit_ID','monkey','target','grid_x','grid_y','electrode_depth','FR','stability_rating','SNR_rating','Single_rating','waveform_width'};
     unit_table(1,1:numel(inital_fieldnames))=inital_fieldnames;
     for fn=1:numel(inital_fieldnames)
         unit_table{2,fn}=population(unit).(inital_fieldnames{fn});
@@ -166,27 +160,27 @@ for ch=1:numel(conditions.choice)
         end
         
         %% this part is basically useless (?)
-% 
-%         %% main effects and general interactions
-%         tr_main=idx.(INCH) & ismember(epochs,keys.anova_epochs.main);
-%         pval = ph_anova1(FR(tr_main),Par(tr_main,:),keys);
-%         h=pval<0.05; %main effect on epoch!
-%         anova_struct.([INCH PT '_epoch_main'])=labels.true{h+2};
-%         handindexes=[1,2,3];
-%         handindexes=handindexes(any(idx.tr_hands));
-%         
-%         %% Epoch X space/hand tuning (regardless of the other)
-%         for k=2:numel(anova_varnames)
-%             multicomp_epochs=keys.anova_epochs.(anova_varnames{k});
-%             %multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to think about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
-%             label=labels.(anova_varnames{k});
-%             idx1m=tr_main & Par(:,k)==0 & ismember(epochs,multicomp_epochs);
-%             idx2m=tr_main & Par(:,k)==1 & ismember(epochs,multicomp_epochs);
-%             labelindex=(pval(k)<0.05) *sign(nanmean(FR(idx2m))-nanmean(FR(idx1m)))+2; labelindex(isnan(labelindex))=2;
-%             anova_struct.([INCH PT '_' anova_varnames{k} '_main'])=label{labelindex}; %main effect with direction!
-%             hx=pval(k+numel(anova_varnames)-1)<0.05;
-%             anova_struct.([INCH PT '_Ex' upper(anova_varnames{k}(1))])=labels.true{hx+2};
-%         end
+        %
+        %         %% main effects and general interactions
+        %         tr_main=idx.(INCH) & ismember(epochs,keys.anova_epochs.main);
+        %         pval = ph_anova1(FR(tr_main),Par(tr_main,:),keys);
+        %         h=pval<0.05; %main effect on epoch!
+        %         anova_struct.([INCH PT '_epoch_main'])=labels.true{h+2};
+        %         handindexes=[1,2,3];
+        %         handindexes=handindexes(any(idx.tr_hands));
+        %
+        %         %% Epoch X space/hand tuning (regardless of the other)
+        %         for k=2:numel(anova_varnames)
+        %             multicomp_epochs=keys.anova_epochs.(anova_varnames{k});
+        %             %multicomp_epochs=multicomp_epochs(ismember(multicomp_epochs,epochs')); %% to think about: add &  ismember(keys.epoch_multicomp(:,2),keys.EPOCHS(:,1));
+        %             label=labels.(anova_varnames{k});
+        %             idx1m=tr_main & Par(:,k)==0 & ismember(epochs,multicomp_epochs);
+        %             idx2m=tr_main & Par(:,k)==1 & ismember(epochs,multicomp_epochs);
+        %             labelindex=(pval(k)<0.05) *sign(nanmean(FR(idx2m))-nanmean(FR(idx1m)))+2; labelindex(isnan(labelindex))=2;
+        %             anova_struct.([INCH PT '_' anova_varnames{k} '_main'])=label{labelindex}; %main effect with direction!
+        %             hx=pval(k+numel(anova_varnames)-1)<0.05;
+        %             anova_struct.([INCH PT '_Ex' upper(anova_varnames{k}(1))])=labels.true{hx+2};
+        %         end
         
         %% space x hand anovas per epoch
         if n_2hands
@@ -306,20 +300,20 @@ for ch=1:numel(conditions.choice)
             if ~any(~isnan(FR(tr)))
                 continue
             end
-%             if size(Fixations,1)==1
-%                 pval = ph_anova2(FR(tr),{epochs(tr),idx.pos(tr)},1,keys);
-%                 
-%             else
-%                 varnames={'State','position','fixation'};
-%                 pval = ph_anova1(FR(tr),{epochs(tr),idx.pos(tr),idx.fix(tr)},keys);
-%                 h3=pval(3)<0.05;
-%                 anova_struct.([INCH PT '_' LHRH '_fixation_main'])=labels.true{h3+2}; %main effect on epoch!
-%             end
-%             h1=pval(1)<0.05;
-%             h2=pval(2)<0.05;
-%             anova_struct.([INCH PT '_' LHRH '_epoch_main'])=labels.true{h1+2}; %main effect on epoch!
-%             anova_struct.([INCH PT '_' LHRH '_position_main'])=labels.true{h2+2}; %main effect on epoch!
-%             
+            %             if size(Fixations,1)==1
+            %                 pval = ph_anova2(FR(tr),{epochs(tr),idx.pos(tr)},1,keys);
+            %
+            %             else
+            %                 varnames={'State','position','fixation'};
+            %                 pval = ph_anova1(FR(tr),{epochs(tr),idx.pos(tr),idx.fix(tr)},keys);
+            %                 h3=pval(3)<0.05;
+            %                 anova_struct.([INCH PT '_' LHRH '_fixation_main'])=labels.true{h3+2}; %main effect on epoch!
+            %             end
+            %             h1=pval(1)<0.05;
+            %             h2=pval(2)<0.05;
+            %             anova_struct.([INCH PT '_' LHRH '_epoch_main'])=labels.true{h1+2}; %main effect on epoch!
+            %             anova_struct.([INCH PT '_' LHRH '_position_main'])=labels.true{h2+2}; %main effect on epoch!
+            %
             
             for s=multicomp_epochs(:)'
                 tr=idx.tr_hands(:,hn) & ismember(epochs,s);  %this is not ideal, because tr is used in a different way here
@@ -364,8 +358,8 @@ for ch=1:numel(conditions.choice)
                 anova_struct.([INCH PT '_' LHRH '_' s{:} '_position_PV'])  =single(pval(1));
                 anova_struct.([INCH PT '_' LHRH '_' s{:} '_fixation_PV'])  =single(pval(2));
                 anova_struct.([INCH PT '_' LHRH '_' s{:} '_PxF_PV'])       =single(pval(3));
-                                
-                pecc = ph_anova2(FR(tr),{idx.ecc(tr),idx.ang(tr)},1,keys);                
+                
+                pecc = ph_anova2(FR(tr),{idx.ecc(tr),idx.ang(tr)},1,keys);
                 h1=pecc(1)<0.05;
                 h2=pecc(2)<0.05;
                 h3=pecc(3)<0.05;
@@ -732,10 +726,10 @@ for  c=1:size(idx.conditions,2)
             anova_struct.([prefix '_PV'])=p*sign(DF);
             anova_struct.([prefix '_IX'])=DF/(nanmean(FR(idx2 & idxS))+ nanmean(FR(idx1 & idxS)));
             anova_struct=add_normality_results(anova_struct,prefix,keys,n);
-%             if ~isempty(labels.control_test)
-%                 anova_struct.([INCH '_' COND{c} SEP s{:} '_' labels.control_test{1} '_FR']) = nanmean(FR(idx1));
-%                 anova_struct.([INCH '_' COND{c} SEP s{:} '_' labels.control_test{2} '_FR']) = nanmean(FR(idx2));
-%             end
+            %             if ~isempty(labels.control_test)
+            %                 anova_struct.([INCH '_' COND{c} SEP s{:} '_' labels.control_test{1} '_FR']) = nanmean(FR(idx1));
+            %                 anova_struct.([INCH '_' COND{c} SEP s{:} '_' labels.control_test{2} '_FR']) = nanmean(FR(idx2));
+            %             end
         end
     end
 end
@@ -853,7 +847,6 @@ switch keys.AN.test_types
         p=randanova1(FR,idx,keys.AN.n_permutations_randanova1);
 end
 end
-
 
 %% normality subfunction
 function anova_struct=add_normality_results(anova_struct,prefix,keys,n)

@@ -45,20 +45,20 @@ CM=combvec(CM{:});
 pref_valid=false(numel(UC.type),numel(population));
 for u=1:numel(population)
     clear trcon tr
-    pt=ph_get_unit_trials(population(u),trials);
-    tr_con=ismember([pt.completed],keys.cal.completed) & [pt.accepted];
-%    [pop]=ph_arrange_positions_and_plots(keys,pt(tr_con),population(u)); %% idea here: remove this one :D
     pop=population(u);
-    pop.trial=pop.trial(tr_con);
-    
-    [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{1})).perturbation]=deal(0);
-    [pop.trial(ismember([pop.trial.perturbation], keys.cal.perturbation_groups{2})).perturbation]=deal(1);
+    ut=ph_get_unit_trials(pop,trials);
+    %ut_con=ismember([ut.completed],keys.cal.completed) & [ut.accepted];
+    ut_acc=[ut.accepted];
+    alltypes=[ut.type];
+    ut=ut(ut_acc);
+    pop.trial=pop.trial(ut_acc);
+    % why store?
     pop_out(u)=pop;
     
     %% normalization factor and baseline (per trial!)
-    norm_factor=ones(size(pt));
-    baseline=zeros(size(pt));
-    PF_epoch_FR=NaN(size(pt));
+    norm_factor=ones(size(ut));
+    baseline=zeros(size(ut));
+    PF_epoch_FR=NaN(size(ut));
     
     for t=1:numel(UC.type)
         typ=UC.type(t);
@@ -71,8 +71,11 @@ for u=1:numel(population)
         BL_epoch{t}    =ismember(present_epochs,K.epoch_BL);
         PF_epoch{t}    =ismember(present_epochs,K.epoch_PF);
         
-        trtyp=[pt.type]==typ;        
-        trpar   =tr_con(trtyp);
+        
+        ut_typ=[ut.type]==typ; 
+        pop.epochs_per_type{typ}=pop.epochs_per_type{typ}(ut_acc(alltypes==typ),:);        
+        
+        %trpar   =ut_con(trtyp);
         
         %per_epoch=pop.epochs_per_type{typ}(trpar,:); %only current type!        
         
@@ -86,13 +89,13 @@ for u=1:numel(population)
         for n=1:size(CM,2)
             for p=1:size(CM,1)
                 fn=CP{p};
-                trcon(p,:)=[pt.(fn)]==CM(p,n);
+                trcon(p,:)=[ut.(fn)]==CM(p,n);
             end
-            tr(:,n)=all(trcon,1) & tr_con & trtyp;
+            tr(:,n)=all(trcon,1) & ut_typ;
             if ~any(tr(:,n)) %
                 continue
             end
-            per_epoch=pop.epochs_per_type{typ}(tr(trtyp,n),:); 
+            per_epoch=pop.epochs_per_type{typ}(tr(ut_typ,n),:); 
             if strcmp(K.normalization,'percent_change') %not sure if this really percent change, the scale should be logarithmic?
                 norm_factor(tr(:,n))=nanmean([per_epoch(:,BL_epoch{t}) per_epoch(:,DN_epoch{t}) NaN])/100;
                 baseline(tr(:,n))   =nanmean([per_epoch(:,BL_epoch{t}) per_epoch(:,DN_epoch{t}) NaN]);
@@ -100,15 +103,15 @@ for u=1:numel(population)
                 baseline(tr(:,n))   =nanmean(vertcat(per_epoch(:,BL_epoch{t})));
                 norm_factor(tr(:,n))=nanmean(vertcat(per_epoch(:,DN_epoch{t})));
             end
-            if any(PF_epoch{t}) %
-                PF_epoch_FR(tr(:,n))   =[per_epoch(:,PF_epoch{t})];
+            if any(PF_epoch{t}) 
+                PF_epoch_FR(tr(:,n))   =per_epoch(:,PF_epoch{t});
             end
         end
         
         %% per trial baseline/normalization! should divisive be by trial as well?
         if K.baseline_per_trial
-            per_epoch=pop.epochs_per_type{typ}(tr_con(trtyp),:); 
-            baseline(trtyp)=per_epoch(:,BL_epoch{t});
+            per_epoch=pop.epochs_per_type{typ}(ut_acc(ut_typ),:); 
+            baseline(ut_typ)=per_epoch(:,BL_epoch{t});
         end
         %% validate
         if strcmp(K.normalization,'none') || sum(DN_epoch{t})==0 
@@ -154,19 +157,9 @@ for u=1:numel(population)
         end
         
         clear per_epoch_FR
-        per_epoch=pop.epochs_per_type{typ}(tr_con(trtyp),:); 
-        per_epoch_FR=(per_epoch-repmat(double(baseline(tr_con(trtyp))'),1,size(per_epoch,2)))./repmat(norm_factor(tr_con(trtyp))',1,size(per_epoch,2));
+        per_epoch=pop.epochs_per_type{typ}(ut_acc(ut_typ),:); 
+        per_epoch_FR=(per_epoch-repmat(double(baseline(ut_acc(ut_typ))'),1,size(per_epoch,2)))./repmat(norm_factor(ut_acc(ut_typ))',1,size(per_epoch,2));
         pop_out(u).epochs_per_type{typ}=per_epoch_FR;
-        
-%         %% try double here!
-%         for e=1:size(per_epoch,1) %% looping may not be elegant, but at least confusions are avoided
-%             per_epoch_FR(e,:)=([per_epoch(e,:).FR]-double(baseline(trtyp)))./norm_factor(trtyp); %not sure if dimension is correct here!!!!!!!!!!!!
-%         end
-%         per_epoch_FR=num2cell(per_epoch_FR);
-%         tr_typ=find(trtyp);
-%         for trl=1:numel(tr_typ)
-%             [pop_out(u).trial(tr_typ(trl)).epoch.FR]=per_epoch_FR{:,trl};
-%         end
     end
     
     % skip PSTH computation per condition if we are only interested in FR epoch normalization
@@ -175,19 +168,19 @@ for u=1:numel(population)
     end
         
     %% PSTH calculation    
-    pop=ph_LR_to_CI(keys,pop_out(u)); % Convert to ipsi/contra? not sure if necessary here
+    ut=ph_LR_to_CI(keys,pop,ut); % Convert to ipsi/contra? not sure if necessary here
     for t=1:numel(UC.type)
         typ=UC.type(t);
         eff=UC.type_effector(UC.type_effector(:,1)==typ,2);
         keys=ph_get_epoch_keys(keys,typ,eff(1),numel(eff)>1); %taking eff(1) is admittedly sloppy here
-        trtyp=[pop.trial.type]==typ;
+        ut_typ=[ut.type]==typ;
         
         %% preferred and unpreferred location (taken from instructed trials only! (?) Not necessary though
-        if any(trtyp)
+        if any(ut_typ)
             FR_for_pref=NaN(size(UC.position,1),1);
             for p=1:size(UC.position,1)
-                tr_hemi=all(abs(bsxfun(@minus,vertcat(pop.trial.position),UC.position(p,:)))<keys.cal.precision_tar,2) & [pop.trial.choice]'==0; %% tr_pos?
-                FR_for_pref(p)=nanmean((PF_epoch_FR(tr_hemi & trtyp')-baseline(tr_hemi & trtyp'))./norm_factor(tr_hemi & trtyp'));
+                ut_hemi=all(abs(bsxfun(@minus,vertcat(ut.position),UC.position(p,:)))<keys.cal.precision_tar,2) & [ut.choice]'==0; %% tr_pos?
+                FR_for_pref(p)=nanmean((PF_epoch_FR(ut_hemi & ut_typ')-baseline(ut_hemi & ut_typ'))./norm_factor(ut_hemi & ut_typ'));
             end
             [~,pref_idx]=max(FR_for_pref);
             switch K.unpref_def 
@@ -202,8 +195,8 @@ for u=1:numel(population)
             pref_valid(t,u)=true;
             for ch=UC.choice
                 pref_valid(t,u)=pref_valid(t,u) && pref_idx~=unpref_idx && ...
-                    sum(all(abs(bsxfun(@minus,vertcat(pop.trial(trtyp).position),UC.position(pref_idx,:)))<keys.cal.precision_tar,2)   & [pop.trial(trtyp).choice]'==ch) >=keys.cal.min_trials_per_condition && ...
-                    sum(all(abs(bsxfun(@minus,vertcat(pop.trial(trtyp).position),UC.position(unpref_idx,:)))<keys.cal.precision_tar,2) & [pop.trial(trtyp).choice]'==ch) >=keys.cal.min_trials_per_condition;
+                    sum(all(abs(bsxfun(@minus,vertcat(ut(ut_typ).position),UC.position(pref_idx,:)))<keys.cal.precision_tar,2)   & [ut(ut_typ).choice]'==ch) >=keys.cal.min_trials_per_condition && ...
+                    sum(all(abs(bsxfun(@minus,vertcat(ut(ut_typ).position),UC.position(unpref_idx,:)))<keys.cal.precision_tar,2) & [ut(ut_typ).choice]'==ch) >=keys.cal.min_trials_per_condition;
             end
         end
         
@@ -214,15 +207,16 @@ for u=1:numel(population)
             
             for par=1:numel(CP_out)
                 fn=CP_out{par};
-                trpar(par,:)=[pop.trial.(fn)]==conditions_out(c,par);
+                trpar(par,:)=[ut.(fn)]==conditions_out(c,par);
             end
-            trpar(end+1,:)=trtyp; %% comment this line to see where it leads??
-            tr_con=all(trpar,1);
-            per_epoch=get_per_epoch(pop.trial(tr_con));% take already normalized values
+            trpar(end+1,:)=ut_typ; %% comment this line to see where it leads??
+            ut_con=all(trpar,1);
+            %per_epoch=get_per_epoch(pop.trial(tr_con));% take already normalized values
+             per_epoch=pop.epochs_per_type{typ}(ut_con(ut_typ),:);
             for ep=1:size(per_epoch,2)
                 for p=1:size(UC.position,1)
-                    tr_hemi=all(abs(bsxfun(@minus,vertcat(pop.trial.position),UC.position(p,:)))<keys.cal.precision_tar,2) & [pop.trial.choice]'==0; 
-                    condition(t,c).per_position(p).epoch(ep).unit(u).FR=nanmean([per_epoch(tr_hemi(tr_con),ep).FR])-nanmean(baseline(tr_hemi & tr_con'));
+                    ut_pos=all(abs(bsxfun(@minus,vertcat(ut.position),UC.position(p,:)))<keys.cal.precision_tar,2) & ut_con' & [ut.choice]'==0; 
+                    condition(t,c).per_position(p).epoch(ep).unit(u).FR=nanmean(per_epoch(ut_pos(ut_typ),ep))-nanmean(baseline(ut_pos & ut_typ'));
                 end
             end
             if strcmp(keys.normalization_field,'PR')
@@ -231,27 +225,27 @@ for u=1:numel(population)
             
             for w=1:size(keys.PSTH_WINDOWS,1)
                 for f=1:numel(UC.hemifield) %hemifield
-                    tr_hemi=[pop.trial.hemifield]==UC.hemifield(f);
+                    ut_hemi=[ut.hemifield]==UC.hemifield(f);
                     switch keys.normalization_field
                         case {'PO','RE'}
-                            ix = tr_con & tr_hemi;
+                            ix = ut_con & ut_hemi & ut_typ;
                             if strcmp(keys.normalization_field,'RE')
                                 [condition(t,c).per_hemifield(f).window(w).unit(u).average_spike_density,~,...
                                     condition(t,c).per_hemifield(f).window(w).unit(u).VAR_spike_density]=...
-                                    ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+                                    ph_spike_density(pop.trial(ix),ut(ix),w,keys,baseline(ix),norm_factor(ix));
                             else
                                 [condition(t,c).per_hemifield(f).window(w).unit(u).average_spike_density]=...
-                                    ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+                                    ph_spike_density(pop.trial(ix),ut(ix),w,keys,baseline(ix),norm_factor(ix));
                             end
                             condition(t,c).per_hemifield(f).effector=eff;
-                            condition(t,c).per_hemifield(f).window(w).unit(u).sac_lat=nanmean([pop.trial(ix).sac_lat]); %%??? this work?
-                            condition(t,c).per_hemifield(f).window(w).unit(u).rea_lat=nanmean([pop.trial(ix).rea_lat]); %%??? this work?
-                            condition(t,c).per_hemifield(f).window(w).unit(u).sac_sem=sterr([pop.trial(ix).sac_lat]); %%??? this work?
-                            condition(t,c).per_hemifield(f).window(w).unit(u).rea_sem=sterr([pop.trial(ix).rea_lat]); %%??? this work?
+                            condition(t,c).per_hemifield(f).window(w).unit(u).sac_lat=nanmean([ut(ix).sac_lat]);
+                            condition(t,c).per_hemifield(f).window(w).unit(u).rea_lat=nanmean([ut(ix).rea_lat]);
+                            condition(t,c).per_hemifield(f).window(w).unit(u).sac_sem=sterr([ut(ix).sac_lat]);
+                            condition(t,c).per_hemifield(f).window(w).unit(u).rea_sem=sterr([ut(ix).rea_lat]);
                             
                             %% not sure if this makes much sense or if its even correct like this
-                            ix = tr_hemi(tr_con);
-                            if any(ix) && any(ttest(PF_epoch_FR(ix), baseline(ix))==1) %% what what what why ttest here
+                            ix=ix & ~isnan(PF_epoch_FR)&~isnan(baseline);
+                            if sum(ix)>1 && any(ttest(PF_epoch_FR(ix), baseline(ix))==1) %% what what what why ttest here
                                 condition(t,c).per_hemifield(f).sign.unit(u)=sign(mean(PF_epoch_FR(ix) - baseline(ix)));
                             else
                                 condition(t,c).per_hemifield(f).sign.unit(u)=0;
@@ -259,28 +253,30 @@ for u=1:numel(population)
                             
                         case 'ON'
                             %% alternative per trial
-                            trials_for_SD=find(tr_con & tr_hemi);
+                            ix = ut_con & ut_hemi & ut_typ;
+                            trials_for_SD=find(ix);
+                            ep_hemi=find(ut_con(ut_typ) & ut_hemi(ut_typ));
                             temp_window=keys.PSTH_WINDOWS(w,:);
                             keys.PSTH_WINDOWS{w,3}=keys.PSTH_WINDOWS{w,3}-(keys.n_consecutive_bins_significant-1)*keys.PSTH_binwidth; % we need a few more so that first bins are not unsignificant by definition
                             keys.PSTH_WINDOWS{w,4}=keys.PSTH_WINDOWS{w,4}+(keys.n_consecutive_bins_significant-1)*keys.PSTH_binwidth;
                             condition_per_trial(t,c).per_hemifield(f).unit(u).epoch_FRs=...
-                                reshape([per_epoch(tr_hemi(tr_con),:).FR],size(per_epoch(tr_hemi(tr_con),:)))./repmat(norm_factor(trials_for_SD)',1,size(per_epoch,2));
+                                reshape(per_epoch(ep_hemi,:),size(per_epoch(ep_hemi,:)))./repmat(norm_factor(ix)',1,size(per_epoch,2));
                             for tr=1:numel(trials_for_SD)
                                 tr_tmp=trials_for_SD(tr);
                                 condition_per_trial(t,c).per_hemifield(f).window(w).unit(u).average_spike_density(tr,:)=...
-                                    ph_spike_density(pop.trial(tr_tmp),w,keys,baseline(tr_tmp),norm_factor(tr_tmp));
+                                    ph_spike_density(pop.trial(tr_tmp),ut(tr_tmp),w,keys,baseline(tr_tmp),norm_factor(tr_tmp));
                             end
-                            if isempty(trials_for_SD)
+                            if sum(ix)==0
                                 condition_per_trial(t,c).per_hemifield(f).window(w).unit(u).average_spike_density(1,:)=...
-                                    NaN(size(ph_spike_density(pop.trial(1),w,keys,baseline(1),norm_factor(1))));
-                                condition_per_trial(t,c).per_hemifield(f).unit(u).epoch_averages=NaN(1,size(keys.EPOCHS,1));
+                                    NaN(size(ph_spike_density(pop.trial(1),ut(1),w,keys,baseline(1),norm_factor(1))));
+                                condition_per_trial(t,c).per_hemifield(f).unit(u).epoch_FRs=NaN(1,size(keys.EPOCHS,1));
                             end
                             keys.PSTH_WINDOWS(w,:)=temp_window;
                             
                         case 'RT'
-                            trials_for_SD=find(tr_con & tr_hemi);
+                            trials_for_SD=find(ut_acc & ut_hemi);
                             condition_per_trial(t,c).per_hemifield(f).unit(u).epoch_FRs=...
-                                reshape([per_epoch(tr_hemi(tr_con),:).FR],size(per_epoch(tr_hemi(tr_con),:)))./repmat(norm_factor(trials_for_SD)',1,size(per_epoch,2));
+                                reshape([per_epoch(ut_hemi(ut_acc),:).FR],size(per_epoch(ut_hemi(ut_acc),:)))./repmat(norm_factor(trials_for_SD)',1,size(per_epoch,2));
                             condition_per_trial(t,c).per_hemifield(f).unit(u).sac_lat=[pop.trial(trials_for_SD).sac_lat];
                             condition_per_trial(t,c).per_hemifield(f).unit(u).rea_lat=[pop.trial(trials_for_SD).rea_lat];
                     end
@@ -288,42 +284,41 @@ for u=1:numel(population)
                     if strcmp(keys.normalization_field,'RE') %% bootstrapping PSTHs(!?)
                         n_iterations=100;
                         for it=1:n_iterations
-                            ix = find(tr_con & tr_hemi);
+                            ix = find(ut_acc & ut_hemi);
                             ix=randsample(ix,round(numel(ix)/10*8));
                             [condition(t,c).per_hemifield(f).window(w).unit(u).bootstrapped(it,:)]=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+                                ph_spike_density(pop.trial(ix),ut(ix),w,keys,baseline(ix),norm_factor(ix));
                         end
                     end
                 end
                                 
                 if strcmp(keys.normalization_field,'PO') %% && plot_position??
                     for p=1:size(UC.position,1)
-                        tr_pos=all(abs(bsxfun(@minus,vertcat(pop.trial.position),UC.position(p,:)))<keys.cal.precision_tar,2)';
-                        ix = tr_con & tr_pos;
+                        ix=all(abs(bsxfun(@minus,vertcat(ut.position),UC.position(p,:)))<keys.cal.precision_tar,2)';
                         
-                        condition(t,c).per_position(p).window(w).unit(u).average_spike_density= ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+                        condition(t,c).per_position(p).window(w).unit(u).average_spike_density= ph_spike_density(pop.trial(ix),ut(ix),w,keys,baseline(ix),norm_factor(ix));
                         condition(t,c).per_position(p).position=UC.position(p,:);
                         condition(t,c).per_position(p).fixation=1;
                         condition(t,c).per_position(p).effector=eff;
                         
-                        % problem here if tr_con is empty (which it can be, because we are not requiring every condition to be valid for all units
-                        ix = tr_pos(tr_con);
-                        if any(ix) && any(ttest(PF_epoch_FR(ix), baseline(ix))==1)
-                            condition(t,c).per_position(p).sign.unit(u)=sign(mean(PF_epoch_FR(ix) - baseline(ix)));
-                        else
-                            condition(t,c).per_position(p).sign.unit(u)=0;
-                        end
-                        ix = tr_con & tr_pos;
                         if p==unpref_idx
                             condition(t,c).per_preference(1).window(w).unit(u).average_spike_density=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+                                ph_spike_density(pop.trial(ix),ut(ix),w,keys,baseline(ix),norm_factor(ix));
                             condition(t,c).per_preference(1).effector=eff;
                         end
                         if p==pref_idx
                             condition(t,c).per_preference(2).window(w).unit(u).average_spike_density=...
-                                ph_spike_density(pop.trial(ix),w,keys,baseline(ix),norm_factor(ix));
+                                ph_spike_density(pop.trial(ix),ut(ix),w,keys,baseline(ix),norm_factor(ix));
                             condition(t,c).per_preference(2).effector=eff;
                         end
+                        
+                        ix=ix &  ~isnan(PF_epoch_FR)&~isnan(baseline);
+                        % problem here if tr_con is empty (which it can be, because we are not requiring every condition to be valid for all units
+                        if sum(ix)>1 && any(ttest(PF_epoch_FR(ix), baseline(ix))==1)
+                            condition(t,c).per_position(p).sign.unit(u)=sign(mean(PF_epoch_FR(ix) - baseline(ix)));
+                        else
+                            condition(t,c).per_position(p).sign.unit(u)=0;
+                       end
                     end
                 end
             end
@@ -331,17 +326,18 @@ for u=1:numel(population)
             zin_per_pos=NaN(size(UC.position,1),1);
 
             %% Always compute firing rates per position if theres at least one trial for htis condition (?)
-            if sum(tr_con) == 0
+            if sum(ut_acc) == 0
                 continue
             end
             
             for p=1:size(UC.position,1) %for FR plot only
-                tr=all(abs(bsxfun(@minus,vertcat(pop.trial(tr_con).position),UC.position(p,:)))<keys.cal.precision_tar,2);
+                tr=all(abs(bsxfun(@minus,vertcat(ut.position),UC.position(p,:)))<keys.cal.precision_tar,2);
+                tr=tr(ut_typ) & ut_con(ut_typ)';
                 if sum(tr)==0; continue; end
-                zin_per_pos(p)=nanmean(vertcat(per_epoch(tr,RF_epoch{t}).FR));
+                zin_per_pos(p)=nanmean(vertcat(per_epoch(tr,RF_epoch{t})));
             end
-            RF_positions=vertcat(pop.trial(tr_con).position);
-            zin=vertcat(per_epoch(:,RF_epoch{t}).FR);
+            RF_positions=vertcat(ut(ut_typ).position);
+            zin=vertcat(per_epoch(:,RF_epoch{t}));
             FR_tmp=struct('FR',num2cell(zin_per_pos),'x',num2cell(UC.position(:,1)),'y',num2cell(UC.position(:,2)));
             condition(t,c).fitting.unit(u).positions =FR_tmp;
             
@@ -357,11 +353,3 @@ for u=1:numel(population)
 end
 end
 
-function per_epoch=get_per_epoch(trials)
-if isempty(trials)
-    per_epoch.FR=NaN;
-    per_epoch.state='Invalid';
-else
-    per_epoch=vertcat(trials.epoch);
-end
-end

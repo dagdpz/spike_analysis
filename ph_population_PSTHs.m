@@ -1,12 +1,5 @@
-function ph_population_PSTHs(population,trials,modified_keys)
+function ph_population_PSTHs(population,trials,keys)
 warning('off','MATLAB:catenate:DimensionMismatch');
-
-for fn=fieldnames(modified_keys)'
-    keys.(fn{:})=modified_keys.(fn{:});
-end
-
-%% check if this is set
-% keys.normalization_field='PO';
 
 keys.PO.FR_subtract_baseline=~strcmp(keys.PO.epoch_BL,'none'); %% this one we should not need here any more !?
 [TT,idx,group_values,unique_group_values]=ph_readout_tuning_table(keys);
@@ -20,7 +13,6 @@ complete_unit_list={population.unit_ID}';
 population=population(unit_valid);
 complete_unit_list={population.unit_ID}';
 population_group=group_values(TM(unit_valid));
-all_trialz=[population.trial];
 [trials.accepted]=deal(true);
 [UC, CM, labels]=ph_get_condition_matrix(trials,keys);
 
@@ -68,7 +60,7 @@ end
 % end
 
 %% normalization
-[~, condition,~,pref_valid]=ph_condition_normalization(population,keys,UC,CM);
+[~, condition,~,pref_valid]=ph_condition_normalization(population,trials,keys,UC,CM);
 
 %% condition comparison (kinda there to be used, but not used currently ???)
 comparisons_per_effector(1).reach_hand{1}=0;
@@ -331,8 +323,8 @@ end
             hold on
             
             %% type? completed? choices? hands? (added effector here!!)
-            tr=[all_trialz.type]==typ & [all_trialz.effector]==UC.effector(ef) & ismember([all_trialz.completed],keys.cal.completed); % & ismember([all_trialz.reach_hand],UC.reach_hand) & ismember([all_trialz.choice],UC.choice);
-            ph_PSTH_background(all_trialz(tr),y_lim_to_plot,y_lim_to_plot,y_lim_to_plot,keys,keys.PO.fontsize_factor)
+            tr=[trials.type]==typ & [trials.effector]==UC.effector(ef) & ismember([trials.completed],keys.cal.completed); % & ismember([all_trialz.reach_hand],UC.reach_hand) & ismember([all_trialz.choice],UC.choice);
+            ph_PSTH_background(trials(tr),y_lim_to_plot,y_lim_to_plot,y_lim_to_plot,keys,keys.PO.fontsize_factor)
         end
         for eff=UC.effector
             ef=find(UC.effector==eff);
@@ -402,9 +394,9 @@ end
                     %% this part should eventually go in extra loop for same dimensions in each subplot
                     %% also, can we speed up by plotting the same background for every subplot???
                     y_lim_to_plot=get(gca,'ylim');
-                    tr=[all_trialz.type]==typ & [all_trialz.effector]==eff & ismember([all_trialz.completed],keys.cal.completed) &...
-                        ismember([all_trialz.reach_hand],UC.reach_hand) & ismember([all_trialz.choice],UC.choice);
-                    ph_PSTH_background(all_trialz(tr),y_lim_to_plot,y_lim_to_plot,y_lim_to_plot,keys,1)
+                    tr=[trials.type]==typ & [trials.effector]==eff & ismember([trials.completed],keys.cal.completed) &...
+                        ismember([trials.reach_hand],UC.reach_hand) & ismember([trials.choice],UC.choice);
+                    ph_PSTH_background(trials(tr),y_lim_to_plot,y_lim_to_plot,y_lim_to_plot,keys,1)
                 end
                 ph_title_and_save(PSTH_summary_handle,  [filename plot_title_part ' summary, ' type_effector_short ],plot_title,keys)
             end
@@ -420,7 +412,7 @@ for cc=c12'
     units=intersect(units,units_c);
 end
 
-if ~isempty(units)
+if ~isempty(units) && ~isempty(c1) && ~isempty(c2)
     C1=[];
     C2=[];
     for cc=c1(:)'
@@ -429,7 +421,11 @@ if ~isempty(units)
     for cc=c2(:)'
         C2=[C2;vertcat(in(cc).unit(units).average_spike_density)];
     end
-    h=ttest2(C1,C2,0.05,'both','equal',1); h(h==0)=NaN;
+    if sum(any(~isnan(C1),2))>1 && sum(any(~isnan(C2),2))>1
+        h=ttest2(C1(any(~isnan(C1),2)),C2(any(~isnan(C2),2)),0.05,'both','equal',1); h(h==0)=NaN;
+    else
+        h=NaN; %% size = number of bins ?
+    end
 else
     h=NaN; %% size = number of bins ?
 end

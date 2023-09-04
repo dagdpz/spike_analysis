@@ -114,18 +114,28 @@ for current_date = sessions(:)'
     
     %% Storing trial information separately
     trials = sort_by_trial(data_per_run);
+    [trials.monkey]=deal(keys.monkey);
+    [trials.date]=deal(str2double(keys.date));
     save([keys.population_foldername filesep keys.trials_filename '_' current_date{1} '.mat'],'trials');
+    traces = sort_traces_by_block(data_per_run);
+    [traces.monkey]=deal(keys.monkey);
+    [traces.date]=deal(str2double(keys.date));
+    save([keys.population_foldername filesep keys.traces_filename '_' current_date{1} '.mat'],'traces');
+    clear traces_per_block
     
     %% Store LFP per site
     if keys.cal.process_sites
         allsites = sort_by_site_ID(data_per_run);
-        idx_Site_ID=DAG_find_column_index(keys.sorting_table,'Site_ID');
-        all_site_IDs=keys.sorting_table_sites(:,idx_Site_ID);
+        
         % Excluding sites that dont match criterions... i.e. sites.unit_ID wont be assigned
         if keys.cal.units_from_sorting_table
+            idx_Site_ID=DAG_find_column_index(keys.sorting_table,'Site_ID');
+            all_site_IDs=keys.sorting_table_sites(:,idx_Site_ID);
             allsites(~ismember({allsites.site_ID},all_site_IDs))=[];
         end
-        if ~isempty(allsites)      %% Save by site mat file per session AND site!
+        if ~isempty(allsites)
+            [allsites.monkey]=deal(keys.monkey);
+            [allsites.date]=deal(str2double(keys.date));
             for s=1:numel(allsites)
                 sites=allsites(s);
                 save([keys.population_foldername filesep keys.sites_filename '_' current_date{1} '_' sprintf('%03d',s) '.mat'],'sites');
@@ -146,10 +156,8 @@ for current_date = sessions(:)'
     %% Process spikes
     if keys.cal.process_spikes
         pop_resorted = sort_by_unit_ID(data_per_run);
-        traces_per_block = sort_traces_by_block(data_per_run);
-        %% Save trial
-        save([keys.population_foldername filesep keys.traces_filename '_' current_date{1} '.mat'],'traces_per_block');
-        clear traces_per_block
+        [pop_resorted.monkey]=deal(keys.monkey);
+        [pop_resorted.date]=deal(str2double(keys.date));
         pop_resorted = ph_accept_trials_per_unit(pop_resorted,trials,keys);                %% add field accepted for each trial per unit
         
         % plot the cells not meeting criteria - not needed any more (?)
@@ -192,7 +200,6 @@ for current_date = sessions(:)'
         end
         
         if ~isempty(pop_resorted)
-            [pop_resorted.monkey]=deal(keys.monkey);
             
             %% Save population mat file per session and output
             population=ph_reduce_population(pop_resorted);
@@ -224,6 +231,7 @@ for b=1:size(o_t,2)
                 %% create new site
                 site_index=site_index+1;
                 s=site_index;
+                sites(s).channel          =c;
                 sites(s).site_ID          =AA(1,c).site_ID;
                 sites(s).target           =AA(1,c).target;
                 sites(s).perturbation_site=AA(1,c).perturbation_site;
@@ -233,7 +241,7 @@ for b=1:size(o_t,2)
                 sites(s).LFP              =[];
                 sites(s).LFP_samples      =[];
                 sites(s).dataset          =[];
-                sites(s).perturbation     =[];
+                %sites(s).perturbation     =[];
                 sites(s).block            =[];
                 sites(s).run              =[];
                 sites(s).n                =[];
@@ -242,7 +250,7 @@ for b=1:size(o_t,2)
             end
             sites(s).LFP_samples   =[sites(s).LFP_samples LFP_samples];
             sites(s).dataset       =[sites(s).dataset      AA(:,c).dataset];
-            sites(s).perturbation  =[sites(s).perturbation AA(:,c).perturbation];
+            %sites(s).perturbation  =[sites(s).perturbation AA(:,c).perturbation];
             sites(s).block         =[sites(s).block o_t(b).trial.block];
             sites(s).run           =[sites(s).run   o_t(b).trial.run];
             sites(s).n             =[sites(s).n     o_t(b).trial.n];
@@ -254,14 +262,14 @@ for b=1:size(o_t,2)
 end
 end
 
-function Trial = sort_by_trial(data_per_run)
+function Trial = sort_by_trial(o_t)
 fieldnames_to_remove={'time_axis','x_eye','y_eye','x_hnd','y_hnd','unit','channel','TDT_LFPx','TDT_CAP1','TDT_ECG1','TDT_ECG4','TDT_POX1'};
-Trial=[data_per_run.trial];
+Trial=[o_t.trial];
 Trial=rmfield(Trial,fieldnames_to_remove(ismember(fieldnames_to_remove,fieldnames(Trial))));
 end
 
 function pop_resorted = sort_by_unit_ID(o_t)
-fields_to_keep_unit={'perturbation','dataset','FR_average','stability_rating','SNR_rating'};
+fields_to_keep_unit={'FR_average','stability_rating','SNR_rating'};
 fields_to_keep_trial={'block','run','n'};
 ttt=[fields_to_keep_unit,fields_to_keep_trial ; cell(size([fields_to_keep_unit fields_to_keep_trial]))];
 pop_resorted=struct('unit_ID',{},'trial',{},'waveforms',{},'avg_SNR',{},'avg_single_rating',{},'avg_stability',{},'block_unit',{},ttt{:});
@@ -361,14 +369,21 @@ end
 end
 
 function traces = sort_traces_by_block(o_t)
-fields_to_remove={'unit','channel','TDT_LFPx','TDT_LFPx_SR','TDT_LFPx_tStart','TDT_CAP1','TDT_POX1','TDT_ECG1','TDT_ECG4'};
-for b=1:size(o_t,2)
-    for t=1:size(o_t(b).trial,2)
-        trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
-        tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
-        traces(b).trial(t)=tmp;
-    end
-end
+fields_to_keep={'time_axis','x_eye','y_eye','x_hnd','y_hnd','date','block','run','n'};
+
+traces=[o_t.trial];
+trial_fields=fieldnames(traces);
+
+traces=rmfield(traces,trial_fields(~ismember(trial_fields,fields_to_keep)));
+
+% %fields_to_remove={'unit','channel','TDT_LFPx','TDT_LFPx_SR','TDT_LFPx_tStart','TDT_CAP1','TDT_POX1','TDT_ECG1','TDT_ECG4'};
+% for b=1:size(o_t,2)
+%     trial_fields=fieldnames(o_t(b).trial);
+%     traces(b).trial=rmfield(traces(b).trial,trial_fields(~ismember(trial_fields,fields_to_keep)));
+% %         trial_fieldnames_to_remove=fields_to_remove(ismember(fields_to_remove,fieldnames(o_t(b).trial(t))));
+% %         tmp=rmfield(o_t(b).trial(t),trial_fieldnames_to_remove);
+% %         traces(b).trial(t)=tmp;
+% end
 end
 
 function pop=ph_reduce_population(pop_in)

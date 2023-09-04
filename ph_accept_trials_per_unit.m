@@ -1,6 +1,9 @@
 function pop_resorted = ph_accept_trials_per_unit(pop_resorted,trials,keys)
 for u=1:numel(pop_resorted)
     p=pop_resorted(u);
+    if isfield(p,'accepted')
+        p=rmfield(p,'accepted');
+    end
     pt=ph_get_unit_trials(p,trials);
     %    FRs=[pop_resorted(u).trial.FR_average];
     correct_task=ismember([pt.effector],keys.cal.effectors) ...

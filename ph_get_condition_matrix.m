@@ -1,17 +1,13 @@
 function [UC, CM, labels]=ph_get_condition_matrix(trials,keys)
-
-%% define conditions to look at
+%% only consider accepted and completed trials
 tr_con=[trials.accepted] & [trials.completed]; 
 trials=trials(tr_con);
+
 %% type and effectors
-%% limit type and effector to plot HERE! --> NOT IN RUN_STATE_ALIGNMENT ANY MORE
 utype=unique([trials.type]); 
-%utype=utype(ismember(utype,keys.cal.types)); %% dont like that this one is called types with an 's'
 ueffector=unique([trials.effector]);
-%ueffector=ueffector(ismember(ueffector,keys.cal.effectors)); %% dont like that this one is called effectors with an 's'
 all_type_effectors      = combvec(utype,ueffector)';
 type_effectors =[];
-
 if isfield(keys,'conditions_to_plot')
     % redefine type_effectors to include only relevant
     for t=1:size(all_type_effectors,1)
@@ -33,28 +29,19 @@ UC.type     =unique(type_effectors(:,1))';
 UC.effector =unique(type_effectors(:,2))';
 UC.type_effector=type_effectors;
 UC.type_effector_labels=type_effector_short;
+
 UC.completed=unique([trials.completed]);
-
-
-
+UC.perturbation         =unique([trials.perturbation]);
 for c=1:numel(keys.condition_parameters)
     UC.(keys.condition_parameters{c})=unique([trials.(keys.condition_parameters{c})]);
 end
 
-%% this part is not ideal (the perturbation one!)
-perturbation=[trials.perturbation];
-% perturbation(ismember(perturbation, keys.cal.perturbation_groups{1}))=0;
-% perturbation(ismember(perturbation, keys.cal.perturbation_groups{2}))=1;
-% perturbation(isnan(perturbation))=0;
-UC.perturbation         =unique(perturbation);
-
-%% postitions are defiend by arrangement!
-[whatisthis]=ph_arrange_positions_and_plots(keys,trials);
-UC.position             =unique(vertcat(whatisthis.position),'rows');
-UC.hemifield            =unique([whatisthis.hemifield]);
-UC.fix_index            =unique([whatisthis.fix_index]);
-UC.pos_index            =unique([whatisthis.pos_index]);
-fixations_temp=unique(vertcat(whatisthis.fixation),'rows');
+%% postitions 
+UC.position             =unique(vertcat(trials.position),'rows');
+UC.hemifield            =unique([trials.hemifield]);
+UC.fix_index            =unique([trials.fix_index]);
+UC.pos_index            =unique([trials.pos_index]);
+fixations_temp=unique(vertcat(trials.fixation),'rows');
 fix_temp_idx=true(size(fixations_temp,1),1);
 for x=1:size(fixations_temp,1)-1
     if any(all(abs(bsxfun(@minus,fixations_temp(x+1:end,:),fixations_temp(x,:)))<keys.cal.precision_fix,2))
@@ -63,18 +50,9 @@ for x=1:size(fixations_temp,1)-1
 end
 UC.fixation=fixations_temp(fix_temp_idx,:);
 
-% %if ~any(keys.tt.hands==0) % cause hands 0 is any hand ... 
-% UC.reach_hand     =UC.reach_hand(ismember(UC.reach_hand,keys.tt.hands));
-% %end
-% UC.choice    =UC.choice(ismember(UC.choice,keys.tt.choices));
-%% up to here
-
 
 for c=1:numel(keys.condition_parameters)
     par=keys.condition_parameters{c};
-%     if ~all(isnan(keys.cal.(par))) && ~isempty(keys.cal.(par))%% limit conditions key?
-%         UC.(par)    =UC.(par)(ismember(UC.(par),keys.cal.(par)));
-%     end
     CM_cell{c}=UC.(par);
 end
 CM=combvec(CM_cell{:})';

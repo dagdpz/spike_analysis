@@ -1,15 +1,10 @@
-function population=ph_assign_perturbation_group(keys,population)
-for u=1:numel(population)
-    if ~isfield(population(u),'perturbation') % quickfix to load microstim data
-    [population(u).perturbation]=deal(0);
-       continue 
-    end
-    nanidx=true(size([population(u).trial]));
-    for g=1:numel(keys.cal.perturbation_groups)
-        idx=ismember([population(u).perturbation],keys.cal.perturbation_groups{g});
-        [population(u).perturbation(idx)]=deal(g-1);
-        nanidx=nanidx&~idx;
-    end
-    [population(u).trial(nanidx).perturbation]=deal(NaN);
+function trials=ph_assign_perturbation_group(keys,trials)
+nanidx=true(size(trials));
+for g=1:numel(keys.cal.perturbation_groups)
+    idx=ismember([trials.perturbation],keys.cal.perturbation_groups{g});
+    [trials(idx).perturbation]=deal(g-1);
+    nanidx=nanidx&~idx;
 end
+[trials(nanidx).perturbation]=deal(NaN);   
+
 end

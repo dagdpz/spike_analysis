@@ -1,10 +1,5 @@
-function ph_population_response_timing(population,modified_keys)
+function ph_population_response_timing(population,trials,keys)
 warning('off','MATLAB:catenate:DimensionMismatch');
-%%% !!!!!!!! make sure epochs (baseline, cue, .... make sense for all effectors)
-
-for fn=fieldnames(modified_keys)'
-    keys.(fn{:})=modified_keys.(fn{:});
-end
 
 keys.PSTH_binwidth=keys.ON.PSTH_binwidth;
 keys.gaussian_kernel=keys.ON.PSTH_binwidth;
@@ -21,14 +16,11 @@ complete_unit_list={population.unit_ID}';
 population=population(unit_valid);
 complete_unit_list={population.unit_ID}';
 population_group=group_values(TM(unit_valid));
-
-%% sort TT by population?
-
-all_trialz=[population.trial]; %% this means we are calculating conditions based on even not relevant units !?
-[UC, CM]=ph_get_condition_matrix(all_trialz,keys);
+[trials.accepted]=deal(true);
+[UC, CM]=ph_get_condition_matrix(trials,keys);
 
 %% Convert to ipsi/contra, Baseline subtraction, normalization, re-ordering, and gaussian RFs
-[~, ~, condition]=ph_condition_normalization(population,keys,UC,CM);
+[~, ~, condition]=ph_condition_normalization(population,trials,keys,UC,CM);
 
 %condition_matrix            = combvec(CM',UC.hemifield)';
 conditions_out              = combvec(UC.effector,CM')';
@@ -66,8 +58,8 @@ for t=1:size(condition,1)
         tuning_onset=NaN(size(complete_unit_list));
         for u=1:numel(complete_unit_list)
             %% baseline definition (for epoch tuning so far...)
-            epoch_averages=vertcat(current_unit(unique([c1; c2]),u).epoch_FRs);
-            baseline=epoch_averages(:,ismember(keys.EPOCHS(:,1),comparisons(comp).baseline_epoch));
+            epoch_FRs=vertcat(current_unit(unique([c1; c2]),u).epoch_FRs);
+            baseline=epoch_FRs(:,ismember(keys.EPOCHS(:,1),comparisons(comp).baseline_epoch));
             onset_found=0;
             for wn=1:numel(current(1).window)
                 direction=ph_compare_by_bin_by_trial(current_window(:,wn),c1,c2,baseline,u,keys); %% has additional bins in the begininning and end
@@ -115,7 +107,6 @@ for t=1:size(condition,1)
         sigbins(t).comparison(comp).order_by_condition_onset=unit_order;
     end
 end
-
 
 %% plots
 for t=1:numel(sigbins)
@@ -193,8 +184,8 @@ for t=1:numel(sigbins)
                 subplot(numel(comparisons),1,(comp-1)+column)
                 
                 %% choices? hands? errm here its only relevant for event and epoch onsets
-                tr=[all_trialz.type]==typ & ismember([all_trialz.effector],UC.effector) & [all_trialz.completed]==1;
-                ph_PSTH_background(all_trialz(tr),y_lim,y_lim,y_lim,keys,1)
+                tr=[trials.type]==typ & ismember([trials.effector],UC.effector) & [trials.completed]==1;
+                ph_PSTH_background(trials(tr),y_lim,y_lim,y_lim,keys,1)
                 % set ydata
                 uistack(onset_handle(comp), 'top');
             end
@@ -259,8 +250,8 @@ for t=1:numel(sigbins)
             subplot(numel(comparisons),1,(comp-1)+column)
             lims=[0 y_lim(comp)];
             %% choices? hands? errm here its only relevant for event and epoch onsets
-            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],UC.effector) & [all_trialz.completed]==1;
-            ph_PSTH_background(all_trialz(tr),lims,lims,lims,keys,1)
+            tr=[trials.type]==typ & ismember([trials.effector],UC.effector) & [trials.completed]==1;
+            ph_PSTH_background(trials(tr),lims,lims,lims,keys,1)
         end
         
         ph_title_and_save(PSTH_summary_handle,  [filename ' fraction tuned'],plot_3_title,keys)
@@ -344,9 +335,9 @@ for t=1:numel(sigbins)
             subplot(numel(comparisons),1,(comp-1)+column)
             lims=[0 y_lim(comp)];
             %% choices? hands? errm here its only relevant for event and epoch onsets
-            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],UC.effector) & [all_trialz.completed]==1;
+            tr=[trials.type]==typ & ismember([trials.effector],UC.effector) & [trials.completed]==1;
             % set ydata
-            ph_PSTH_background(all_trialz(tr),lims,lims,lims,keys,1)
+            ph_PSTH_background(trials(tr),lims,lims,lims,keys,1)
             uistack(onset_handle(comp), 'top');
         end
         
@@ -424,9 +415,9 @@ for t=1:numel(sigbins)
             subplot(numel(comparisons),1,(comp-1)+column)
             lims=[0 y_lim(comp)];
             %% choices? hands? errm here its only relevant for event and epoch onsets
-            tr=[all_trialz.type]==typ & ismember([all_trialz.effector],UC.effector) & [all_trialz.completed]==1;
+            tr=[trials.type]==typ & ismember([trials.effector],UC.effector) & [trials.completed]==1;
             % set ydata
-            ph_PSTH_background(all_trialz(tr),lims,lims,lims,keys,1)
+            ph_PSTH_background(trials(tr),lims,lims,lims,keys,1)
             uistack(onset_handle(comp), 'top');
         end
         

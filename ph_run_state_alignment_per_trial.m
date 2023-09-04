@@ -51,6 +51,21 @@ trials_wo_cond=[];
 [trial.unit]=deal(from_excel_per_unit);
 [trial.channel]=deal(from_excel_per_channel);
 
+tmp=[trial.channel];
+tmp=[tmp.perturbation];
+perturbation=unique(tmp(~isnan(tmp)));
+if isempty(perturbation)
+    perturbation=0;
+end
+tmp=[trial.channel];
+tmp=[tmp.dataset];
+dataset=unique(tmp(~isnan(tmp)));
+if isempty(dataset)
+    dataset=0;
+end
+[trial.dataset]=deal(dataset);
+[trial.perturbation]=deal(perturbation);
+
 %% LFPs & other streams??
 shift_in_seconds=1;
 stream_fieldnames=fieldnames(tr_in);
@@ -97,7 +112,7 @@ for FN=trace_fieldnames
 end
 
 %% spikes
-for t=1:numel(tr_in)    
+for t=1:numel(tr_in)
     t1=min(MA_out.states(t).TDT_state_onsets);
     t2=max(MA_out.states(t).TDT_state_onsets(1:end-1));
     if ~isempty(tr_in(t).spike_waveforms)
@@ -111,7 +126,7 @@ for t=1:numel(tr_in)
         else
             unit_at=cell2struct(tr_in(t).spike_arrival_times,'arrival_times',3);
         end
-        [trial(t).unit.arrival_times]=unit_at.arrival_times;        
+        [trial(t).unit.arrival_times]=unit_at.arrival_times;
         AA=arrayfun(@(x) sum(x.arrival_times>t1 & x.arrival_times<t2)/(t2-t1),trial(t).unit,'Uniformoutput',false);
         [trial(t).unit.FR_average]=AA{:};
     else
@@ -135,7 +150,7 @@ for t=1:n_trials
         trials_wo_phys=[trials_wo_phys t];
         continue;
     end
-    trial(t).date               = str2num(keys.date);
+    trial(t).date               = str2double(keys.date);
     trial(t).block              = keys.block;
     trial(t).run                = keys.run;%MA_out.selected(t).run; % cause MA run is wrong, it actually corresponds to block!
     trial(t).n                  = MA_out.selected(t).trials;
@@ -163,7 +178,7 @@ for t=1:n_trials
     trial(t).choice        = MA_out.binary(t).choice;
     trial(t).success       = MA_out.binary(t).success;
     trial(t).completed     = MA_out.binary(t).completed;
-        
+    
     %% Saccade or reach positions dependend on effector
     MA_out.reaches(t).ini_all       = MA_out.reaches(t).ini;
     MA_out.reaches(t).end_all       = MA_out.reaches(t).ini+MA_out.reaches(t).dur;
@@ -341,7 +356,7 @@ if isempty(row)
     from_excel.electrode_depth         = -1;
     from_excel.target                  = 'unknown';
     from_excel.dataset                 = 0;
-    from_excel.perturbation            = 0;
+    from_excel.perturbation            = NaN;
     from_excel.perturbation_site       = 'NA';
     if unitexistsindata
         fprintf(2, 'no matching sorting for %s \n', unit_identifier);

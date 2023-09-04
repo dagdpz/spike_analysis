@@ -18,14 +18,6 @@ function [o,info]=ph_arrange_positions_and_plots(keys,o)
 % out_analysis.PSTH_summary_colors: colors used in type summary plots
 % out_analysis.line_labels: lables for the different lines in the summary plot legend
 %
-% %% taking over per unit information from original pop if applicable
-% if nargin>2
-%     %pop=rmfield(pop_in,'trial');
-%     pop=pop_in;
-%     for fn=fieldnames(o)'
-%        [pop.trial.(fn{:})]=o.(fn{:}); 
-%     end
-% end
 
 %% DEFINITION OF CONDITION INDICES TO PLOT, CURRENTLY TARGET LOCATION, FIXATION LOCATION, MOVEMENT VECTORS, CHOICE, HANDS
 [~, displacement_types] = center_displacement_working(o,keys);
@@ -104,7 +96,7 @@ con_for_column          = non_idx;
 con_for_row             = eff_idx;
 fig_title               = '';
 sub_title               = 'movement vector ';
-val_for_figure          = {[]};
+val_for_figure          = mov_val;
 val_for_sub_assignment  = mov_val(u_mov_idx_idx,:);
 val_for_pos_assignment  = mov_val(u_mov_idx_idx,:);
 position_indexes        = mov_idx;
@@ -116,160 +108,9 @@ fixation_per_trial      = fix_val;
 %% specifics
 switch keys.arrangement
     
-    case 'StimulusType_Difficulty_Position'
-        fig_title               = 'StimType';
-        con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);
-        val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
-        val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
-        position_indexes        = tar_idx;
-        sub_title               = 'stimulus position';
-        
-    case 'StimulusType_Difficulty_Position_Successful'
-        [diff_values,~,diff_idx]        = unique(difficulty);
-        fig_title               = 'StimuType_Diff_Pos_Suc';
-        con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);
-        position_indexes        = stm_idx;
-        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        sub_title               = 'stimulus position';
-        
-    case 'DoubleSameTargets_Position'
-        [diff_values,~,diff_idx]      =unique(difficulty+3*success');
-        fig_title               = 'StimulusType';
-        con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);
-        position_indexes        = stm_idx;
-        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        sub_title               = 'stimulus position';
-    case 'StimType_Diff_Pos_ErVsCor'
-        difficulty =  difficulty+3*success';
-        %              difficulty =  difficulty(success ==1)';
-        %              idx_difficulty = find(difficulty <3);
-        %              difficulty(idx_difficulty)     =[];
-        %              stm_idx(idx_difficulty)        =[];
-        %              Styp_idx(idx_difficulty)       =[];
-        
-        [diff_values,~,diff_idx]        = unique(difficulty);
-        fig_title               = 'StimType_Diff_Pos_ErVsCor';
-        con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);                
-        position_indexes        = stm_idx;
-        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        sub_title               = 'stimulus position';
-        
-    case 'StimulusType_Difficulty_Position' %% this is a guess that this one is supposed to be a different one     
-        [diff_values,~,diff_idx]        = unique(difficulty);
-        fig_title               = 'StimulusType_Difficulty_Position';
-        con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);
-        val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
-        val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
-        position_indexes        = tar_idx;
-        
-        sub_title               = 'stimulus position';
-        
-    case 'StimulusType_Difficulty_Position_Successful'
-        [diff_values,~,diff_idx]        = unique(difficulty);
-        fig_title               = 'StimuType_Diff_Pos_Suc';
-        con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);
-        position_indexes        = stm_idx;
-        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        sub_title               = 'stimulus position';
-        
-    case 'DoubleSameTargets_Position'
-        [diff_values,~,diff_idx]      =unique(difficulty+3*success');
-        fig_title               = 'StimulusType';
-        con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);
-        position_indexes        = stm_idx;
-        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        sub_title               = 'stimulus position';
-        % con_for_figure          = suc_idx;
-        
-    case 'StimType_Diff_Pos_ErVsCor'
-        difficulty =  difficulty+3*success';
-        %              difficulty =  difficulty(success ==1)';
-        %              idx_difficulty = find(difficulty <3);
-        %              difficulty(idx_difficulty)     =[];
-        %              stm_idx(idx_difficulty)        =[];
-        %              Styp_idx(idx_difficulty)       =[];
-        
-    case 'StimTyp_Diff_Pos_Suc'
-        [diff_values,~,diff_idx]        = unique(difficulty);        
-        fig_title               = 'StimTyp_Diff_Pos_Suc';
-        con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);        
-        sub_title               = 'stimulus position';        
-        if length(diff_values) == 3
-            fig_title               = 'StimTyp_Diff_Pos_Suc';            
-            position_indexes        = stm_idx;
-            val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-            val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        end
-        
-    case 'Sgl_Diff_Pos_Suc_SaccadeEpoch'
-        [diff_values,~,diff_idx]        = unique(difficulty);
-        fig_title               = 'StimTyp_Diff_Pos_Suc';
-        con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);
-        val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
-        val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
-        position_indexes        = tar_idx;       
-        sub_title               = 'stimulus position';
-        
-    case 'DisTar_Diff_Pos_Suc'
-        [diff_values,~,diff_idx]        = unique(difficulty);
-        sub_title               = 'stimulus position';
-        val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
-        val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
-        position_indexes        = tar_idx;
-        
-    case 'SpatialCompetition_Targets'
-        % left vs Right is defined where the saccade was made to
-        sub_title               = 'stimulus position';
-        val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
-        val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
-        position_indexes        = tar_idx;
-        
-    case 'SpatialCompetition_Distractor'
-        [diff_values,~,diff_idx]        = unique(difficulty);
-        fig_title               = 'DifficultyLevel';
-        con_for_figure          = diff_idx';
-        val_for_figure          = num2cell(diff_values);
-        sub_title               = 'stimulus position';
-        position_indexes        = stm_idx;
-        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        
-    case 'StimType_Diff_Pos_ErVsCor'
-        difficulty =  difficulty+3*success';
-        fig_title               = 'StimType_Diff_Pos_ErVsCor';
-        con_for_figure          = Styp_idx;
-        val_for_figure          = num2cell(Styp_values);
-        position_indexes        = stm_idx;
-        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        sub_title               = 'stimulus position';
-        
-    case 'StimulusType_Difficulty_Position_ErrorVsCorrect_lastVers'
-        fig_title               = 'StimulusType_Difficulty_Position';
-        con_for_figure          = Styp_idx';
-        val_for_figure          = num2cell(Styp_values);
-        position_indexes        = stm_idx;
-        val_for_sub_assignment  = stm_val(u_stm_idx_idx,:);
-        val_for_pos_assignment  = stm_val(u_stm_idx_idx,:);
-        sub_title               = 'stimulus position';
-        
     case 'success_in_cue'
         fig_title               = '';
-        val_for_figure          = {shp_values};
+        val_for_figure          = cueshape;
         sub_title               = 'cue position';
         val_for_sub_assignment  = cue_val(u_cue_idx_idx,:);
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
@@ -279,36 +120,36 @@ switch keys.arrangement
         con_for_figure          = suc_idx;
         fig_title               = 'success ';
         sub_title               = 'cue position';
-        val_for_figure          = num2cell(suc_values);
+        val_for_figure          = success;
         val_for_sub_assignment  = cue_val(u_cue_idx_idx,:);
         val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
         position_indexes        = cue_idx;
         
     case 'hand_choices'
         fig_title               = '';
-        val_for_figure          = {hnd_cho_values};
+        val_for_figure          = [hands choices];
         
     case 'options'
         con_for_figure          = hnd_idx;
         fig_title               = 'hand ';
-        val_for_figure          = num2cell(hnd_values);
+        val_for_figure          = hands;
         
     case 'hands_inactivation'
         con_for_figure          = cho_idx;
         fig_title               = 'choice ';
-        val_for_figure          = num2cell(cho_values);
+        val_for_figure          = choices;
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
         
     case 'hands_inactivation_in_ch'
         con_for_figure          = eff_idx;
         fig_title               = 'choice_instructed_comp ';
-        val_for_figure          = num2cell(eff_values);
+        val_for_figure          = effectors;
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
      
     case 'hands_in_ch'
         con_for_figure          = eff_idx;
         fig_title               = 'choice_instructed_comp ';
-        val_for_figure          = num2cell(eff_values);
+        val_for_figure          = effectors;
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
   
     case 'hands'
@@ -316,7 +157,7 @@ switch keys.arrangement
         con_for_row             = ones(size(con_for_figure));
         fig_title               = 'choice ';
         sub_title               = 'movement vector ';
-        val_for_figure          = num2cell(cho_values);
+        val_for_figure          = choices;
         con_for_column          = eff_idx;
         %Precision=5;
         
@@ -338,35 +179,28 @@ switch keys.arrangement
 end
 
 %% subplot positions
-[subplot_pos, info.columns, info.rows]= DAG_dynamic_positions({val_for_sub_assignment});
+[subplot_pos, columns, rows]= DAG_dynamic_positions({val_for_sub_assignment});
 
-%% some preallocations
-info.figure_title_part      =fig_title;
-for n=1:numel(val_for_figure)
-    temp     =[arrayfun(@num2str, val_for_figure{n}, 'unif', 0)'; repmat({' '},size(val_for_figure{n},1),1)'];
-    info.figure_title_value{n,1}     =[temp{:}];
+[o.columns]     =deal(columns);
+[o.rows]        =deal(rows);
+[o.figure_title_part]        =deal(fig_title);
+
+%% figure title value seems to be quite annoying...
+for n=1:numel(o)
+    o(n).figure_title_value=num2str(val_for_figure(n,:));
 end
 
-%% Assigning each trial
-% pop.trial=o;
-% for t=1:numel(o)
-%     pop.trial(t).figure         =con_for_figure(t);
-%     pop.trial(t).column         =con_for_column(t);
-%     pop.trial(t).row            =con_for_row(t);
-%     pop.trial(t).fixation       =fixation_per_trial(t,:);
-%     pop.trial(t).title_part     =sub_title;
-%     pop.trial(t).subplot_pos    =subplot_pos(position_indexes(t));
-%     pop.trial(t).pos_index      =position_indexes(t);
-%     pop.trial(t).fix_index      =fixation_indexes(t);
-%     pop.trial(t).position       =val_for_pos_assignment(position_indexes(t),:);
-%     pop.trial(t).hemifield      =-1*(pop.trial(t).position(1)<0)+1*(pop.trial(t).position(1)>0);
+% %info.figure_title_part      =fig_title;
+% figure_title_value=
+% for n=1:numel(val_for_figure)
+%     temp     =[arrayfun(@num2str, val_for_figure{n}, 'unif', 0)'; repmat({' '},size(val_for_figure{n},1),1)'];
+%     info.figure_title_value{n,1}     =[temp{:}];
 % end
 
-
-
+%% Assigning each trial
 position            =num2cell(val_for_pos_assignment(position_indexes,:),2);
 fixation            =num2cell(fixation_per_trial,2);
-hemifield           =num2cell(-1*val_for_pos_assignment(position_indexes,1)<0 + 1*val_for_pos_assignment(position_indexes,1)>0);
+hemifield           =num2cell(sign(val_for_pos_assignment(position_indexes,1)));
 
 con_for_figure      =num2cell(con_for_figure);
 con_for_column      =num2cell(con_for_column);
