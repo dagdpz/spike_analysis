@@ -174,9 +174,9 @@ for current_date = sessions(:)'
             
             %% Save population mat file per session and output
             population=ph_reduce_population(pop_resorted);
-            save([keys.population_foldername filesep keys.population_filename '_' current_date{1} '.mat'],'population');
+            save([keys.population_foldername filesep keys.population_filename '_' current_date{1} '.mat'],'population', '-v7.3');
             %% Save population mat file per session and output 
-            save([keys.population_foldername filesep keys.traces_filename '_' current_date{1} '.mat'],'traces_per_block');
+            save([keys.population_foldername filesep keys.traces_filename '_' current_date{1} '.mat'],'traces_per_block', '-v7.3');
         end
     end
     
@@ -188,11 +188,11 @@ for current_date = sessions(:)'
             sites(~ismember({sites.site_ID},all_site_IDs))=[];
         end
         if ~isempty(sites)      %% Save by site mat file per session
-            save([keys.population_foldername filesep keys.sites_filename '_' current_date{1} '.mat'],'sites');
+            save([keys.population_foldername filesep keys.sites_filename '_' current_date{1} '.mat'],'sites', '-v7.3');
         end
     end
     if keys.cal.process_by_block && ~isempty(by_block)     %% Save by block mat file per session
-        save([keys.population_foldername filesep 'by_block_' keys.monkey(1:end-5) '_' current_date{1} '.mat'],'by_block');
+        save([keys.population_foldername filesep 'by_block_' keys.monkey(1:end-5) '_' current_date{1} '.mat'],'by_block', '-v7.3');
     end
 end
 
