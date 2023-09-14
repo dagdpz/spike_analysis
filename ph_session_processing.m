@@ -399,6 +399,7 @@ for u=1:numel(pop_resorted)
     pop_resorted(u).SNR_rating       = nansum(pop_resorted(u).SNR_rating)/pop_resorted(u).n_spikes;
     pop_resorted(u).Single_rating    = nansum(pop_resorted(u).Single_rating)/pop_resorted(u).n_spikes;
     pop_resorted(u).stability_rating = nansum(pop_resorted(u).stability_rating)/pop_resorted(u).n_spikes;    
+    pop_resorted(u).FR_average       = nanmean(vertcat(pop_resorted(u).trial.FR_average),1);
     pop_resorted(u).waveform_average = nanmean(vertcat(pop_resorted(u).trial.waveforms),1);
     pop_resorted(u).waveform_std     = nanstd(vertcat(pop_resorted(u).trial.waveforms),0,1);
     
@@ -631,7 +632,7 @@ for u=units
         %plot()
     end
     unit_title={sprintf('%s ',o(u).unit_ID),...
-        sprintf(['ch/De: %d/%.2f b&u: %s' ],o(u).channel,o(u).electrode_depth,[o(u).block_unit{:}])}; %MP add number of spikes
+        sprintf(['Fr, Hz %.1f ch/De: %d/%.2f b&u: %s' ], o(u).FR_average, o(u).channel,o(u).electrode_depth,[o(u).block_unit{:}])}; %MP add number of spikes
     title(unit_title,'interpreter','none');
 end
 ph_title_and_save(FR_summary_handle,fig_title,fig_title,keys)
@@ -715,8 +716,9 @@ for n_unit=1:numel(o)
         plot(all_spikes_wf(1:50:n_sel_spike_wf*50,:)');
     end
     plot(wf_per_block','-k','linewidth',2);
-    unit_title={sprintf('%s SN/Si/St: %.1f/%.3f/%.1f',o(n_unit).unit_ID,o(n_unit).SNR_rating,o(n_unit).Single_rating,o(n_unit).stability_rating),...
-        sprintf(['spk: %d ch/De: %d/%.2f b&u: %s'],n_all_spikes_wf, o(n_unit).channel,o(n_unit).electrode_depth,[o(n_unit).block_unit{:}])}; %MP add number of spikes
+    unit_title={sprintf('%s SNR/Si/St: %.1f/%.3f/%.1f',o(n_unit).unit_ID,o(n_unit).SNR_rating,o(n_unit).Single_rating,o(n_unit).stability_rating),...
+        sprintf(['FR, Hz: %.1f ch/De: %d/%.2f b&u: %s'],o(n_unit).FR_average, o(n_unit).channel,o(n_unit).electrode_depth,[o(n_unit).block_unit{:}])};
+%         sprintf(['spk: %d ch/De: %d/%.2f b&u: %s'],n_all_spikes_wf, o(n_unit).channel,o(n_unit).electrode_depth,[o(n_unit).block_unit{:}])}; %MP add number of spikes
         %sprintf('SNR/Wam/Std: %%d/%d/%d',round(o(n_unit).quantSNR),round(o(n_unit).waveform_amplitude),round(nanmean(o(n_unit).waveform_std))),... %%KK stuff
     title(unit_title,'interpreter','none','fontsize',6)
     if  max(max(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) > min(min(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) % not sure what this bug is about... Lin 20160303 
@@ -778,9 +780,9 @@ for n_unit=1:numel(o)
         
     end
     unit_title={sprintf('%s SN/Si/St: %d/%d/%d',o(n_unit).unit_ID,o(n_unit).SNR_rating,o(n_unit).Single_rating,o(n_unit).stability_rating)...
-        sprintf(['spk: %d ch/De: %d/%.2f b: ' num2str(unique([o(n_unit).trial.block]))],numel(all_ISI), o(n_unit).channel,o(n_unit).electrode_depth)}; %MP add number of spikes
+        sprintf(['FR, Hz: %.1f ch/De: %d/%.2f b: ' num2str(unique([o(n_unit).trial.block]))], o(n_unit).FR_average, numel(all_ISI), o(n_unit).channel,o(n_unit).electrode_depth)};
+%         sprintf(['spk: %d ch/De: %d/%.2f b: ' num2str(unique([o(n_unit).trial.block]))],numel(all_ISI), o(n_unit).channel,o(n_unit).electrode_depth)}; %MP add number of spikes
     title(unit_title,'interpreter','none','fontsize',10)
-    
     
 end
 ph_title_and_save(ISI_summary_handle,fig_title,fig_title,keys)
