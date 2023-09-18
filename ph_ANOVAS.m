@@ -1,7 +1,7 @@
 function TT=ph_ANOVAS(population,trials,keys)
 TT=keys.tuning_table;
 for unit=1:numel(population)
-    display(['anovas for: ' population(unit).unit_ID]);
+    display(['anovas for: ' population(unit).unit_ID]); 
     anova_struct_current_unit=struct();
     pop=population(unit);
     pt=ph_get_unit_trials(pop,trials);

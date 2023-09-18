@@ -388,7 +388,7 @@ end
 
 function pop=ph_reduce_population(pop_in)
 pop=pop_in;
-fields_to_keep={'arrival_times'};
+fields_to_keep={'arrival_times','waveforms'};
 for u=1:numel(pop)
     trial_fields=fieldnames(pop(u).trial);
     pop(u).trial=rmfield(pop(u).trial,trial_fields(~ismember(trial_fields,fields_to_keep)));

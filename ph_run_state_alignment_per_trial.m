@@ -355,7 +355,7 @@ if isempty(row)
     from_excel.grid_y                  = -100;
     from_excel.electrode_depth         = -1;
     from_excel.target                  = 'unknown';
-    from_excel.dataset                 = 0;
+    from_excel.dataset                 = NaN;
     from_excel.perturbation            = NaN;
     from_excel.perturbation_site       = 'NA';
     if unitexistsindata
