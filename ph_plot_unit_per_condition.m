@@ -464,7 +464,7 @@ for u=1:numel(population)
             for r=1:numel(unique_rows)
                 for c=unique_columns
                     subplot(hs(r,c))
-                    ph_PSTH_background(T,y_lim,y_lim,[0 y_lim(2)],keys,1)
+                    ph_PSTH_background(T(fig_idx & te_idx),y_lim,y_lim,[0 y_lim(2)],keys,1)
                 end
             end
             
