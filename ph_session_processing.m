@@ -553,9 +553,9 @@ for n_unit=1:numel(o)
         plot(all_spikes_wf(1:50:n_sel_spike_wf*50,:)');
     end
     plot(wf_per_block','-k','linewidth',2);
-    unit_title={sprintf('%s SN/Si/St: %.1f/%.1f/%.1f',o(n_unit).unit_ID,o(n_unit).avg_SNR,o(n_unit).avg_single_rating,o(n_unit).avg_stability),...
-        sprintf(['spk: %d ch/De: %d/%.2f b&u: %s'],n_all_spikes_wf, o(n_unit).channel,o(n_unit).electrode_depth,[o(n_unit).block_unit{:}])}; %MP add number of spikes
-    %sprintf('SNR/Wam/Std: %%d/%d/%d',round(o(n_unit).quantSNR),round(o(n_unit).waveform_amplitude),round(nanmean(o(n_unit).waveform_std))),... %%KK stuff
+    unit_title={sprintf('%s %.1f Hz ch/De: %d/%.2f SN/Si/St: %.1f/%.1f/%.1f',...
+            o(n_unit).unit_ID,nanmean(o(n_unit).FR_average), o(n_unit).channel,o(n_unit).electrode_depth,o(n_unit).avg_SNR,o(n_unit).avg_single_rating,o(n_unit).avg_stability),...
+        sprintf('b&u: %s',[o(n_unit).block_unit{:}])}; %MP add number of spikes
     title(unit_title,'interpreter','none','fontsize',6)
     if  max(max(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) > min(min(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) % not sure what this bug is about... Lin 20160303
         set(gca,'xtick',[],'xcolor',[1 1 1],'FontSize',6,'ytick',...
@@ -598,8 +598,8 @@ for u=1:numel(o)
         
     end
     unit_title={sprintf('%s SN/Si/St: %.1f/%.1f/%.1f',o(u).unit_ID,o(u).avg_SNR,o(u).avg_single_rating,o(u).avg_stability)...
-        sprintf(['spk: %d ch/De: %d/%.2f b: ' num2str(unique([o(u).block]))],numel(all_ISI), o(u).channel,o(u).electrode_depth)}; %MP add number of spikes
-    title(unit_title,'interpreter','none','fontsize',10)
+        sprintf(['%.1f Hz  ch/De: %d/%.2f b: ' num2str(unique([o(u).block]))],nanmean(o(u).FR_average),o(u).channel,o(u).electrode_depth)}; %MP add number of spikes
+    title(unit_title,'interpreter','none','fontsize',6)
 end
 ph_title_and_save(ISI_summary_handle,fig_title,fig_title,keys)
 end
@@ -682,12 +682,12 @@ for u=units
         plot([start_block start_block],[0 block_mean],col,'linewidth',2)
         plot([end_block end_block],[0 block_mean],col,'linewidth',2)
         if strcmp(whattoplot,'FR')
-            text(double(start_block+(end_block-start_block)/2), diff(y_lim)/2,sprintf('%0.1f',fanoish_factor),'HorizontalAlignment', 'Center')
+            text(double(start_block+(end_block-start_block)/2), diff(y_lim)/2,sprintf('%0.1f',fanoish_factor),'fontsize',4,'HorizontalAlignment', 'Center')
         end
     end
-    unit_title={sprintf('%s ch/De: %d/%.2f ',o(u).unit_ID,o(u).channel,o(u).electrode_depth),...
+    unit_title={sprintf('%s %.1f Hz ch/De: %d/%.2f ',o(u).unit_ID,nanmean(o(u).FR_average),o(u).channel,o(u).electrode_depth),...
         sprintf('b&u: %s',[o(u).block_unit{:}])}; %MP add number of spikes
-    title(unit_title,'interpreter','none');
+    title(unit_title,'interpreter','none','fontsize',6);
 end
 ph_title_and_save(FR_summary_handle,fig_title,fig_title,keys)
 end

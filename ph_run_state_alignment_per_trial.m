@@ -253,7 +253,7 @@ invalid_trials=sort([trials_wo_phys trials_wo_cond]); % differentiation between 
 trial(invalid_trials)=[];
 
 %% automatic stability (dependent on fano factor of Frs per trial
-if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR)
+if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR || keys.cal.automatic_singleunitness)
     units_cat=cat(3,trial.unit);
     for c=1:n_chans_u,
         for u=1:n_units
