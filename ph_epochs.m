@@ -14,19 +14,21 @@ for u=1:numel(population)
         EPOCHS=keys.EPOCHS_PER_TYPE{t};
         tr=[ut.type]==t & [ut.completed]; %% epochs only for completed trials............
         population(u).epochs_per_type{t}=NaN(sum(tr),size(EPOCHS,1));
-        for e=1:size(EPOCHS,1)
-            s=EPOCHS{e,2};
-            current_t=ut(tr);
-            current_u=p.trial(tr);            
-            isthere         = find(arrayfun(@(x) any(x.states==s),current_t));
-            whichstate      = arrayfun(@(x) find(x.states==s),current_t(isthere));
-            state_onsets    = arrayfun(@(x,y) (x.states_onset(y)),current_t(isthere),whichstate);            
-            isthere         = isthere(~isnan(state_onsets));
-            state_onsets    = state_onsets(~isnan(state_onsets));
-            current_u       = current_u(isthere);
-            from            = state_onsets + EPOCHS{e,3};
-            to              = state_onsets + EPOCHS{e,4};
-            population(u).epochs_per_type{t}(isthere,e)=arrayfun(@(x,y,z) single(sum(x.arrival_times>=y & x.arrival_times<=z)/(z-y)),current_u,from,to);
+        current_t=ut(tr);
+        if ~isempty(current_t)
+            for e=1:size(EPOCHS,1)
+                s=EPOCHS{e,2};
+                current_u=p.trial(tr);
+                isthere         = find(arrayfun(@(x) any(x.states==s),current_t));
+                whichstate      = arrayfun(@(x) find(x.states==s),current_t(isthere));
+                state_onsets    = arrayfun(@(x,y) (x.states_onset(y)),current_t(isthere),whichstate);
+                isthere         = isthere(~isnan(state_onsets));
+                state_onsets    = state_onsets(~isnan(state_onsets));
+                current_u       = current_u(isthere);
+                from            = state_onsets + EPOCHS{e,3};
+                to              = state_onsets + EPOCHS{e,4};
+                population(u).epochs_per_type{t}(isthere,e)=arrayfun(@(x,y,z) single(sum(x.arrival_times>=y & x.arrival_times<=z)/(z-y)),current_u,from,to);
+            end
         end
     end
     population(u).FR                =nanmean([population(u).FR_average]);

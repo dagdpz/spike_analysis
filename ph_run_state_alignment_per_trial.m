@@ -76,9 +76,12 @@ for FN=stream_fieldnames
     sr={tr_in.([FN{:} '_SR'])};
     sr(cellfun(@isempty,sr))={0};
     sr=cell2mat(sr);
-    shift_n_samples=round(shift_in_seconds*sr)';
+    shift_n_samples=arrayfun(@(x,y) min(round(x*shift_in_seconds),size((y.(FN{:})),2)),sr',tr_in);
+    %(round(shift_in_seconds*sr)';
     % adding last second of previous trial to the beginning of the next trial
-    tempstruct=[{tr_in(1).(FN{:})}; arrayfun(@(x,y,z) [x.(FN{:})(:,end-z+1:end) y.(FN{:})(:,1:end-z)],tr_in(1:end-1),tr_in(2:end),shift_n_samples(1:end-1),'UniformOutput',false)];
+ 
+    %tempstruct=[{tr_in(1).(FN{:})(:,1:end-shift_n_samples(1))}; arrayfun(@(x,y,z,a) [x.(FN{:})(:,end-z+1:end) y.(FN{:})(:,1:end-a)],tr_in(1:end-1),tr_in(2:end),shift_n_samples(1:end-1),shift_n_samples(2:end),'UniformOutput',false)];
+    tempstruct=[{tr_in(1).(FN{:})(:,1:end-shift_n_samples(1))}; arrayfun(@(x,y,z) [x.(FN{:})(:,end-z+1:end) y.(FN{:})(:,1:end-z)],tr_in(1:end-1),tr_in(2:end),shift_n_samples(1:end-1),'UniformOutput',false)];
     % shorten first trial (remove stuff way before task)
     n_samples_to_delete=round((shift_in_seconds*-1-tr_in(1).streams_tStart)*sr(1));
     if n_samples_to_delete>-1
@@ -116,21 +119,23 @@ for t=1:numel(tr_in)
     t1=min(MA_out.states(t).TDT_state_onsets);
     t2=max(MA_out.states(t).TDT_state_onsets(1:end-1));
     if ~isempty(tr_in(t).spike_waveforms)
-        unit_wf=cell2struct(tr_in(t).spike_waveforms,'waveforms',3);
-        [trial(t).unit.waveforms]=unit_wf.waveforms;
         if t>1
             %% add previous trial's spikes to the beginning
             prev_t_correction=-(MA_out.states(t).trial_onset_time -MA_out.states(t-1).trial_onset_time);
             AA=cellfun(@(x,y) single([x(x+prev_t_correction>-shift_in_seconds)+prev_t_correction;y]),tr_in(t-1).spike_arrival_times,tr_in(t).spike_arrival_times,'Uniformoutput',false);
+            WF=cellfun(@(x,y,z) single([y(x+prev_t_correction>-shift_in_seconds,:);z]),tr_in(t-1).spike_arrival_times,tr_in(t-1).spike_waveforms,tr_in(t).spike_waveforms,'Uniformoutput',false);
             unit_at=cell2struct(AA,'arrival_times',3);
+            unit_wf=cell2struct(WF,'waveforms',3);
         else
+            unit_wf=cell2struct(tr_in(t).spike_waveforms,'waveforms',3);
             unit_at=cell2struct(tr_in(t).spike_arrival_times,'arrival_times',3);
         end
         [trial(t).unit.arrival_times]=unit_at.arrival_times;
+        [trial(t).unit.waveforms]=unit_wf.waveforms;
         AA=arrayfun(@(x) sum(x.arrival_times>t1 & x.arrival_times<t2)/(t2-t1),trial(t).unit,'Uniformoutput',false);
         [trial(t).unit.FR_average]=AA{:};
     else
-        
+        %size(unit_wf.waveforms,1)~=size(unit_at.arrival_times,1);
     end
 end
 

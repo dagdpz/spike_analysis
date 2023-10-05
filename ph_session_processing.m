@@ -166,7 +166,7 @@ for current_date = sessions(:)'
         if keys.plot.waveforms && any(~ismember({pop_resorted.unit_ID},all_unit_IDs))
             keys.path_to_save=[keys.basepath_to_save keys.project_version filesep 'spike_shapes' filesep];
             plot_sorted_waveforms(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not found in sorting table');
-            plot_across_time(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),keys,'units not found in sorting table',ch_start_end,'FR');
+            plot_across_time(pop_resorted((~ismember({pop_resorted.unit_ID},all_unit_IDs))),trials,keys,'units not found in sorting table',ch_start_end,'FR');
         end
         
         % Excluding cells that are not found in the sortign table... i.e. pop_resorted.unit_ID wont be assigned
