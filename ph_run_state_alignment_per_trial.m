@@ -260,7 +260,7 @@ if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR || 
             
             % stability
             FRs_cat=[units_cat(c,u,:).FR_average];
-            cutoff=FRs_cat<0.5; % | FRs_cat<unit_mean-confidence_interval;
+            cutoff=FRs_cat<keys.cal.FR(1); % instead of hradcoding cutoff at 0.5 Hz
             cut_diff=diff([true cutoff]);
             first_valid=1;
             last_valid=numel(FRs_cat);
@@ -293,6 +293,8 @@ if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR || 
             ISI_cat = arrayfun(@(x) diff(x.arrival_times)', units_cat(c,u,:), 'UniformOutput', false);
             ISI_cat = [ISI_cat{:}];
             singleunitness = sum(ISI_cat < 0.003)/length(ISI_cat); % fraction of ISIs shorter than 3ms
+            
+            %% make firing rates NaN if they do not surpass the threshold, NOT stability ?
             
             for t=1:numel(trial) % another loop? not so cool
                 if keys.cal.automatic_stablity

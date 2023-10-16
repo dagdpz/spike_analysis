@@ -64,20 +64,20 @@ for u=1:numel(population)
         typ=UC.type(t);
         eff=UC.type_effector(UC.type_effector(:,1)==typ,2);
         keys=ph_get_epoch_keys(keys,typ,eff(1),numel(eff)>1); %taking eff(1) is admittedly sloppy here
-                
-        present_epochs=keys.EPOCHS_PER_TYPE{typ}(:,1); % now we pretend all epochs are there...        
+        
+        present_epochs=keys.EPOCHS_PER_TYPE{typ}(:,1); % now we pretend all epochs are there...
         DN_epoch{t}    =ismember(present_epochs,K.epoch_DN);
         RF_epoch{t}    =ismember(present_epochs,K.epoch_RF);
         BL_epoch{t}    =ismember(present_epochs,K.epoch_BL);
         PF_epoch{t}    =ismember(present_epochs,K.epoch_PF);
         
         
-        ut_typ=[ut.type]==typ; 
-        pop.epochs_per_type{typ}=pop.epochs_per_type{typ}(ut_acc(alltypes==typ),:);        
+        ut_typ=[ut.type]==typ;
+        pop.epochs_per_type{typ}=pop.epochs_per_type{typ}(ut_acc(alltypes==typ),:);
         
         %trpar   =ut_con(trtyp);
         
-        %per_epoch=pop.epochs_per_type{typ}(trpar,:); %only current type!        
+        %per_epoch=pop.epochs_per_type{typ}(trpar,:); %only current type!
         
         if strcmp(K.normalization,'by_all_trials') %% this one does not work right now
             trpar=true(size([pop.trial]));
@@ -95,26 +95,30 @@ for u=1:numel(population)
             if ~any(tr(:,n)) %
                 continue
             end
-            per_epoch=pop.epochs_per_type{typ}(tr(ut_typ,n),:); 
+            per_epoch=pop.epochs_per_type{typ}(tr(ut_typ,n),:);
             if strcmp(K.normalization,'percent_change') %not sure if this really percent change, the scale should be logarithmic?
                 norm_factor(tr(:,n))=nanmean([per_epoch(:,BL_epoch{t}) per_epoch(:,DN_epoch{t}) NaN])/100;
                 baseline(tr(:,n))   =nanmean([per_epoch(:,BL_epoch{t}) per_epoch(:,DN_epoch{t}) NaN]);
             else
-                baseline(tr(:,n))   =nanmean(vertcat(per_epoch(:,BL_epoch{t})));
-                norm_factor(tr(:,n))=nanmean(vertcat(per_epoch(:,DN_epoch{t})));
+                if any(BL_epoch{t})
+                    baseline(tr(:,n))   =nanmean(vertcat(per_epoch(:,BL_epoch{t})));
+                end
+                if any(DN_epoch{t})
+                    norm_factor(tr(:,n))=nanmean(vertcat(per_epoch(:,DN_epoch{t})));
+                end
             end
-            if any(PF_epoch{t}) 
+            if any(PF_epoch{t})
                 PF_epoch_FR(tr(:,n))   =per_epoch(:,PF_epoch{t});
             end
         end
         
         %% per trial baseline/normalization! should divisive be by trial as well?
         if K.baseline_per_trial
-            per_epoch=pop.epochs_per_type{typ}(ut_acc(ut_typ),:); 
+            per_epoch=pop.epochs_per_type{typ}(ut_acc(ut_typ),:);
             baseline(ut_typ)=per_epoch(:,BL_epoch{t});
         end
         %% validate
-        if strcmp(K.normalization,'none') || sum(DN_epoch{t})==0 
+        if strcmp(K.normalization,'none') || sum(DN_epoch{t})==0
             norm_factor(:)= 1;
         end
         if (~K.FR_subtract_baseline  || sum(BL_epoch{t})==0) && ~strcmp(K.normalization,'percent_change') % 20211102 percent_change has subtract baseline included basically
@@ -157,7 +161,7 @@ for u=1:numel(population)
         end
         
         clear per_epoch_FR
-        per_epoch=pop.epochs_per_type{typ}(ut_acc(ut_typ),:); 
+        per_epoch=pop.epochs_per_type{typ}(ut_acc(ut_typ),:);
         per_epoch_FR=(per_epoch-repmat(double(baseline(ut_acc(ut_typ))'),1,size(per_epoch,2)))./repmat(norm_factor(ut_acc(ut_typ))',1,size(per_epoch,2));
         pop_out(u).epochs_per_type{typ}=per_epoch_FR;
     end
@@ -166,8 +170,8 @@ for u=1:numel(population)
     if strcmp(keys.normalization_field,'AN') || strcmp(keys.normalization_field,'TU')
         continue
     end
-        
-    %% PSTH calculation    
+    
+    %% PSTH calculation
     ut=ph_LR_to_CI(keys,pop,ut); % Convert to ipsi/contra? not sure if necessary here
     for t=1:numel(UC.type)
         typ=UC.type(t);
@@ -183,8 +187,8 @@ for u=1:numel(population)
                 FR_for_pref(p)=nanmean((PF_epoch_FR(ut_hemi & ut_typ')-baseline(ut_hemi & ut_typ'))./norm_factor(ut_hemi & ut_typ'));
             end
             [~,pref_idx]=max(FR_for_pref);
-            switch K.unpref_def 
-                case 'minimum'  
+            switch K.unpref_def
+                case 'minimum'
                     [~,unpref_idx]=min(FR_for_pref);
                 case 'horizontally_opposite'
                     [~,unpref_idx]=min(abs(nanmean([UC.position(:,1)+UC.position(pref_idx,1) UC.position(:,2)-UC.position(pref_idx,2)],2)));
@@ -212,10 +216,10 @@ for u=1:numel(population)
             trpar(end+1,:)=ut_typ; %% comment this line to see where it leads??
             ut_con=all(trpar,1);
             %per_epoch=get_per_epoch(pop.trial(tr_con));% take already normalized values
-             per_epoch=pop.epochs_per_type{typ}(ut_con(ut_typ),:);
+            per_epoch=pop.epochs_per_type{typ}(ut_con(ut_typ),:);
             for ep=1:size(per_epoch,2)
                 for p=1:size(UC.position,1)
-                    ut_pos=all(abs(bsxfun(@minus,vertcat(ut.position),UC.position(p,:)))<keys.cal.precision_tar,2) & ut_con' & [ut.choice]'==0; 
+                    ut_pos=all(abs(bsxfun(@minus,vertcat(ut.position),UC.position(p,:)))<keys.cal.precision_tar,2) & ut_con' & [ut.choice]'==0;
                     condition(t,c).per_position(p).epoch(ep).unit(u).FR=nanmean(per_epoch(ut_pos(ut_typ),ep))-nanmean(baseline(ut_pos & ut_typ'));
                 end
             end
@@ -291,7 +295,7 @@ for u=1:numel(population)
                         end
                     end
                 end
-                                
+                
                 if strcmp(keys.normalization_field,'PO') %% && plot_position??
                     for p=1:size(UC.position,1)
                         ix=all(abs(bsxfun(@minus,vertcat(ut.position),UC.position(p,:)))<keys.cal.precision_tar,2)';
@@ -318,13 +322,13 @@ for u=1:numel(population)
                             condition(t,c).per_position(p).sign.unit(u)=sign(mean(PF_epoch_FR(ix) - baseline(ix)));
                         else
                             condition(t,c).per_position(p).sign.unit(u)=0;
-                       end
+                        end
                     end
                 end
             end
             
             zin_per_pos=NaN(size(UC.position,1),1);
-
+            
             %% Always compute firing rates per position if theres at least one trial for htis condition (?)
             if sum(ut_acc) == 0
                 continue
