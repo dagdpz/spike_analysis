@@ -484,7 +484,7 @@ for ch=1:numel(conditions.choice)
                         bootstrapped.ch_prefHO_FR_bl(boots)=nanmean(FR(idx_CH_prefHO_in_bl));
                     end
                     
-                    if min([numel(FR_LS_in),numel(FR_RS_in),sum(idx_CH_prefHO_in),sum(idx_CH_prefHI_in)])>=keys.cal.min_trials_per_condition
+                    if min([numel(FR_LS_in),numel(FR_RS_in),sum(idx_CH_prefHO_in),sum(idx_CH_prefHI_in)])>=keys.cal.min_trials_pref
                         p= sum([bootstrapped.ch_prefHI_FR]-[bootstrapped.in_prefHI_FR]<0)/n_boots;
                         p(p>0.5)=p-1;p=p*2;
                         %h= prctile([bootstrapped.ch_prefHI_FR]-[bootstrapped.in_prefHI_FR],2.5) >0 | prctile([bootstrapped.ch_prefHI_FR]-[bootstrapped.in_prefHI_FR],97.5) <0;
@@ -539,7 +539,7 @@ for ch=1:numel(conditions.choice)
                     idxb_CH_prefPI_in  =idx.pt_ch & idx.hands(:,hn) & ismember(epochs,b) & idx.pos==RF_position_index_IN;
                     idxb_CH_prefPO_in  =idx.pt_ch & idx.hands(:,hn) & ismember(epochs,b) & idx.opp==RF_position_index_IN;
                     
-                    if sum(idx_IN_prefPI_in)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPI_in)>=keys.cal.min_trials_per_condition
+                    if sum(idx_IN_prefPI_in)>=keys.cal.min_trials_pref && sum(idx_CH_prefPI_in)>=keys.cal.min_trials_pref
                         [h,p,n]=do_stats(FR(idx_IN_prefPI_in),FR(idx_CH_prefPI_in),keys,0);
                         DF=nanmean(FR(idx_CH_prefPI_in))-nanmean(FR(idx_IN_prefPI_in));
                         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
@@ -551,24 +551,24 @@ for ch=1:numel(conditions.choice)
                         anova_struct=add_normality_results(anova_struct,[CH PT  '_' LHRH '_' s{:}  '_prefP'],keys,n);
                     end
                     
-                    if sum(idx_IN_prefPI_in)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPI_in)>=keys.cal.min_trials_per_condition &&...
-                            sum(idx_IN_prefPO_in)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPO_in)>=keys.cal.min_trials_per_condition
+                    if sum(idx_IN_prefPI_in)>=keys.cal.min_trials_pref && sum(idx_CH_prefPI_in)>=keys.cal.min_trials_pref &&...
+                            sum(idx_IN_prefPO_in)>=keys.cal.min_trials_pref && sum(idx_CH_prefPO_in)>=keys.cal.min_trials_pref
                         anova_struct.([IN PT '_' LHRH '_' s{:}  '_prefP_DF'])   =nanmean(FR(idx_IN_prefPI_in))-nanmean(FR(idx_IN_prefPO_in));
                         anova_struct.([CH PT  '_' LHRH '_' s{:}  '_prefP_DF'])   =nanmean(FR(idx_CH_prefPI_in))-nanmean(FR(idx_CH_prefPO_in));
                     end
-                    if sum(idx_IN_prefPI_in)>=keys.cal.min_trials_per_condition
+                    if sum(idx_IN_prefPI_in)>=keys.cal.min_trials_pref
                         anova_struct.([IN PT '_' LHRH '_' s{:}  '_prefPI_FR'])  =nanmean(FR(idx_IN_prefPI_in));
                         anova_struct.([IN PT '_' LHRH '_' s{:}  '_prefPI_DF'])  =nanmean(FR(idx_IN_prefPI_in))-nanmean(FR(idxb_IN_prefPI_in));
                     end
-                    if sum(idx_IN_prefPO_in)>=keys.cal.min_trials_per_condition
+                    if sum(idx_IN_prefPO_in)>=keys.cal.min_trials_pref
                         anova_struct.([IN PT '_' LHRH '_' s{:}  '_prefPO_FR'])  =nanmean(FR(idx_IN_prefPO_in));
                         anova_struct.([IN PT '_' LHRH '_' s{:}  '_prefPO_DF'])  =nanmean(FR(idx_IN_prefPO_in))-nanmean(FR(idxb_IN_prefPO_in));
                     end
-                    if sum(idx_CH_prefPI_in)>=keys.cal.min_trials_per_condition
+                    if sum(idx_CH_prefPI_in)>=keys.cal.min_trials_pref
                         anova_struct.([CH PT  '_' LHRH '_' s{:}  '_prefPI_FR'])  =nanmean(FR(idx_CH_prefPI_in));
                         anova_struct.([CH PT  '_' LHRH '_' s{:}  '_prefPI_DF'])  =nanmean(FR(idx_CH_prefPI_in))-nanmean(FR(idxb_CH_prefPI_in));
                     end
-                    if sum(idx_CH_prefPO_in)>=keys.cal.min_trials_per_condition
+                    if sum(idx_CH_prefPO_in)>=keys.cal.min_trials_pref
                         anova_struct.([CH PT  '_' LHRH '_' s{:}  '_prefPO_FR'])  =nanmean(FR(idx_CH_prefPO_in));
                         anova_struct.([CH PT  '_' LHRH '_' s{:}  '_prefPO_DF'])  =nanmean(FR(idx_CH_prefPO_in))-nanmean(FR(idxb_CH_prefPO_in));
                     end
@@ -584,7 +584,7 @@ for ch=1:numel(conditions.choice)
                     idxb_CH_prefPI_ch  =idx.pt_ch & idx.hands(:,hn) & ismember(epochs,b) & idx.pos==RF_position_index_CH;
                     idxb_CH_prefPO_ch  =idx.pt_ch & idx.hands(:,hn) & ismember(epochs,b) & idx.opp==RF_position_index_CH;
                     
-                    if sum(idx_IN_prefPI_ch)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPI_ch)>=keys.cal.min_trials_per_condition
+                    if sum(idx_IN_prefPI_ch)>=keys.cal.min_trials_pref && sum(idx_CH_prefPI_ch)>=keys.cal.min_trials_pref
                         [h,p,n]=do_stats(FR(idx_IN_prefPI_ch),FR(idx_CH_prefPI_ch),keys,0);
                         DF=nanmean(FR(idx_CH_prefPI_ch))-nanmean(FR(idx_IN_prefPI_ch));
                         labelindex=h*sign(DF)+2; labelindex(isnan(labelindex))=2;
@@ -596,24 +596,24 @@ for ch=1:numel(conditions.choice)
                         anova_struct=add_normality_results(anova_struct,[CH PT  '_' LHRH '_' s{:}  '_prefPch'],keys,n);
                     end
                     
-                    if sum(idx_IN_prefPI_ch)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPI_ch)>=keys.cal.min_trials_per_condition &&...
-                            sum(idx_IN_prefPO_ch)>=keys.cal.min_trials_per_condition && sum(idx_CH_prefPO_ch)>=keys.cal.min_trials_per_condition
+                    if sum(idx_IN_prefPI_ch)>=keys.cal.min_trials_pref && sum(idx_CH_prefPI_ch)>=keys.cal.min_trials_pref &&...
+                            sum(idx_IN_prefPO_ch)>=keys.cal.min_trials_pref && sum(idx_CH_prefPO_ch)>=keys.cal.min_trials_pref
                         anova_struct.([IN PT '_' LHRH '_' s{:}  '_prefPch_DF'])   =nanmean(FR(idx_IN_prefPI_ch))-nanmean(FR(idx_IN_prefPO_ch));
                         anova_struct.([CH PT  '_' LHRH '_' s{:}  '_prefPch_DF'])   =nanmean(FR(idx_CH_prefPI_ch))-nanmean(FR(idx_CH_prefPO_ch));
                     end
-                    if sum(idx_IN_prefPI_ch)>=keys.cal.min_trials_per_condition
+                    if sum(idx_IN_prefPI_ch)>=keys.cal.min_trials_pref
                         anova_struct.([IN PT '_' LHRH '_' s{:}  '_prefPIch_FR'])   =nanmean(FR(idx_IN_prefPI_ch));
                         anova_struct.([IN PT '_' LHRH '_' s{:}  '_prefPIch_DF'])   =nanmean(FR(idx_IN_prefPI_ch))-nanmean(FR(idxb_IN_prefPI_ch));
                     end
-                    if sum(idx_IN_prefPO_ch)>=keys.cal.min_trials_per_condition
+                    if sum(idx_IN_prefPO_ch)>=keys.cal.min_trials_pref
                         anova_struct.([IN PT '_' LHRH '_' s{:}  '_prefPOch_FR'])   =nanmean(FR(idx_IN_prefPO_ch));
                         anova_struct.([IN PT '_' LHRH '_' s{:}  '_prefPOch_DF'])   =nanmean(FR(idx_IN_prefPO_ch))-nanmean(FR(idxb_IN_prefPO_ch));
                     end
-                    if sum(idx_CH_prefPI_ch)>=keys.cal.min_trials_per_condition
+                    if sum(idx_CH_prefPI_ch)>=keys.cal.min_trials_pref
                         anova_struct.([CH PT  '_' LHRH '_' s{:}  '_prefPIch_FR'])   =nanmean(FR(idx_CH_prefPI_ch));
                         anova_struct.([CH PT  '_' LHRH '_' s{:}  '_prefPIch_DF'])   =nanmean(FR(idx_CH_prefPI_ch))-nanmean(FR(idxb_CH_prefPI_ch));
                     end
-                    if sum(idx_CH_prefPO_ch)>=keys.cal.min_trials_per_condition
+                    if sum(idx_CH_prefPO_ch)>=keys.cal.min_trials_pref
                         anova_struct.([CH PT  '_' LHRH '_' s{:}  '_prefPOch_FR'])   =nanmean(FR(idx_CH_prefPO_ch));
                         anova_struct.([CH PT  '_' LHRH '_' s{:}  '_prefPOch_DF'])   =nanmean(FR(idx_CH_prefPO_ch))-nanmean(FR(idxb_CH_prefPO_ch));
                     end

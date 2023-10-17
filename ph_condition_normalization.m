@@ -199,8 +199,8 @@ for u=1:numel(population)
             pref_valid(t,u)=true;
             for ch=UC.choice
                 pref_valid(t,u)=pref_valid(t,u) && pref_idx~=unpref_idx && ...
-                    sum(all(abs(bsxfun(@minus,vertcat(ut(ut_typ).position),UC.position(pref_idx,:)))<keys.cal.precision_tar,2)   & [ut(ut_typ).choice]'==ch) >=keys.cal.min_trials_per_condition && ...
-                    sum(all(abs(bsxfun(@minus,vertcat(ut(ut_typ).position),UC.position(unpref_idx,:)))<keys.cal.precision_tar,2) & [ut(ut_typ).choice]'==ch) >=keys.cal.min_trials_per_condition;
+                    sum(all(abs(bsxfun(@minus,vertcat(ut(ut_typ).position),UC.position(pref_idx,:)))<keys.cal.precision_tar,2)   & [ut(ut_typ).choice]'==ch) >=keys.cal.min_trials_pref && ...
+                    sum(all(abs(bsxfun(@minus,vertcat(ut(ut_typ).position),UC.position(unpref_idx,:)))<keys.cal.precision_tar,2) & [ut(ut_typ).choice]'==ch) >=keys.cal.min_trials_pref;
             end
         end
         
