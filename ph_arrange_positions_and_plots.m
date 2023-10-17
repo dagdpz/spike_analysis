@@ -36,13 +36,6 @@ cue_idx=displacement_types(:,15);
 stm_idx=displacement_types(:,16);
 non_idx=ones(size(displacement_types,1),1);
 
-[~,u_all_idx_idx]=unique(all_idx);
-[~,u_fix_idx_idx]=unique(fix_idx);
-[~,u_tar_idx_idx]=unique(tar_idx);
-[~,u_cue_idx_idx]=unique(cue_idx);
-[~,u_mov_idx_idx]=unique(mov_idx);
-[~,u_stm_idx_idx]=unique(stm_idx);
-
 choices                 =[o.choice]';
 hands                   =[o.reach_hand]';
 cueshape                =[o.cue_shape]';
@@ -97,8 +90,8 @@ con_for_row             = eff_idx;
 fig_title               = '';
 sub_title               = 'movement vector ';
 val_for_figure          = mov_val;
-val_for_sub_assignment  = mov_val(u_mov_idx_idx,:);
-val_for_pos_assignment  = mov_val(u_mov_idx_idx,:);
+val_for_sub_assignment  = mov_val;
+val_for_pos_assignment  = mov_val;
 position_indexes        = mov_idx;
 fixation_indexes        = fix_idx;
 hemifield_indexes       = (real([o.tar_pos]' - [o.fix_pos]')>0)+1;
@@ -112,8 +105,8 @@ switch keys.arrangement
         fig_title               = '';
         val_for_figure          = cueshape;
         sub_title               = 'cue position';
-        val_for_sub_assignment  = cue_val(u_cue_idx_idx,:);
-        val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
+        val_for_sub_assignment  = cue_val;
+        val_for_pos_assignment  = cue_val;
         position_indexes        = cue_idx;
         
     case 'cue_position'
@@ -121,8 +114,8 @@ switch keys.arrangement
         fig_title               = 'success ';
         sub_title               = 'cue position';
         val_for_figure          = success;
-        val_for_sub_assignment  = cue_val(u_cue_idx_idx,:);
-        val_for_pos_assignment  = cue_val(u_cue_idx_idx,:);
+        val_for_sub_assignment  = cue_val;
+        val_for_pos_assignment  = cue_val;
         position_indexes        = cue_idx;
         
     case 'hand_choices'
@@ -145,13 +138,13 @@ switch keys.arrangement
         fig_title               = 'choice_instructed_comp ';
         val_for_figure          = effectors;
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
-     
+        
     case 'hands_in_ch'
         con_for_figure          = eff_idx;
         fig_title               = 'choice_instructed_comp ';
         val_for_figure          = effectors;
         [~,~,con_for_column]    = unique([hands hemifield_indexes],'rows');
-  
+        
     case 'hands'
         con_for_figure          = cho_idx;
         con_for_row             = ones(size(con_for_figure));
@@ -164,8 +157,8 @@ switch keys.arrangement
     case 'fixation'
         con_for_row             = eff_idx;
         sub_title               = 'fixation at ';
-        val_for_sub_assignment  = fix_val(u_fix_idx_idx,:);
-        val_for_pos_assignment  = fix_val(u_fix_idx_idx,:);
+        val_for_sub_assignment  = fix_val;
+        val_for_pos_assignment  = fix_val;
         position_indexes        = fix_idx;
         
     case 'movement vectors'
@@ -173,39 +166,43 @@ switch keys.arrangement
         
     case 'target location by origin'
         sub_title               = 'target position ';
-        val_for_sub_assignment  = tar_val(u_tar_idx_idx,:);
-        val_for_pos_assignment  = tar_val(u_tar_idx_idx,:);
+        val_for_sub_assignment  = tar_val;
+        val_for_pos_assignment  = tar_val;
         position_indexes        = tar_idx;
 end
 
-%% subplot positions
-[subplot_pos, columns, rows]= DAG_dynamic_positions({val_for_sub_assignment});
-
-[o.columns]     =deal(columns);
-[o.rows]        =deal(rows);
+%% subplot positions fro singel cell plotting -> individually for each session (and tasktype ?)
+[sessions,~,session_index]=unique([o.session]);
+for s=sessions
+    idx_s=session_index==s;
+    typs=unique([o(idx_s).type]);
+    for t=typs
+        idx=idx_s & [o.type]==t;
+        u_val=unique(val_for_sub_assignment(idx,:),'rows');
+        [~,~,p_idx]=unique(position_indexes(idx));
+        [subplot_pos, columns, rows]= DAG_dynamic_positions({u_val});
+        [o(idx).columns]     =deal(columns);
+        [o(idx).rows]        =deal(rows);
+        subplot_pos_cell     =num2cell(subplot_pos(p_idx));
+        [o(idx).subplot_pos]   =deal(subplot_pos_cell{:});
+    end
+end
 [o.figure_title_part]        =deal(fig_title);
+
 
 %% figure title value seems to be quite annoying...
 for n=1:numel(o)
     o(n).figure_title_value=num2str(val_for_figure(n,:));
 end
 
-% %info.figure_title_part      =fig_title;
-% figure_title_value=
-% for n=1:numel(val_for_figure)
-%     temp     =[arrayfun(@num2str, val_for_figure{n}, 'unif', 0)'; repmat({' '},size(val_for_figure{n},1),1)'];
-%     info.figure_title_value{n,1}     =[temp{:}];
-% end
-
 %% Assigning each trial
-position            =num2cell(val_for_pos_assignment(position_indexes,:),2);
+position            =num2cell(val_for_pos_assignment,2);
 fixation            =num2cell(fixation_per_trial,2);
-hemifield           =num2cell(sign(val_for_pos_assignment(position_indexes,1)));
+hemifield           =num2cell(sign(val_for_pos_assignment(:,1)));
 
 con_for_figure      =num2cell(con_for_figure);
 con_for_column      =num2cell(con_for_column);
 con_for_row         =num2cell(con_for_row);
-subplot_pos         =num2cell(subplot_pos(position_indexes));
 position_indexes    =num2cell(position_indexes);
 fixation_indexes    =num2cell(fixation_indexes);
 
@@ -213,7 +210,6 @@ fixation_indexes    =num2cell(fixation_indexes);
 [o.figure]         =deal(con_for_figure{:});
 [o.column]         =deal(con_for_column{:});
 [o.row]            =deal(con_for_row{:});
-[o.subplot_pos]    =deal(subplot_pos{:});
 [o.pos_index]      =deal(position_indexes{:});
 [o.fix_index]      =deal(fixation_indexes{:});
 
@@ -275,7 +271,7 @@ fixation=fixation-1i*fix_y;
 target=target-1i*fix_y;
 
 displacement_types=[real(fixation) imag(fixation) real(movement) imag(movement) real(target) imag(target) real(cuepos) imag(cuepos), real(stmpos) imag(stmpos),...
-    unique_condition fixation_location movement_direction target_location, cue_location, stimulus_location]; 
+    unique_condition fixation_location movement_direction target_location, cue_location, stimulus_location];
 
 if numel(trial)==0
     displacement_types=NaN(1,16);

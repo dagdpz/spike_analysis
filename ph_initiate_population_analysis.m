@@ -45,7 +45,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
             % ph_epochs takes a bit too long for comfort, think about saving epochs (?)
             population=ph_epochs(population,trials,keys);
             trials=trials([trials.completed]);
-            if ismember(population_analysis_to_perform,{'uni'}) %% for single cell plotting, add eye/hand traces
+            if any(ismember(population_analysis_to_perform,{'uni'})) %% for single cell plotting, add eye/hand traces
                 trials=ph_load_traces([keys.basepath_to_save keys.project_version],['traces_' keys.monkey],trials);
             end
         else
@@ -83,13 +83,8 @@ for P=population_analysis_to_perform
         keys.(AN).gaussian_kernel=keys.gaussian_kernel;
         
         %% DEFAULTS
-        keys.tt.SNR_rating=keys.cal.SNR_rating;
-        keys.tt.stability_rating=keys.cal.stablity; %:(
-        keys.tt.Single_rating=keys.cal.single_rating; %% :(
         keys.tt.FR=keys.cal.FR; %:(
         keys.tt.n_spikes=keys.cal.n_spikes; %% :(
-        
-        
         
         %% key asignment
         FN=fieldnames(keys_in.(ana)(cc));

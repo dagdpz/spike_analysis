@@ -1,7 +1,8 @@
 function ph_plot_unit_per_condition(population,trials,keys)
 %tuning_per_unit_table=keys.tuning_per_unit_table;
 %% colors and ylim preparation
-eye_offset  =   -keys.UN.trials_max_for_ylim-keys.UN.excentricity_max_for_ylim*keys.UN.eyetrace_factor;
+raster_trial_height=0.1;
+eye_offset  =   -keys.UN.trials_max_for_ylim*raster_trial_height-keys.UN.excentricity_max_for_ylim*keys.UN.eyetrace_factor;
 hnd_offset  =   eye_offset-keys.UN.excentricity_max_for_ylim*keys.UN.eyetrace_factor*2;
 eye_col_v   =   keys.colors.eye_ver;
 eye_col_h   =   keys.colors.eye_hor;
@@ -38,8 +39,8 @@ for u=1:numel(population)
         if strcmp(keys.UN.line_labelling,'contra/ipsi')
             T=ph_LR_to_CI(keys,pop,T); % Convert to ipsi/contra? not sure if necessary here
         end
-        nrows=T(1).rows;
-        ncolumns=T(1).columns;
+        nrows=T(te_idx).rows;
+        ncolumns=T(te_idx).columns;
         
         %o=o.trial;
         if any(hands(te_idx)>0)
@@ -172,7 +173,6 @@ for u=1:numel(population)
                                 trial_state_onset=line_struct(t).states_onset(line_struct(t).states==sta);
                                 at_idx=ATs(t).arrival_times-trial_state_onset>=t_before_state &...
                                     ATs(t).arrival_times-trial_state_onset<=t_after_state;
-                                %if ~strcmp(keys.UN.line_labelling,'contra/ipsi')
                                 time_axis=line_struct(t).time_axis-trial_state_onset+state_shift;
                                 t_idx=line_struct(t).time_axis-trial_state_onset>=t_before_state &...
                                     line_struct(t).time_axis-trial_state_onset<=t_after_state;
@@ -182,20 +182,18 @@ for u=1:numel(population)
                                     line(time_axis(t_idx),line_struct(t).x_hnd(t_idx)*keys.UN.hndtrace_factor + hnd_offset,'color',hnd_col_h);
                                     line(time_axis(t_idx),line_struct(t).y_hnd(t_idx)*keys.UN.hndtrace_factor + hnd_offset,'color',hnd_col_v);
                                 end
-                                %end
                                 AT=[ATs(t).arrival_times(at_idx)]'+state_shift-trial_state_onset;
-                                raster=[raster [AT;repmat(raster_y-t*0.1,size(AT))]];
-                                %ig_make_raster(AT,raster_y-t,1,0,'Color',col,'LineWidth',keys.UN.raster_width);
+                                raster=[raster [AT;repmat(raster_y-t*raster_trial_height,size(AT))]];
                             end
                             scatter(raster(1,:),raster(2,:),10,col,'s','filled');
-                            line([state_shift+t_before_state state_shift+t_after_state],[raster_y-t raster_y-t],'Color',col,'LineWidth',0.5);
+                            line([state_shift+t_before_state state_shift+t_after_state],[raster_y-t*raster_trial_height raster_y-t*raster_trial_height],'Color',col,'LineWidth',0.5);
                             
                             if w==1
-                                not_accepted=find(~[line_struct.accepted])*-1+raster_y;
-                                plot((state_shift+t_before_state)*ones(size(not_accepted)),not_accepted,'marker','s','markeredgecolor','k','markerfacecolor','k','linestyle','none');
+%                                 not_accepted=find(~[line_struct.accepted])*-1+raster_y;
+%                                 plot((state_shift+t_before_state)*ones(size(not_accepted)),not_accepted,'marker','s','markeredgecolor','k','markerfacecolor','k','linestyle','none');
                                 text(state_shift+t_before_state,raster_y,['N=' num2str(t)],'Color',col,'fontsize',5,'verticalalignment','top');
                             end
-                            raster_y=raster_y-n_trials;
+                            raster_y=raster_y-n_trials*raster_trial_height;
                             
                         end
                         state_seperator_max=max([state_seperator_max;state_seperator]);
@@ -218,7 +216,7 @@ for u=1:numel(population)
                 if sum(tr_idx)==0 % might be the case if all trials are excluded cause of no spikes
                     continue;
                 end
-                subplot_indizes=1:max([T.subplot_pos]);
+                subplot_indizes=1:max([T(tr_idx).subplot_pos]);
                 clear FR_heat;
                 
                 for sub=subplot_indizes
