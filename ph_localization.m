@@ -9,6 +9,10 @@ TT=keys.tuning_table;
 
 co = {'b','m','r'}; % visual,visuomotor, motor
 switch keys.significance_to_plot
+    case 'ungrouped'
+        task_column=DAG_find_column_index(TT,'ungrouped');
+        sign_column=DAG_find_column_index(TT,'ungrouped');
+        co = {'b','m','r'}; % visual,visuomotor, motor
     case 'memory'
         task_column=DAG_find_column_index(TT,'in_epoch_main_Msac_fix');
         sign_column=DAG_find_column_index(TT,'in_NH_Cue_position_Msac_opt');
