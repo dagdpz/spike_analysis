@@ -177,7 +177,7 @@ for s=sessions
     idx_s=session_index==s;
     typs=unique([o(idx_s).type]);
     for t=typs
-        idx=idx_s & [o.type]==t;
+        idx=idx_s & [o.type]'==t;
         u_val=unique(val_for_sub_assignment(idx,:),'rows');
         [~,~,p_idx]=unique(position_indexes(idx));
         [subplot_pos, columns, rows]= DAG_dynamic_positions({u_val});
