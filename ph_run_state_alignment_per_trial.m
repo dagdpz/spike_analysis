@@ -276,8 +276,8 @@ if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR || 
             end
             
             FRs_cat=FRs_cat(first_valid:last_valid);
-            FRs_cat=smooth(FRs_cat,10);
-            stability=nanmean(FRs_cat)/nanstd(FRs_cat);
+%             FRs_cat=smooth(FRs_cat,10);
+            stability= var(FRs_cat, 'omitnan') / mean(FRs_cat, 'omitnan'); % Fano-factor: variance / mean
             
             % SNR
             WFs_cat=vertcat(units_cat(c,u,first_valid:last_valid).waveforms);
