@@ -33,11 +33,10 @@ chNumStr  = chNumStr(end-2:end);
 
 concatWCfile = dir([session_info.Input_WC 'concatenation_info.mat']);
 concatInfo = load([concatWCfile.folder filesep concatWCfile.name]);
-chId = concatInfo.channels_to_process == chNum;
 
-matchBlocks = cellfun(@(x) isequal(x, blkNum), concatInfo.whattofindwhere{chId}); % check that block lists match
+matchBlocks = cellfun(@(x) any(ismember(x, blkNum)), concatInfo.whattofindwhere{chNum}); % check that block lists overlap at least partially
     
-fileNums = cellfun(@(x) x{chId}, concatInfo.wheretofindwhat(concatInfo.whattofindwhere{chId}{matchBlocks}));
+fileNums = cellfun(@(x) x{chNum}, concatInfo.wheretofindwhat(concatInfo.whattofindwhere{chNum}{matchBlocks}));
 
 wcFileNum = unique(fileNums);
 
