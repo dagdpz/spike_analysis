@@ -174,7 +174,7 @@ end
 %% subplot positions fro singel cell plotting -> individually for each session (and tasktype ?)
 [sessions,~,session_index]=unique([o.session]);
 for s=sessions
-    idx_s=session_index==s;
+    idx_s=session_index(:)==s;
     typs=unique([o(idx_s).type]);
     for t=typs
         idx=idx_s & [o.type]'==t;

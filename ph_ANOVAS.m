@@ -72,7 +72,7 @@ for unit=1:numel(population)
         rows_to_update=size(TT,1)+1;
     end
     clear unit_table;
-    inital_fieldnames={'unit_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','n_spikes','avg_stability','avg_SNR','avg_single_rating','waveform_width'};
+    inital_fieldnames={'unit_ID','site_ID','monkey','target','perturbation_site','grid_x','grid_y','electrode_depth','FR','n_spikes','avg_stability','avg_SNR','avg_single_rating','waveform_width'};
     unit_table(1,1:numel(inital_fieldnames))=inital_fieldnames;
     for fn=1:numel(inital_fieldnames)
         unit_table{2,fn}=population(unit).(inital_fieldnames{fn});
