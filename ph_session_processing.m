@@ -273,7 +273,7 @@ u_block_runs=unique([Trial.block; Trial.run]','rows');
 u_blocks=unique([Trial.block]);
 [~,b_idx]=ismember(u_block_runs(:,1),u_blocks);
 b_idx_multiple_runs=[0 diff(b_idx')==0];
-if ~isempty(b_idx_multiple_runs)
+if any(b_idx_multiple_runs)
     blocks_with_multiple_runs=unique(u_block_runs(b_idx_multiple_runs,1));
     for b=1:numel(blocks_with_multiple_runs)
         block=blocks_with_multiple_runs(b);
