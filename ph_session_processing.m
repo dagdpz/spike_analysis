@@ -206,14 +206,14 @@ for current_date = sessions(:)'
             save([keys.population_foldername filesep keys.population_filename '_' current_date{1} '.mat'],'population');
         end
         clear pop_resorted population
-    end    
+    end
     clear data_per_run
 end
 end
 
 %% data resorting functions
 
-function sites = sort_by_site_ID(o_t) 
+function sites = sort_by_site_ID(o_t)
 sites=struct('site_ID',{});
 site_index=0;
 for b=1:size(o_t,2)
@@ -266,6 +266,36 @@ function Trial = sort_by_trial(o_t)
 fieldnames_to_remove={'time_axis','x_eye','y_eye','x_hnd','y_hnd','unit','channel','TDT_LFPx','TDT_CAP1','TDT_ECG1','TDT_ECG4','TDT_POX1'};
 Trial=[o_t.trial];
 Trial=rmfield(Trial,fieldnames_to_remove(ismember(fieldnames_to_remove,fieldnames(Trial))));
+
+%% fix two runs in different blocks TIMING issue
+timings_to_correct={'TDT_LFPx_t0_from_rec_start','TDT_CAP1_t0_from_rec_start','TDT_ECG1_t0_from_rec_start','TDT_ECG4_t0_from_rec_start','TDT_POX1_t0_from_rec_start'};
+u_block_runs=unique([Trial.block; Trial.run]','rows');
+u_blocks=unique([Trial.block]);
+[~,b_idx]=ismember(u_block_runs(:,1),u_blocks);
+b_idx_multiple_runs=[0 diff(b_idx')==0];
+if ~isempty(b_idx_multiple_runs)
+    blocks_with_multiple_runs=unique(u_block_runs(b_idx_multiple_runs,1));
+    for b=1:numel(blocks_with_multiple_runs)
+        block=blocks_with_multiple_runs(b);
+        runs_in_this_block=u_block_runs(u_block_runs(:,1)==block,2);
+        
+        first_run_onset=Trial([Trial.block]==block & [Trial.run]==runs_in_this_block(1)).run_onset_time;
+        
+        onset_shift=first_run_onset;
+        for r=2:numel(runs_in_this_block)
+            run=runs_in_this_block(r);
+            t=[Trial.block]==block & [Trial.run]==run;
+            for FN=timings_to_correct
+                fn=FN{:};
+                if isfield(Trial,fn);
+                    to_assign=num2cell([Trial(t).(fn)]+[Trial(t).run_onset_time]-onset_shift);
+                    [Trial(t).(fn)]=deal(to_assign{:});
+                    onset_shift=onset_shift+Trial(t).run_onset_time;
+                end
+            end
+        end
+    end
+end
 end
 
 function pop_resorted = sort_by_unit_ID(o_t)
@@ -554,7 +584,7 @@ for n_unit=1:numel(o)
     end
     plot(wf_per_block','-k','linewidth',2);
     unit_title={sprintf('%s %.1f Hz ch/De: %d/%.2f SN/Si/St: %.1f/%.1f/%.1f',...
-            o(n_unit).unit_ID,nanmean(o(n_unit).FR_average), o(n_unit).channel,o(n_unit).electrode_depth,o(n_unit).avg_SNR,o(n_unit).avg_single_rating,o(n_unit).avg_stability),...
+        o(n_unit).unit_ID,nanmean(o(n_unit).FR_average), o(n_unit).channel,o(n_unit).electrode_depth,o(n_unit).avg_SNR,o(n_unit).avg_single_rating,o(n_unit).avg_stability),...
         sprintf('b&u: %s',[o(n_unit).block_unit{:}])}; %MP add number of spikes
     title(unit_title,'interpreter','none','fontsize',6)
     if  max(max(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) > min(min(all_spikes_wf(1:50:n_sel_spike_wf*50,:))) % not sure what this bug is about... Lin 20160303
@@ -615,9 +645,9 @@ firstbin=min([trials.run_onset_time]);
 lastbin=lastbin+max(trials(lasttrial_idx).states_onset);
 
 units=1:numel(o);
-for u=units    
+for u=units
     unit_trial_ID=[o(u).block; o(u).run; o(u).n]';
-    trials_in_unit=trials(ismember(trial_IDs,unit_trial_ID,'rows'));    
+    trials_in_unit=trials(ismember(trial_IDs,unit_trial_ID,'rows'));
     subplot(n_columns_rows,n_columns_rows,u);
     hold on;
     binsize=60;
@@ -634,14 +664,14 @@ for u=units
     if ismember(whattoplot,{'SNR','amp','noise'})
         snr=NaN(size(bins));
         amp=NaN(size(bins));
-        noi=NaN(size(bins));        
+        noi=NaN(size(bins));
         for b=1:numel(bins)
             idx=AT>bins(b)-binsize/2 & AT<bins(b)+binsize/2;
             meanwf=mean(WF(idx,:),1);
             noi(b)=mean(std(WF(idx,:),1));
             amp(b)=abs(max(meanwf)-min(meanwf));
             snr(b)=amp(b)/noi(b);
-        end        
+        end
     end
     switch whattoplot
         case 'FR'
