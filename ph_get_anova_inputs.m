@@ -16,7 +16,13 @@ function [FR,epochs,idx,u_pos,u_fix]=ph_get_anova_inputs(o,trial,keys)
             idx.in =        repmat([trial.choice]'==0,n_epochs,1);
             idx.E1 =        repmat([trial.effector]'==min([trial.effector]),n_epochs,1);
             idx.E2 =        repmat([trial.effector]'==max([trial.effector]),n_epochs,1);
-            idx.SS =        repmat([trial.dataset]',n_epochs,1); %% subset!            
+           % idx.SS =        repmat([trial.dataset]',n_epochs,1); %% subset!  
+            % this part should not be needed if Daataset entries in
+            % sorted_neurons file are unique per block
+            for t=1:numel(trial)
+                SS(t)=trial(t).dataset(1);
+            end    
+            idx.SS =        repmat(SS',n_epochs,1); %% subset!      
             idx.SS(idx.SS==max(idx.SS))=1;
             idx.SS(idx.SS==min(idx.SS))=0;
             idx.SS(isnan(idx.SS))=0;
