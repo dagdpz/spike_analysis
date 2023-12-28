@@ -160,6 +160,10 @@ for current_date = sessions(:)'
         [pop_resorted.date]=deal(str2double(keys.date));
         pop_resorted = ph_accept_trials_per_unit(pop_resorted,trials,keys);                %% add field accepted for each trial per unit
         
+        pop_resorted = ph_unit_criterias_across_blocks(pop_resorted,trials,keys);                %% add field accepted for each trial per unit
+        
+        
+        
         % plot the cells not meeting criteria - not needed any more (?)
         idx_Neuron_ID=DAG_find_column_index(keys.sorting_table,'Neuron_ID');
         all_unit_IDs=keys.sorting_table_units(:,idx_Neuron_ID);
@@ -272,7 +276,7 @@ timings_to_correct={'TDT_LFPx_t0_from_rec_start','TDT_CAP1_t0_from_rec_start','T
 u_block_runs=unique([Trial.block; Trial.run]','rows');
 u_blocks=unique([Trial.block]);
 [~,b_idx]=ismember(u_block_runs(:,1),u_blocks);
-b_idx_multiple_runs=[0 diff(b_idx')==0];
+b_idx_multiple_runs=[false diff(b_idx')==0];
 if any(b_idx_multiple_runs)
     blocks_with_multiple_runs=unique(u_block_runs(b_idx_multiple_runs,1));
     for b=1:numel(blocks_with_multiple_runs)
@@ -290,7 +294,7 @@ if any(b_idx_multiple_runs)
                 if isfield(Trial,fn);
                     to_assign=num2cell([Trial(t).(fn)]+[Trial(t).run_onset_time]-onset_shift);
                     [Trial(t).(fn)]=deal(to_assign{:});
-                    onset_shift=onset_shift+Trial(t).run_onset_time;
+                    onset_shift=onset_shift+unique([Trial(t).run_onset_time]);
                 end
             end
         end

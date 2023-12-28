@@ -9,7 +9,7 @@ t=t(u_trials);
 u_trials=ismember(trial_id_u,trial_id_t,'rows');
 
 %% add more?
-fields_to_take_over={'accepted'};
+fields_to_take_over={'accepted','FR_average'};
 for fn=fields_to_take_over
     if isfield(u,fn{:})
     current_field=num2cell(u.(fn{:})(u_trials));

@@ -277,14 +277,19 @@ if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR || 
             
             FRs_cat=FRs_cat(first_valid:last_valid);
 %             FRs_cat=smooth(FRs_cat,10);
-            stability= var(FRs_cat(~isnan(FRs_cat))) / nanmean(FRs_cat); % Fano-factor: variance / mean
+            %stability= var(FRs_cat(~isnan(FRs_cat))) / nanmean(FRs_cat); % Fano-factor: variance / mean
+            stability= log(nanmean(FRs_cat))/log(std(FRs_cat(~isnan(FRs_cat)))) ; % Fano-factor: variance / mean
             
             % SNR
             WFs_cat=vertcat(units_cat(c,u,first_valid:last_valid).waveforms);
-            waveform_average=mean(WFs_cat,1);
-            waveform_std=std(WFs_cat,0,1);
-            waveform_amplitude=max(waveform_average)-min(waveform_average);
-            snr=waveform_amplitude/mean(waveform_std); % redefine "noise" based on broadband (?)
+            amps=max(abs(WFs_cat),[],2);
+            WF_rescaled=WFs_cat./repmat(amps,1,size(WFs_cat,2));
+%             waveform_average=mean(WFs_cat,1);
+%             waveform_std=std(WFs_cat,0,1);
+%             waveform_amplitude=max(waveform_average)-min(waveform_average);
+%             snr=waveform_amplitude/mean(waveform_std); % redefine "noise" based on broadband (?)
+            
+            snr=1/mean(std(WF_rescaled,0,1));
             
             % single-unit'ness as it was defined by Kim et al., 2009,
             % J.Neuro:
