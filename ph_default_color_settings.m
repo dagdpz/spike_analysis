@@ -392,6 +392,9 @@ colors.SS_D2_2H_SU_CS=temp_colors_C(16,:);
 colors.TT_D2_2H_SU_CS=temp_colors_C(17,:);
 colors.TD_D2_2H_SU_CS=temp_colors_C(18,:);
 
+colors.Task=[255 0 0];
+colors.Rest=[0 0 255];
+
 %% preferred and unpreferred same as contra/ipsi + add different perturbation block colors
 color_fieldnames=fieldnames(colors);
 for fn=1:numel(color_fieldnames)

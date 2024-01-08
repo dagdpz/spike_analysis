@@ -682,6 +682,9 @@ for u=units
             toplot=hist(AT,bins')/binsize;
             toplot_per_trial=[o(u).FR_average];
             toplot_per_trial(isnan(toplot_per_trial))=0;
+            
+            toplot=[o(u).FR_average];
+            bins=[trials_in_unit.trial_onset_time]+[trials_in_unit.run_onset_time]-firstbin;
         case 'SNR'
             toplot=snr;
             toplot_per_trial=[o(u).SNR_rating];
@@ -705,9 +708,9 @@ for u=units
         start_block=trials_in_unit(find(tr_idx,1,'first')).run_onset_time-firstbin+trials_in_unit(find(tr_idx,1,'first')).trial_onset_time;
         end_block=start_block+trials_in_unit(find(tr_idx,1,'last')).trial_onset_time-trials_in_unit(find(tr_idx,1,'first')).trial_onset_time;
         fanoish_factor=trial_stability(tr_idx);fanoish_factor=fanoish_factor(1);
-        if fanoish_factor > 5 %% replace with keys
+        if fanoish_factor > 1 %% replace with keys
             col='g';
-        elseif fanoish_factor> 2.5
+        elseif fanoish_factor> 0
             col='b';
         else
             col='r';
