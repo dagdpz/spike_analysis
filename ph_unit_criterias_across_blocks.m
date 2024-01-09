@@ -75,7 +75,7 @@ for u=1:numel(pop_resorted)
         end
     end
     
-    for_average=T.accepted;    
+    for_average=pop_resorted(u).accepted;    
     stability= log(nanmean(FR(for_average)))/log(std(FR(for_average))) ; % Fano-factor: variance / mean
     WFs_cat=vertcat(U.trial(for_average).waveforms);
     amps=max(abs(WFs_cat),[],2);
