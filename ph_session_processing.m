@@ -695,16 +695,28 @@ for u=units
             toplot=noi;
             toplot_per_trial=zeros(numel(o(u).trial),1);
     end
-    plot(bins,toplot);
+    plot(bins,toplot,'k','linewidth',1);
     y_lim=ylim(gca);
     trial_blocks=[o(u).block];
     trial_stability=[o(u).stability_rating];
     unique_blocks=unique(trial_blocks);
     for b=unique_blocks
-        tr_idx=trial_blocks==b & ~isnan(trial_stability);
+        
+        tr_idx=trial_blocks==b;
         if sum(tr_idx)<2; continue; end;            % it can happen that an entire block is not accepted if FR changed drastically
+        if all([trials(tr_idx).type]==1)
+            style=':';
+        else
+            style='-';
+        end
+        if any(tr_idx & ~isnan(trial_stability))
+            tr_idx = tr_idx & ~isnan(trial_stability);
+            block_mean=double(nanmean(toplot_per_trial(tr_idx)));
+        else
+            block_mean=0;
+        end
+        
         %FR_std=double(nanstd(FR_smoothed(tr_idx)));
-        block_mean=double(nanmean(toplot_per_trial(tr_idx)));
         start_block=trials_in_unit(find(tr_idx,1,'first')).run_onset_time-firstbin+trials_in_unit(find(tr_idx,1,'first')).trial_onset_time;
         end_block=start_block+trials_in_unit(find(tr_idx,1,'last')).trial_onset_time-trials_in_unit(find(tr_idx,1,'first')).trial_onset_time;
         fanoish_factor=trial_stability(tr_idx);fanoish_factor=fanoish_factor(1);
@@ -715,9 +727,9 @@ for u=units
         else
             col='r';
         end
-        plot([start_block end_block],[block_mean block_mean],col,'linewidth',2)
-        plot([start_block start_block],[0 block_mean],col,'linewidth',2)
-        plot([end_block end_block],[0 block_mean],col,'linewidth',2)
+        plot([start_block end_block],[block_mean block_mean],col,'linestyle',style,'linewidth',2)
+        plot([start_block start_block],[0 block_mean],col,'linestyle',style,'linewidth',2)
+        plot([end_block end_block],[0 block_mean],col,'linestyle',style,'linewidth',2)
         if strcmp(whattoplot,'FR')
             text(double(start_block+(end_block-start_block)/2), diff(y_lim)/2,sprintf('%0.1f',fanoish_factor),'fontsize',4,'HorizontalAlignment', 'Center')
         end
@@ -725,6 +737,10 @@ for u=units
     unit_title={sprintf('%s %.1f Hz ch/De: %d/%.2f ',o(u).unit_ID,nanmean(o(u).FR_average),o(u).channel,o(u).electrode_depth),...
         sprintf('b&u: %s',[o(u).block_unit{:}])}; %MP add number of spikes
     title(unit_title,'interpreter','none','fontsize',6);
+    switch whattoplot
+        case 'FR'
+            set(gca,'xlim',[0,lastbin-firstbin]);
+    end
 end
 ph_title_and_save(FR_summary_handle,fig_title,fig_title,keys)
 end

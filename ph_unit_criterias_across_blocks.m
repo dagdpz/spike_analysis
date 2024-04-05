@@ -31,22 +31,28 @@ for u=1:numel(pop_resorted)
             end
             tr=all(trcon,1) & ut_typ & acc;
             
+            clear p_ttests;
             u_blocks=unique(block(tr));
             spikes_per_block=[];
             for b=1:numel(u_blocks)
                 bl=u_blocks(b);
                 spikes_per_block(b)=sum(N_spikes_per_trial(block==bl));
+                
+                [~,p_ttests(b)]=ttest2(FR(tr & block==bl),FR(tr & block~=bl));
             end
             
             valid_blocks=u_blocks;
             valid_FRs=spikes_per_block;
+            %valid_FRs=p_ttests;
             p=0;
-            while p<0.01 && numel(unique(block(tr)))>1
+            while p<0.00005 && numel(unique(block(tr)))>1
                 % ANOVA to find main effect of block
                 %p = anova1(FR(tr),block(tr),'off');
-                p = kruskalwallis(FR(tr),block(tr),'off');
-                if p<0.01
+                p = anova1(FR(tr),block(tr),'off');
+                if p<0.00005
                     % remove block with least spikes
+                    % think about instead removing the block with the most
+                    % significant difference from the rest
                     [~,ix]=min(valid_FRs);
                     valid_blocks(ix)=[];
                     valid_FRs(ix)=[];
