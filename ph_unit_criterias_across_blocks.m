@@ -75,8 +75,8 @@ for u=1:numel(pop_resorted)
             %             pop_resorted(u).criteria.(['stability_' typ_label(1) '_' labels{c}])         =nanmean(pop_resorted(u).stability_rating(for_average)); %% recompute based on FR per trial (?)
             %             pop_resorted(u).criteria.(['SNR_' typ_label(1) '_' labels{c}])               =nanmean(pop_resorted(u).SNR_rating(for_average));      %% recompute based on waveforms per trial (?)
             %pop_resorted(u).(['single_rating_' typ_label(1) '_' labels{n}])     =nanmean(pop_resorted(u).(stability)(for_average));
-            pop_resorted(u).(['criteria_stability_' typ_label(1) '_' labels{c}])         = stability; %% recompute based on FR per trial (?)
-            pop_resorted(u).(['criteria_SNR_' typ_label(1) '_' labels{c}])               = snr;      %% recompute based on waveforms per trial (?)
+            pop_resorted(u).criteria.(['stability_' typ_label(1) '_' labels{c}])         =stability; %% recompute based on FR per trial (?)
+            pop_resorted(u).criteria.(['SNR_' typ_label(1) '_' labels{c}])                =snr;      %% recompute based on waveforms per trial (?)
             
         end
     end
