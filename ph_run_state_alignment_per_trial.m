@@ -79,7 +79,7 @@ for FN=stream_fieldnames
     shift_n_samples=arrayfun(@(x,y) min(round(x*shift_in_seconds),size((y.(FN{:})),2)),sr',tr_in);
     %(round(shift_in_seconds*sr)';
     % adding last second of previous trial to the beginning of the next trial
- 
+    
     %tempstruct=[{tr_in(1).(FN{:})(:,1:end-shift_n_samples(1))}; arrayfun(@(x,y,z,a) [x.(FN{:})(:,end-z+1:end) y.(FN{:})(:,1:end-a)],tr_in(1:end-1),tr_in(2:end),shift_n_samples(1:end-1),shift_n_samples(2:end),'UniformOutput',false)];
     tempstruct=[{tr_in(1).(FN{:})(:,1:end-shift_n_samples(1))}; arrayfun(@(x,y,z) [x.(FN{:})(:,end-z+1:end) y.(FN{:})(:,1:end-z)],tr_in(1:end-1),tr_in(2:end),shift_n_samples(1:end-1),'UniformOutput',false)];
     % shorten first trial (remove stuff way before task)
@@ -118,7 +118,7 @@ end
 for t=1:numel(tr_in)
     t1=MA_out.states(t).TDT_state_onsets([MA_out.states(t).TDT_states]==2);
     t2=MA_out.states(t).start_end;
-        
+    
     if ~isempty(tr_in(t).spike_waveforms)
         if t>1
             %% add previous trial's spikes to the beginning
@@ -135,6 +135,7 @@ for t=1:numel(tr_in)
         [trial(t).unit.waveforms]=unit_wf.waveforms;
         AA=arrayfun(@(x) sum(x.arrival_times>t1 & x.arrival_times<t2)/(t2-t1),trial(t).unit,'Uniformoutput',false);
         [trial(t).unit.FR_average]=AA{:};
+        [trial(t).unit.trial_duration]=deal(t2-t1);
     else
         %size(unit_wf.waveforms,1)~=size(unit_at.arrival_times,1);
     end
@@ -258,43 +259,62 @@ if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR || 
     units_cat=cat(3,trial.unit);
     for c=1:n_chans_u,
         for u=1:n_units
+            consecutive_bins_below_fr=5;
             
             % stability
             FRs_cat=[units_cat(c,u,:).FR_average];
-            cutoff=FRs_cat<keys.cal.FR(1); % instead of hradcoding cutoff at 0.5 Hz
-            cut_diff=diff([true cutoff]);
-            first_valid=1;
-            last_valid=numel(FRs_cat);
-            if cutoff(1)
-                first_valid=find(cut_diff,1,'first');
+            tdurs=[units_cat(c,u,:).trial_duration];
+            torig=cumsum(tdurs)-tdurs(1);
+            
+            [FRrs,trs] = ph_resample_FRs(FRs_cat,torig);
+            
+            %  for each block, resample FR to 10 s bins, remove trials overlapping with epochs where FR is <2 spikes/s for longer than 5 x 10 s bins, keep the longest period
+            minthr=max(keys.cal.FR(1),mean(FRrs(FRrs>keys.cal.FR(1)))/2);
+            valid=FRrs>minthr;
+            valid_onsets=diff([false valid false]);
+            ons=find(valid_onsets==1);
+            offs=find(valid_onsets==-1)-1;
+            if numel(ons)>=1
+                long_enough=offs-ons>consecutive_bins_below_fr; %% 5 bins here hardcoded
+                ons=ons(long_enough);
+                offs=offs(long_enough);
             end
-            if cutoff(end)
-                last_valid=find(cut_diff,1,'last')-1;
+            if numel(ons)>1
+                long_enough=ons(2:end)-offs(1:end-1)>consecutive_bins_below_fr; %% 5 bins here hardcoded
+                ons=ons([true long_enough]);
+                offs=offs([long_enough true]);
             end
-            if all(cutoff)
+            [~,whichislongest]=max(offs-ons);
+            on=ons(whichislongest);
+            off=offs(whichislongest);
+            on(on<=consecutive_bins_below_fr)=1;
+            off(off>numel(FRrs)-consecutive_bins_below_fr)=numel(FRrs);
+            if any(on)
+                first_valid=find(torig>=trs(on),1,'first');
+                last_valid=find(torig<=trs(off+1),1,'last');
+                FRs_cat=FRs_cat(first_valid:last_valid);
+                FRrs = ph_resample_FRs(FRs_cat,torig(first_valid:last_valid));
+                stability= nanmean(FRrs)/std(FRrs(~isnan(FRrs))) ; % Fano-factor: variance / mean
+            else
                 last_valid=1;
                 first_valid=numel(FRs_cat);
+                stability=NaN;
             end
-            
-            FRs_cat=FRs_cat(first_valid:last_valid);
-%             FRs_cat=smooth(FRs_cat,10);
-            %stability= var(FRs_cat(~isnan(FRs_cat))) / nanmean(FRs_cat); % Fano-factor: variance / mean
-            stability= log(nanmean(FRs_cat))/log(std(FRs_cat(~isnan(FRs_cat)))) ; % Fano-factor: variance / mean
             
             % SNR
             WFs_cat=vertcat(units_cat(c,u,first_valid:last_valid).waveforms);
             amps=max(abs(WFs_cat),[],2);
             WF_rescaled=WFs_cat./repmat(amps,1,size(WFs_cat,2));
-%             waveform_average=mean(WFs_cat,1);
-%             waveform_std=std(WFs_cat,0,1);
-%             waveform_amplitude=max(waveform_average)-min(waveform_average);
-%             snr=waveform_amplitude/mean(waveform_std); % redefine "noise" based on broadband (?)
+            %             waveform_average=mean(WFs_cat,1);
+            %             waveform_std=std(WFs_cat,0,1);
+            %             waveform_amplitude=max(waveform_average)-min(waveform_average);
+            %             snr=waveform_amplitude/mean(waveform_std); % redefine "noise" based on broadband (?)
             
             snr=1/mean(std(WF_rescaled,0,1));
             
             % single-unit'ness as it was defined by Kim et al., 2009,
             % J.Neuro:
-            % "Units with <1% of ISIs <3 ms were classified as single 
+            % "Units with <1% of ISIs <3 ms were classified as single
             % units. All others were classified as multiunits."
             ISI_cat = arrayfun(@(x) diff(x.arrival_times)', units_cat(c,u,:), 'UniformOutput', false);
             ISI_cat = [ISI_cat{:}];
@@ -306,8 +326,14 @@ if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR || 
                 if keys.cal.automatic_stablity
                     if t>=first_valid && t<=last_valid
                         trial(t).unit(c,u).stability_rating=single(stability);
+                        if keys.cal.block_stability(1) <= stability && stability <= keys.cal.block_stability(2)
+                            trial(t).unit(c,u).exclusion_reason=0;
+                        else
+                            trial(t).unit(c,u).exclusion_reason=2;
+                        end
                     else
                         trial(t).unit(c,u).stability_rating=single(NaN);
+                        trial(t).unit(c,u).exclusion_reason=1;
                     end
                 end
                 if keys.cal.automatic_SNR

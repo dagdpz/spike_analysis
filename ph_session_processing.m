@@ -193,12 +193,12 @@ for current_date = sessions(:)'
                 end
                 to_plot=csortidx(start_idx+1:end_idx);
                 ch_start_end=['ch_' num2str(channels(start_idx+1)) '-' num2str(channels(end_idx))];
-                plot_sorted_waveforms(pop_resorted(to_plot),keys,['sorted units, ' ch_start_end]);
-                plot_sorted_ISI(pop_resorted(to_plot),trials,keys,['sorted units ISI, ' ch_start_end]);
+%                 plot_sorted_waveforms(pop_resorted(to_plot),keys,['sorted units, ' ch_start_end]);
+%                 plot_sorted_ISI(pop_resorted(to_plot),trials,keys,['sorted units ISI, ' ch_start_end]);
                 plot_across_time(pop_resorted(to_plot),trials,keys,'sorted units',ch_start_end,'FR');
-                plot_across_time(pop_resorted(to_plot),trials,keys,'sorted units',ch_start_end,'SNR');
-                plot_across_time(pop_resorted(to_plot),trials,keys,'sorted units',ch_start_end,'amp');
-                plot_across_time(pop_resorted(to_plot),trials,keys,'sorted units',ch_start_end,'noise');
+%                 plot_across_time(pop_resorted(to_plot),trials,keys,'sorted units',ch_start_end,'SNR');
+%                 plot_across_time(pop_resorted(to_plot),trials,keys,'sorted units',ch_start_end,'amp');
+%                 plot_across_time(pop_resorted(to_plot),trials,keys,'sorted units',ch_start_end,'noise');
                 start_idx=find(channels==channels(end_idx),1,'last');
             end
         end
@@ -303,7 +303,7 @@ end
 end
 
 function pop_resorted = sort_by_unit_ID(o_t)
-fields_to_keep_unit={'FR_average','stability_rating','SNR_rating'};
+fields_to_keep_unit={'FR_average','stability_rating','SNR_rating','exclusion_reason'};
 fields_to_keep_trial={'block','run','n'};
 ttt=[fields_to_keep_unit,fields_to_keep_trial ; cell(size([fields_to_keep_unit fields_to_keep_trial]))];
 pop_resorted=struct('unit_ID',{},'trial',{},'waveforms',{},'avg_SNR',{},'avg_single_rating',{},'avg_stability',{},'block_unit',{},ttt{:});
@@ -648,8 +648,12 @@ firstbin=min([trials.run_onset_time]);
 [lastbin,lasttrial_idx]=max([trials.run_onset_time]+[trials.trial_onset_time]);
 lastbin=lastbin+max(trials(lasttrial_idx).states_onset);
 
+tdur=arrayfun(@(x) x.states_onset(x.states==90)-x.states_onset(x.states==2),trials);
+
 units=1:numel(o);
 for u=units
+    trial_blocks=[o(u).block];
+    unique_blocks=unique(trial_blocks);
     unit_trial_ID=[o(u).block; o(u).run; o(u).n]';
     trials_in_unit=trials(ismember(trial_IDs,unit_trial_ID,'rows'));
     subplot(n_columns_rows,n_columns_rows,u);
@@ -663,8 +667,8 @@ for u=units
         AT=vertcat(AT,ATt(ATt>0 & ATt<trials_in_unit(t).states_onset(end-1))+trials_in_unit(t).trial_onset_time+trials_in_unit(t).run_onset_time-firstbin);
         WF=vertcat(WF,WFt);%(ATt>0 & ATt<o(u).trial(t).states_onset(end-1),:));
     end
-    bins=0:binsize:(lastbin-firstbin);
     
+    bins=0:binsize:(lastbin-firstbin);
     if ismember(whattoplot,{'SNR','amp','noise'})
         snr=NaN(size(bins));
         amp=NaN(size(bins));
@@ -679,12 +683,29 @@ for u=units
     end
     switch whattoplot
         case 'FR'
-            toplot=hist(AT,bins')/binsize;
+            %% resample per block
+            bins_rs=[];
+            FR_rs=[];
+            for b=unique_blocks
+                btru=trial_blocks==b;
+                FRb=o(u).FR_average(btru);
+                btr=[trials.block]==b;
+                tb=cumsum(tdur(btr));
+                %% add half the duration here ?
+                tb=[0 tb(1:end-1)]+ [trials(btr).run_onset_time]  - firstbin;
+                tb_withITI=cumsum([0 diff([trials(btr).trial_onset_time])]) + [trials(btr).run_onset_time] - firstbin ; 
+                
+                binrsb= ph_resample_FRs(tb_withITI,tb);
+                FRrsb = ph_resample_FRs(FRb,tb);
+                
+                bins_rs=[bins_rs binrsb];
+                FR_rs=[FR_rs FRrsb];
+            end
+            bins=bins_rs;
+            toplot=FR_rs;
             toplot_per_trial=[o(u).FR_average];
             toplot_per_trial(isnan(toplot_per_trial))=0;
             
-            toplot=[o(u).FR_average];
-            bins=[trials_in_unit.trial_onset_time]+[trials_in_unit.run_onset_time]-firstbin;
         case 'SNR'
             toplot=snr;
             toplot_per_trial=[o(u).SNR_rating];
@@ -695,43 +716,76 @@ for u=units
             toplot=noi;
             toplot_per_trial=zeros(numel(o(u).trial),1);
     end
-    plot(bins,toplot,'k','linewidth',1);
+    plot(bins,toplot,'k','linewidth',0.1);
     y_lim=ylim(gca);
-    trial_blocks=[o(u).block];
     trial_stability=[o(u).stability_rating];
-    unique_blocks=unique(trial_blocks);
+    exclusion_reason=[o(u).exclusion_reason];
     for b=unique_blocks
         
-        tr_idx=trial_blocks==b;
-        if sum(tr_idx)<2; continue; end;            % it can happen that an entire block is not accepted if FR changed drastically
-        if all([trials(tr_idx).type]==1)
+        tr_ok=trial_blocks==b;
+        if sum(tr_ok)<2; continue; end;            % it can happen that an entire block is not accepted if FR changed drastically
+        if all([trials(tr_ok).type]==1)
             style=':';
         else
             style='-';
         end
-        if any(tr_idx & ~isnan(trial_stability))
-            tr_idx = tr_idx & ~isnan(trial_stability);
-            block_mean=double(nanmean(toplot_per_trial(tr_idx)));
+        if any(tr_ok & ~isnan(trial_stability))
+            tr_bad = tr_ok & isnan(trial_stability);
+            tr_ok = tr_ok & ~isnan(trial_stability);
+            block_mean=double(nanmean(toplot_per_trial(tr_ok)));
         else
             block_mean=0;
+            tr_bad = tr_ok;
+        end
+        if any(tr_bad)
+            bad_starts=find(diff([false tr_bad])==1);
+            bad_ends  =find(diff([tr_bad false])==-1);
+            % first bit
+            
+            start_block=trials_in_unit(bad_starts(1)).run_onset_time-firstbin+trials_in_unit(bad_starts(1)).trial_onset_time;
+            end_block=start_block+trials_in_unit(bad_ends(1)).trial_onset_time-trials_in_unit(bad_starts(1)).trial_onset_time;
+            plot([start_block end_block],[0 0],'color',[0.5 0.5 0.5],'linestyle',style,'linewidth',1.5)
+            
+            % second part
+            if numel(bad_starts) == 2                
+                start_block=trials_in_unit(bad_starts(2)).run_onset_time-firstbin+trials_in_unit(bad_starts(2)).trial_onset_time;
+                end_block=start_block+trials_in_unit(bad_ends(2)).trial_onset_time-trials_in_unit(bad_starts(2)).trial_onset_time;
+                plot([start_block end_block],[0 0],'color',[0.5 0.5 0.5],'linestyle',style,'linewidth',1.5)
+            elseif numel(bad_starts) >2
+                disp('3 invalid intervals for this block ??');
+            end
         end
         
         %FR_std=double(nanstd(FR_smoothed(tr_idx)));
-        start_block=trials_in_unit(find(tr_idx,1,'first')).run_onset_time-firstbin+trials_in_unit(find(tr_idx,1,'first')).trial_onset_time;
-        end_block=start_block+trials_in_unit(find(tr_idx,1,'last')).trial_onset_time-trials_in_unit(find(tr_idx,1,'first')).trial_onset_time;
-        fanoish_factor=trial_stability(tr_idx);fanoish_factor=fanoish_factor(1);
-        if fanoish_factor > 1 %% replace with keys
-            col='g';
-        elseif fanoish_factor> 0
-            col='b';
-        else
-            col='r';
+        start_block=trials_in_unit(find(tr_ok,1,'first')).run_onset_time-firstbin+trials_in_unit(find(tr_ok,1,'first')).trial_onset_time;
+        end_block=start_block+trials_in_unit(find(tr_ok,1,'last')).trial_onset_time-trials_in_unit(find(tr_ok,1,'first')).trial_onset_time;
+        fanoish_factor=trial_stability(tr_ok);fanoish_factor=fanoish_factor(1);
+        exclusion_code=unique(exclusion_reason(tr_ok));
+        if numel(exclusion_code)>1
+                disp('several reasons to exclude block ??');
         end
-        plot([start_block end_block],[block_mean block_mean],col,'linestyle',style,'linewidth',2)
-        plot([start_block start_block],[0 block_mean],col,'linestyle',style,'linewidth',2)
-        plot([end_block end_block],[0 block_mean],col,'linestyle',style,'linewidth',2)
+        switch exclusion_code
+            case 0 %% not excluded
+            col='g';   
+            case 1 %% low FR
+            col=[0.5 0.5 0.5];
+            case 2 %% unstable in general
+            col='r';
+            case 3 %% low spike count
+            col='m';
+            case 4 %% most different FR 
+            col='b';
+             case 5 %% lower stability
+            col='c';
+        end
+        
+        
+        
+        plot([start_block end_block],[block_mean block_mean],'color',col,'linestyle',style,'linewidth',1.5)
+        plot([start_block start_block],[0 block_mean],'color',col,'linestyle',style,'linewidth',1.5)
+        plot([end_block end_block],[0 block_mean],'color',col,'linestyle',style,'linewidth',1.5)
         if strcmp(whattoplot,'FR')
-            text(double(start_block+(end_block-start_block)/2), diff(y_lim)/2,sprintf('%0.1f',fanoish_factor),'fontsize',4,'HorizontalAlignment', 'Center')
+            text(double(start_block+(end_block-start_block)/2), diff(y_lim)/4,sprintf('%0.1f',fanoish_factor),'fontsize',8,'HorizontalAlignment', 'Center')
         end
     end
     unit_title={sprintf('%s %.1f Hz ch/De: %d/%.2f ',o(u).unit_ID,nanmean(o(u).FR_average),o(u).channel,o(u).electrode_depth),...
@@ -744,3 +798,4 @@ for u=units
 end
 ph_title_and_save(FR_summary_handle,fig_title,fig_title,keys)
 end
+
