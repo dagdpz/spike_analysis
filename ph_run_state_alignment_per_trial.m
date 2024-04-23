@@ -117,8 +117,11 @@ end
 %% spikes
 for t=1:numel(tr_in)
     t1=MA_out.states(t).TDT_state_onsets([MA_out.states(t).TDT_states]==2);
-    t2=MA_out.states(t).start_end;
-    
+    if ismember(90, [MA_out.states(t).TDT_states])
+        t2=MA_out.states(t).TDT_state_onsets([MA_out.states(t).TDT_states]==90);
+    else
+        t2=max(MA_out.states(t).TDT_state_onsets(1:end-1));
+    end
     if ~isempty(tr_in(t).spike_waveforms)
         if t>1
             %% add previous trial's spikes to the beginning

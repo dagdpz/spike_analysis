@@ -100,8 +100,9 @@ for u=1:numel(pop_resorted)
             amps=max(abs(WFs_cat),[],2);
             WF_rescaled=WFs_cat./repmat(amps,1,size(WFs_cat,2));
             snr=1/mean(std(WF_rescaled,0,1));
-            pop_resorted(u).(['criteria_stability_' typ_label(1) '_' labels{c}])         = stability;
-            pop_resorted(u).(['criteria_SNR_' typ_label(1) '_' labels{c}])               = snr;
+            
+            pop_resorted(u).criteria.(['stability_' typ_label(1) '_' labels{c}])         =stability; %% recompute based on FR per trial (?)
+            pop_resorted(u).criteria.(['SNR_' typ_label(1) '_' labels{c}])                =snr;      %% recompute based on waveforms per trial 
             
         end
     end
