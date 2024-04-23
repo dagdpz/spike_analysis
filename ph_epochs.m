@@ -6,7 +6,7 @@ for u=1:numel(population)
     ut=ph_get_unit_trials(p,trials);
     u_types=unique([trials.type]);
     
-    fields_to_shorten={'FR_average','stability_rating','SNR_rating','block','run','n','trial'};
+    fields_to_shorten={'FR_average','stability_rating','exclusion_reason','SNR_rating','block','run','n','trial'};
     for f=1:numel(fields_to_shorten)
         population(u).(fields_to_shorten{f})= p.(fields_to_shorten{f})([ut.completed]);
     end
