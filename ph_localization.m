@@ -92,7 +92,7 @@ keys.penetration_date = penetration_date;
 CL_plot_electrode_localization(keys,keys.significance_to_plot,co,0,keys.saggital_or_coronal)
 h =  findobj('type','figure');
 for n = 1:length(h);
-    export_fig(h(n),[keys.path_to_save  keys.significance_to_plot '_'  keys.monkey '_'  keys.target_area '_' num2str(n)], '-pdf','-transparent')
+    export_fig(h(n),[keys.path_to_save  keys.significance_to_plot '_'  keys.monkey '_'  keys.target_area '_' keys.saggital_or_coronal '_' num2str(n)], '-pdf','-transparent')
     close(h(n));
 end
 
