@@ -505,7 +505,8 @@ if ~isempty(temp_xlsx)
     to_exclude_s=~ismember([sorting_table{2:end,usable_index}]',1); % think about other site criterias and maybe we want an option to include not usable?
     keys.sorting_table_sites([false;to_exclude_s],:) = [];
 end
-xlswrite([keys.tuning_table_foldername filesep keys.sorted_neurons_filename],sorting_table);
+%xlswrite([keys.tuning_table_foldername temp_xlsx(1).namefilesep keys.sorted_neurons_filename],sorting_table);
+xlswrite([keys.tuning_table_foldername temp_xlsx(1).name],sorting_table);
 end
 
 
@@ -655,7 +656,7 @@ for u=units
     trial_blocks=[o(u).block];
     unique_blocks=unique(trial_blocks);
     unit_trial_ID=[o(u).block; o(u).run; o(u).n]';
-    trials_in_unit=trials(ismember(trial_IDs,unit_trial_ID,'rows'));
+    UT=trials(ismember(trial_IDs,unit_trial_ID,'rows'));
     subplot(n_columns_rows,n_columns_rows,u);
     hold on;
     binsize=60;
@@ -664,7 +665,7 @@ for u=units
     for t=1:numel(o(u).trial)
         ATt=o(u).trial(t).arrival_times;
         WFt=o(u).trial(t).waveforms;
-        AT=vertcat(AT,ATt(ATt>0 & ATt<trials_in_unit(t).states_onset(end-1))+trials_in_unit(t).trial_onset_time+trials_in_unit(t).run_onset_time-firstbin);
+        AT=vertcat(AT,ATt(ATt>0 & ATt<UT(t).states_onset(end-1))+UT(t).trial_onset_time+UT(t).run_onset_time-firstbin);
         WF=vertcat(WF,WFt);%(ATt>0 & ATt<o(u).trial(t).states_onset(end-1),:));
     end
     
@@ -689,11 +690,11 @@ for u=units
             for b=unique_blocks
                 btru=trial_blocks==b;
                 FRb=o(u).FR_average(btru);
-                btr=[trials.block]==b;
+                btr=[UT.block]==b & ismember([UT.completed],keys.cal.completed);
                 tb=cumsum(tdur(btr));
                 %% add half the duration here ?
-                tb=[0 tb(1:end-1)]+ [trials(btr).run_onset_time]  - firstbin;
-                tb_withITI=cumsum([0 diff([trials(btr).trial_onset_time])]) + [trials(btr).run_onset_time] - firstbin ; 
+                tb=[0 tb(1:end-1)]+ [UT(btr).run_onset_time]  - firstbin;
+                tb_withITI=cumsum([0 diff([UT(btr).trial_onset_time])]) + [UT(btr).run_onset_time] - firstbin ; 
                 
                 binrsb= ph_resample_FRs(tb_withITI,tb);
                 FRrsb = ph_resample_FRs(FRb,tb);
@@ -724,7 +725,7 @@ for u=units
         
         tr_ok=trial_blocks==b;
         if sum(tr_ok)<2; continue; end;            % it can happen that an entire block is not accepted if FR changed drastically
-        if all([trials(tr_ok).type]==1)
+        if all([UT(tr_ok).type]==1)
             style=':';
         else
             style='-';
@@ -742,14 +743,14 @@ for u=units
             bad_ends  =find(diff([tr_bad false])==-1);
             % first bit
             
-            start_block=trials_in_unit(bad_starts(1)).run_onset_time-firstbin+trials_in_unit(bad_starts(1)).trial_onset_time;
-            end_block=start_block+trials_in_unit(bad_ends(1)).trial_onset_time-trials_in_unit(bad_starts(1)).trial_onset_time;
+            start_block=UT(bad_starts(1)).run_onset_time-firstbin+UT(bad_starts(1)).trial_onset_time;
+            end_block=start_block+UT(bad_ends(1)).trial_onset_time-UT(bad_starts(1)).trial_onset_time;
             plot([start_block end_block],[0 0],'color',[0.5 0.5 0.5],'linestyle',style,'linewidth',1.5)
             
             % second part
             if numel(bad_starts) == 2                
-                start_block=trials_in_unit(bad_starts(2)).run_onset_time-firstbin+trials_in_unit(bad_starts(2)).trial_onset_time;
-                end_block=start_block+trials_in_unit(bad_ends(2)).trial_onset_time-trials_in_unit(bad_starts(2)).trial_onset_time;
+                start_block=UT(bad_starts(2)).run_onset_time-firstbin+UT(bad_starts(2)).trial_onset_time;
+                end_block=start_block+UT(bad_ends(2)).trial_onset_time-UT(bad_starts(2)).trial_onset_time;
                 plot([start_block end_block],[0 0],'color',[0.5 0.5 0.5],'linestyle',style,'linewidth',1.5)
             elseif numel(bad_starts) >2
                 disp('3 invalid intervals for this block ??');
@@ -757,8 +758,8 @@ for u=units
         end
         
         %FR_std=double(nanstd(FR_smoothed(tr_idx)));
-        start_block=trials_in_unit(find(tr_ok,1,'first')).run_onset_time-firstbin+trials_in_unit(find(tr_ok,1,'first')).trial_onset_time;
-        end_block=start_block+trials_in_unit(find(tr_ok,1,'last')).trial_onset_time-trials_in_unit(find(tr_ok,1,'first')).trial_onset_time;
+        start_block=UT(find(tr_ok,1,'first')).run_onset_time-firstbin+UT(find(tr_ok,1,'first')).trial_onset_time;
+        end_block=start_block+UT(find(tr_ok,1,'last')).trial_onset_time-UT(find(tr_ok,1,'first')).trial_onset_time;
         fanoish_factor=trial_stability(tr_ok);fanoish_factor=fanoish_factor(1);
         exclusion_code=unique(exclusion_reason(tr_ok));
         if numel(exclusion_code)>1

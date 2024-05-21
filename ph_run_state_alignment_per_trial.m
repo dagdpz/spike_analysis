@@ -77,10 +77,7 @@ for FN=stream_fieldnames
     sr(cellfun(@isempty,sr))={0};
     sr=cell2mat(sr);
     shift_n_samples=arrayfun(@(x,y) min(round(x*shift_in_seconds),size((y.(FN{:})),2)),sr',tr_in);
-    %(round(shift_in_seconds*sr)';
     % adding last second of previous trial to the beginning of the next trial
-    
-    %tempstruct=[{tr_in(1).(FN{:})(:,1:end-shift_n_samples(1))}; arrayfun(@(x,y,z,a) [x.(FN{:})(:,end-z+1:end) y.(FN{:})(:,1:end-a)],tr_in(1:end-1),tr_in(2:end),shift_n_samples(1:end-1),shift_n_samples(2:end),'UniformOutput',false)];
     tempstruct=[{tr_in(1).(FN{:})(:,1:end-shift_n_samples(1))}; arrayfun(@(x,y,z) [x.(FN{:})(:,end-z+1:end) y.(FN{:})(:,1:end-z)],tr_in(1:end-1),tr_in(2:end),shift_n_samples(1:end-1),'UniformOutput',false)];
     % shorten first trial (remove stuff way before task)
     n_samples_to_delete=round((shift_in_seconds*-1-tr_in(1).streams_tStart)*sr(1));
@@ -117,11 +114,7 @@ end
 %% spikes
 for t=1:numel(tr_in)
     t1=MA_out.states(t).TDT_state_onsets([MA_out.states(t).TDT_states]==2);
-    if ismember(90, [MA_out.states(t).TDT_states])
-        t2=MA_out.states(t).TDT_state_onsets([MA_out.states(t).TDT_states]==90);
-    else
-        t2=max(MA_out.states(t).TDT_state_onsets(1:end-1));
-    end
+    t2=MA_out.states(t).start_end;
     if ~isempty(tr_in(t).spike_waveforms)
         if t>1
             %% add previous trial's spikes to the beginning
@@ -308,11 +301,6 @@ if ~isempty(trial) && (keys.cal.automatic_stablity || keys.cal.automatic_SNR || 
             WFs_cat=vertcat(units_cat(c,u,first_valid:last_valid).waveforms);
             amps=max(abs(WFs_cat),[],2);
             WF_rescaled=WFs_cat./repmat(amps,1,size(WFs_cat,2));
-            %             waveform_average=mean(WFs_cat,1);
-            %             waveform_std=std(WFs_cat,0,1);
-            %             waveform_amplitude=max(waveform_average)-min(waveform_average);
-            %             snr=waveform_amplitude/mean(waveform_std); % redefine "noise" based on broadband (?)
-            
             snr=1/mean(std(WF_rescaled,0,1));
             
             % single-unit'ness as it was defined by Kim et al., 2009,
