@@ -600,45 +600,6 @@ end
 ph_title_and_save(WF_summary_handle,fig_title,fig_title,keys)
 end
 
-function plot_sorted_ISI(o,trials,keys,title_part)
-fig_title=sprintf('%s, session %s, %s',keys.monkey,keys.date,title_part);
-ISI_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',fig_title);
-trial_IDs=[trials.block; trials.run; trials.n]';
-x_bins=logspace(-3,0,30);
-x_bins=horzcat(0,x_bins);
-for u=1:numel(o)
-    unit_trial_ID=[o(u).block; o(u).run; o(u).n]';
-    trials_in_unit=trials(ismember(trial_IDs,unit_trial_ID,'rows'));
-    n_columns_rows=ceil(numel(o)^(1/2));
-    subplot(n_columns_rows,n_columns_rows,u)
-    AT=NaN;
-    for t=1:numel(o(u).trial)
-        AT=[AT o(u).trial(t).arrival_times'+trials_in_unit(t).trial_onset_time];
-    end
-    AT=unique(AT); % due to ovrelapping end and beginning of trial, spikes can be counted twice
-    all_ISI = diff(AT); %cat(2,ISI(n_unit).trial.isi);
-    
-    if ~isempty(all_ISI)
-        hist_values = histc(all_ISI,x_bins);
-        perc_first_bin = (hist_values(1)/sum(hist_values))*100;
-        x_bins_bar=logspace(-3,0,31);
-        bar(log10(x_bins_bar), hist_values)
-        h = findobj(gca,'Type','patch');
-        set(h,'FaceColor','r','EdgeColor','w');
-        x_bins_ticks = [-3:1];
-        x_bins_ticks_label = [10^-3 10^-2 10^-1 0.5];
-        set(gca,'ylim',[0 max([1 hist_values])],'xtick',x_bins_ticks,'box','off');%max(hist(all_ISI,x_bins)),'ycolor',[1 1 1],'xscale','log'
-        set(gca,'XTickLabel',sprintf('%2.0e|',x_bins_ticks_label));
-        text(-0.45,max(hist_values),[num2str(perc_first_bin,'%4.1f') '%<1ms'],'FontSize',8)
-        
-    end
-    unit_title={sprintf('%s SN/Si/St: %.1f/%.1f/%.1f',o(u).unit_ID,o(u).avg_SNR,o(u).avg_single_rating,o(u).avg_stability)...
-        sprintf(['%.1f Hz  ch/De: %d/%.2f b: ' num2str(unique([o(u).block]))],nanmean(o(u).FR_average),o(u).channel,o(u).electrode_depth)}; %MP add number of spikes
-    title(unit_title,'interpreter','none','fontsize',6)
-end
-ph_title_and_save(ISI_summary_handle,fig_title,fig_title,keys)
-end
-
 function plot_across_time(o,trials,keys,which_units,ch_start_end,whattoplot)
 title_part=[which_units ' ' whattoplot ' over time, ' ch_start_end];
 fig_title=sprintf('%s, session %s, %s',keys.monkey,keys.date,title_part);
@@ -682,15 +643,34 @@ for u=units
             snr(b)=amp(b)/noi(b);
         end
     end
+    
+    trial_stability=[o(u).stability_rating];
+    exclusion_reason=[o(u).exclusion_reason];
     switch whattoplot
         case 'FR'
             %% resample per block
             bins_rs=[];
             FR_rs=[];
+            FR_rs_c=[];
+            blocks_c=[];
             for b=unique_blocks
                 btru=trial_blocks==b;
                 FRb=o(u).FR_average(btru);
-                btr=[UT.block]==b & ismember([UT.completed],keys.cal.completed);
+                
+                
+                
+                btr=[UT.block]==b & ismember([UT.completed],keys.cal.completed) & ~isnan(trial_stability);
+                tb=cumsum(tdur(btr));
+                %% add half the duration here ?
+                tb=[0 tb(1:end-1)]+ [UT(btr).run_onset_time]  - firstbin;
+                tb_withITI=cumsum([0 diff([UT(btr).trial_onset_time])]) + [UT(btr).run_onset_time] - firstbin ; 
+                
+                FRrsb = ph_resample_FRs(FRb,tb);
+                FR_rs_c=[FR_rs_c FRrsb];
+                blocks_c=[blocks_c repmat(b,size(FRrsb))];
+                
+                
+                btr=[UT.block]==b;
                 tb=cumsum(tdur(btr));
                 %% add half the duration here ?
                 tb=[0 tb(1:end-1)]+ [UT(btr).run_onset_time]  - firstbin;
@@ -719,8 +699,6 @@ for u=units
     end
     plot(bins,toplot,'k','linewidth',0.1);
     y_lim=ylim(gca);
-    trial_stability=[o(u).stability_rating];
-    exclusion_reason=[o(u).exclusion_reason];
     for b=unique_blocks
         
         tr_ok=trial_blocks==b;
@@ -733,7 +711,7 @@ for u=units
         if any(tr_ok & ~isnan(trial_stability))
             tr_bad = tr_ok & isnan(trial_stability);
             tr_ok = tr_ok & ~isnan(trial_stability);
-            block_mean=double(nanmean(toplot_per_trial(tr_ok)));
+            block_mean=double(nanmean(FR_rs_c(blocks_c==b)));
         else
             block_mean=0;
             tr_bad = tr_ok;
@@ -799,4 +777,44 @@ for u=units
 end
 ph_title_and_save(FR_summary_handle,fig_title,fig_title,keys)
 end
+
+function plot_sorted_ISI(o,trials,keys,title_part)
+fig_title=sprintf('%s, session %s, %s',keys.monkey,keys.date,title_part);
+ISI_summary_handle     = figure('units','normalized','outerposition',[0 0 1 1],'name',fig_title);
+trial_IDs=[trials.block; trials.run; trials.n]';
+x_bins=logspace(-3,0,30);
+x_bins=horzcat(0,x_bins);
+for u=1:numel(o)
+    unit_trial_ID=[o(u).block; o(u).run; o(u).n]';
+    trials_in_unit=trials(ismember(trial_IDs,unit_trial_ID,'rows'));
+    n_columns_rows=ceil(numel(o)^(1/2));
+    subplot(n_columns_rows,n_columns_rows,u)
+    AT=NaN;
+    for t=1:numel(o(u).trial)
+        AT=[AT o(u).trial(t).arrival_times'+trials_in_unit(t).trial_onset_time];
+    end
+    AT=unique(AT); % due to ovrelapping end and beginning of trial, spikes can be counted twice
+    all_ISI = diff(AT); %cat(2,ISI(n_unit).trial.isi);
+    
+    if ~isempty(all_ISI)
+        hist_values = histc(all_ISI,x_bins);
+        perc_first_bin = (hist_values(1)/sum(hist_values))*100;
+        x_bins_bar=logspace(-3,0,31);
+        bar(log10(x_bins_bar), hist_values)
+        h = findobj(gca,'Type','patch');
+        set(h,'FaceColor','r','EdgeColor','w');
+        x_bins_ticks = [-3:1];
+        x_bins_ticks_label = [10^-3 10^-2 10^-1 0.5];
+        set(gca,'ylim',[0 max([1 hist_values])],'xtick',x_bins_ticks,'box','off');%max(hist(all_ISI,x_bins)),'ycolor',[1 1 1],'xscale','log'
+        set(gca,'XTickLabel',sprintf('%2.0e|',x_bins_ticks_label));
+        text(-0.45,max(hist_values),[num2str(perc_first_bin,'%4.1f') '%<1ms'],'FontSize',8)
+        
+    end
+    unit_title={sprintf('%s SN/Si/St: %.1f/%.1f/%.1f',o(u).unit_ID,o(u).avg_SNR,o(u).avg_single_rating,o(u).avg_stability)...
+        sprintf(['%.1f Hz  ch/De: %d/%.2f b: ' num2str(unique([o(u).block]))],nanmean(o(u).FR_average),o(u).channel,o(u).electrode_depth)}; %MP add number of spikes
+    title(unit_title,'interpreter','none','fontsize',6)
+end
+ph_title_and_save(ISI_summary_handle,fig_title,fig_title,keys)
+end
+
 
