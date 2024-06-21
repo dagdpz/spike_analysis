@@ -653,21 +653,18 @@ for u=units
             FR_rs=[];
             FR_rs_c=[];
             blocks_c=[];
+            N_c=[];
             for b=unique_blocks
-                btru=trial_blocks==b;
-                FRb=o(u).FR_average(btru);
-                
-                
-                
                 btr=[UT.block]==b & ismember([UT.completed],keys.cal.completed) & ~isnan(trial_stability);
                 tb=cumsum(tdur(btr));
                 %% add half the duration here ?
                 tb=[0 tb(1:end-1)]+ [UT(btr).run_onset_time]  - firstbin;
-                tb_withITI=cumsum([0 diff([UT(btr).trial_onset_time])]) + [UT(btr).run_onset_time] - firstbin ; 
+                FRb=o(u).FR_average(btr);
                 
                 FRrsb = ph_resample_FRs(FRb,tb);
                 FR_rs_c=[FR_rs_c FRrsb];
                 blocks_c=[blocks_c repmat(b,size(FRrsb))];
+                N_c=[N_c numel(FRrsb)];
                 
                 
                 btr=[UT.block]==b;
@@ -675,6 +672,7 @@ for u=units
                 %% add half the duration here ?
                 tb=[0 tb(1:end-1)]+ [UT(btr).run_onset_time]  - firstbin;
                 tb_withITI=cumsum([0 diff([UT(btr).trial_onset_time])]) + [UT(btr).run_onset_time] - firstbin ; 
+                FRb=o(u).FR_average(btr);
                 
                 binrsb= ph_resample_FRs(tb_withITI,tb);
                 FRrsb = ph_resample_FRs(FRb,tb);
@@ -763,6 +761,7 @@ for u=units
         plot([start_block end_block],[block_mean block_mean],'color',col,'linestyle',style,'linewidth',1.5)
         plot([start_block start_block],[0 block_mean],'color',col,'linestyle',style,'linewidth',1.5)
         plot([end_block end_block],[0 block_mean],'color',col,'linestyle',style,'linewidth',1.5)
+        text(double(start_block+(end_block-start_block)/2),0,num2str(N_c(unique_blocks==b)),'color',col,'HorizontalAlignment', 'Center')
         if strcmp(whattoplot,'FR')
             text(double(start_block+(end_block-start_block)/2), diff(y_lim)/4,sprintf('%0.1f',fanoish_factor),'fontsize',8,'HorizontalAlignment', 'Center')
         end
@@ -777,6 +776,7 @@ for u=units
 end
 ph_title_and_save(FR_summary_handle,fig_title,fig_title,keys)
 end
+
 
 function plot_sorted_ISI(o,trials,keys,title_part)
 fig_title=sprintf('%s, session %s, %s',keys.monkey,keys.date,title_part);

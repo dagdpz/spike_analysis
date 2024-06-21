@@ -43,6 +43,7 @@ for f=1:numel(keys.project_versions) % running multiple versions of the same pro
             population=ph_load_population([keys.basepath_to_save keys.project_version],['population_' keys.monkey]);
             trials=ph_load_population([keys.basepath_to_save keys.project_version],['trials_' keys.monkey]);
             % ph_epochs takes a bit too long for comfort, think about saving epochs (?)
+            ph_exclusion_reasons(population,trials,keys);
             population=ph_epochs(population,trials,keys);
             trials=trials([trials.completed]);
             if any(ismember(population_analysis_to_perform,{'uni'})) %% for single cell plotting, add eye/hand traces

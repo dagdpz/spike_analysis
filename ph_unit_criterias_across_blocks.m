@@ -13,12 +13,16 @@ for u=1:numel(pop_resorted)
     N_spikes_per_trial=arrayfun(@(x) numel(x.arrival_times),U.trial);
     T=ph_get_unit_trials(U,trials);%
     acc=[T.accepted];
+    %ID=U.unit_ID;
+    
     
     FR=[T.FR_average];
     block=[T.block];
+    tasks=[T.type];
     tdur=arrayfun(@(x) x.states_onset(x.states==90)-x.states_onset(x.states==2),T);
     
     Weighted_mean_FR=sum(FR(acc).*tdur(acc))/sum(tdur(acc));
+    morethanonetask=numel(unique(tasks(acc)))>1;
     for t=1:numel(UC.type)
         typ=UC.type(t);
         [~, ~, typ_label, ~]=MPA_get_type_effector_name(typ,0);
@@ -76,12 +80,16 @@ for u=1:numel(pop_resorted)
                     if any(valid_nsp<max(valid_nsp)/10)
                         [~,ix]=min(valid_nsp);
                         exclusion_reason=3;
-                    elseif numel(valid_blocks)>2
+%                     elseif (numel(valid_blocks)>2) || morethanonetask
+%                         [~,ix]=max(abs(valid_FRs-Weighted_mean_FR));
+%                         exclusion_reason=4;
+%                     else
+%                         [~,ix]=min(valid_sta);
+%                         exclusion_reason=5;
+
+                    else
                         [~,ix]=max(abs(valid_FRs-Weighted_mean_FR));
                         exclusion_reason=4;
-                    else
-                        [~,ix]=min(valid_sta);
-                        exclusion_reason=5;
                     end
                     
                     block_to_remove=valid_blocks(ix);
