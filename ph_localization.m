@@ -7,6 +7,21 @@ keys.(FN{f})=keys.LO.(FN{f});
 end
 TT=keys.tuning_table;
 
+if isfield(keys.loc, 'unit_list')
+    % In this loop, it's possible to use a pre-defined unit list to plot
+    % only sites from it.
+    % To use this functionality, add a file for a unit list with field 
+    % to localization settings: keys.loc.unit_list
+    % Implemented by Luba 12.07.2024
+    unit_column_id = DAG_find_column_index(TT,'unit_ID'); % figure out column number of unit id
+    
+    unit_list = load(keys.loc.unit_list,'unit_ids'); % load unit selection list
+    
+    % take only units from the selection list
+    ids = ismember(TT(:,unit_column_id), unit_list.unit_ids);
+    TT  = [TT(1,:); TT(ids,:)]; % keep header, exclude units not in the list
+end
+
 co = {'b','m','r'}; % visual,visuomotor, motor
 switch keys.significance_to_plot
     case 'ungrouped'
