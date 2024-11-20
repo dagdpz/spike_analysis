@@ -61,6 +61,7 @@ keys.cal.process_by_block                =1;      % you can choose not to run by
 keys.cal.MA_selection                   ={'display',0,'keep_raw_data',1,'saccade_definition',4,'reach_1st_pos',1,'correlation_conditions',{}};                        % if you want to run MA with specific settings
 keys.cal.units_from_sorting_table       =1;                         % exclude units that are not in the sorting table (and therefore apply stability/single/SNT ratings)
 keys.cal.datasets                       =[];
+keys.cal.only_aborted_after_state       =[NaN];    
 keys.cal.completed                      =1;                         % problematic, because of where and how it is used. so far, keep it 1
 keys.cal.effectors                      =[0,1,2,3,4,5,6];           % excluding trials with non-matching effectors
 keys.cal.types                          =[1,2,3,4,5,6];             % excluding trials with non-matching types
