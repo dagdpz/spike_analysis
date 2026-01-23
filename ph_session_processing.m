@@ -218,8 +218,8 @@ function sites = sort_by_site_ID(o_t)
 sites=struct('site_ID',{});
 site_index=0;
 for b=1:size(o_t,2)
-    if isfield(o_t(b).trial(1),'TDT_LFPx') || isfield(o_t(b).trial(1),'TDT_MUAx')
-        LFP=[];MUA=[];
+    if isfield(o_t(b).trial(1),'TDT_LFPx') || isfield(o_t(b).trial(1),'TDT_MUAx') || isfield(o_t(b).trial(1),'TDT_ECG1')
+        LFP=[];MUA=[];ECG=[];
         if isfield(o_t(b).trial(1),'TDT_LFPx')
             LFP_samples=arrayfun(@(x) size(x.TDT_LFPx,2),o_t(b).trial);
             LFP=[o_t(b).trial.TDT_LFPx];
@@ -227,6 +227,10 @@ for b=1:size(o_t,2)
         if isfield(o_t(b).trial(1),'TDT_MUAx')            
             MUA_samples=arrayfun(@(x) size(x.TDT_MUAx,2),o_t(b).trial);
             MUA=[o_t(b).trial.TDT_MUAx];
+        end
+         if isfield(o_t(b).trial(1),'TDT_ECG1')            
+            ECG_samples=arrayfun(@(x) size(x.TDT_ECG1,2),o_t(b).trial);
+            ECG=[o_t(b).trial.TDT_ECG1];
         end
         AA=vertcat(o_t(b).trial.channel);
         n_chans_s=size(AA,2);
@@ -262,6 +266,13 @@ for b=1:size(o_t,2)
                 sites(s).MUA_samples      =[];
                 sites(s).MUA_tStart       =[];
                 sites(s).MUA_t0           =[];
+                
+                
+                
+                sites(s).ECG              =[];
+                sites(s).ECG_samples      =[];
+                sites(s).ECG_tStart       =[];
+                sites(s).ECG_t0           =[];
             end
             sites(s).dataset       =[sites(s).dataset      AA(:,c).dataset];
             %sites(s).perturbation  =[sites(s).perturbation AA(:,c).perturbation];
@@ -281,6 +292,14 @@ for b=1:size(o_t,2)
             sites(s).MUA_t0        =[sites(s).MUA_t0 o_t(b).trial.TDT_MUAx_t0_from_rec_start];
             sites(s).MUA           =[sites(s).MUA   MUA(c,:)];
             end
+            
+            if ~isempty(ECG)
+            sites(s).ECG_samples   =[sites(s).ECG_samples ECG_samples];
+            sites(s).ECG_tStart    =[sites(s).ECG_tStart o_t(b).trial.TDT_ECG1_tStart];
+            sites(s).ECG_t0        =[sites(s).ECG_t0 o_t(b).trial.TDT_ECG1_t0_from_rec_start];
+            sites(s).ECG           =[sites(s).ECG   ECG];
+            end
+            
         end
     end
     

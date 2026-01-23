@@ -115,7 +115,7 @@ end
 for t=1:numel(tr_in)
     t1=MA_out.states(t).TDT_state_onsets([MA_out.states(t).TDT_states]==2);
     t2=MA_out.states(t).start_end;
-    if ~isempty(tr_in(t).spike_waveforms)
+    if ~isempty(tr_in(t).spike_waveforms) && ~isempty(t1)
         if t>1
             %% add previous trial's spikes to the beginning
             prev_t_correction=-(MA_out.states(t).trial_onset_time -MA_out.states(t-1).trial_onset_time);
@@ -132,8 +132,11 @@ for t=1:numel(tr_in)
         AA=arrayfun(@(x) sum(x.arrival_times>t1 & x.arrival_times<t2)/(t2-t1),trial(t).unit,'Uniformoutput',false);
         [trial(t).unit.FR_average]=AA{:};
         [trial(t).unit.trial_duration]=deal(t2-t1);
-    else
-        %size(unit_wf.waveforms,1)~=size(unit_at.arrival_times,1);
+    elseif ~isempty(tr_in(t).spike_waveforms)
+        [trial(t).unit.FR_average]=[];
+        [trial(t).unit.trial_duration]=[];
+        [trial(t).unit.arrival_times]=[];
+        [trial(t).unit.waveforms]=[];
     end
 end
 
