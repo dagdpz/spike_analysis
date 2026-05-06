@@ -82,7 +82,9 @@ for FN=stream_fieldnames
     % shorten first trial (remove stuff way before task)
     n_samples_to_delete=round((shift_in_seconds*-1-tr_in(1).streams_tStart)*sr(1));
     if n_samples_to_delete>-1
-        trial(1).(FN{:})(:,1:n_samples_to_delete)=[];
+        %trial(1).(FN{:})(:,1:n_samples_to_delete)=[]; % screwed up in july 2023 (?)
+        display('this one')
+        tempstruct{1}(:,1:n_samples_to_delete)=[];
         tstart={tr_in(1).streams_tStart+n_samples_to_delete/sr(1)};
     else
         tstart={tr_in(1).streams_tStart};
