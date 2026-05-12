@@ -1,30 +1,34 @@
-function pop_resorted = ph_accept_trials_per_unit(pop_resorted,keys)
+function pop_resorted = ph_accept_trials_per_unit(pop_resorted,trials,keys)
 for u=1:numel(pop_resorted)
+    p=pop_resorted(u);
+    if isfield(p,'accepted')
+        p=rmfield(p,'accepted');
+    end
+    pt=ph_get_unit_trials(p,trials);
     %    FRs=[pop_resorted(u).trial.FR_average];
-    correct_task=ismember([pop_resorted(u).trial.effector],keys.cal.effectors) ...
-        & ismember([pop_resorted(u).trial.type],keys.cal.types) ...
-        & ismember([pop_resorted(u).trial.completed],keys.cal.completed) ...
-        & ~isnan([pop_resorted(u).trial.stability_rating]);
+    
+    aborted_before_desired_state=false(size(pt));
+    if numel(keys.cal.only_aborted_after_state)>1
+        for r=1:size(keys.cal.only_aborted_after_state,1)
+            aborted_before_desired_state_this_type=[pt.type]==keys.cal.only_aborted_after_state(r,1) & ...
+              ~arrayfun(@(x) any(ismember(keys.cal.only_aborted_after_state(r,2),x.states)),pt);
+              aborted_before_desired_state=aborted_before_desired_state | aborted_before_desired_state_this_type;
+        end
+    end
+    
+    correct_task=~aborted_before_desired_state...
+        & ismember([pt.effector],keys.cal.effectors) ...
+        & ismember([pt.type],keys.cal.types) ...
+        & ismember([pt.completed],keys.cal.completed) ...
+        & ~isnan([p.stability_rating]) ...
+        & [p.exclusion_reason]==0 ;  %% stability including stability across blocks
     for c=1:numel(keys.condition_parameters)
         par=keys.condition_parameters{c};
         if ~all(isnan(keys.cal.(par))) && ~isempty(keys.cal.(par))
-            correct_task=correct_task & ismember([pop_resorted(u).trial.(par)],keys.cal.(par));
+            correct_task=correct_task & ismember([pt.(par)],keys.cal.(par));
         end
     end
-    %    FRsT=FRs(correct_task);
-    %     if keys.cal.remove_trials_without_spikes % pulv_oculomotor!!
-    %         FRsT=FRsT(FRsT~=0);
-    %     end
-    %     unit_mean=double(nanmedian(FRsT));
-    %     unit_std=double(nanstd(FRsT));
-    %     confidence_interval=3*unit_std; %poisson?
-    %
-    % here is the actual outliar criterion
-    %     if keys.cal.remove_trials_with_outlying_FR
-    %         accepted=num2cell(FRs>(log(1+exp(unit_mean-confidence_interval))) & FRs<(log(1+exp(unit_mean+confidence_interval))) & correct_task);
-    %     else
-    accepted=num2cell(correct_task);
-    %    end
-    [pop_resorted(u).trial.accepted]=deal(accepted{:});
+    pop_resorted(u).accepted=correct_task;
+    
 end
 end

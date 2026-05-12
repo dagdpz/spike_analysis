@@ -61,23 +61,21 @@ keys.cal.process_by_block                =1;      % you can choose not to run by
 keys.cal.MA_selection                   ={'display',0,'keep_raw_data',1,'saccade_definition',4,'reach_1st_pos',1,'correlation_conditions',{}};                        % if you want to run MA with specific settings
 keys.cal.units_from_sorting_table       =1;                         % exclude units that are not in the sorting table (and therefore apply stability/single/SNT ratings)
 keys.cal.datasets                       =[];
+keys.cal.only_aborted_after_state       =[NaN];    
 keys.cal.completed                      =1;                         % problematic, because of where and how it is used. so far, keep it 1
 keys.cal.effectors                      =[0,1,2,3,4,5,6];           % excluding trials with non-matching effectors
 keys.cal.types                          =[1,2,3,4,5,6];             % excluding trials with non-matching types
 keys.cal.reach_hand                     =[0,1,2];                   % excluding trials with non-matching reach_hand
-keys.cal.perturbation                   =[0,1];                   % excluding trials with non-matching reach_hand
-
+keys.cal.perturbation                   =[0,1];                     % excluding trials with non-matching reach_hand
 keys.cal.choice                         =[0,1];                     % excluding trials with non-matching chocie
-keys.cal.stablity                       =[0,1];                     % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the table
-keys.cal.single_rating                  =[1,2,3];                   % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl
 
 keys.cal.FR                             =[0,inf];       % min and max value accepted    
 keys.cal.n_spikes                       =[0,inf];       % min and max value accepted
 
 keys.cal.automatic_stablity             =0;                         % using automatic stability assessment
 keys.cal.automatic_SNR                  =0;                         % using automatic SNR assessment
-keys.cal.SNR_rating                     =[1,2,3,4];                 % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl
-%keys.cal.min_trials_per_condition       =5;                         % minimum trials per conditon (look at ph_arrange_positions to see how conditions are defined)
+%keys.cal.SNR_rating                     =[1,2,3,4];                 % not assigning sorting table information if criterion is not met. Therefore only excludes when taking only units in the tabl
+keys.cal.min_trials_pref       =5;                         % minimum trials per conditon (look at ph_arrange_positions to see how conditions are defined)
 keys.cal.min_spikes_per_unit            =50;                        % excluding units that have in total less spikes (workaround for sortcode assignment bug) - to be removed
 keys.cal.perturbation_groups            ={0,[2,3,4,5,6,7,8]};       % which perturbation values from excel table will be assigned to control and perturbation for comparisons and population analysis
 keys.cal.remove_trials_without_spikes=1;

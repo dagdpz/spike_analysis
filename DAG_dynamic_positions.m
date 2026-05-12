@@ -8,7 +8,7 @@ while max(n_pos_at_same_height)*(numel(n_pos_at_same_height)-1)>size(sin_U_POS,1
     if numel(prev_n_pos_at_same_height)== numel(n_pos_at_same_height) && all(prev_n_pos_at_same_height==n_pos_at_same_height)
         break;
     end
-    heights(n_pos_at_same_height>=floor(size(sin_U_POS,1)/(numel(n_pos_at_same_height)-1)))=[];
+    heights(n_pos_at_same_height>floor(size(sin_U_POS,1)/(numel(n_pos_at_same_height)-1)))=[];
     heights_neg=heights(heights<=0);
     heights_pos=heights(heights>=0);
 

@@ -3,12 +3,32 @@ function ph_localization(keys)
 
 FN=fieldnames(keys.LO);
 for f=1:numel(FN)
-keys.(FN{f})=keys.LO.(FN{f});
+    keys.(FN{f})=keys.LO.(FN{f});
 end
 TT=keys.tuning_table;
 
+if isfield(keys.LO, 'unit_list')
+    % In this loop, it's possible to use a pre-defined unit list to plot
+    % only sites from it.
+    % To use this functionality, add a file for a unit list with field 
+    % to localization settings: keys.loc.unit_list
+    % Implemented by Luba 12.07.2024
+    unit_column_id = DAG_find_column_index(TT,'unit_ID'); % figure out column number of unit id
+    
+    filename = keys.LO.unit_list;
+    unit_list = load(filename,'unit_ids'); % load unit selection list
+    
+    % take only units from the selection list
+    ids = ismember(TT(:,unit_column_id), unit_list.unit_ids);
+    TT  = [TT(1,:); TT(ids,:)]; % keep header, exclude units not in the list
+end
+
 co = {'b','m','r'}; % visual,visuomotor, motor
 switch keys.significance_to_plot
+    case 'ungrouped'
+        task_column=DAG_find_column_index(TT,'ungrouped');
+        sign_column=DAG_find_column_index(TT,'ungrouped');
+        co = {'b','m','r'}; % visual,visuomotor, motor
     case 'memory'
         task_column=DAG_find_column_index(TT,'in_epoch_main_Msac_fix');
         sign_column=DAG_find_column_index(TT,'in_NH_Cue_position_Msac_opt');
@@ -85,10 +105,20 @@ keys.xyz = xyz;
 keys.xyz_nojitter =xyz_nojitter;
 keys.penetration_date = penetration_date;
 
-CL_plot_electrode_localization(keys,keys.significance_to_plot,co,0,keys.saggital_or_coronal)
+CL_plot_electrode_localization(keys,keys.significance_to_plot,co,0,keys.saggital_or_coronal, keys.area_color)
 h =  findobj('type','figure');
 for n = 1:length(h);
-    export_fig(h(n),[keys.path_to_save  keys.significance_to_plot '_'  keys.monkey '_'  keys.target_area '_' num2str(n)], '-pdf','-transparent')
+    if isfield(keys,'folder_suffix')
+        folder_path = [keys.path_to_save(1:end-1) keys.folder_suffix filesep];
+        if ~exist(folder_path,'dir')
+            mkdir(folder_path)
+        end
+        export_fig(h(n), ...
+            [folder_path keys.significance_to_plot '_'  keys.monkey '_'  keys.target_area '_' keys.saggital_or_coronal '_' num2str(n)], ...
+            '-pdf','-transparent')
+    else
+        export_fig(h(n),[keys.path_to_save  keys.significance_to_plot '_'  keys.monkey '_'  keys.target_area '_' keys.saggital_or_coronal '_' num2str(n)], '-pdf','-transparent')
+    end
     close(h(n));
 end
 
