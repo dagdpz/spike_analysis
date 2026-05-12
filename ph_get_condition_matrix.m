@@ -63,10 +63,10 @@ for x=1:size(fixations_temp,1)-1
 end
 UC.fixation=fixations_temp(fix_temp_idx,:);
 
-% %if ~any(keys.tt.hands==0) % cause hands 0 is any hand ... 
-% UC.reach_hand     =UC.reach_hand(ismember(UC.reach_hand,keys.tt.hands));
-% %end
-% UC.choice    =UC.choice(ismember(UC.choice,keys.tt.choices));
+if ~any(keys.tt.reach_hand==0) % cause hands 0 is any hand ... 
+UC.reach_hand     =UC.reach_hand(ismember(UC.reach_hand,keys.tt.reach_hand));
+end
+UC.choice    =UC.choice(ismember(UC.choice,keys.tt.choice));
 %% up to here
 
 

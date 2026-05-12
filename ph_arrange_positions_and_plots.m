@@ -53,11 +53,19 @@ cueshape                =[o.cue_shape]';
 success                 =[o.success]';
 effectors               =[o.effector]';
 perturbations_orig      =[o.perturbation]';
-difficulty              = [o.difficulty];
-stimuli_in_2hemifields  = [o.stimuli_in_2hemifields];
-n_distractors           = [o.n_distractors];
-n_nondistractors        = [o.n_nondistractors];
-StimulusType            = [o.stimulustype];
+if isfield(o,'difficulty')
+    difficulty              = [o.difficulty];
+    stimuli_in_2hemifields  = [o.stimuli_in_2hemifields];
+    n_distractors           = [o.n_distractors];
+    n_nondistractors        = [o.n_nondistractors];
+    StimulusType            = [o.stimulustype];
+else
+    difficulty=zeros(size(o));
+    stimuli_in_2hemifields  = zeros(size(o));
+    n_distractors           = zeros(size(o));
+    n_nondistractors        = zeros(size(o));
+    StimulusType            = zeros(size(o));
+end
 
 %% perturbation (painful, because its either in groups - for analysis, or by block (actuallz original perturbation value from table) - for single cell plotting
 perturbations=zeros(size(perturbations_orig));

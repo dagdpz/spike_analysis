@@ -10,10 +10,10 @@ switch analysis_type
             for w=1:numel(W)
                 C=W(w);
                 wn=C.name{:};
-                if u==1
-                    table(1,w+1:w+9)={[wn '_b1'],[wn '_b2'],[wn '_p1'],[wn '_p2'],[wn '_in1'],[wn '_in2'],[wn '_SS'],[wn '_corrP'],[wn '_corrR']};
-                end
-                table(u+1,w+1:w+9)={C.betas(1),C.betas(2),C.pval(1),C.pval(2),C.in(1),C.in(2),C.SS,C.corrP(1,2),C.corrR(1,2)}; %% SE(!)???
+%                 if u==1
+%                     table(1,w+1:w+9)={[wn '_b1'],[wn '_b2'],[wn '_p1'],[wn '_p2'],[wn '_in1'],[wn '_in2'],[wn '_SS'],[wn '_corrP'],[wn '_corrR']};
+%                 end
+%                 table(u+1,w+1:w+9)={C.betas(1),C.betas(2),C.pval(1),C.pval(2),C.in(1),C.in(2),C.SS,C.corrP(1,2),C.corrR(1,2)}; %% SE(!)???
             end
         end
     case 'RFs'

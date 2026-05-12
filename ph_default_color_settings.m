@@ -76,15 +76,13 @@ colors.in_AH_PT_IS=[0 70 141];
 colors.ch_AH_PT_IS=[0 70 141];
 
 % now same for ipsi hand 
-colors.in_IH=[255 0 255];
-colors.ch_IH=[255 0 255];
-colors.in_IH_PT=[204 0 204];
-colors.ch_IH_PT=[204 0 204];
+colors.in_IH_PT=[32 0 204];
+colors.ch_IH_PT=[32 0 204];
 
 colors.in_IH_CS=[255 0 255];
-colors.ch_IH_CS=[255 0 255];
+colors.ch_IH_CS=[128 0 128];
 colors.in_IH_IS=[0 128 255];
-colors.ch_IH_IS=[0 128 255];
+colors.ch_IH_IS=[0 64 128];
 
 colors.in_IH_PT_CS=[204 0 204];
 colors.ch_IH_PT_CS=[204 0 204];
@@ -92,20 +90,18 @@ colors.in_IH_PT_IS=[0 64 204];
 colors.ch_IH_PT_IS=[0 64 204];
 
 % now same for contra hand 
-colors.in_CH=[255 128 0];
-colors.ch_CH=[255 128 0];
-colors.in_CH_PT=[204 64 0];
-colors.ch_CH_PT=[204 64 0];
+colors.in_CH_PT=[204 204 0];
+colors.ch_CH_PT=[204 204 0];
 
 colors.in_CH_CS=[255 128 0];
-colors.ch_CH_CS=[255 128 0];
+colors.ch_CH_CS=[128 64 0];
 colors.in_CH_IS=[0 255 0];
-colors.ch_CH_IS=[0 155 0];
+colors.ch_CH_IS=[0 128 0];
 
 colors.in_CH_PT_CS=[204 64 0];
-colors.ch_CH_PT_CS=[204 64 0];
+colors.ch_CH_PT_CS=[102 32 0];
 colors.in_CH_PT_IS=[0 204 0];
-colors.ch_CH_PT_IS=[0 204 0];
+colors.ch_CH_PT_IS=[0 102 0];
 
 % %% population contra ipsi and vertical PSTH colors -overwriting MP settings for now
 % colors.in_AH_CS=[255 0 64];

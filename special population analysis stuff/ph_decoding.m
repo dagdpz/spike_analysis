@@ -1,19 +1,36 @@
 function ph_decoding(population,keys)
 %%
-
-type=4;
+% 
+% [TT,idx,group_values,unique_group_values]=ph_readout_tuning_table(keys);
+% complete_unit_list={population.unit_ID}';
+% [unit_valid,TM]=ismember(complete_unit_list,TT(:,idx.unitID));
+% population=population(unit_valid);
 
 %% define conditions to look at
 all_trialz=[population.trial];
 
-condition_parameters=[{'hemifield'} keys.condition_parameters];
+condition_parameters=[{'effector'} {'hemifield'} keys.condition_parameters];
 [uq, cm]=ph_get_condition_matrix(all_trialz,keys);
 uq.handspace    =combvec(uq.reach_hand,uq.hemifield);
-conditions_matrix               = combvec(uq.hemifield,cm')';
+conditions_matrix               = combvec(uq.effector,uq.hemifield,cm')';
 
-keys.PSTH_WINDOWS=keys.WINDOWS_PER_TYPE{type};
+keys.PSTH_WINDOWS=keys.WINDOWS_PER_TYPE{keys.ND.type};
+WN=find(ismember(keys.PSTH_WINDOWS(:,1),keys.ND.windows))';
 
-for wn= 1:size(keys.PSTH_WINDOWS,1)
+    % stored parameters to let toolbox handle the spike density
+    bin_width=round(keys.gaussian_kernel/0.001);
+    step_size=round(keys.PSTH_binwidth/0.001); 
+    kernel_type=keys.kernel_type; % not sure what is used
+    % to effectively create raster using ph_spike_density
+    keys.PSTH_binwidth=0.001;
+    keys.gaussian_kernel=0.0005;
+    keys.kernel_type='box';
+    
+    bin_width = 30;
+    %step_size = 10;
+    
+
+for wn= WN
     window_name=keys.PSTH_WINDOWS{wn,1};
     
     path_to_save=[keys.basepath_to_save keys.project_version filesep 'decoding'];
@@ -21,6 +38,7 @@ for wn= 1:size(keys.PSTH_WINDOWS,1)
     if ~exist(raster_data_directory_name,'dir')
         mkdir(path_to_save, [window_name '_rasters']);
     end
+    
     
     
     for u=1:numel(population)
@@ -33,7 +51,8 @@ for wn= 1:size(keys.PSTH_WINDOWS,1)
         unit=ph_LR_to_CI(keys,unit);
         
         for t=1:numel(unit.trial)
-            raster_data(t,:)=ph_spike_density(unit.trial(t),wn,keys,0,1);
+            raster_data(t,:)=logical(ph_spike_density(unit.trial(t),wn,keys,0,1));
+            %raster_data(t,:)=ph_spike_density(unit.trial(t),wn,keys,0,1);
             raster_labels.handspace{t}=num2str([unit.trial(t).reach_hand unit.trial(t).hemifield]);
             raster_labels.reach_hand{t}=num2str(unit.trial(t).reach_hand);
             raster_labels.hemifield{t}=num2str(unit.trial(t).hemifield);
@@ -52,19 +71,19 @@ for wn= 1:size(keys.PSTH_WINDOWS,1)
     
     %%  4.  Bin the data
     save_prefix_name = [path_to_save filesep window_name '_binned'];
-    bin_width = 30;
-    step_size = 10;
     binned_data_file_name = create_binned_data_from_raster_data(raster_data_directory_name, save_prefix_name, bin_width, step_size);
     
     %%  5.  Loop through parameters and subsets for each parameter
     %%% here add removing certain trials dependent on what parameters we are
     %%% decoding
+    %binned_data_file_name = [raster_data_directory_name filesep
+    %save_prefix_name bin_width step_size
+    
     
     load(binned_data_file_name);  % load the binned data
     all_binned_labels=binned_labels;
     all_binned_data=binned_data;
     FN_labels=fieldnames(all_binned_labels);
-    
     for par=keys.ND.decoding_parameters
         
         parameter=par{:};

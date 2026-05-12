@@ -3,10 +3,26 @@ function keys=ph_tuning_table_correction(keys)
 
 
 TT=keys.tuning_table;
-TT=ph_multicomparison_correction(TT,keys);
+TT=replace_space_with_hemifield(TT);
+%TT=ph_multicomparison_correction(TT,keys);
 [TT]=ph_extend_tuning_table(TT,keys);
 [TT, keys.selection_title]=ph_reduce_tuning_table(TT,keys);
 keys.tuning_table=TT;
+end
+
+function TT=replace_space_with_hemifield(TT)
+%% make emtpy and noncharacter entries NaNs;
+
+ix=find(cellfun(@(x) isempty(x)&& ~ischar(x),TT));
+[TT(ix)]=deal({single(NaN)});
+
+entries=TT(1,:);
+cols=find(cellfun(@(x) ~isempty(strfind(x,'spaceLR')),entries));
+for c=cols
+    entry=entries{c};
+    TT{1,c}=strrep(entry,'spaceLR','hemifield');
+end
+
 end
 
 %% multicomparison and subfunctions
@@ -598,7 +614,8 @@ if size(TT,1)>1
     row_index=true(size(TT,1)-1,1);
     
     % ratings
-    selection_criteria={'stability_rating','SNR_rating','Single_rating','FR','n_spikes'};
+    %selection_criteria={'stability_rating','SNR_rating','Single_rating','FR','n_spikes'};
+    selection_criteria={'stability_rating','SNR_rating','Single_rating','FR'};
     for sel=1:numel(selection_criteria)
         criterion=selection_criteria{sel};
         crit_min=min(keys.tt.(criterion));

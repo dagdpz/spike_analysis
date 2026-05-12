@@ -265,7 +265,7 @@ for u=1:numel(population)
                             if isempty(trials_for_SD)
                                 condition_per_trial(t,c).per_hemifield(f).window(w).unit(u).average_spike_density(1,:)=...
                                     NaN(size(ph_spike_density(pop.trial(1),w,keys,baseline(1),norm_factor(1))));
-                                condition_per_trial(t,c).per_hemifield(f).unit(u).epoch_averages=NaN(1,size(keys.EPOCHS,1));
+                               % condition_per_trial(t,c).per_hemifield(f).unit(u).epoch_averages=NaN(1,size(keys.EPOCHS,1));
                             end
                             keys.PSTH_WINDOWS(w,:)=temp_window;
                             

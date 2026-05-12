@@ -24,125 +24,93 @@ legend_labels_pos={
 cols=keys.colors;
 
 %% there are just too many colors once we include vertical targets, so for now we just keep use the same ones again...
-keys.line_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
-    cols.NH_VS_IN;cols.NH_VS_CH;cols.IH_VS_IN;cols.IH_VS_CH;cols.CH_VS_IN;cols.CH_VS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;...
-    [cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
-    cols.NH_VS_IN;cols.NH_VS_CH;cols.IH_VS_IN;cols.IH_VS_CH;cols.CH_VS_IN;cols.CH_VS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/510]; %%temporary for inactivation
-keys.pref_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;...
-    [cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
-    cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/510]; %%temporary for inactivation
-keys.pos_colors=[[cols.NH_IN;cols.NH_CH;cols.IH_IN;cols.IH_CH;cols.CH_IN;cols.CH_CH]/255;...
-    [cols.NH_IN;cols.NH_CH;cols.IH_IN;cols.IH_CH;cols.CH_IN;cols.CH_CH]/510]; %%temporary for inactivation
+% keys.line_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
+%     cols.NH_VS_IN;cols.NH_VS_CH;cols.IH_VS_IN;cols.IH_VS_CH;cols.CH_VS_IN;cols.CH_VS_CH;...
+%     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;...
+%     [cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
+%     cols.NH_VS_IN;cols.NH_VS_CH;cols.IH_VS_IN;cols.IH_VS_CH;cols.CH_VS_IN;cols.CH_VS_CH;...
+%     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/510]; %%temporary for inactivation
+% keys.pref_colors=[[cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
+%     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/255;...
+%     [cols.NH_IS_IN;cols.NH_IS_CH;cols.IH_IS_IN;cols.IH_IS_CH;cols.CH_IS_IN;cols.CH_IS_CH;...
+%     cols.NH_CS_IN;cols.NH_CS_CH;cols.IH_CS_IN;cols.IH_CS_CH;cols.CH_CS_IN;cols.CH_CS_CH;]/510]; %%temporary for inactivation
+% keys.pos_colors=[[cols.NH_IN;cols.NH_CH;cols.IH_IN;cols.IH_CH;cols.CH_IN;cols.CH_CH]/255;...
+%     [cols.NH_IN;cols.NH_CH;cols.IH_IN;cols.IH_CH;cols.CH_IN;cols.CH_CH]/510]; %%temporary for inactivation
+
+keys.line_colors=[[cols.in_IS;cols.ch_IS;cols.in_IH_IS;cols.ch_IH_IS;cols.in_CH_IS;cols.ch_CH_IS;...
+    cols.in_VS;cols.ch_VS;cols.in_IH_VS;cols.ch_IH_VS;cols.in_CH_VS;cols.ch_CH_VS;...
+    cols.in_CS;cols.ch_CS;cols.in_IH_CS;cols.ch_IH_CS;cols.in_CH_CS;cols.ch_CH_CS;]/255;...
+    [cols.in_IS;cols.ch_IS;cols.in_IH_IS;cols.ch_IH_IS;cols.in_CH_IS;cols.ch_CH_IS;...
+    cols.in_VS;cols.ch_VS;cols.in_IH_VS;cols.ch_IH_VS; cols.in_CH_VS;cols.ch_CH_VS;...
+    cols.in_CS;cols.ch_CS;cols.in_IH_CS;cols.ch_IH_CS;cols.in_CH_CS;cols.ch_CH_CS;]/510]; %%temporary for inactivation
+keys.pref_colors=[[cols.in_CS;cols.ch_IS;cols.in_IH_IS;cols.ch_IH_IS;cols.in_CH_IS;cols.ch_CH_IS;...
+    cols.in_CS;cols.ch_CS;cols.in_IH_CS;cols.ch_IH_CS;cols.in_CH_CS;cols.ch_CH_CS;]/255;...
+    [cols.in_IS;cols.ch_IS;cols.in_IH_IS;cols.ch_IH_IS;cols.in_CH_IS;cols.ch_CH_IS;...
+    cols.in_CS;cols.ch_CS;cols.in_IH_CS;cols.ch_IH_CS;cols.in_CH_CS;cols.ch_CH_CS;]/510]; %%temporary for inactivation
+keys.pos_colors=[[cols.in;cols.ch;cols.in_IH;cols.ch_IH;cols.in_CH;cols.ch_CH]/255;...
+    [cols.in;cols.ch;cols.in_IH;cols.ch_IH;cols.in_CH;cols.ch_CH]/510]; %%temporary for inactivation
+
 
 %% tuning table preparation and grouping
-[tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
-[tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
-idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.RE.group_parameter);
-idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
-idx_RF_frame=DAG_find_column_index(tuning_per_unit_table,keys.RE.RF_frame_parameter);
-group_values=tuning_per_unit_table(:,idx_group_parameter);
-group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
-cell_in_any_group=[false; ~ismember(group_values(2:end),keys.RE.group_excluded)];
-unique_group_values=unique(group_values(cell_in_any_group));
-if isempty(unique_group_values)
-    disp('no relevant groups found');
-    return;
-end
-tuning_per_unit_table=tuning_per_unit_table(cell_in_any_group,:);
-group_values=group_values(cell_in_any_group);
-complete_unit_list={population.unit_ID}';
-population=population(ismember(complete_unit_list,tuning_per_unit_table(:,idx_unitID)));
+% [tuning_per_unit_table]                 = ph_load_extended_tuning_table(keys);
+% [tuning_per_unit_table, Sel_for_title]  = ph_reduce_tuning_table(tuning_per_unit_table,keys);
+% idx_group_parameter=DAG_find_column_index(tuning_per_unit_table,keys.RE.group_parameter);
+% idx_unitID=DAG_find_column_index(tuning_per_unit_table,'unit_ID');
+% idx_RF_frame=DAG_find_column_index(tuning_per_unit_table,keys.RE.RF_frame_parameter);
+% group_values=tuning_per_unit_table(:,idx_group_parameter);
+% group_values=cellfun(@num2str, group_values, 'UniformOutput', false);
+% cell_in_any_group=[false; ~ismember(group_values(2:end),keys.RE.group_excluded)];
+% unique_group_values=unique(group_values(cell_in_any_group));
+% if isempty(unique_group_values)
+%     disp('no relevant groups found');
+%     return;
+% end
+% tuning_per_unit_table=tuning_per_unit_table(cell_in_any_group,:);
+% group_values=group_values(cell_in_any_group);
+% complete_unit_list={population.unit_ID}';
+% population=population(ismember(complete_unit_list,tuning_per_unit_table(:,idx_unitID)));
 %complete_unit_list={population.unit_ID}';
 
 
-all_trialz=[population.trial];
-per_trial.types       =[all_trialz.type];
-per_trial.effectors   =[all_trialz.effector];
-u_con.type     =unique(per_trial.types);
-u_con.effector =unique(per_trial.effectors);
-all_type_effectors      = combvec(u_con.type,u_con.effector)';
-type_effectors =[];
+%keys.PO.FR_subtract_baseline=~strcmp(keys.PO.epoch_BL,'none'); %% this one we should not need here any more !?
+[TT,idx,group_values,unique_group_values]=ph_readout_tuning_table(keys);
 
-% redifine type_effectors to include only relevant
-for t=1:size(all_type_effectors,1)
-    typ=all_type_effectors(t,1);
-    eff=all_type_effectors(t,2);
-    [~, type_effector_short{t}]=MPA_get_type_effector_name(typ,eff);
-    if ~ismember(type_effector_short{t},keys.conditions_to_plot) %|| sum(tr_con)<1
-        continue;
-    end
-    type_effectors=[type_effectors; all_type_effectors(t,:)];
+if isempty(unique_group_values)
+    return;
 end
-type_effector_short(~ismember(type_effector_short,keys.conditions_to_plot))=[];
-u_con.type     =unique(type_effectors(:,1))';
-u_con.effector =unique(type_effectors(:,2))';
 
-
-%% define conditions to look at
-all_trialz=[population.trial];
-per_trial.types       =[all_trialz.type];
-per_trial.effectors   =[all_trialz.effector];
-
-tr_con=ismember([all_trialz.completed],keys.cal.completed);
-[whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
-
-condition_parameters  ={'reach_hand','choice','perturbation'};
-per_trial.types       =[all_trialz.type];
-per_trial.effectors   =[all_trialz.effector];
-per_trial.hands       =[all_trialz.reach_hand];
-per_trial.choice      =[all_trialz.choice];
-per_trial.perturbation=[all_trialz.perturbation];
-per_trial.hemifield   =[whatisthis.trial.hemifield];
-per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
-per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
-
-u_con.hemifield=unique(per_trial.hemifield); %[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
-
-u_con.reach_hand     =unique(per_trial.hands);
-u_con.choice    =unique(per_trial.choice);
-u_con.perturbation    =unique(per_trial.perturbation);
-u_con.perturbation=u_con.perturbation(~isnan(u_con.perturbation));
-
-%% limit conditions key?
-if ~any(keys.tt.hands==0) % cause hands 0 is any hand
-    u_con.reach_hand     =u_con.reach_hand(ismember(u_con.reach_hand,keys.tt.hands));
-end
-u_con.choice    =u_con.choice(ismember(u_con.choice,keys.tt.choices));
-
-% reduce trials to only valid
-unit_valid=true(size(population));
-for u=1:numel(population)
-    poptr=population(u).trial;
-    valid=ismember([poptr.effector],u_con.effector) & ismember([poptr.type],u_con.type) & ismember([poptr.choice],u_con.choice) & ismember([poptr.reach_hand],u_con.reach_hand);
-    population(u).trial=population(u).trial(valid);
-    if sum(valid)==0
-        unit_valid(u)=false;
-    end
-end
+complete_unit_list={population.unit_ID}';
+[unit_valid,TM]=ismember(complete_unit_list,TT(:,idx.unitID));
 population=population(unit_valid);
 complete_unit_list={population.unit_ID}';
-unit_valid=ismember(tuning_per_unit_table(:,idx_unitID),complete_unit_list);
-group_values=group_values(unit_valid);
-tuning_per_unit_table=tuning_per_unit_table(unit_valid,:);
+population_group=group_values(TM(unit_valid));
+all_trialz=[population.trial];
+[UC, CM, labels]=ph_get_condition_matrix(all_trialz,keys);
 
-%% defining set of conditions dynmically! --> use this as input for ph_condition_normalization as well
-u_condition_definitions={'effector','reach_hand','choice','perturbation'};
-for c=1:numel(u_condition_definitions)
-    u_condition_parameters{c} = u_con.(u_condition_definitions{c});
+
+%% fix labels --> and with labels colors!
+legend_labels_hem={};
+legend_labels_prf={};
+legend_labels_pos={};
+for h=UC.hemifield % append hemifield labels, careful with the order!
+    legend_labels_hem=[legend_labels_hem; strcat(labels,['_' keys.labels.hemifield{h+2}])];
 end
+for h=1:2          % append preference labels, careful with the order!
+    legend_labels_prf=[legend_labels_prf; strcat(labels,['_' keys.labels.preferred{h}])];
+end
+for p=1:size(UC.position,1)
+    legend_labels_pos=[legend_labels_pos; labels];
+end
+% repeat for all effectors
+legend_labels_hem=repmat(reshape(legend_labels_hem,numel(legend_labels_hem),1),numel(UC.effector),1);
+legend_labels_prf=repmat(reshape(legend_labels_prf,numel(legend_labels_prf),1),numel(UC.effector),1);
+legend_labels_pos=repmat(reshape(legend_labels_pos,numel(legend_labels_pos),1),numel(UC.effector),1);
 
-u_condition_hf_definitions={'hemifield','effector','reach_hand','choice','perturbation'}; %rename
-conditions_out            = combvec(u_condition_parameters{:})';
-%condition_matrix            = combvec(u_con.reach_hand,u_con.choice, u_con.perturbation,u_con.hemifield)';
-%conditions_out              = combvec(u_con.effector,u_con.reach_hand,u_con.choice, u_con.perturbation)';
-conditions_hf               = combvec(u_con.hemifield,conditions_out')';
-conditions_hf_complete      = combvec(u_con.hemifield,conditions_out')';
+conditions_out              = combvec(UC.effector,CM')';
+conditions_hf               = combvec(UC.hemifield,conditions_out')';
 conditions_pref             = combvec([0 1],conditions_out')';
 
-if any(u_con.reach_hand~=0) && any(u_con.perturbation==1) %splitting to all 4 hand space conditions if hands are involved
+if isfield(UC,'reach_hand') && any(UC.reach_hand~=0) && any(UC.perturbation==1) %splitting to all 4 hand space conditions if hands are involved
     [~,~,columns_hf] = unique(conditions_hf(:,[1,3]),'rows');
     [~,~,columns_pref] = unique(conditions_pref(:,[1,3]),'rows');
 else
@@ -150,12 +118,106 @@ else
     columns_pref        = ones(size(conditions_pref,1),1);
 end
 
+typ=UC.type;
+% 
+% all_trialz=[population.trial];
+% per_trial.types       =[all_trialz.type];
+% per_trial.effectors   =[all_trialz.effector];
+% u_con.type     =unique(per_trial.types);
+% u_con.effector =unique(per_trial.effectors);
+% all_type_effectors      = combvec(u_con.type,u_con.effector)';
+% type_effectors =[];
+% 
+% % redifine type_effectors to include only relevant
+% for t=1:size(all_type_effectors,1)
+%     typ=all_type_effectors(t,1);
+%     eff=all_type_effectors(t,2);
+%     [~, type_effector_short{t}]=MPA_get_type_effector_name(typ,eff);
+%     if ~ismember(type_effector_short{t},keys.conditions_to_plot) %|| sum(tr_con)<1
+%         continue;
+%     end
+%     type_effectors=[type_effectors; all_type_effectors(t,:)];
+% end
+% type_effector_short(~ismember(type_effector_short,keys.conditions_to_plot))=[];
+% u_con.type     =unique(type_effectors(:,1))';
+% u_con.effector =unique(type_effectors(:,2))';
+% 
+% 
+% %% define conditions to look at
+% all_trialz=[population.trial];
+% per_trial.types       =[all_trialz.type];
+% per_trial.effectors   =[all_trialz.effector];
+% 
+% tr_con=ismember([all_trialz.completed],keys.cal.completed);
+% [whatisthis]=ph_arrange_positions_and_plots(keys,all_trialz(tr_con));
+% 
+% condition_parameters  ={'reach_hand','choice','perturbation'};
+% per_trial.types       =[all_trialz.type];
+% per_trial.effectors   =[all_trialz.effector];
+% per_trial.hands       =[all_trialz.reach_hand];
+% per_trial.choice      =[all_trialz.choice];
+% per_trial.perturbation=[all_trialz.perturbation];
+% per_trial.hemifield   =[whatisthis.trial.hemifield];
+% per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{1}))=0;
+% per_trial.perturbation(ismember(per_trial.perturbation, keys.cal.perturbation_groups{2}))=1;
+% 
+% u_con.hemifield=unique(per_trial.hemifield); %[-1,0,1]; % why does this have to be hardcoded? ---> Because case not defined yet, case defines positions !!
+% 
+% u_con.reach_hand     =unique(per_trial.hands);
+% u_con.choice    =unique(per_trial.choice);
+% u_con.perturbation    =unique(per_trial.perturbation);
+% u_con.perturbation=u_con.perturbation(~isnan(u_con.perturbation));
+% 
+% %% limit conditions key?
+% if ~any(keys.tt.hands==0) % cause hands 0 is any hand
+%     u_con.reach_hand     =u_con.reach_hand(ismember(u_con.reach_hand,keys.tt.hands));
+% end
+% u_con.choice    =u_con.choice(ismember(u_con.choice,keys.tt.choices));
+% 
+% % reduce trials to only valid
+% unit_valid=true(size(population));
+% for u=1:numel(population)
+%     poptr=population(u).trial;
+%     valid=ismember([poptr.effector],u_con.effector) & ismember([poptr.type],u_con.type) & ismember([poptr.choice],u_con.choice) & ismember([poptr.reach_hand],u_con.reach_hand);
+%     population(u).trial=population(u).trial(valid);
+%     if sum(valid)==0
+%         unit_valid(u)=false;
+%     end
+% end
+% population=population(unit_valid);
+% complete_unit_list={population.unit_ID}';
+% unit_valid=ismember(tuning_per_unit_table(:,idx_unitID),complete_unit_list);
+% group_values=group_values(unit_valid);
+% tuning_per_unit_table=tuning_per_unit_table(unit_valid,:);
+% 
+% %% defining set of conditions dynmically! --> use this as input for ph_condition_normalization as well
+% u_condition_definitions={'effector','reach_hand','choice','perturbation'};
+% for c=1:numel(u_condition_definitions)
+%     u_condition_parameters{c} = u_con.(u_condition_definitions{c});
+% end
+% 
+% u_condition_hf_definitions={'hemifield','effector','reach_hand','choice','perturbation'}; %rename
+% conditions_out            = combvec(u_condition_parameters{:})';
+% %condition_matrix            = combvec(u_con.reach_hand,u_con.choice, u_con.perturbation,u_con.hemifield)';
+% %conditions_out              = combvec(u_con.effector,u_con.reach_hand,u_con.choice, u_con.perturbation)';
+% conditions_hf               = combvec(u_con.hemifield,conditions_out')';
+% conditions_hf_complete      = combvec(u_con.hemifield,conditions_out')';
+% conditions_pref             = combvec([0 1],conditions_out')';
+% 
+% if any(u_con.reach_hand~=0) && any(u_con.perturbation==1) %splitting to all 4 hand space conditions if hands are involved
+%     [~,~,columns_hf] = unique(conditions_hf(:,[1,3]),'rows');
+%     [~,~,columns_pref] = unique(conditions_pref(:,[1,3]),'rows');
+% else
+%     columns_hf          = ones(size(conditions_hf,1),1);
+%     columns_pref        = ones(size(conditions_pref,1),1);
+% end
+
 
 
 
 %% finding positions and fixations
-positions=unique(vertcat(whatisthis.trial.position),'rows');
-keys.normalization_field='RE';
+% positions=unique(vertcat(whatisthis.trial.position),'rows');
+% keys.normalization_field='RE';
 keys.WINDOWS_PER_TYPE=keys.RE.WINDOWS_PER_TYPE;
 if false
 [~, condition,~,pref_valid]=ph_condition_normalization(population,keys);
@@ -176,6 +238,7 @@ solution=keys.RE.solution;
 %     end
 % end
 
+u_condition_hf_definitions={'hemifield','effector','choice','reach_hand','perturbation'}; %rename
 for r=1:numel(regressors)
     for c=1:numel(u_condition_hf_definitions)
         con4reg_tmp(:,c) = ismember(conditions_hf(:,c),regressors(r).(u_condition_hf_definitions{c}));
@@ -602,7 +665,7 @@ save([keys.path_to_save, filesep, 'regression data'],'keys','per_unit','per_wind
 t=1; % not working across types
 g=1; % not working yet for specific groups
 typ=4; % not working across types
-keys=ph_get_epoch_keys(keys,typ,u_con.effector,sum(type_effectors(:,1)==typ)>1);
+keys=ph_get_epoch_keys(keys,typ,UC.effector,1);
 
 wM=find(ismember([keys.WINDOWS_PER_TYPE{typ}(:,1)],'Movement')); %% typ!!
 %% adjust window
@@ -661,7 +724,7 @@ for spn=1:numel(sph)
     
     %% completed? choices? hands?
     tr=[all_trialz.type]==typ & ismember([all_trialz.completed],keys.cal.completed) &...
-        ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],u_con.reach_hand) & ismember([all_trialz.choice],u_con.choice);
+        ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],UC.reach_hand) & ismember([all_trialz.choice],UC.choice);
     ph_PSTH_background(all_trialz(tr),y_lim(spn,:),y_lim(spn,:),y_lim(spn,:),keys,keys.RE.fontsize_factor)
     
 end
@@ -929,14 +992,14 @@ for u=1:numel(per_unit)
     
     all_trialz=[population(u).trial];
         tr=[all_trialz.type]==typ & ismember([all_trialz.completed],keys.cal.completed) &...
-            ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],u_con.reach_hand) & ismember([all_trialz.choice],u_con.choice);
+            ismember([all_trialz.completed],keys.cal.completed) & ismember([all_trialz.reach_hand],UC.reach_hand) & ismember([all_trialz.choice],UC.choice);
         ph_PSTH_background(all_trialz(tr),y_lim,y_lim,y_lim,keys,keys.RE.fontsize_factor)
         
     end
     %             plot_title              = [fig_title plot_title_part ', ' type_effector_short ];
     %             ph_title_and_save(PSTH_summary_handle(ef),  [filename plot_title_part ', ' type_effector_short],plot_title,keys)
-    %         for eff=u_con.effector
-    %             ef=find(u_con.effector==eff);
+    %         for eff=UC.effector
+    %             ef=find(UC.effector==eff);
     %             [~, type_effector_short] = MPA_get_type_effector_name(typ,eff);
     %         end
     

@@ -7,7 +7,7 @@ for fn=fieldnames(modified_keys)'
 end
 
 keys.PSTH_binwidth=keys.ON.PSTH_binwidth;
-keys.gaussian_kernel=keys.ON.PSTH_binwidth;
+keys.gaussian_kernel=keys.ON.gaussian_kernel;
 keys.kernel_type=keys.ON.kernel_type;
 keys.n_consecutive_bins_significant=1; %%!
 
